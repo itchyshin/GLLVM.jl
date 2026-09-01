@@ -1,0 +1,139 @@
+{
+  "status": "FROZEN_BEFORE_RUN",
+  "area": "fit-input",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "manifest_draft": "docs/dev-log/core070/manifest-freeze-work/drafts/fit-input.json",
+  "manifest_annex": "docs/dev-log/core070/fit-input-subset.json",
+  "runner": "tools/core070_fit_input_batch.R",
+  "julia_runner": "tools/core070_fit_input_batch.jl",
+  "verifier": "tools/core070_verify_fit_input_batch.py",
+  "scope_note": "NATIVE-MODEL cases below are the density-at-a-fixed-point check named in each manifest row's rationale ('already cleared the native fixed-point density check ... so the native case is executable now'). They reuse, verbatim, the already-verified fixed-point mappings from tools/core070_gaussian_fixed_point.R + test/parity/test_gaussian_fixed_point.jl (Gaussian rows) and tools/core070_source_fixed_point.R + test/parity/test_source_fixed_point.jl (source rows), consolidated into one batch scoped to the fit-input case_ids. They are NOT an R-MLE-vs-Julia-optimized-fit comparison, NOT the @formula lowering, and NOT the public R/Julia bridge replay -- those remain PLANNED_UNPAID per fit-input-subset.json's own owner assignments (B1 optimized fit, B2 formula, B5 bridge) and are not paid by this batch.",
+  "tolerances": {
+    "r_vs_native_abs_loglik": 1e-6,
+    "native_vs_dense_abs_loglik": 1e-8,
+    "scaled_gradient_error": 1e-6,
+    "note": "Identical to the values already enforced in test/parity/test_gaussian_fixed_point.jl and test/parity/test_source_fixed_point.jl (the comparable existing contracts for this exact density-at-a-point check); this batch does not loosen either."
+  },
+  "fixed_points": {
+    "gaussian": [
+      {"beta": [0.2, -0.1, 0.3], "lambda": [0.4, -0.2, 0.3], "sd": [0.5, 0.6, 0.7], "common": 0.45, "sigma": 0.8},
+      {"beta": [-0.1, 0.25, 0.05], "lambda": [0.7, 0.1, -0.4], "sd": [0.4, 0.8, 0.6], "common": 0.65, "sigma": 0.55}
+    ],
+    "source": [
+      {"beta": [0.2, -0.1, 0.3], "lambda": [0.4, -0.2, 0.3, -0.15, 0.5, 0.25], "sigma": 0.8},
+      {"beta": [-0.1, 0.25, 0.05], "lambda": [0.7, 0.1, -0.4, 0.2, -0.3, 0.5], "sigma": 0.55}
+    ],
+    "note": "Same two points already used and passed in gaussian-fixed-point-evidence.json / source-fixed-point-evidence.json; reused rather than re-derived to avoid introducing new numeric risk."
+  },
+  "negative_controls": [
+    {
+      "id": "shifted_intercept_mismatch",
+      "kind": "per_point",
+      "description": "Shifting the first fixed intercept by +0.2 must move the native/dense NLL away from the frozen R NLL by more than 1e-6 -- proves the comparison discriminates a genuinely different fixed point rather than passing vacuously."
+    },
+    {
+      "id": "cross_point_swap_mismatch",
+      "kind": "per_model",
+      "description": "Point 1's R NLL and point 2's R NLL for the same model must differ by more than 1e-6 -- proves the two frozen fixed points are not numerically degenerate duplicates of each other."
+    }
+  ],
+  "rows": [
+    {
+      "source_id": "fit-input/INPUT-GAUSS-DEFAULT",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-GAUSS-DEFAULT-NATIVE-MODEL", "status": "EXECUTABLE_NOW", "fixed_point_ids": ["GAUSS-DEFAULT-P1", "GAUSS-DEFAULT-P2"], "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), df, control = control)", "julia_surface": "GLLVM.gaussian_marginal_loglik(Y .- beta, reshape(lambda, p, 1), sigma_eps_fixed; sigma2_B = exp.(2 .* log_sd_B))"},
+        {"case_id": "CORE070-FIT-INPUT-GAUSS-DEFAULT-FORMULA-INTERFACE", "status": "PLANNED_UNPAID", "owner": "B2", "reason": "latent()-syntax formula lowering to fit_gaussian_gllvm's (Y, K) call shape is not yet wired (fit-input-subset.json formula_owner B2)."},
+        {"case_id": "CORE070-FIT-INPUT-GAUSS-DEFAULT-PUBLIC-R-BRIDGE", "status": "PLANNED_UNPAID", "owner": "B5", "reason": "RCall.jl/JuliaCall public bridge replay of fit_gaussian_gllvm is not yet built for this row (fit-input-subset.json bridge_owner B5)."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-GAUSS-LOADINGS",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-GAUSS-LOADINGS-NATIVE-MODEL", "status": "EXECUTABLE_NOW", "fixed_point_ids": ["GAUSS-LOADINGS-P1", "GAUSS-LOADINGS-P2"], "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1, unique = FALSE), df, control = control)", "julia_surface": "GLLVM.gaussian_marginal_loglik(Y .- beta, reshape(lambda, p, 1), exp(log_sigma_eps))"},
+        {"case_id": "CORE070-FIT-INPUT-GAUSS-LOADINGS-FORMULA-INTERFACE", "status": "PLANNED_UNPAID", "owner": "B2", "reason": "latent(..., unique = FALSE) free-loadings formula lowering has no confirmed packing.jl flag mapping yet."},
+        {"case_id": "CORE070-FIT-INPUT-GAUSS-LOADINGS-PUBLIC-R-BRIDGE", "status": "PLANNED_UNPAID", "owner": "B5", "reason": "Public bridge replay of the free-loadings Gaussian fit is not yet built for this row."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-GAUSS-COMMON",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-GAUSS-COMMON-NATIVE-MODEL", "status": "EXECUTABLE_NOW", "fixed_point_ids": ["GAUSS-COMMON-P1", "GAUSS-COMMON-P2"], "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1, common = TRUE), df, control = control)", "julia_surface": "GLLVM.gaussian_marginal_loglik(Y .- beta, reshape(lambda, p, 1), sigma_eps_fixed; sigma2_B = fill(exp(2 * log_sd_common), p))"},
+        {"case_id": "CORE070-FIT-INPUT-GAUSS-COMMON-FORMULA-INTERFACE", "status": "PLANNED_UNPAID", "owner": "B2", "reason": "No `common` packing constraint exists yet in src/packing.jl / src/fit.jl (confirmed absent by grep at manifest-draft time)."},
+        {"case_id": "CORE070-FIT-INPUT-GAUSS-COMMON-PUBLIC-R-BRIDGE", "status": "PLANNED_UNPAID", "owner": "B5", "reason": "Public bridge replay of the shared-scale Gaussian fit is not yet built for this row."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-POISSON-DEFAULT",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-POISSON-DEFAULT-NATIVE-MODEL", "status": "PLANNED_UNPAID", "owner": "B1", "reason": "fit_poisson_gllvm exists but fit-input-subset.json marks numerical_status = UNPAID: no fixed-point density evidence has been generated against this prepared input yet. Not a spec defect -- the surface exists, the run has simply not been done. Left for the owning slice; this batch's 15-minute budget is spent on the already-cleared rows."},
+        {"case_id": "CORE070-FIT-INPUT-POISSON-DEFAULT-FORMULA-INTERFACE", "status": "PLANNED_UNPAID", "owner": "B2", "reason": "Depends on the native case being paid first."},
+        {"case_id": "CORE070-FIT-INPUT-POISSON-DEFAULT-PUBLIC-R-BRIDGE", "status": "PLANNED_UNPAID", "owner": "B5", "reason": "Depends on the native case being paid first."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-BINOMIAL-DEFAULT",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-NATIVE-MODEL", "status": "PLANNED_UNPAID", "owner": "B1", "reason": "fit_binomial_gllvm exists but fit-input-subset.json marks numerical_status = UNPAID: no fixed-point density evidence has been generated against this prepared input yet. Same disposition as INPUT-POISSON-DEFAULT."},
+        {"case_id": "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-FORMULA-INTERFACE", "status": "PLANNED_UNPAID", "owner": "B2", "reason": "Depends on the native case being paid first."},
+        {"case_id": "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-PUBLIC-R-BRIDGE", "status": "PLANNED_UNPAID", "owner": "B5", "reason": "Depends on the native case being paid first."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-ANIMAL-LATENT",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-ANIMAL-LATENT-NATIVE-MODEL", "status": "EXECUTABLE_NOW", "fixed_point_ids": ["ANIMAL-LATENT-P1", "ANIMAL-LATENT-P2"], "r_call": "gllvmTMB(value ~ 0 + trait + animal_latent(species, A = A, d = 1), df, cluster = \"species\", control = control)", "julia_surface": "dense Gaussian marginal at fixed (beta, lambda, sigma_eps) over V = sigma_eps^2 I + (lambda lambda') o C[group, group], matching GLLVM._gaussian_source_loglik's normalized form"},
+        {"case_id": "CORE070-FIT-INPUT-ANIMAL-LATENT-FORMULA-INTERFACE", "status": "PLANNED_UNPAID", "owner": "B2", "reason": "fit_gaussian_sources's own docstring (src/source_fit.jl) states it excludes 'R source-term grammar' -- out of scope for this fitter today."},
+        {"case_id": "CORE070-FIT-INPUT-ANIMAL-LATENT-PUBLIC-R-BRIDGE", "status": "PLANNED_UNPAID", "owner": "B5", "reason": "fit_gaussian_sources's own docstring (src/source_fit.jl) states it excludes 'the R/Julia bridge' -- out of scope for this fitter today."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-KERNEL-ONE",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-KERNEL-ONE-NATIVE-MODEL", "status": "EXECUTABLE_NOW", "fixed_point_ids": ["KERNEL-ONE-P1", "KERNEL-ONE-P2"], "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\"), df, cluster = \"species\", control = control)", "julia_surface": "same dense Gaussian marginal mapping as INPUT-ANIMAL-LATENT, single named source"},
+        {"case_id": "CORE070-FIT-INPUT-KERNEL-ONE-FORMULA-INTERFACE", "status": "PLANNED_UNPAID", "owner": "B2", "reason": "Same out-of-scope reason as INPUT-ANIMAL-LATENT (fit_gaussian_sources docstring)."},
+        {"case_id": "CORE070-FIT-INPUT-KERNEL-ONE-PUBLIC-R-BRIDGE", "status": "PLANNED_UNPAID", "owner": "B5", "reason": "Same out-of-scope reason as INPUT-ANIMAL-LATENT (fit_gaussian_sources docstring)."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-KERNEL-TWO",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-KERNEL-TWO-NATIVE-MODEL", "status": "EXECUTABLE_NOW", "fixed_point_ids": ["KERNEL-TWO-P1", "KERNEL-TWO-P2"], "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\") + kernel_latent(species, K = B, d = 1, name = \"b\"), df, cluster = \"species\", control = control)", "julia_surface": "same dense Gaussian marginal mapping as INPUT-ANIMAL-LATENT, two additive named sources"},
+        {"case_id": "CORE070-FIT-INPUT-KERNEL-TWO-FORMULA-INTERFACE", "status": "PLANNED_UNPAID", "owner": "B2", "reason": "Same out-of-scope reason as INPUT-ANIMAL-LATENT (fit_gaussian_sources docstring)."},
+        {"case_id": "CORE070-FIT-INPUT-KERNEL-TWO-PUBLIC-R-BRIDGE", "status": "PLANNED_UNPAID", "owner": "B5", "reason": "Same out-of-scope reason as INPUT-ANIMAL-LATENT (fit_gaussian_sources docstring)."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-KERNEL-TWO-AUTO",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-NATIVE-MODEL", "status": "PLANNED_UNPAID", "owner": "B1", "reason": "SourceCovariance carries a `unique` field so the surface exists, but fit-input-subset.json marks numerical_status = UNPAID: no fixed-point run has been done against this specific (unique = TRUE) input yet."},
+        {"case_id": "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-FORMULA-INTERFACE", "status": "PLANNED_UNPAID", "owner": "B2", "reason": "Depends on the native case being paid first, and on the same fit_gaussian_sources formula-grammar gap as the other kernel rows."},
+        {"case_id": "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-PUBLIC-R-BRIDGE", "status": "PLANNED_UNPAID", "owner": "B5", "reason": "Depends on the native case being paid first, and on the same fit_gaussian_sources bridge gap as the other kernel rows."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-MN-LATENT",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-MN-LATENT-NATIVE-MODEL", "status": "SPEC_DEFECT", "reason": "No Julia surface exists: fit_multinomial_gllvm's own guard clause (src/families/multinomial.jl:246-249) rejects any latent-variable call with 'v1 is fixed-effects softmax only -- no LV support'. There is nothing in the current engine this case spec can bind to; it names a future fitter, not an executable one."},
+        {"case_id": "CORE070-FIT-INPUT-MN-LATENT-FORMULA-INTERFACE", "status": "SPEC_DEFECT", "reason": "Depends on the not-yet-existing LV-multinomial fitter named above; same defect."},
+        {"case_id": "CORE070-FIT-INPUT-MN-LATENT-PUBLIC-R-BRIDGE", "status": "SPEC_DEFECT", "reason": "Depends on the not-yet-existing LV-multinomial fitter named above; same defect."}
+      ]
+    },
+    {
+      "source_id": "fit-input/INPUT-MN-ANIMAL-LATENT",
+      "cases": [
+        {"case_id": "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-NATIVE-MODEL", "status": "SPEC_DEFECT", "reason": "Stacks two independent gaps: fit_multinomial_gllvm rejects LV calls (src/families/multinomial.jl:246-249), and fit_gaussian_sources (src/source_fit.jl:284-286) is Gaussian-only and explicitly does not implement non-Gaussian families. Neither surface composes to a multinomial animal-model fitter today; nothing exists to bind this case to."},
+        {"case_id": "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-FORMULA-INTERFACE", "status": "SPEC_DEFECT", "reason": "Depends on the not-yet-existing composed fitter named above; same defect."},
+        {"case_id": "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-PUBLIC-R-BRIDGE", "status": "SPEC_DEFECT", "reason": "Depends on the not-yet-existing composed fitter named above; same defect."}
+      ]
+    }
+  ],
+  "health_checks": [
+    "input_sha256 for each executable row's *-input.rds matches fit-input-subset.json",
+    "R MakeADFun objective and gradient finite at every fixed point",
+    "abs(r_nll - julia_native_nll) <= 1e-6 at every fixed point",
+    "abs(julia_native_nll - julia_dense_nll) <= 1e-8 at every fixed point",
+    "scaled gradient error (R gradient vs Julia ForwardDiff gradient) <= 1e-6 at every fixed point",
+    "both negative controls trip (mismatch, not match) at every point/model",
+    "every one of the 33 planned case_ids from the manifest draft appears exactly once with an explicit status"
+  ]
+}

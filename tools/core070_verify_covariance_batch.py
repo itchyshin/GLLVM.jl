@@ -1,0 +1,208 @@
+"""Verify the retained covariance-area formula-grammar batch evidence.
+
+Unlike tools/core070_verify_latent_bare_model.py, this batch has no Julia
+routes and no numeric fit comparands to recompute -- every executable case is
+a structural fact about gllvmTMB's frozen R formula grammar (the shape of
+parse_multi_formula(desugar_brms_sugar(<formula>))$covstructs). This verifier
+therefore does NOT trust the runner's own "ok"/"all_checks" booleans on
+faith: it independently recomputes every structural comparison from the raw
+covstructs payload in the results JSON against the frozen contract, using the
+exact same deterministic fixture literals (FIXTURE_A, FIXTURE_V) the R runner
+uses, and only then cross-checks that against the runner's own verdict.
+"""
+import argparse
+import hashlib
+import json
+from copy import deepcopy
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+CONTRACT_PATH = ROOT / "docs/dev-log/core070/covariance-batch-contract.json"
+DEFAULT_RESULTS = ROOT / ".unlazy/core070-aghq/covariance-batch-01/attempt1/out/covariance-batch-results.json"
+
+# Must be identical, value-for-value, to the FIXTURE_A / FIXTURE_V constants
+# in tools/core070_covariance_batch.R. jsonlite serializes an R matrix as a
+# row-major nested array (dimnames dropped) and a named numeric vector as a
+# plain array (names dropped), which is what these literals reproduce.
+FIXTURE_A = [
+    [1.00, 0.50, 0.25, 0.10],
+    [0.50, 1.00, 0.30, 0.15],
+    [0.25, 0.30, 1.00, 0.40],
+    [0.10, 0.15, 0.40, 1.00],
+]
+FIXTURE_V = [0.20, 0.35, 0.15, 0.50]
+FIXTURE_OBJECTS = {"A": FIXTURE_A, "V": FIXTURE_V}
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def need(ok, message):
+    if not ok:
+        raise ValueError(message)
+
+
+def covstruct_matches(actual, expected):
+    """Independent re-implementation of the R runner's covstruct_matches()."""
+    if not isinstance(actual, dict):
+        return False
+    if actual.get("kind") != expected.get("kind"):
+        return False
+    extra = actual.get("extra") or {}
+    for name in expected.get("extra_true", []):
+        if extra.get(name) is not True:
+            return False
+    for name in expected.get("extra_absent", []):
+        if extra.get(name) is not None:
+            return False
+    for name, fixture_key in (expected.get("extra_equal") or {}).items():
+        if extra.get(name) != FIXTURE_OBJECTS.get(fixture_key):
+            return False
+    for name, want in (expected.get("extra_int_equal") or {}).items():
+        got = extra.get(name)
+        try:
+            if int(got) != int(want):
+                return False
+        except (TypeError, ValueError):
+            return False
+    for name, want_symbol in (expected.get("extra_symbol_equal") or {}).items():
+        # plain() on a language object in the R runner is deparse(x): a bare
+        # symbol deparses to its own name.
+        if extra.get(name) != want_symbol:
+            return False
+    return True
+
+
+def covstructs_list_matches(actual_list, expected_list):
+    if not isinstance(actual_list, list) or len(actual_list) != len(expected_list):
+        return False
+    return all(covstruct_matches(a, e) for a, e in zip(actual_list, expected_list))
+
+
+def recompute_case(case, entry):
+    """Return True iff `entry` (the runner's reported case result) is a
+    faithful, independently-verifiable structural pass for `case` (the
+    frozen contract entry). Never trusts entry["ok"] alone."""
+    if entry.get("status") != "RAN":
+        return False
+    if not covstructs_list_matches(entry.get("covstructs"), case["expected_covstructs"]):
+        return False
+    if "r_formula_reference" in case:
+        ref_actual = entry.get("reference_covstructs")
+        expected_ref = case.get("expected_covstructs_reference", case["expected_covstructs"])
+        if not covstructs_list_matches(ref_actual, expected_ref):
+            return False
+        identical_to_primary = ref_actual == entry.get("covstructs")
+        if "expected_covstructs_reference" in case:
+            # distinct-alias control: must NOT collapse to the primary shape
+            if identical_to_primary:
+                return False
+        else:
+            # same-rewrite control: must collapse to the identical shape
+            if not identical_to_primary:
+                return False
+    return entry.get("ok") is True
+
+
+def check_report(report, contract):
+    need(report.get("scope") == "COVARIANCE_AREA_FORMULA_GRAMMAR_BATCH", "wrong evidence scope")
+    need(report.get("reference_commit") == contract["reference_commit"], "wrong reference commit")
+    need(report.get("contract_path") == "docs/dev-log/core070/covariance-batch-contract.json",
+         "wrong contract path")
+    need(report.get("contract_sha256") == sha(CONTRACT_PATH), "results not tied to the frozen contract")
+
+    receipt = report.get("process_receipt", {})
+    for field in ("r_version", "gllvmTMB_version", "gllvmTMB_path", "frozen_library"):
+        need(bool(receipt.get(field)), f"missing process receipt field: {field}")
+
+    pin_checks = report.get("source_pin_checks", {})
+    need(bool(pin_checks) and all(v is True for v in pin_checks.values()), "a source pin failed")
+    need(set(pin_checks) == set(contract["source_pins"]), "source pin set does not match contract")
+
+    contract_ids = [c["case_id"] for c in contract["cases"]]
+    cases = report.get("cases", {})
+    need(set(cases) == set(contract_ids), "case coverage does not match contract")
+
+    for case in contract["cases"]:
+        cid = case["case_id"]
+        entry = cases[cid]
+        if case["status"] == "SPEC_DEFECT":
+            need(entry.get("status") == "SPEC_DEFECT", f"{cid}: not reported as SPEC_DEFECT")
+            need(entry.get("spec_defect_reason") == case["spec_defect_reason"],
+                 f"{cid}: SPEC_DEFECT reason does not match the frozen contract")
+            continue
+        need(recompute_case(case, entry), f"{cid}: structural comparison failed on recomputation")
+
+    contract_nc_ids = {nc["id"] for nc in contract["negative_controls"]}
+    need(len(contract_nc_ids) >= 2, "contract itself declares fewer than two negative controls")
+    negatives = report.get("negative_controls", {})
+    need(set(negatives) == contract_nc_ids, "negative control coverage does not match contract")
+    need(all(v.get("raised") is True for v in negatives.values()), "a negative control failed to raise")
+
+    checks = report.get("checks", {})
+    need(bool(checks) and all(v is True for v in checks.values()) and report.get("all_checks") is True,
+         "runner's own check summary reports a failure")
+
+
+def verify(results_path=DEFAULT_RESULTS, self_test=False):
+    contract = json.loads(CONTRACT_PATH.read_text())
+    need(results_path.is_file(), f"missing results file: {results_path}")
+    report = json.loads(results_path.read_text())
+    check_report(report, contract)
+
+    if self_test:
+        mutations = [
+            ("corrupt a passing case's covstructs kind",
+             lambda r: r["cases"]["CORE070-COV-META-EXACT-FORMULA"]["covstructs"][0].__setitem__("kind", "rr")),
+            ("flip ok=True on a case whose recomputation would fail",
+             lambda r: (r["cases"]["CORE070-COV-ORD-LATENT-BARE-FORMULA"]["covstructs"][0]["extra"].pop("lhs_form", None),
+                        r["cases"]["CORE070-COV-ORD-LATENT-BARE-FORMULA"]["covstructs"].append({"kind": "diag", "extra": {}}))),
+            ("soften the SPEC_DEFECT reason",
+             lambda r: r["cases"]["CORE070-COV-ANIMAL-FOLDED-UNIQUE-NATIVE"].update(
+                 spec_defect_reason="minor, will fix later")),
+            ("mark a negative control as not having raised",
+             lambda r: r["negative_controls"]["LATENT-COMMON-WITHOUT-UNIQUE-ABORTS"].update(raised=False)),
+            ("collapse the distinct-alias control to look identical to its primary",
+             lambda r: r["cases"]["CORE070-COV-PHYLO-A-ALIAS-ADAPTER"].update(
+                 reference_covstructs=deepcopy(r["cases"]["CORE070-COV-PHYLO-A-ALIAS-ADAPTER"]["covstructs"]))),
+            ("drop a source pin check",
+             lambda r: r["source_pin_checks"].__setitem__("R/brms-sugar.R", False)),
+            ("delete a case entirely (coverage mismatch)",
+             lambda r: r["cases"].pop("CORE070-COV-PHYLO-DEP-FORMULA")),
+            ("retarget contract_sha256 to a stale value",
+             lambda r: r.update(contract_sha256="0" * 64)),
+        ]
+        for label, mutate in mutations:
+            bad = deepcopy(report)
+            mutate(bad)
+            try:
+                check_report(bad, contract)
+            except ValueError:
+                continue
+            raise AssertionError(f"self-test mutation was NOT rejected: {label}")
+        print("CORE070_COVARIANCE_BATCH_NEGATIVES_PASS", len(mutations))
+
+    print("CORE070_COVARIANCE_BATCH_VERIFIED")
+    return {
+        "status": "COVARIANCE_AREA_FORMULA_GRAMMAR_BATCH_PASS",
+        "area": contract["area"],
+        "reference_commit": contract["reference_commit"],
+        "contract_sha256": sha(CONTRACT_PATH),
+        "results_sha256": sha(results_path),
+        "executable_case_count": sum(1 for c in contract["cases"] if c["status"] != "SPEC_DEFECT"),
+        "spec_defect_case_count": sum(1 for c in contract["cases"] if c["status"] == "SPEC_DEFECT"),
+    }
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--results", type=Path, default=DEFAULT_RESULTS)
+    parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    result = verify(args.results, args.self_test)
+    if args.output:
+        with args.output.open("x") as handle:
+            json.dump(result, handle, indent=2)
+            handle.write("\n")

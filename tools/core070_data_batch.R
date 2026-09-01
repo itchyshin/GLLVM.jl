@@ -1,0 +1,176 @@
+# Retained evidence runner for the "data" manifest-area batch (28 planned
+# cases + 2 negative controls). Replays pinned R data-helper functions
+# (normalise_weights, gll_prepare_offset, .gllvmTMB_offset_vec,
+# .gllvmTMB_offset_newdata, miss_control) against frozen source; no installed
+# package, model fit, TMB object, or Julia call -- see
+# docs/dev-log/core070/data-batch-contract.json for why every case is
+# verdict SPEC_DEFECT on the Julia side (GLLVM.jl has none of these surfaces
+# yet). tools/core070_data_batch.jl checks that claim at runtime.
+#
+# Usage:
+#   Rscript --vanilla tools/core070_data_batch.R <source-root> <destination>
+#
+# <source-root> is a directory containing R/weights-shape.R, R/offset.R,
+# R/gllvmTMB.R (the frozen gllvmTMB source readback, e.g.
+# .unlazy/core070-aghq/oracle-source/readback). <destination> must not exist.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+source_root <- normalizePath(args[[1]], mustWork = TRUE)
+destination <- args[[2]]
+stopifnot(!dir.exists(destination))
+
+root <- normalizePath(".")
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(requireNamespace("cli", quietly = TRUE))
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+contract_path <- file.path(root, "docs/dev-log/core070/data-batch-contract.json")
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"))
+cases <- contract$cases
+stopifnot(length(cases) == 30L,
+          length(unique(vapply(cases, `[[`, "", "manifest_case_id"))) == length(cases))
+n_positive <- sum(!vapply(cases, function(x) isTRUE(x$negative_control), logical(1)))
+stopifnot(n_positive == contract$expected_case_count, contract$expected_case_count == 28L)
+
+# --- validate and load pinned source -----------------------------------
+source_pins <- contract$source_pins
+source_pins_seen <- list()
+for (rel in names(source_pins)) {
+  path <- file.path(source_root, rel)
+  stopifnot(file.exists(path))
+  digest <- sha256_file(path)
+  stopifnot(identical(digest, source_pins[[rel]]))
+  source_pins_seen[[rel]] <- digest
+}
+
+env <- new.env(parent = globalenv())
+sys.source(file.path(source_root, "R/weights-shape.R"), envir = env)
+sys.source(file.path(source_root, "R/offset.R"), envir = env)
+# Cherry-pick only the single `miss_control <- function(...)` assignment out
+# of R/gllvmTMB.R; no other top-level code from that file runs.
+miss_control_defs <- Filter(
+  function(x) is.call(x) && identical(x[[1L]], as.name("<-")) &&
+    identical(x[[2L]], as.name("miss_control")),
+  parse(file.path(source_root, "R/gllvmTMB.R"))
+)
+stopifnot(length(miss_control_defs) == 1L)
+eval(miss_control_defs[[1L]], env)
+stopifnot(is.function(env$normalise_weights), is.function(env$gll_prepare_offset),
+          is.function(env$.gllvmTMB_offset_vec), is.function(env$.gllvmTMB_offset_newdata),
+          is.function(env$miss_control))
+
+# --- evaluate every case (positive + negative control) in a fresh env ------
+dir.create(destination, recursive = TRUE)
+raw_lines <- character(0)
+diag_lines <- character(0)
+result_cases <- vector("list", length(cases))
+all_positive_ok <- TRUE
+negatives_behaved <- TRUE
+
+for (i in seq_along(cases)) {
+  case <- cases[[i]]
+  is_negative <- isTRUE(case$negative_control)
+  t0 <- Sys.time()
+  result <- tryCatch(
+    eval(parse(text = case$expression), new.env(parent = env)),
+    error = identity
+  )
+  elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+  is_error <- inherits(result, "error")
+  evaluated_true <- !is_error && isTRUE(result)
+  if (is_negative) {
+    # A negative control MUST evaluate to FALSE (a live, discriminating
+    # comparison), never TRUE and never an error.
+    ok <- !is_error && isFALSE(result)
+    negatives_behaved <- negatives_behaved && ok
+  } else {
+    ok <- evaluated_true
+    all_positive_ok <- all_positive_ok && ok
+  }
+  if (is_error) {
+    diag_lines <- c(diag_lines, paste0(case$manifest_case_id, ": ", conditionMessage(result)))
+  }
+  raw_lines <- c(raw_lines,
+                 paste(case$manifest_case_id, if (ok) "PASS" else "FAIL",
+                       if (is_negative) "negative_control" else "positive", sep = "\t"))
+  result_cases[[i]] <- list(
+    manifest_case_id = case$manifest_case_id,
+    source_id = case$source_id,
+    fixture_case_id = case$fixture_case_id,
+    evidence_kind = case$evidence_kind,
+    negative_control = is_negative,
+    julia_surface = case$julia_surface,
+    julia_verdict = if (is_negative) "n/a" else "SPEC_DEFECT",
+    expression = case$expression,
+    expected = case$expected,
+    actual = if (is_error) conditionMessage(result) else evaluated_true,
+    is_error = is_error,
+    ok = ok,
+    elapsed_seconds = elapsed
+  )
+}
+
+overall_ok <- all_positive_ok && negatives_behaved
+
+raw_path <- file.path(destination, "raw.tsv")
+writeLines(raw_lines, raw_path)
+diag_path <- file.path(destination, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+results <- list(
+  status = if (overall_ok) "PASS" else "FAIL",
+  area = "data",
+  scope = "CORE070_DATA_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_pins = source_pins_seen,
+  case_count = n_positive,
+  negative_control_count = length(cases) - n_positive,
+  all_positive_pass = all_positive_ok,
+  negative_controls_behaved_as_expected = negatives_behaved,
+  generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+  r_version = R.version.string,
+  cases = result_cases,
+  all_checks = overall_ok
+)
+results_path <- file.path(destination, "data-batch-results.json")
+jsonlite::write_json(results, results_path, auto_unbox = TRUE, pretty = TRUE,
+                      null = "null", na = "null", digits = 17)
+
+receipt <- list(
+  status = if (overall_ok) "PASS" else "FAIL",
+  scope = "CORE070_DATA_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_pins = source_pins_seen,
+  source_unchanged = TRUE,
+  case_count = n_positive,
+  negative_control_count = length(cases) - n_positive,
+  expected_case_ids = vapply(Filter(function(c) !isTRUE(c$negative_control), cases),
+                              `[[`, "", "manifest_case_id"),
+  negative_control_case_ids = vapply(Filter(function(c) isTRUE(c$negative_control), cases),
+                                      `[[`, "", "manifest_case_id"),
+  results_sha256 = sha256_file(results_path),
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_runtime = R.version.string
+)
+receipt_path <- file.path(destination, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE)
+
+cat("DATA_BATCH_RESULT", sum(vapply(result_cases[!vapply(cases, function(c) isTRUE(c$negative_control), logical(1))], `[[`, logical(1), "ok")), "PASS",
+    n_positive - sum(vapply(result_cases[!vapply(cases, function(c) isTRUE(c$negative_control), logical(1))], `[[`, logical(1), "ok")), "FAIL",
+    "NEGATIVE_CONTROLS", if (negatives_behaved) "OK" else "BROKEN", "\n")
+cat("CORE070_DATA_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (overall_ok) 0L else 1L)

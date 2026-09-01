@@ -1,0 +1,278 @@
+# Retained-evidence runner for the "covariance" manifest area's planned case
+# specs (docs/dev-log/core070/covariance-batch-contract.json). Every case in
+# this batch is an R-only formula-grammar admission check: it evaluates
+# gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(<formula>))
+# against a fixed deterministic fixture and compares the resulting
+# covstructs list structurally against the frozen expectation. No Julia call
+# is made anywhere in this script -- none of the nine executable cases has a
+# Julia-side grammar entry point to compare against yet (see
+# covariance-batch-contract.json's julia_surface field on each case).
+#
+# Usage:
+#   Rscript --vanilla tools/core070_covariance_batch.R <frozen-library> <fresh-outdir>
+#
+# Mirrors the env-setup discipline of tools/core070_latent_bare_model.R even
+# though this batch never touches Julia: same frozen-library pin check, same
+# incremental-write-after-every-step discipline, same sha256 receipts.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+frozen_library <- normalizePath(args[[1]], mustWork = TRUE)
+output_dir <- args[[2]]
+stopifnot(!dir.exists(output_dir))
+dir.create(output_dir, recursive = TRUE)
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+plain <- function(x) {
+  if (is.language(x)) return(paste(deparse(x), collapse = " "))
+  if (is.list(x)) return(lapply(x, plain))
+  if (is.object(x)) return(unclass(x))
+  x
+}
+
+error_text <- function(e) paste(conditionMessage(e), collapse = " ")
+
+# R_LIBS / LD_PRELOAD gotchas mirrored from tools/core070_latent_bare_model.R
+# even though this script never starts Julia: keeping the environment setup
+# identical across every core070 retained-evidence runner avoids a working
+# script here silently depending on ambient state a differently-configured
+# shell would not provide.
+.libPaths(c(frozen_library, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(normalizePath(find.package("gllvmTMB")) ==
+  normalizePath(file.path(frozen_library, "gllvmTMB")))
+
+root <- normalizePath(".")
+contract <- jsonlite::read_json(
+  file.path(root, "docs/dev-log/core070/covariance-batch-contract.json"),
+  simplifyVector = FALSE
+)
+stopifnot(identical(contract$run_style, "R_ONLY_FORMULA_GRAMMAR_STRUCTURE_CHECKS"))
+
+pin_ok <- vapply(names(contract$source_pins), function(rel) {
+  path <- file.path(root, ".unlazy/core070-aghq/oracle-source/readback", rel)
+  file.exists(path) && identical(sha256_file(path), contract$source_pins[[rel]])
+}, logical(1L))
+result <- list(
+  scope = "COVARIANCE_AREA_FORMULA_GRAMMAR_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_path = "docs/dev-log/core070/covariance-batch-contract.json",
+  contract_sha256 = sha256_file(file.path(root, "docs/dev-log/core070/covariance-batch-contract.json")),
+  process_receipt = list(
+    r_version = R.version.string,
+    gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+    gllvmTMB_path = find.package("gllvmTMB"),
+    frozen_library = frozen_library
+  ),
+  source_pin_checks = as.list(pin_ok),
+  cases = list(),
+  negative_controls = list(),
+  checks = list(),
+  all_checks = FALSE
+)
+write_attempt <- function() saveRDS(result, file.path(output_dir, "attempts.rds"))
+write_attempt()
+stopifnot(all(pin_ok))
+
+# ---- deterministic fixture (no RNG; every value is a literal constant) ----
+species_levels <- c("sp1", "sp2", "sp3", "sp4")
+site_levels <- c("s1", "s2", "s3")
+trait_levels <- c("t1", "t2")
+
+FIXTURE_A <- matrix(
+  c(
+    1.00, 0.50, 0.25, 0.10,
+    0.50, 1.00, 0.30, 0.15,
+    0.25, 0.30, 1.00, 0.40,
+    0.10, 0.15, 0.40, 1.00
+  ),
+  nrow = 4L, ncol = 4L, byrow = TRUE,
+  dimnames = list(species_levels, species_levels)
+)
+stopifnot(isSymmetric(FIXTURE_A), all(eigen(FIXTURE_A, only.values = TRUE)$values > 0))
+
+FIXTURE_V <- c(sp1 = 0.20, sp2 = 0.35, sp3 = 0.15, sp4 = 0.50)
+
+fixture_env <- new.env(parent = globalenv())
+fixture_env$species <- factor(species_levels, levels = species_levels)
+fixture_env$site <- factor(site_levels, levels = site_levels)
+fixture_env$trait <- factor(trait_levels, levels = trait_levels)
+fixture_env$A <- FIXTURE_A
+fixture_env$V <- FIXTURE_V
+
+fixture_sha256 <- local({
+  path <- tempfile("core070-covariance-fixture-", tmpdir = output_dir)
+  con <- file(path, open = "wb")
+  writeBin(as.double(FIXTURE_A), con, size = 8L, endian = "little")
+  writeBin(as.double(FIXTURE_V), con, size = 8L, endian = "little")
+  close(con)
+  s <- sha256_file(path)
+  unlink(path)
+  s
+})
+result$fixture_sha256 <- fixture_sha256
+write_attempt()
+
+parse_formula_text <- function(text, env) {
+  f <- stats::as.formula(text, env = env)
+  gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(f))
+}
+
+# ---- generic structural comparator against one expected_covstructs entry ----
+covstruct_matches <- function(actual, expected, env) {
+  problems <- character()
+  if (!identical(actual$kind, expected$kind)) {
+    problems <- c(problems, sprintf("kind: got %s want %s", actual$kind, expected$kind))
+  }
+  for (nm in expected$extra_true %||% list()) {
+    if (!isTRUE(actual$extra[[nm]])) problems <- c(problems, sprintf("extra$%s not TRUE", nm))
+  }
+  for (nm in expected$extra_absent %||% list()) {
+    if (!is.null(actual$extra[[nm]])) problems <- c(problems, sprintf("extra$%s present, expected absent", nm))
+  }
+  eq <- expected$extra_equal
+  if (!is.null(eq)) {
+    for (nm in names(eq)) {
+      want <- get(eq[[nm]], envir = env)
+      got <- actual$extra[[nm]]
+      if (!identical(got, want)) problems <- c(problems, sprintf("extra$%s not identical() to fixture object %s", nm, eq[[nm]]))
+    }
+  }
+  ieq <- expected$extra_int_equal
+  if (!is.null(ieq)) {
+    for (nm in names(ieq)) {
+      got <- suppressWarnings(as.integer(actual$extra[[nm]]))
+      want <- as.integer(ieq[[nm]])
+      if (!identical(got, want)) problems <- c(problems, sprintf("extra$%s: got %s want %d", nm, deparse(actual$extra[[nm]]), want))
+    }
+  }
+  seq_ <- expected$extra_symbol_equal
+  if (!is.null(seq_)) {
+    for (nm in names(seq_)) {
+      want <- as.name(seq_[[nm]])
+      got <- actual$extra[[nm]]
+      if (!identical(got, want)) problems <- c(problems, sprintf("extra$%s not identical() to symbol %s (got %s)", nm, seq_[[nm]], deparse(got)))
+    }
+  }
+  list(ok = length(problems) == 0L, problems = problems)
+}
+`%||%` <- function(a, b) if (is.null(a)) b else a
+
+compare_covstructs_list <- function(actual_list, expected_list, env) {
+  if (length(actual_list) != length(expected_list)) {
+    return(list(ok = FALSE, problems = sprintf(
+      "covstruct count: got %d want %d", length(actual_list), length(expected_list)
+    )))
+  }
+  problems <- character()
+  for (i in seq_along(expected_list)) {
+    m <- covstruct_matches(actual_list[[i]], expected_list[[i]], env)
+    if (!m$ok) problems <- c(problems, sprintf("[%d] %s", i, m$problems))
+  }
+  list(ok = length(problems) == 0L, problems = problems)
+}
+
+# ---- run every case in contract order ----
+case_results <- list()
+for (case in contract$cases) {
+  cid <- case$case_id
+  if (identical(case$status, "SPEC_DEFECT")) {
+    case_results[[cid]] <- list(
+      case_id = cid, status = "SPEC_DEFECT",
+      spec_defect_reason = case$spec_defect_reason, ok = NA
+    )
+    next
+  }
+  parsed <- tryCatch(
+    list(value = parse_formula_text(case$r_formula, fixture_env), error = NULL),
+    error = function(e) list(value = NULL, error = e)
+  )
+  if (!is.null(parsed$error)) {
+    case_results[[cid]] <- list(
+      case_id = cid, status = "PARSE_ERROR", ok = FALSE,
+      error = error_text(parsed$error), class = class(parsed$error)[[1L]]
+    )
+    next
+  }
+  cmp <- compare_covstructs_list(parsed$value$covstructs, case$expected_covstructs, fixture_env)
+  entry <- list(
+    case_id = cid, status = "RAN", ok = cmp$ok,
+    covstructs = plain(parsed$value$covstructs),
+    problems = as.list(cmp$problems)
+  )
+  if (!is.null(case$r_formula_reference)) {
+    parsed_ref <- tryCatch(
+      list(value = parse_formula_text(case$r_formula_reference, fixture_env), error = NULL),
+      error = function(e) list(value = NULL, error = e)
+    )
+    if (!is.null(parsed_ref$error)) {
+      entry$ok <- FALSE
+      entry$reference_error <- error_text(parsed_ref$error)
+    } else {
+      expected_ref <- case$expected_covstructs_reference %||% case$expected_covstructs
+      cmp_ref <- compare_covstructs_list(parsed_ref$value$covstructs, expected_ref, fixture_env)
+      entry$reference_covstructs <- plain(parsed_ref$value$covstructs)
+      entry$reference_problems <- as.list(cmp_ref$problems)
+      identical_to_primary <- isTRUE(all.equal(plain(parsed$value$covstructs), plain(parsed_ref$value$covstructs)))
+      entry$identical_to_primary <- identical_to_primary
+      if (is.null(case$expected_covstructs_reference)) {
+        # "same_rewrite" control: reference must parse to the identical shape.
+        entry$ok <- entry$ok && cmp_ref$ok && identical_to_primary
+      } else {
+        # "distinct alias" control: reference must match its OWN expectation
+        # and must NOT collapse to the primary's shape.
+        entry$ok <- entry$ok && cmp_ref$ok && !identical_to_primary
+      }
+    }
+  }
+  case_results[[cid]] <- entry
+  write_attempt()
+}
+result$cases <- case_results
+
+# ---- negative controls: each must raise, not silently succeed ----
+nc_results <- list()
+for (nc in contract$negative_controls) {
+  raised <- tryCatch({
+    parse_formula_text(nc$r_formula, fixture_env)
+    FALSE
+  }, error = function(e) TRUE, condition = function(c) TRUE)
+  nc_results[[nc$id]] <- list(id = nc$id, raised = isTRUE(raised))
+}
+result$negative_controls <- nc_results
+write_attempt()
+
+# ---- overall checks ----
+executable_ids <- vapply(contract$cases, function(c) if (!identical(c$status, "SPEC_DEFECT")) c$case_id else NA_character_, character(1L))
+executable_ids <- executable_ids[!is.na(executable_ids)]
+spec_defect_ids <- vapply(contract$cases, function(c) if (identical(c$status, "SPEC_DEFECT")) c$case_id else NA_character_, character(1L))
+spec_defect_ids <- spec_defect_ids[!is.na(spec_defect_ids)]
+
+result$checks <- list(
+  source_pins_ok = all(pin_ok),
+  case_count_matches_contract = length(result$cases) == length(contract$cases),
+  spec_defects_present_and_documented = all(vapply(spec_defect_ids, function(id) {
+    e <- result$cases[[id]]
+    identical(e$status, "SPEC_DEFECT") && nzchar(e$spec_defect_reason %||% "")
+  }, logical(1L))),
+  all_executable_cases_ok = all(vapply(executable_ids, function(id) isTRUE(result$cases[[id]]$ok), logical(1L))),
+  negative_control_count_ok = length(result$negative_controls) >= 2L,
+  all_negative_controls_raised = all(vapply(result$negative_controls, function(x) isTRUE(x$raised), logical(1L)))
+)
+result$all_checks <- all(unlist(result$checks))
+
+saveRDS(result, file.path(output_dir, "covariance-batch-results.rds"))
+jsonlite::write_json(plain(result), file.path(output_dir, "covariance-batch-results.json"),
+  auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null"
+)
+cat("CORE070_COVARIANCE_BATCH_RESULTS_SHA256",
+  sha256_file(file.path(output_dir, "covariance-batch-results.json")), "\n")
+if (!isTRUE(result$all_checks)) quit(status = 1L)
