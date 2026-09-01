@@ -1774,3 +1774,43 @@ Supersedes the NEXT list of the previous section; retained history unchanged.
   harness receipts pulled/preserved -> M2 bridge-first qualification.
 - OPEN GATES (morning): A6 Student-t fixture decision; DRAC campaign approval;
   94 reclassification proposals; push/merge; R-side bridge work order handoff.
+
+## Morning checkpoint — 2026-09-01 (for the 05:00 read; overwrite-supersedes prior NEXT)
+
+DONE overnight (all local, unpushed; every claim receipt-backed):
+- Optimizer-health slice PAID: COV-ORD-LATENT-BARE -> THREE_ROUTE_PASS
+  (c2a93d6d repair; attempt06; Rose OK after evidence reconcile fffec45c).
+- A5 Tweedie fresh replay PASS 28/28 + contract 29/29 (Melissa finding paid).
+- Full required parity harness GREEN on the repaired candidate: attempt5
+  40/40 cells status=success; Student cell retained red in attempt2 (A6).
+- M1-suite: 11183 pass / 10 fail / 8 broken, run twice; all 10 failures
+  reproduce at base 425cabf5 — pre-existing, classified as repair leaves
+  (test_gaussian_empty_design.jl route-agreement ~1e-7; test_phylo_poisson_xlv
+  canary). ZERO regressions from tonight's repair.
+- Manifest DRAFT_V2: 533 required rows = 12 bound + 441 planned (verified
+  fan-out) + 80 pending decisions (94 reclassify proposals, 67 uncertain).
+- Bridge coverage matrix (engine="julia": 9 PASS / 13 R-blocked / 68 untested /
+  0 JULIA-GAP) + 0.7.1 gap sheet (no re-freeze needed) + real-data inventory
+  (7 runnable-today models) + DRM-lessons acceptance checklist.
+- ACC-URBMAP-01 (real user model, 52x191 binomial probit): logLik agrees
+  1.37e-7 both engines converged; ΛΛᵀ differs 2.2e-2 under saturation warnings
+  (FLAGGED, not parity); bridge 55x slower than R at this shape; coef() shape
+  mismatch (class 4); default-unique warned downgrade (class 5); bridge child
+  needs undocumented JULIA_PROJECT/RCall env (class 1 variant).
+- Parity artifact refreshed at the standing URL; Mission Control commit 33ecf62.
+
+MORNING GATES (your decisions):
+1. A6 Student-t fixture (boundary-flat; R-side false convergence): accept
+   documented exception / approve interior-nu fixture / leave BLOCKED.
+2. DRAC: re-authenticate sockets (all expired; flagged once, no Duo triggered),
+   then approve the sized recovery campaign (draft committed) + its pre-run.
+3. Manifest: sign off / adjust the 94 reclassification proposals; direct the
+   67 uncertain rows.
+4. R-side bridge work order (family map + structured gate + gradient exposure +
+   coef translation) -> gllvmTMB 0.7.1 lane handoff.
+5. Push/PR/merge of this lane's local commits (none pushed).
+6. ACC-URBMAP ΛΛᵀ 2.2e-2 divergence under saturation: investigate as
+   identifiability ridge vs saturation inflation (proposed next engine slice).
+
+RESUME: unchanged from the previous section (arc M1-close next: the two
+pre-existing red test files + A6 + manifest decisions feed it).
