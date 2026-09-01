@@ -835,9 +835,11 @@ function _tidy_rows_from_coef_table(ct::GllvmCoefTable, effect::Symbol, link;
             conf_high = conf_int ? ct.upper[i] : NaN) for i in 1:n]
 end
 
-function _tidy_fixed_rows(fit::GllvmFit, Y::AbstractMatrix; conf_int::Bool, conf_level::Real)
+function _tidy_fixed_rows(fit::GllvmFit, Y::AbstractMatrix;
+                          conf_int::Bool, conf_level::Real,
+                          X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing)
     try
-        ct = coef_table(fit, Y; parm = "beta", level = conf_level)
+        ct = coef_table(fit, Y; parm = "beta", level = conf_level, X = X)
         return _tidy_rows_from_coef_table(ct, :fixed, :identity; conf_int = conf_int)
     catch e
         e isa ArgumentError || rethrow()
@@ -845,12 +847,14 @@ function _tidy_fixed_rows(fit::GllvmFit, Y::AbstractMatrix; conf_int::Bool, conf
     end
 end
 
-function _tidy_ran_pars_rows(fit::GllvmFit, Y::AbstractMatrix; conf_int::Bool, conf_level::Real)
+function _tidy_ran_pars_rows(fit::GllvmFit, Y::AbstractMatrix;
+                             conf_int::Bool, conf_level::Real,
+                             X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing)
     fit.model.has_diag || return NamedTuple[]
     rows = NamedTuple[]
     for parm in ("sigma_B", "sigma_W")
         try
-            ct = coef_table(fit, Y; parm = parm, level = conf_level)
+            ct = coef_table(fit, Y; parm = parm, level = conf_level, X = X)
             append!(rows, _tidy_rows_from_coef_table(ct, :ran_pars, missing; conf_int = conf_int))
         catch e
             e isa ArgumentError || rethrow()
@@ -882,12 +886,19 @@ LINEAR-scale `:fixed` tier; the log-scale-transformed bound for `:ran_pars`,
 via [`confint`](@ref)'s existing back-transform convention). `conf_int =
 false` (default) reports `NaN` for both.
 
+`X` is forwarded to `coef_table`/`confint` — REQUIRED (matching what was
+passed to `fit_gaussian_gllvm`) whenever the fit has fixed effects, since
+`GllvmFit` does not store its own design (as everywhere else in
+`GLLVM.jl`); omitting it silently mismatches the Hessian reconstruction and
+returns `NaN` standard errors for the `:fixed` tier.
+
 Returns a `Vector{NamedTuple}`, ROW-UNIFIED across tiers: `(effect, term,
 estimate, std_error, link, conf_low, conf_high)`.
 """
 function tidy(fit::GllvmFit, Y::AbstractMatrix;
              effects::Union{Symbol, AbstractVector{Symbol}, NTuple{N, Symbol} where N} = (:fixed,),
-             conf_int::Bool = false, conf_level::Real = 0.95)
+             conf_int::Bool = false, conf_level::Real = 0.95,
+             X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing)
     effs = effects isa Symbol ? (effects,) : effects
     all(e -> e in (:fixed, :ran_pars, :cutpoint), effs) ||
         throw(ArgumentError("effects entries must be :fixed, :ran_pars, or :cutpoint."))
@@ -895,11 +906,128 @@ function tidy(fit::GllvmFit, Y::AbstractMatrix;
     rows = NamedTuple[]
     for e in effs
         if e === :fixed
-            append!(rows, _tidy_fixed_rows(fit, Y; conf_int = conf_int, conf_level = conf_level))
+            append!(rows, _tidy_fixed_rows(fit, Y; conf_int = conf_int, conf_level = conf_level, X = X))
         elseif e === :ran_pars
-            append!(rows, _tidy_ran_pars_rows(fit, Y; conf_int = conf_int, conf_level = conf_level))
+            append!(rows, _tidy_ran_pars_rows(fit, Y; conf_int = conf_int, conf_level = conf_level, X = X))
         end
         # :cutpoint contributes no rows for GllvmFit.
     end
     return rows
+end
+
+# ---------------------------------------------------------------------------
+# Item 1.14 — summary, core (mirrors methods-gllvmTMB.R:744-863, print :866).
+#
+# Scope reduction (this slice): `fit::GllvmFit` only (plain Gaussian).
+# mspl / likelihood-weights / AGHQ-penalised-MAP annotations have no Julia
+# engine counterpart — omitted per core070 spec §3.10 (no stub fields
+# without a maintainer yes). The `$missing` block (masked/dropped counts)
+# waits on §2.5 (fit-stored mask). Communality is reported as GLLVM.jl's
+# single combined `extract_communality(fit)` vector, NOT R's separate
+# `communality_B`/`communality_W` split — `communality_B`/`communality_W`
+# exist in this checkout only for `TwoLevelFit`, and `GllvmFit`'s single-tier
+# `Σ_y_site`-denominator communality (see `extract_communality`'s own
+# docstring deviation note) does not have a natural B/W split to report.
+#
+# Deviation from the spec's building-block note: the spec's §1.14 "Reuse"
+# claims `extract_communality` is `TwoLevelFit`-only and needs extending to
+# `GllvmFit` "in this slice (small, implementable-now)". That claim is
+# WRONG against this checkout: `extract_communality(fit::GllvmFit)`
+# (`src/extractors.jl:262`) already exists and is used directly here — no
+# extension needed, and none was added (extending an already-correct method
+# would be an unrelated/duplicate change under the surgical-changes rule).
+# ---------------------------------------------------------------------------
+
+"""
+    GllvmSummary
+
+Classed post-fit summary of a `GllvmFit`, as produced by
+[`summary(fit::GllvmFit, Y)`](@ref). Mirrors `gllvmTMB`'s
+`summary.gllvmTMB_multi` (`methods-gllvmTMB.R:744-863`) — a plain data
+holder, formatting happens only in `Base.show`.
+
+Fields: `p, K_B, K_W, has_diag, K_phy, has_phy_unique` (dims, from
+`fit.model`), `estimator` (always `:ML` — `GLLVM.jl`'s Gaussian path has no
+REML variance-component-only estimator distinct from `fit_gaussian_reml`),
+`logLik`, `converged`, `n_iter`, `fixef` (`Vector{NamedTuple}`, the `:fixed`
+tier of [`tidy`](@ref)), `Sigma_B`/`Sigma_W` (`extract_Sigma` at
+`level=:unit`/`:unit_obs`), `ICC` ([`extract_ICC_site`](@ref)),
+`communality` ([`extract_communality`](@ref)), `se_status`
+(`:ok`/`:sdreport_nonfinite`/`:sdreport_error`, see `Base.summary` docstring
+below).
+"""
+struct GllvmSummary
+    p::Int
+    K_B::Int
+    K_W::Int
+    has_diag::Bool
+    K_phy::Int
+    has_phy_unique::Bool
+    estimator::Symbol
+    logLik::Float64
+    converged::Bool
+    n_iter::Int
+    fixef::Vector{NamedTuple}
+    Sigma_B::Matrix{Float64}
+    Sigma_W::Matrix{Float64}
+    ICC::Vector{Float64}
+    communality::Vector{Float64}
+    se_status::Symbol
+end
+
+# Three-way se_status classification off a Wald-CI's `se` vector: :ok unless
+# EVERY se is non-finite (matching R's "a single NA does NOT trip it").
+_gllvm_se_status_from_se(se::AbstractVector) =
+    (isempty(se) || any(isfinite, se)) ? :ok : :sdreport_nonfinite
+
+function _gllvm_se_status(fit::GllvmFit, Y::AbstractMatrix;
+                          X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing)
+    try
+        ci = confint(fit, Y; method = :wald, X = X)
+        return _gllvm_se_status_from_se(collect(Float64, ci.se))
+    catch
+        return :sdreport_error   # analogue of R's sd_report being NULL
+    end
+end
+
+"""
+    summary(fit::GllvmFit, Y::AbstractMatrix; X = nothing) -> GllvmSummary
+
+Post-fit summary, mirroring `gllvmTMB::summary.gllvmTMB_multi`
+(`methods-gllvmTMB.R:744-863`) — see the scope-reduction note above
+`GllvmSummary` for what is (and is not) covered in this slice. `Y` must
+match what was passed to `fit_gaussian_gllvm` (the fit does not store its
+data — as everywhere else in `GLLVM.jl`). `X` is REQUIRED (matching what
+was passed to `fit_gaussian_gllvm`) whenever the fit has fixed effects —
+see [`tidy`](@ref)'s equivalent note; omitting it silently degrades
+`fixef`'s standard errors and `se_status` to all-`NaN`.
+
+`se_status` is the three-way classification R's `.gllvmTMB_se_status`
+computes: `:sdreport_error` when the Wald machinery itself fails (the
+analogue of R's `sd_report` being `NULL`); `:sdreport_nonfinite` when EVERY
+standard error is non-finite (R's non-PD-Hessian signature — one `NaN`
+among otherwise-finite SEs does NOT trip this); `:ok` otherwise.
+"""
+function Base.summary(fit::GllvmFit, Y::AbstractMatrix;
+                      X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing)
+    m = fit.model
+    fixef = _tidy_fixed_rows(fit, Y; conf_int = true, conf_level = 0.95, X = X)
+    Sigma_B = extract_Sigma(fit; level = :unit, part = :total).Sigma
+    Sigma_W = extract_Sigma(fit; level = :unit_obs, part = :total).Sigma
+    ICC = extract_ICC_site(fit)
+    comm = extract_communality(fit)
+    status = _gllvm_se_status(fit, Y; X = X)
+    return GllvmSummary(m.p, m.K, m.K_W, m.has_diag, m.K_phy, m.has_phy_unique,
+                        :ML, fit.logLik, fit.converged, fit.n_iter, fixef,
+                        Matrix(Sigma_B), Matrix(Sigma_W), collect(Float64, ICC),
+                        collect(Float64, comm), status)
+end
+
+function Base.show(io::IO, s::GllvmSummary)
+    println(io, "GllvmSummary — Gaussian GLLVM (p=$(s.p), K_B=$(s.K_B), K_W=$(s.K_W))")
+    println(io, "  estimator: $(s.estimator)   logLik: $(round(s.logLik; sigdigits = 6))" *
+                "   converged: $(s.converged) ($(s.n_iter) iters)   se_status: $(s.se_status)")
+    println(io, "  fixef: $(length(s.fixef)) coefficient(s)")
+    println(io, "  ICC (per trait): ", round.(s.ICC; sigdigits = 4))
+    println(io, "  communality (per trait): ", round.(s.communality; sigdigits = 4))
 end

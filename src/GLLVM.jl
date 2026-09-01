@@ -313,6 +313,6 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        deviance, profile_cross_rho_ci, predict_cross_covariance, predict_missing,
        simulate_unit_trait, profile_cross_rho, rotate_loadings,
        extract_rotated_loadings_table, extract_coevolution_modules, imputed,
-       tidy
+       tidy, GllvmSummary
 
 end # module GLLVM

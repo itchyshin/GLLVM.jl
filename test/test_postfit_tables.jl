@@ -428,18 +428,18 @@ using Distributions: Normal, quantile
         p, K, n = 5, 2, 400
         q = 2
         X = randn(p, n, q)
-        β_true = 0.4 .* randn(p * q)
+        β_true = 0.4 .* randn(q)   # shared across traits — fit.pars.β has length q
         Λ_true = 0.5 .* randn(p, K)
         Xβ = zeros(p, n)
         for t in 1:p, s in 1:n
-            Xβ[t, s] = sum(X[t, s, j] * β_true[(t - 1) * q + j] for j in 1:q)
+            Xβ[t, s] = sum(X[t, s, j] * β_true[j] for j in 1:q)
         end
         y = Xβ .+ Λ_true * randn(K, n) .+ 0.4 .* randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K, X = X, has_diag = true, K_W = 1)
         @test fit.converged
 
-        rows_fixed = tidy(fit, y; effects = :fixed)
-        ct_beta = coef_table(fit, y; parm = "beta")
+        rows_fixed = tidy(fit, y; effects = :fixed, X = X)
+        ct_beta = coef_table(fit, y; parm = "beta", X = X)
         @test length(rows_fixed) == length(ct_beta.term)
         for (r, i) in zip(rows_fixed, eachindex(ct_beta.term))
             @test r.effect === :fixed
@@ -450,7 +450,7 @@ using Distributions: Normal, quantile
             @test isnan(r.conf_low)   # conf_int = false default
         end
 
-        rows_fixed_ci = tidy(fit, y; effects = :fixed, conf_int = true, conf_level = 0.9)
+        rows_fixed_ci = tidy(fit, y; effects = :fixed, conf_int = true, conf_level = 0.9, X = X)
         z = quantile(Normal(), (1 + 0.9) / 2)
         for r in rows_fixed_ci
             if isfinite(r.std_error)
@@ -459,10 +459,10 @@ using Distributions: Normal, quantile
             end
         end
 
-        rows_cutpoint = tidy(fit, y; effects = :cutpoint)
+        rows_cutpoint = tidy(fit, y; effects = :cutpoint, X = X)
         @test rows_cutpoint == NamedTuple[]   # empty-but-typed on a Gaussian fit
 
-        rows_ran = tidy(fit, y; effects = :ran_pars)
+        rows_ran = tidy(fit, y; effects = :ran_pars, X = X)
         @test length(rows_ran) == 2p   # sigma_B[1:p] + sigma_W[1:p]
         Σ_unit = extract_Sigma(fit; level = :unit, part = :unique).s
         Σ_unit_obs = extract_Sigma(fit; level = :unit_obs, part = :unique).s
@@ -480,14 +480,64 @@ using Distributions: Normal, quantile
         end
 
         # combined-effects call rbinds tiers.
-        rows_all = tidy(fit, y; effects = [:fixed, :ran_pars, :cutpoint])
+        rows_all = tidy(fit, y; effects = [:fixed, :ran_pars, :cutpoint], X = X)
         @test length(rows_all) == length(rows_fixed) + length(rows_ran)
 
-        @test_throws ArgumentError tidy(fit, y; effects = [:bogus])
+        @test_throws ArgumentError tidy(fit, y; effects = [:bogus], X = X)
 
         # no-diag fit: ran_pars tier is empty.
         fit_nodiag = fit_gaussian_gllvm(y; K = K)
         @test tidy(fit_nodiag, y; effects = :ran_pars) == NamedTuple[]
+    end
+
+    @testset "1.14 summary — core GllvmSummary" begin
+        Random.seed!(15)
+        p, K, n = 5, 2, 400
+        q = 2
+        X = randn(p, n, q)
+        β_true = 0.3 .* randn(q)   # shared across traits — fit.pars.β has length q
+        Λ_true = 0.5 .* randn(p, K)
+        Xβ = zeros(p, n)
+        for t in 1:p, s in 1:n
+            Xβ[t, s] = sum(X[t, s, j] * β_true[j] for j in 1:q)
+        end
+        y = Xβ .+ Λ_true * randn(K, n) .+ 0.4 .* randn(p, n)
+        fit = fit_gaussian_gllvm(y; K = K, X = X)
+        @test fit.converged
+
+        s = summary(fit, y; X = X)
+        @test s isa GLLVM.GllvmSummary
+        @test s.p == p
+        @test s.K_B == K
+        @test s.logLik ≈ fit.logLik
+        @test s.converged == fit.converged
+        @test s.n_iter == fit.n_iter
+
+        ct = coef_table(fit, y; parm = "beta", X = X)
+        @test length(s.fixef) == length(ct.term)
+        for (r, i) in zip(s.fixef, eachindex(ct.term))
+            @test r.term == ct.term[i]
+            @test r.estimate ≈ ct.estimate[i]
+        end
+
+        @test s.Sigma_B ≈ extract_Sigma(fit; level = :unit, part = :total).Sigma
+        @test s.Sigma_W ≈ extract_Sigma(fit; level = :unit_obs, part = :total).Sigma
+        @test s.ICC ≈ extract_ICC_site(fit)
+        @test s.communality ≈ extract_communality(fit)
+        @test s.se_status === :ok   # clean fit ⇒ :ok
+
+        # se_status three-way classification, unit-tested directly on the
+        # underlying rule (a real degenerate-Hessian fixture is not a
+        # reliable trigger to construct from a converged fit).
+        @test GLLVM._gllvm_se_status_from_se(Float64[]) === :ok
+        @test GLLVM._gllvm_se_status_from_se([1.0, NaN, 2.0]) === :ok  # one NA does not trip it
+        @test GLLVM._gllvm_se_status_from_se([NaN, NaN]) === :sdreport_nonfinite
+        @test GLLVM._gllvm_se_status_from_se([Inf, NaN]) === :sdreport_nonfinite
+
+        # Base.show does not error.
+        io = IOBuffer()
+        show(io, s)
+        @test occursin("GllvmSummary", String(take!(io)))
     end
 
 end
