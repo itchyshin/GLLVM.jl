@@ -190,9 +190,12 @@ K2 = reshape(Float64.(sk["K2"]), n_species, n_species)
 # _source_term_covariance looks up `data`'s `spec.group` column and takes
 # `sort(unique(...))` of it, then maps each row to its level index -- so
 # `data` must have one row per SITE (the fit's units), not per (site,trait).
-Y_sk = reshape(y_flat, p_sk, n_site)  # R's as.numeric() on expand.grid(site,trait) with site
-                                       # fastest is column-major p x n_site when reshaped this way:
-                                       # site varies fastest within each trait block of length n_site.
+# R's expand.grid(site, trait) puts SITE fastest, so y_flat is ordered
+# (site1..siteN) per trait block: that is column-major n_site x p. The fit
+# wants p x n_site (trait rows), so reshape to n_site x p and transpose.
+# (Attempt-4 root cause: the old reshape(y_flat, p_sk, n_site) scrambled Y,
+# collapsing every structured fit to the null model with sigma_source -> 0.)
+Y_sk = Matrix(transpose(reshape(y_flat, n_site, p_sk)))
 species_symbols = [Symbol('a' + (species_of_site[s] - 1)) for s in 1:n_site]
 data_sk = (site = collect(1:n_site), species = species_symbols)
 kernel_env_sk = (C = C, K2 = K2)
@@ -351,9 +354,8 @@ for cs in cases
             jl_vec = [GLLVM.loglikelihood(fit_g)]
         elseif quantity == "confint_sigma_eps_bounds"
             ci = GLLVM.confint(fit_g, Y_g; parm = "sigma_eps", level = 0.95)
-            # confint returns a k x 2 matrix [lower upper]; R recorded [lower, upper]
-            cim = Matrix{Float64}(ci)
-            jl_vec = vcat(cim[:, 1], cim[:, 2])
+            # confint returns a NamedTuple of columns (term/estimate/lower/upper)
+            jl_vec = vcat(Float64.(ci.lower), Float64.(ci.upper))
         else
             error("BOGUS_QUANTITY: no dispatcher entry for '$(quantity)'")
         end
