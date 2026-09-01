@@ -1,0 +1,401 @@
+{
+ "area": "fit-input",
+ "rows": [
+  {
+   "source_id": "fit-input/INPUT-GAUSS-DEFAULT",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-GAUSS-DEFAULT-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-GAUSS-DEFAULT-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-GAUSS-DEFAULT-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-GAUSS-DEFAULT-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), df, control = control)",
+     "julia_surface": "fit_gaussian_gllvm (src/fit.jl), density checked against GLLVM.gaussian_marginal_loglik at the prepared fixed point",
+     "comparands": ["R gllvmTMB() logLik/coef/Sigma at MLE", "Julia fit_gaussian_gllvm loglik/beta/Lambda at the same fixed point"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-GAUSS-DEFAULT-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), df, control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end that lowers to fit_gaussian_gllvm's (Y, K) call shape (not yet wired for latent()-syntax parity)",
+     "comparands": ["R model.frame/terms decomposition of the formula", "Julia formula-lowered call arguments passed to fit_gaussian_gllvm"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-GAUSS-DEFAULT-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), df, control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of fit_gaussian_gllvm against the same df",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fit_gaussian_gllvm fitted loglik/beta via the public bridge round-trip"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Default-identity Λ Gaussian latent() model; MODEL-GAUSS-DEFAULT already cleared the native fixed-point density check (docs/dev-log/core070/gaussian-fixed-point-evidence.json), so the native case is executable now, but the optimized-fit-vs-R-MLE comparison, the @formula lowering, and the public R bridge replay remain unpaid obligations per fit-input-subset.json (owners B1/B2/B5).",
+   "reclassify": null,
+   "uncertain": false,
+   "executable_case_ids": ["CORE070-FIT-INPUT-GAUSS-DEFAULT-NATIVE-MODEL"]
+  },
+  {
+   "source_id": "fit-input/INPUT-GAUSS-LOADINGS",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-GAUSS-LOADINGS-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-GAUSS-LOADINGS-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-GAUSS-LOADINGS-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-GAUSS-LOADINGS-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1, unique = FALSE), df, control = control)",
+     "julia_surface": "fit_gaussian_gllvm (src/fit.jl) with the free-loadings (unique = FALSE) Λ pack and estimated sigma_eps, checked against GLLVM.gaussian_marginal_loglik at the prepared fixed point",
+     "comparands": ["R gllvmTMB() logLik/coef/Sigma at MLE under unique = FALSE", "Julia fit_gaussian_gllvm loglik/beta/Lambda/sigma_eps at the same fixed point"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-GAUSS-LOADINGS-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1, unique = FALSE), df, control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end lowering latent(..., unique = FALSE) to the free-loadings Λ pack argument on fit_gaussian_gllvm (grammar not yet wired)",
+     "comparands": ["R model.frame/terms decomposition including the unique = FALSE argument", "Julia formula-lowered Λ-pack constraint argument"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-GAUSS-LOADINGS-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1, unique = FALSE), df, control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of fit_gaussian_gllvm (unique = FALSE Λ pack) against the same df",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fit_gaussian_gllvm fitted loglik/beta via the public bridge round-trip"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Free-loadings (unique = FALSE) Gaussian latent() variant; MODEL-GAUSS-LOADINGS already cleared the native fixed-point density check (gaussian-fixed-point-evidence.json), so the native case is executable now. The identifiability convention this exercises (which Λ entries are free vs the diag-skip default) has no dedicated packing.jl flag confirmed yet, so the formula/bridge cases stay planned only pending that grammar mapping.",
+   "reclassify": null,
+   "uncertain": false,
+   "executable_case_ids": ["CORE070-FIT-INPUT-GAUSS-LOADINGS-NATIVE-MODEL"]
+  },
+  {
+   "source_id": "fit-input/INPUT-GAUSS-COMMON",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-GAUSS-COMMON-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-GAUSS-COMMON-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-GAUSS-COMMON-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-GAUSS-COMMON-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1, common = TRUE), df, control = control)",
+     "julia_surface": "fit_gaussian_gllvm (src/fit.jl) with a single shared diag_B scale across traits, checked against GLLVM.gaussian_marginal_loglik(...; sigma2_B = fill(exp(2*log_sd_common), p)) at the prepared fixed point",
+     "comparands": ["R gllvmTMB() logLik/coef/Sigma at MLE under common = TRUE", "Julia fit_gaussian_gllvm loglik/beta with the shared-scale constraint at the same fixed point"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-GAUSS-COMMON-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1, common = TRUE), df, control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end lowering latent(..., common = TRUE) to a shared-scale packing constraint (no packing.jl `common` flag exists yet)",
+     "comparands": ["R model.frame/terms decomposition including the common = TRUE argument", "Julia formula-lowered shared-scale packing constraint"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-GAUSS-COMMON-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1, common = TRUE), df, control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of the shared-scale Gaussian fit against the same df",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fitted loglik/beta via the public bridge round-trip"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Shared-diag-scale (common = TRUE) Gaussian latent() variant; MODEL-GAUSS-COMMON already cleared the native fixed-point density check (gaussian-fixed-point-evidence.json) at a hand-built sigma2_B = fill(...) construction, so the native case is executable at the density-comparison level now. No `common` packing constraint exists yet in src/packing.jl/src/fit.jl (grep found none), so the fitted-optimum, formula-grammar, and bridge cases remain planned pending that packing addition.",
+   "reclassify": null,
+   "uncertain": false,
+   "executable_case_ids": ["CORE070-FIT-INPUT-GAUSS-COMMON-NATIVE-MODEL"]
+  },
+  {
+   "source_id": "fit-input/INPUT-POISSON-DEFAULT",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-POISSON-DEFAULT-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-POISSON-DEFAULT-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-POISSON-DEFAULT-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-POISSON-DEFAULT-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), dfp, family = poisson(), control = control)",
+     "julia_surface": "fit_poisson_gllvm (src/families/poisson.jl via fit_gllvm dispatch on Poisson())",
+     "comparands": ["R gllvmTMB() logLik/coef at MLE under poisson()", "Julia fit_poisson_gllvm fitted loglik/beta/Lambda"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-POISSON-DEFAULT-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), dfp, family = poisson(), control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end lowering to fit_gllvm(...; family = Poisson())",
+     "comparands": ["R model.frame/terms decomposition under family = poisson()", "Julia formula-lowered call arguments passed to fit_gllvm"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-POISSON-DEFAULT-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), dfp, family = poisson(), control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of fit_poisson_gllvm against the same dfp",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fit_poisson_gllvm fitted loglik/beta via the public bridge round-trip"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Default-identity Λ Poisson latent() model. The Julia dense-Laplace Poisson fitter exists (fit_poisson_gllvm) but fit-input-subset.json marks this row numerical_status = UNPAID (no fixed-point density evidence run against this specific prepared input yet), so all three cases stay planned/not-yet-executable.",
+   "reclassify": null,
+   "uncertain": false,
+   "executable_case_ids": []
+  },
+  {
+   "source_id": "fit-input/INPUT-BINOMIAL-DEFAULT",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), dfb, family = binomial(), control = control)",
+     "julia_surface": "fit_binomial_gllvm (src/families/binomial.jl via fit_gllvm dispatch on Binomial())",
+     "comparands": ["R gllvmTMB() logLik/coef at MLE under binomial()", "Julia fit_binomial_gllvm fitted loglik/beta/Lambda"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), dfb, family = binomial(), control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end lowering to fit_gllvm(...; family = Binomial())",
+     "comparands": ["R model.frame/terms decomposition under family = binomial()", "Julia formula-lowered call arguments passed to fit_gllvm"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-BINOMIAL-DEFAULT-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), dfb, family = binomial(), control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of fit_binomial_gllvm against the same dfb",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fit_binomial_gllvm fitted loglik/beta via the public bridge round-trip"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Default-identity Λ Binomial latent() model with diag_B_skip = 1,1,1 (identifiability skip on all three traits). The Julia dense-Laplace Binomial fitter exists (fit_binomial_gllvm) but fit-input-subset.json marks this row numerical_status = UNPAID, so all three cases stay planned/not-yet-executable.",
+   "reclassify": null,
+   "uncertain": false,
+   "executable_case_ids": []
+  },
+  {
+   "source_id": "fit-input/INPUT-ANIMAL-LATENT",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-ANIMAL-LATENT-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-ANIMAL-LATENT-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-ANIMAL-LATENT-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-ANIMAL-LATENT-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + animal_latent(species, A = A, d = 1), df, cluster = \"species\", control = control)",
+     "julia_surface": "fit_gaussian_sources (src/source_fit.jl) with sources = [SourceCovariance(relatedness_cov(A); mode = :latent, rank = 1)], density checked against GLLVM._gaussian_source_loglik (src/source_covariance.jl) at the prepared fixed point",
+     "comparands": ["R gllvmTMB() logLik/coef at MLE under animal_latent()", "Julia fit_gaussian_sources fitted loglik/beta/loadings at the same fixed point"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-ANIMAL-LATENT-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + animal_latent(species, A = A, d = 1), df, cluster = \"species\", control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end lowering animal_latent(species, A = A, d = 1) to a relatedness_cov(A)-built SourceCovariance argument on fit_gaussian_sources (R source-term grammar explicitly out of scope per fit_gaussian_sources docstring)",
+     "comparands": ["R model.frame/terms decomposition of the animal_latent() term including cluster = \"species\"", "Julia formula-lowered SourceCovariance construction"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-ANIMAL-LATENT-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + animal_latent(species, A = A, d = 1), df, cluster = \"species\", control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of fit_gaussian_sources against the same df/A (bridge explicitly out of scope per fit_gaussian_sources docstring)",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fit_gaussian_sources fitted loglik/beta via the public bridge round-trip"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Animal-model (pedigree/GRM relatedness) Gaussian source model. MODEL-ANIMAL-LATENT already cleared the native fixed-point density check (docs/dev-log/core070/source-fixed-point-evidence.json, native-source-evidence.json), so the native case is executable now. fit_gaussian_sources's own docstring states it implements 'fixed Gaussian source matrices' only and explicitly excludes 'R source-term grammar' and 'the R/Julia bridge', so the formula and bridge cases stay planned pending that separately-owned work (formula_owner B2, bridge_owner B5 in fit-input-subset.json).",
+   "reclassify": null,
+   "uncertain": false,
+   "executable_case_ids": ["CORE070-FIT-INPUT-ANIMAL-LATENT-NATIVE-MODEL"]
+  },
+  {
+   "source_id": "fit-input/INPUT-KERNEL-ONE",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-KERNEL-ONE-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-KERNEL-ONE-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-KERNEL-ONE-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-KERNEL-ONE-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\"), df, cluster = \"species\", control = control)",
+     "julia_surface": "fit_gaussian_sources (src/source_fit.jl) with sources = [SourceCovariance(A; mode = :latent, rank = 1, name = \"a\")], density checked against GLLVM._gaussian_source_loglik at the prepared fixed point",
+     "comparands": ["R gllvmTMB() logLik/coef at MLE under a single kernel_latent() term", "Julia fit_gaussian_sources fitted loglik/beta/loadings at the same fixed point"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-KERNEL-ONE-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\"), df, cluster = \"species\", control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end lowering kernel_latent(species, K = A, d = 1, name = \"a\") to a named SourceCovariance argument on fit_gaussian_sources",
+     "comparands": ["R model.frame/terms decomposition of the kernel_latent() term", "Julia formula-lowered SourceCovariance construction"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-KERNEL-ONE-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\"), df, cluster = \"species\", control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of fit_gaussian_sources against the same df/A",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fit_gaussian_sources fitted loglik/beta via the public bridge round-trip"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Single named kernel_latent() Gaussian source model, structurally identical to INPUT-ANIMAL-LATENT (same input_sha256, same NATIVE_FIXED_POINT_PASS_OPTIMIZED_FIT_UNPAID status). Native case is executable now against source-fixed-point-evidence.json / native-source-evidence.json; formula and bridge cases remain planned for the same out-of-scope reasons as the animal_latent case.",
+   "reclassify": null,
+   "uncertain": false,
+   "executable_case_ids": ["CORE070-FIT-INPUT-KERNEL-ONE-NATIVE-MODEL"]
+  },
+  {
+   "source_id": "fit-input/INPUT-KERNEL-TWO",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-KERNEL-TWO-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-KERNEL-TWO-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-KERNEL-TWO-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-KERNEL-TWO-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\") + kernel_latent(species, K = B, d = 1, name = \"b\"), df, cluster = \"species\", control = control)",
+     "julia_surface": "fit_gaussian_sources (src/source_fit.jl) with sources = [SourceCovariance(A; mode = :latent, rank = 1, name = \"a\"), SourceCovariance(B; mode = :latent, rank = 1, name = \"b\")] (two-tier kernel case), density checked against GLLVM._gaussian_source_loglik at the prepared fixed point",
+     "comparands": ["R gllvmTMB() logLik/coef at MLE under two kernel_latent() terms", "Julia fit_gaussian_sources fitted loglik/beta/loadings across both source tiers at the same fixed point"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-KERNEL-TWO-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\") + kernel_latent(species, K = B, d = 1, name = \"b\"), df, cluster = \"species\", control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end lowering two additive kernel_latent() terms to a two-element sources vector on fit_gaussian_sources",
+     "comparands": ["R model.frame/terms decomposition of both kernel_latent() terms", "Julia formula-lowered two-element sources vector"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-KERNEL-TWO-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\") + kernel_latent(species, K = B, d = 1, name = \"b\"), df, cluster = \"species\", control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of the two-tier fit_gaussian_sources fit against the same df/A/B",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fit_gaussian_sources fitted loglik/beta via the public bridge round-trip"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Two additive kernel_latent() terms (kernel_tiers = 2). fit_gaussian_sources accepts a vector of SourceCovariance objects, so the multi-tier structure is representable; MODEL-KERNEL-TWO cleared the native fixed-point check (source-fixed-point-evidence.json, native-source-evidence.json), so the native case is executable now. Formula/bridge stay planned for the same reasons as the single-kernel case.",
+   "reclassify": null,
+   "uncertain": false,
+   "executable_case_ids": ["CORE070-FIT-INPUT-KERNEL-TWO-NATIVE-MODEL"]
+  },
+  {
+   "source_id": "fit-input/INPUT-KERNEL-TWO-AUTO",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\", unique = TRUE) + kernel_latent(species, K = B, d = 1, name = \"b\", unique = TRUE), df, cluster = \"species\", control = control)",
+     "julia_surface": "fit_gaussian_sources (src/source_fit.jl) with sources = [SourceCovariance(A; mode = :latent, rank = 1, name = \"a\", unique = true), SourceCovariance(B; mode = :latent, rank = 1, name = \"b\", unique = true)] (unique = TRUE per-tier loading-scale variant of INPUT-KERNEL-TWO), density checked against GLLVM._gaussian_source_loglik",
+     "comparands": ["R gllvmTMB() logLik/coef at MLE under unique = TRUE on both kernel_latent() terms", "Julia fit_gaussian_sources fitted loglik/beta/loadings with unique = true on both SourceCovariance objects"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\", unique = TRUE) + kernel_latent(species, K = B, d = 1, name = \"b\", unique = TRUE), df, cluster = \"species\", control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end lowering the two unique = TRUE kernel_latent() terms to sources with unique = true",
+     "comparands": ["R model.frame/terms decomposition of both unique = TRUE kernel_latent() terms", "Julia formula-lowered two-element sources vector with unique = true"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-KERNEL-TWO-AUTO-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = A, d = 1, name = \"a\", unique = TRUE) + kernel_latent(species, K = B, d = 1, name = \"b\", unique = TRUE), df, cluster = \"species\", control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of the unique = TRUE two-tier fit_gaussian_sources fit against the same df/A/B",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fit_gaussian_sources fitted loglik/beta via the public bridge round-trip"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "unique = TRUE variant of INPUT-KERNEL-TWO (same kernel_tiers = 2 shape, same input_sha256 as INPUT-KERNEL-TWO). fit_gaussian_sources's SourceCovariance constructor already carries a `unique` field, so the surface exists, but fit-input-subset.json marks this row numerical_status = UNPAID (no fixed-point run yet), so all three cases stay planned/not-yet-executable pending that run.",
+   "reclassify": null,
+   "uncertain": false,
+   "executable_case_ids": []
+  },
+  {
+   "source_id": "fit-input/INPUT-MN-LATENT",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-MN-LATENT-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-MN-LATENT-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-MN-LATENT-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-MN-LATENT-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), dfm, cluster = \"species\", family = multinomial(), control = control)",
+     "julia_surface": "NO CURRENT SURFACE: fit_multinomial_gllvm (src/families/multinomial.jl) explicitly rejects a latent-variable call today ('v1 is fixed-effects softmax only — no LV'); a latent-variable multinomial fitter does not yet exist in GLLVM.jl",
+     "comparands": ["R gllvmTMB() logLik/coef at MLE under family = multinomial() with latent()", "future Julia LV-multinomial fitter's fitted loglik/beta/Lambda, once built"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-MN-LATENT-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), dfm, cluster = \"species\", family = multinomial(), control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end that would lower to the not-yet-existing LV-multinomial fitter",
+     "comparands": ["R model.frame/terms decomposition under family = multinomial() with latent()", "Julia formula-lowered call arguments, once the fitter exists"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-MN-LATENT-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + latent(0 + trait | site, d = 1), dfm, cluster = \"species\", family = multinomial(), control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of the not-yet-existing LV-multinomial fitter",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia LV-multinomial fitted loglik/beta via the public bridge round-trip, once the fitter exists"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Latent-variable multinomial() model. fit_multinomial_gllvm's own guard clause (src/families/multinomial.jl) says v1 is fixed-effects-softmax-only with no LV support, so this row names a genuine capability gap rather than an untested-but-representable config like the other rows: no Julia surface currently exists to bind these case IDs to. Kept required_core (this is public, documented gllvmTMB behavior, not an R internal) with planned case IDs for the future LV-multinomial fitter; marked uncertain because I cannot name a present julia_surface for the native case, only a target.",
+   "reclassify": null,
+   "uncertain": true,
+   "executable_case_ids": []
+  },
+  {
+   "source_id": "fit-input/INPUT-MN-ANIMAL-LATENT",
+   "planned_case_ids": [
+    "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-NATIVE-MODEL",
+    "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-FORMULA-INTERFACE",
+    "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-PUBLIC-R-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/family-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-NATIVE-MODEL",
+     "r_call": "gllvmTMB(value ~ 0 + trait + animal_latent(species, A = A, d = 1), dfm, cluster = \"species\", family = multinomial(), control = control)",
+     "julia_surface": "NO CURRENT SURFACE: fit_multinomial_gllvm rejects LV calls, and fit_gaussian_sources (the animal_latent surface) is Gaussian-only per its own docstring ('does not implement ... non-Gaussian families'); neither composes to a multinomial animal-model fitter today",
+     "comparands": ["R gllvmTMB() logLik/coef at MLE under family = multinomial() with animal_latent()", "future Julia LV-multinomial + source-covariance fitter's fitted loglik/beta, once built"],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-FORMULA-INTERFACE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + animal_latent(species, A = A, d = 1), dfm, cluster = \"species\", family = multinomial(), control = control)",
+     "julia_surface": "GLLVM @formula/StatsModels front end that would lower to the not-yet-existing multinomial animal-model fitter",
+     "comparands": ["R model.frame/terms decomposition under family = multinomial() with animal_latent()", "Julia formula-lowered call arguments, once the fitter exists"],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-FIT-INPUT-MN-ANIMAL-LATENT-PUBLIC-R-BRIDGE",
+     "r_call": "gllvmTMB(value ~ 0 + trait + animal_latent(species, A = A, d = 1), dfm, cluster = \"species\", family = multinomial(), control = control)",
+     "julia_surface": "RCall.jl/JuliaCall public bridge replay of the not-yet-existing multinomial animal-model fitter",
+     "comparands": ["R gllvmTMB() fitted logLik/coef", "Julia fitted loglik/beta via the public bridge round-trip, once the fitter exists"],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Latent-variable multinomial() model over an animal-model (relatedness) source. This stacks the same LV-multinomial gap as INPUT-MN-LATENT on top of fit_gaussian_sources's own Gaussian-only restriction, so no Julia surface exists for any of the three cases today. Kept required_core (public documented gllvmTMB behavior) with planned case IDs targeting the eventual composed fitter; marked uncertain for the same reason as INPUT-MN-LATENT.",
+   "reclassify": null,
+   "uncertain": true,
+   "executable_case_ids": []
+  }
+ ]
+}

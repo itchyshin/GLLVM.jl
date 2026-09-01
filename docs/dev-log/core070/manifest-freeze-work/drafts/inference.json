@@ -1,0 +1,1497 @@
+{
+ "area": "inference",
+ "rows": [
+  {
+   "source_id": "inference/CI-ROUTE-001",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='Lambda', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_lambda(method=...)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"Lambda\", method=:wald) [default+explicit wald], profile_ci(fit, \"Lambda:i,j\") [profile], bootstrap_ci(fit; parms=\"Lambda\") [bootstrap]",
+     "comparands": [
+      "R fixture test/parity/fixtures/core070_inference_routes.tsv rows CI-ROUTE-001..004 (expected solver per method)",
+      "GLLVM.jl solver actually invoked for each method value, asserted by call-path/type of returned CI (Wald vs profile vs bootstrap)"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Lambda', method='DEFAULT' (variant=healthy) expected route -> .confint_lambda:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-002",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='Lambda', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_lambda(method=...)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"Lambda\", method=:wald) [default+explicit wald], profile_ci(fit, \"Lambda:i,j\") [profile], bootstrap_ci(fit; parms=\"Lambda\") [bootstrap]",
+     "comparands": [
+      "R fixture test/parity/fixtures/core070_inference_routes.tsv rows CI-ROUTE-001..004 (expected solver per method)",
+      "GLLVM.jl solver actually invoked for each method value, asserted by call-path/type of returned CI (Wald vs profile vs bootstrap)"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Lambda', method='profile' (variant=healthy) expected route -> .confint_lambda:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-003",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='Lambda', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_lambda(method=...)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"Lambda\", method=:wald) [default+explicit wald], profile_ci(fit, \"Lambda:i,j\") [profile], bootstrap_ci(fit; parms=\"Lambda\") [bootstrap]",
+     "comparands": [
+      "R fixture test/parity/fixtures/core070_inference_routes.tsv rows CI-ROUTE-001..004 (expected solver per method)",
+      "GLLVM.jl solver actually invoked for each method value, asserted by call-path/type of returned CI (Wald vs profile vs bootstrap)"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Lambda', method='wald' (variant=healthy) expected route -> .confint_lambda:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-004",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='Lambda', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_lambda(method=...)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"Lambda\", method=:wald) [default+explicit wald], profile_ci(fit, \"Lambda:i,j\") [profile], bootstrap_ci(fit; parms=\"Lambda\") [bootstrap]",
+     "comparands": [
+      "R fixture test/parity/fixtures/core070_inference_routes.tsv rows CI-ROUTE-001..004 (expected solver per method)",
+      "GLLVM.jl solver actually invoked for each method value, asserted by call-path/type of returned CI (Wald vs profile vs bootstrap)"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Lambda', method='bootstrap' (variant=healthy) expected route -> .confint_lambda:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-005",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='Lambda', method='wald_asym') routing to .confint_lambda(method='wald_asym') -> loading_ci(fit=object, level='unit', method='wald_asym', conf_level=level, loading_scale='standardized'); parameter labels rename to \"rho[trait,axis]\" (loading_ci()'s Fisher-z-flavoured standardized-loading route, distinct from the raw-scale 'wald' route in CI-ROUTE-003) [z-confint-gllvmTMB.R:270 match.arg validates 'wald_asym' as a supported method; lines 285-311 route it through loading_ci(..., loading_scale='standardized') with rho[%s,%s] parameter naming]",
+     "julia_surface": "GLLVM.jl has no dedicated standardized-loading/rho Wald CI function as of this freeze; the case must build one from the existing Fisher-z transformed-scale Wald machinery in src/confint_derived_wald.jl (_tw_link(:fisher_z) / _tw_fisher_z / _tw_fisher_z_inv) applied to a per-entry standardized-loading packed-theta closure, analogous to how _communality_packed and the correlation closure are wired for :logit and :fisher_z respectively",
+     "comparands": [
+      "R fixture test/parity/fixtures/core070_inference_routes.tsv row CI-ROUTE-005 (expected route: .confint_lambda:wald_asym -> loading_ci(method='wald_asym', loading_scale='standardized'), rho[trait,axis] parameter labels)",
+      "GLLVM.jl standardized-loading Wald CI (Fisher-z transformed scale) built per above, asserted to reproduce R's rho[trait,axis] point estimate and SE-derived bound to the family's stated tolerance"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Lambda', method='wald_asym' (variant=healthy) expected route -> .confint_lambda:wald_asym -> loading_ci(method='wald_asym', loading_scale='standardized'). Verified against z-confint-gllvmTMB.R: line 270 match.arg(method, c('wald','wald_asym','profile','bootstrap')) validates 'wald_asym' as a supported method (not an unsupported/reject case); lines 285-311 show the wald/wald_asym branch calling loading_ci(fit=object, level='unit', method=method, conf_level=level, loading_scale=if (identical(method,'wald_asym')) 'standardized' else 'raw'), then renaming parameters to \"rho[%s,%s]\" when loading_scale is standardized. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own explicit wald_asym routing reproduces the same method-to-solver mapping intent (standardized-loading/rho CI) on its own public API.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-006",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='Lambda', method=<'wald_asym'|'fisher-z'|'bogus'>) \u2014 R's top-level router forwards the method string to .confint_lambda without validating it (rows CI-ROUTE-005..007 record only which internal helper receives the literal method string, not that it succeeds)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"Lambda\", method=:wald_asym / :fisher_z / :bogus) \u2014 method::Symbol is dispatched against a fixed method set in confint.jl/confint_profile.jl",
+     "comparands": [
+      "R behaviour: unvalidated pass-through to .confint_lambda(method=<string>) (fixture literal, not a success claim)",
+      "GLLVM.jl behaviour: an unrecognized method Symbol must raise a clear ArgumentError/MethodError rather than silently mis-routing to :wald"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Lambda', method='fisher-z' (variant=healthy) expected route -> .confint_lambda:fisher-z. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-007",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='Lambda', method=<'wald_asym'|'fisher-z'|'bogus'>) \u2014 R's top-level router forwards the method string to .confint_lambda without validating it (rows CI-ROUTE-005..007 record only which internal helper receives the literal method string, not that it succeeds)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"Lambda\", method=:wald_asym / :fisher_z / :bogus) \u2014 method::Symbol is dispatched against a fixed method set in confint.jl/confint_profile.jl",
+     "comparands": [
+      "R behaviour: unvalidated pass-through to .confint_lambda(method=<string>) (fixture literal, not a success claim)",
+      "GLLVM.jl behaviour: an unrecognized method Symbol must raise a clear ArgumentError/MethodError rather than silently mis-routing to :wald"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Lambda', method='bogus' (variant=healthy) expected route -> .confint_lambda:bogus. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-008",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='icc', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_icc(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl icc_wald_ci(fit, derived_fn_packed; ...) [default+explicit wald, logit-transformed Wald for an ICC-style proportion per confint_derived_wald.jl docstring], profile_ci_derived(fit, icc_fn) [profile], bootstrap_ci_derived(fit, icc_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-008..011",
+      "GLLVM.jl solver actually invoked per method value; note icc_wald_ci exists but has no dedicated `icc(fit)` point-estimate function or test coverage as of this freeze \u2014 the derived_fn closure must be supplied by the case"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='icc', method='DEFAULT' (variant=healthy) expected route -> .confint_icc:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-009",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='icc', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_icc(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl icc_wald_ci(fit, derived_fn_packed; ...) [default+explicit wald, logit-transformed Wald for an ICC-style proportion per confint_derived_wald.jl docstring], profile_ci_derived(fit, icc_fn) [profile], bootstrap_ci_derived(fit, icc_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-008..011",
+      "GLLVM.jl solver actually invoked per method value; note icc_wald_ci exists but has no dedicated `icc(fit)` point-estimate function or test coverage as of this freeze \u2014 the derived_fn closure must be supplied by the case"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='icc', method='profile' (variant=healthy) expected route -> .confint_icc:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-010",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='icc', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_icc(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl icc_wald_ci(fit, derived_fn_packed; ...) [default+explicit wald, logit-transformed Wald for an ICC-style proportion per confint_derived_wald.jl docstring], profile_ci_derived(fit, icc_fn) [profile], bootstrap_ci_derived(fit, icc_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-008..011",
+      "GLLVM.jl solver actually invoked per method value; note icc_wald_ci exists but has no dedicated `icc(fit)` point-estimate function or test coverage as of this freeze \u2014 the derived_fn closure must be supplied by the case"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='icc', method='wald' (variant=healthy) expected route -> .confint_icc:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-011",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='icc', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_icc(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl icc_wald_ci(fit, derived_fn_packed; ...) [default+explicit wald, logit-transformed Wald for an ICC-style proportion per confint_derived_wald.jl docstring], profile_ci_derived(fit, icc_fn) [profile], bootstrap_ci_derived(fit, icc_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-008..011",
+      "GLLVM.jl solver actually invoked per method value; note icc_wald_ci exists but has no dedicated `icc(fit)` point-estimate function or test coverage as of this freeze \u2014 the derived_fn closure must be supplied by the case"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='icc', method='bootstrap' (variant=healthy) expected route -> .confint_icc:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-012",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='icc', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-012..014)",
+     "julia_surface": "GLLVM.jl icc CI surface implements only the logit-transformed Wald (icc_wald_ci); wald_asym and fisher-z are not distinct methods for a [0,1]-bounded ICC quantity in the Julia port",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: method values outside {default/wald, profile, bootstrap} for icc must raise a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='icc', method='wald_asym' (variant=healthy) expected route -> .confint_icc:wald_asym. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-013",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='icc', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-012..014)",
+     "julia_surface": "GLLVM.jl icc CI surface implements only the logit-transformed Wald (icc_wald_ci); wald_asym and fisher-z are not distinct methods for a [0,1]-bounded ICC quantity in the Julia port",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: method values outside {default/wald, profile, bootstrap} for icc must raise a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='icc', method='fisher-z' (variant=healthy) expected route -> .confint_icc:fisher-z. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-014",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='icc', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-012..014)",
+     "julia_surface": "GLLVM.jl icc CI surface implements only the logit-transformed Wald (icc_wald_ci); wald_asym and fisher-z are not distinct methods for a [0,1]-bounded ICC quantity in the Julia port",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: method values outside {default/wald, profile, bootstrap} for icc must raise a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='icc', method='bogus' (variant=healthy) expected route -> .confint_icc:bogus. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-015",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='phylo_signal', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_phylo_signal(method=...); R default is profile",
+     "julia_surface": "GLLVM.jl phylo_signal(fit; Sigma_phy=...) [point], profile_ci_derived(fit, phylo_signal_fn) [default+explicit profile], phylo_signal_wald_ci(fit, t; ...) [wald], bootstrap_ci_derived(fit, phylo_signal_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-015..018",
+      "GLLVM.jl solver actually invoked per method value; test/test_confint_derived_wald.jl already exercises phylo_signal_wald_ci as a grounding reference"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='phylo_signal', method='DEFAULT' (variant=healthy) expected route -> .confint_phylo_signal:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-016",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='phylo_signal', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_phylo_signal(method=...); R default is profile",
+     "julia_surface": "GLLVM.jl phylo_signal(fit; Sigma_phy=...) [point], profile_ci_derived(fit, phylo_signal_fn) [default+explicit profile], phylo_signal_wald_ci(fit, t; ...) [wald], bootstrap_ci_derived(fit, phylo_signal_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-015..018",
+      "GLLVM.jl solver actually invoked per method value; test/test_confint_derived_wald.jl already exercises phylo_signal_wald_ci as a grounding reference"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='phylo_signal', method='profile' (variant=healthy) expected route -> .confint_phylo_signal:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-017",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='phylo_signal', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_phylo_signal(method=...); R default is profile",
+     "julia_surface": "GLLVM.jl phylo_signal(fit; Sigma_phy=...) [point], profile_ci_derived(fit, phylo_signal_fn) [default+explicit profile], phylo_signal_wald_ci(fit, t; ...) [wald], bootstrap_ci_derived(fit, phylo_signal_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-015..018",
+      "GLLVM.jl solver actually invoked per method value; test/test_confint_derived_wald.jl already exercises phylo_signal_wald_ci as a grounding reference"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='phylo_signal', method='wald' (variant=healthy) expected route -> .confint_phylo_signal:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-018",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='phylo_signal', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_phylo_signal(method=...); R default is profile",
+     "julia_surface": "GLLVM.jl phylo_signal(fit; Sigma_phy=...) [point], profile_ci_derived(fit, phylo_signal_fn) [default+explicit profile], phylo_signal_wald_ci(fit, t; ...) [wald], bootstrap_ci_derived(fit, phylo_signal_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-015..018",
+      "GLLVM.jl solver actually invoked per method value; test/test_confint_derived_wald.jl already exercises phylo_signal_wald_ci as a grounding reference"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='phylo_signal', method='bootstrap' (variant=healthy) expected route -> .confint_phylo_signal:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-019",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='phylo_signal', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-019..021)",
+     "julia_surface": "GLLVM.jl phylo_signal CI surface implements profile/wald/bootstrap only; wald_asym and fisher-z are not defined methods for H2",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='phylo_signal', method='wald_asym' (variant=healthy) expected route -> .confint_phylo_signal:wald_asym. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-020",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='phylo_signal', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-019..021)",
+     "julia_surface": "GLLVM.jl phylo_signal CI surface implements profile/wald/bootstrap only; wald_asym and fisher-z are not defined methods for H2",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='phylo_signal', method='fisher-z' (variant=healthy) expected route -> .confint_phylo_signal:fisher-z. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-021",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='phylo_signal', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-019..021)",
+     "julia_surface": "GLLVM.jl phylo_signal CI surface implements profile/wald/bootstrap only; wald_asym and fisher-z are not defined methods for H2",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='phylo_signal', method='bogus' (variant=healthy) expected route -> .confint_phylo_signal:bogus. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-022",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='communality:unit', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_communality(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl communality(fit) [point], communality_wald_ci(fit, t; ...) [default+explicit wald], profile_ci_derived(fit, communality_fn) [profile], bootstrap_ci_derived(fit, communality_fn) [bootstrap] \u2014 bootstrap already exercised in test/test_confint_derived.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-022..025",
+      "GLLVM.jl solver actually invoked per method value; existing tests test_confint_derived.jl / test_confint_derived_wald.jl as grounding"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='communality:unit', method='DEFAULT' (variant=healthy) expected route -> .confint_communality:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-023",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='communality:unit', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_communality(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl communality(fit) [point], communality_wald_ci(fit, t; ...) [default+explicit wald], profile_ci_derived(fit, communality_fn) [profile], bootstrap_ci_derived(fit, communality_fn) [bootstrap] \u2014 bootstrap already exercised in test/test_confint_derived.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-022..025",
+      "GLLVM.jl solver actually invoked per method value; existing tests test_confint_derived.jl / test_confint_derived_wald.jl as grounding"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='communality:unit', method='profile' (variant=healthy) expected route -> .confint_communality:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-024",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='communality:unit', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_communality(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl communality(fit) [point], communality_wald_ci(fit, t; ...) [default+explicit wald], profile_ci_derived(fit, communality_fn) [profile], bootstrap_ci_derived(fit, communality_fn) [bootstrap] \u2014 bootstrap already exercised in test/test_confint_derived.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-022..025",
+      "GLLVM.jl solver actually invoked per method value; existing tests test_confint_derived.jl / test_confint_derived_wald.jl as grounding"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='communality:unit', method='wald' (variant=healthy) expected route -> .confint_communality:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-025",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='communality:unit', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_communality(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl communality(fit) [point], communality_wald_ci(fit, t; ...) [default+explicit wald], profile_ci_derived(fit, communality_fn) [profile], bootstrap_ci_derived(fit, communality_fn) [bootstrap] \u2014 bootstrap already exercised in test/test_confint_derived.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-022..025",
+      "GLLVM.jl solver actually invoked per method value; existing tests test_confint_derived.jl / test_confint_derived_wald.jl as grounding"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='communality:unit', method='bootstrap' (variant=healthy) expected route -> .confint_communality:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-026",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='communality:unit', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-026..028)",
+     "julia_surface": "GLLVM.jl communality CI surface implements profile/wald/bootstrap only via the logit-family transform baked into communality_wald_ci; wald_asym and fisher-z are not distinct methods",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='communality:unit', method='wald_asym' (variant=healthy) expected route -> .confint_communality:wald_asym. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-027",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='communality:unit', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-026..028)",
+     "julia_surface": "GLLVM.jl communality CI surface implements profile/wald/bootstrap only via the logit-family transform baked into communality_wald_ci; wald_asym and fisher-z are not distinct methods",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='communality:unit', method='fisher-z' (variant=healthy) expected route -> .confint_communality:fisher-z. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-028",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='communality:unit', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-026..028)",
+     "julia_surface": "GLLVM.jl communality CI surface implements profile/wald/bootstrap only via the logit-family transform baked into communality_wald_ci; wald_asym and fisher-z are not distinct methods",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='communality:unit', method='bogus' (variant=healthy) expected route -> .confint_communality:bogus. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-029",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='rho:unit:1,2', method=<DEFAULT|'profile'|'bootstrap'|'fisher-z'>) routing to .confint_rho(method=...); R default AND explicit 'fisher-z' both route to the Fisher-z transform (rows CI-ROUTE-029, 034 both expect .confint_rho:fisher-z)",
+     "julia_surface": "GLLVM.jl correlation(fit) [point], correlation_wald_ci(fit, i, j; ...) [default+explicit fisher-z \u2014 this IS the Fisher-z transformed-Wald per confint_derived_wald.jl / CLAUDE.md], profile_ci_derived(fit, correlation_fn) [profile], bootstrap_ci_derived(fit, correlation_fn) [bootstrap] \u2014 already exercised in test/test_confint_derived_wald.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-029, 030, 032, 034",
+      "GLLVM.jl solver actually invoked per method value"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='rho:unit:1,2', method='DEFAULT' (variant=healthy) expected route -> .confint_rho:fisher-z. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-030",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='rho:unit:1,2', method=<DEFAULT|'profile'|'bootstrap'|'fisher-z'>) routing to .confint_rho(method=...); R default AND explicit 'fisher-z' both route to the Fisher-z transform (rows CI-ROUTE-029, 034 both expect .confint_rho:fisher-z)",
+     "julia_surface": "GLLVM.jl correlation(fit) [point], correlation_wald_ci(fit, i, j; ...) [default+explicit fisher-z \u2014 this IS the Fisher-z transformed-Wald per confint_derived_wald.jl / CLAUDE.md], profile_ci_derived(fit, correlation_fn) [profile], bootstrap_ci_derived(fit, correlation_fn) [bootstrap] \u2014 already exercised in test/test_confint_derived_wald.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-029, 030, 032, 034",
+      "GLLVM.jl solver actually invoked per method value"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='rho:unit:1,2', method='profile' (variant=healthy) expected route -> .confint_rho:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-031",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "R dispatch fixture: parm='rho:unit:1,2', method='wald' (variant=healthy) expected route -> .confint_rho:wald. R's confint(parm='rho:...', method='wald') routes to an untransformed delta-method Wald distinct from method='fisher-z' (rows CI-ROUTE-031 vs 029/034). GLLVM.jl implements only the Fisher-z transformed-Wald for bounded [-1,1] correlations (confint_derived_wald.jl; CLAUDE.md confint_derived_wald.jl entry). No untransformed Wald for rho exists in the Julia port, and none is planned \u2014 the transformed-scale CI is the documented choice for a bounded correlation. Revisit only if a future R-parity requirement demands the untransformed variant.",
+   "reclassify": {
+    "to": "intentionally_excluded",
+    "reason": "R's confint(parm='rho:...', method='wald') routes to an untransformed delta-method Wald distinct from method='fisher-z' (rows CI-ROUTE-031 vs 029/034). GLLVM.jl implements only the Fisher-z transformed-Wald for bounded [-1,1] correlations (confint_derived_wald.jl; CLAUDE.md confint_derived_wald.jl entry). No untransformed Wald for rho exists in the Julia port, and none is planned \u2014 the transformed-scale CI is the documented choice for a bounded correlation. Revisit only if a future R-parity requirement demands the untransformed variant."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-032",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='rho:unit:1,2', method=<DEFAULT|'profile'|'bootstrap'|'fisher-z'>) routing to .confint_rho(method=...); R default AND explicit 'fisher-z' both route to the Fisher-z transform (rows CI-ROUTE-029, 034 both expect .confint_rho:fisher-z)",
+     "julia_surface": "GLLVM.jl correlation(fit) [point], correlation_wald_ci(fit, i, j; ...) [default+explicit fisher-z \u2014 this IS the Fisher-z transformed-Wald per confint_derived_wald.jl / CLAUDE.md], profile_ci_derived(fit, correlation_fn) [profile], bootstrap_ci_derived(fit, correlation_fn) [bootstrap] \u2014 already exercised in test/test_confint_derived_wald.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-029, 030, 032, 034",
+      "GLLVM.jl solver actually invoked per method value"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='rho:unit:1,2', method='bootstrap' (variant=healthy) expected route -> .confint_rho:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-033",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-RHO-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='rho:unit:1,2', method=<'wald_asym'|'bogus'>) (rows CI-ROUTE-033, 035)",
+     "julia_surface": "GLLVM.jl rho CI surface implements only the Fisher-z transformed Wald (correlation_wald_ci), plus profile/bootstrap; wald_asym is not a distinct method",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='rho:unit:1,2', method='wald_asym' (variant=healthy) expected route -> .confint_rho:wald_asym. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-034",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='rho:unit:1,2', method=<DEFAULT|'profile'|'bootstrap'|'fisher-z'>) routing to .confint_rho(method=...); R default AND explicit 'fisher-z' both route to the Fisher-z transform (rows CI-ROUTE-029, 034 both expect .confint_rho:fisher-z)",
+     "julia_surface": "GLLVM.jl correlation(fit) [point], correlation_wald_ci(fit, i, j; ...) [default+explicit fisher-z \u2014 this IS the Fisher-z transformed-Wald per confint_derived_wald.jl / CLAUDE.md], profile_ci_derived(fit, correlation_fn) [profile], bootstrap_ci_derived(fit, correlation_fn) [bootstrap] \u2014 already exercised in test/test_confint_derived_wald.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-029, 030, 032, 034",
+      "GLLVM.jl solver actually invoked per method value"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='rho:unit:1,2', method='fisher-z' (variant=healthy) expected route -> .confint_rho:fisher-z. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-035",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-RHO-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-RHO-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='rho:unit:1,2', method=<'wald_asym'|'bogus'>) (rows CI-ROUTE-033, 035)",
+     "julia_surface": "GLLVM.jl rho CI surface implements only the Fisher-z transformed Wald (correlation_wald_ci), plus profile/bootstrap; wald_asym is not a distinct method",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='rho:unit:1,2', method='bogus' (variant=healthy) expected route -> .confint_rho:bogus. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-036",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='proportion:shared_unit', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_proportion(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl proportions(fit; component=:shared) [point], icc_wald_ci(fit, proportions_fn; ...) [default+explicit wald \u2014 icc_wald_ci's docstring is explicitly generic over \"intraclass-correlation-style proportion\" quantities], profile_ci_derived(fit, proportions_fn) [profile], bootstrap_ci_derived(fit, proportions_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-036..039",
+      "GLLVM.jl solver actually invoked per method value; no existing test currently builds this closure \u2014 new test coverage required"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='proportion:shared_unit', method='DEFAULT' (variant=healthy) expected route -> .confint_proportion:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-037",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='proportion:shared_unit', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_proportion(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl proportions(fit; component=:shared) [point], icc_wald_ci(fit, proportions_fn; ...) [default+explicit wald \u2014 icc_wald_ci's docstring is explicitly generic over \"intraclass-correlation-style proportion\" quantities], profile_ci_derived(fit, proportions_fn) [profile], bootstrap_ci_derived(fit, proportions_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-036..039",
+      "GLLVM.jl solver actually invoked per method value; no existing test currently builds this closure \u2014 new test coverage required"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='proportion:shared_unit', method='profile' (variant=healthy) expected route -> .confint_proportion:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-038",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='proportion:shared_unit', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_proportion(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl proportions(fit; component=:shared) [point], icc_wald_ci(fit, proportions_fn; ...) [default+explicit wald \u2014 icc_wald_ci's docstring is explicitly generic over \"intraclass-correlation-style proportion\" quantities], profile_ci_derived(fit, proportions_fn) [profile], bootstrap_ci_derived(fit, proportions_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-036..039",
+      "GLLVM.jl solver actually invoked per method value; no existing test currently builds this closure \u2014 new test coverage required"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='proportion:shared_unit', method='wald' (variant=healthy) expected route -> .confint_proportion:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-039",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='proportion:shared_unit', method=<DEFAULT|'profile'|'wald'|'bootstrap'>) routing to .confint_proportion(method=...); R default is wald",
+     "julia_surface": "GLLVM.jl proportions(fit; component=:shared) [point], icc_wald_ci(fit, proportions_fn; ...) [default+explicit wald \u2014 icc_wald_ci's docstring is explicitly generic over \"intraclass-correlation-style proportion\" quantities], profile_ci_derived(fit, proportions_fn) [profile], bootstrap_ci_derived(fit, proportions_fn) [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-036..039",
+      "GLLVM.jl solver actually invoked per method value; no existing test currently builds this closure \u2014 new test coverage required"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='proportion:shared_unit', method='bootstrap' (variant=healthy) expected route -> .confint_proportion:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-040",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='proportion:shared_unit', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-040..042)",
+     "julia_surface": "GLLVM.jl proportion-of-variance CI surface implements only the logit-transformed Wald via icc_wald_ci, plus profile/bootstrap; wald_asym and fisher-z are not distinct methods for a [0,1]-bounded share",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='proportion:shared_unit', method='wald_asym' (variant=healthy) expected route -> .confint_proportion:wald_asym. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-041",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='proportion:shared_unit', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-040..042)",
+     "julia_surface": "GLLVM.jl proportion-of-variance CI surface implements only the logit-transformed Wald via icc_wald_ci, plus profile/bootstrap; wald_asym and fisher-z are not distinct methods for a [0,1]-bounded share",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='proportion:shared_unit', method='fisher-z' (variant=healthy) expected route -> .confint_proportion:fisher-z. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-042",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT",
+     "r_call": "confint.gllvmTMB_multi(object, parm='proportion:shared_unit', method=<'wald_asym'|'fisher-z'|'bogus'>) (rows CI-ROUTE-040..042)",
+     "julia_surface": "GLLVM.jl proportion-of-variance CI surface implements only the logit-transformed Wald via icc_wald_ci, plus profile/bootstrap; wald_asym and fisher-z are not distinct methods for a [0,1]-bounded share",
+     "comparands": [
+      "R behaviour: unvalidated pass-through (fixture literal)",
+      "GLLVM.jl behaviour: unsupported method Symbol raises a clear error"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='proportion:shared_unit', method='bogus' (variant=healthy) expected route -> .confint_proportion:bogus. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-043",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit'|'Sigma_B'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'B' tier (see .sigma_parm_info in R/z-confint-gllvmTMB.R) and both expect the identical route (default->profile)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_B\", method=:wald) [default(via profile_ci)/explicit wald], profile_ci(fit, \"sigma_B[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_B\") [bootstrap] \u2014 raw per-species diagonal SD term for the unit(B) tier",
+     "comparands": [
+      "R fixture rows CI-ROUTE-043..045 (Sigma_unit) and CI-ROUTE-055..057 (Sigma_B) \u2014 same expected route, confirming the R alias collapses to one handler",
+      "GLLVM.jl solver actually invoked per method value for sigma_B"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_unit', method='DEFAULT' (variant=healthy) expected route -> .confint_sigma:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-044",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit'|'Sigma_B'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'B' tier (see .sigma_parm_info in R/z-confint-gllvmTMB.R) and both expect the identical route (default->profile)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_B\", method=:wald) [default(via profile_ci)/explicit wald], profile_ci(fit, \"sigma_B[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_B\") [bootstrap] \u2014 raw per-species diagonal SD term for the unit(B) tier",
+     "comparands": [
+      "R fixture rows CI-ROUTE-043..045 (Sigma_unit) and CI-ROUTE-055..057 (Sigma_B) \u2014 same expected route, confirming the R alias collapses to one handler",
+      "GLLVM.jl solver actually invoked per method value for sigma_B"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_unit', method='wald' (variant=healthy) expected route -> .confint_sigma:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-045",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit'|'Sigma_B'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'B' tier (see .sigma_parm_info in R/z-confint-gllvmTMB.R) and both expect the identical route (default->profile)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_B\", method=:wald) [default(via profile_ci)/explicit wald], profile_ci(fit, \"sigma_B[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_B\") [bootstrap] \u2014 raw per-species diagonal SD term for the unit(B) tier",
+     "comparands": [
+      "R fixture rows CI-ROUTE-043..045 (Sigma_unit) and CI-ROUTE-055..057 (Sigma_B) \u2014 same expected route, confirming the R alias collapses to one handler",
+      "GLLVM.jl solver actually invoked per method value for sigma_B"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_unit', method='bootstrap' (variant=healthy) expected route -> .confint_sigma:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-046",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit_obs'|'Sigma_W'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'W' tier",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_W\", method=:wald) [default/explicit wald], profile_ci(fit, \"sigma_W[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_W\") [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-046..048 (Sigma_unit_obs) and CI-ROUTE-058..060 (Sigma_W)",
+      "GLLVM.jl solver actually invoked per method value for sigma_W"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_unit_obs', method='DEFAULT' (variant=healthy) expected route -> .confint_sigma:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-047",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit_obs'|'Sigma_W'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'W' tier",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_W\", method=:wald) [default/explicit wald], profile_ci(fit, \"sigma_W[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_W\") [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-046..048 (Sigma_unit_obs) and CI-ROUTE-058..060 (Sigma_W)",
+      "GLLVM.jl solver actually invoked per method value for sigma_W"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_unit_obs', method='wald' (variant=healthy) expected route -> .confint_sigma:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-048",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit_obs'|'Sigma_W'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'W' tier",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_W\", method=:wald) [default/explicit wald], profile_ci(fit, \"sigma_W[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_W\") [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-046..048 (Sigma_unit_obs) and CI-ROUTE-058..060 (Sigma_W)",
+      "GLLVM.jl solver actually invoked per method value for sigma_W"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_unit_obs', method='bootstrap' (variant=healthy) expected route -> .confint_sigma:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-049",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "R dispatch fixture: parm='Sigma_cluster', method='DEFAULT' (variant=healthy) expected route -> .confint_sigma:profile. R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft.",
+   "reclassify": {
+    "to": "intentionally_excluded",
+    "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-050",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "R dispatch fixture: parm='Sigma_cluster', method='wald' (variant=healthy) expected route -> .confint_sigma:wald. R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft.",
+   "reclassify": {
+    "to": "intentionally_excluded",
+    "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-051",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "R dispatch fixture: parm='Sigma_cluster', method='bootstrap' (variant=healthy) expected route -> .confint_sigma:bootstrap. R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft.",
+   "reclassify": {
+    "to": "intentionally_excluded",
+    "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-052",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "R dispatch fixture: parm='Sigma_cluster2', method='DEFAULT' (variant=healthy) expected route -> .confint_sigma:profile. R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft.",
+   "reclassify": {
+    "to": "intentionally_excluded",
+    "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-053",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "R dispatch fixture: parm='Sigma_cluster2', method='wald' (variant=healthy) expected route -> .confint_sigma:wald. R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft.",
+   "reclassify": {
+    "to": "intentionally_excluded",
+    "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-054",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "R dispatch fixture: parm='Sigma_cluster2', method='bootstrap' (variant=healthy) expected route -> .confint_sigma:bootstrap. R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft.",
+   "reclassify": {
+    "to": "intentionally_excluded",
+    "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-055",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit'|'Sigma_B'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'B' tier (see .sigma_parm_info in R/z-confint-gllvmTMB.R) and both expect the identical route (default->profile)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_B\", method=:wald) [default(via profile_ci)/explicit wald], profile_ci(fit, \"sigma_B[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_B\") [bootstrap] \u2014 raw per-species diagonal SD term for the unit(B) tier",
+     "comparands": [
+      "R fixture rows CI-ROUTE-043..045 (Sigma_unit) and CI-ROUTE-055..057 (Sigma_B) \u2014 same expected route, confirming the R alias collapses to one handler",
+      "GLLVM.jl solver actually invoked per method value for sigma_B"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_B', method='DEFAULT' (variant=healthy) expected route -> .confint_sigma:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-056",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit'|'Sigma_B'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'B' tier (see .sigma_parm_info in R/z-confint-gllvmTMB.R) and both expect the identical route (default->profile)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_B\", method=:wald) [default(via profile_ci)/explicit wald], profile_ci(fit, \"sigma_B[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_B\") [bootstrap] \u2014 raw per-species diagonal SD term for the unit(B) tier",
+     "comparands": [
+      "R fixture rows CI-ROUTE-043..045 (Sigma_unit) and CI-ROUTE-055..057 (Sigma_B) \u2014 same expected route, confirming the R alias collapses to one handler",
+      "GLLVM.jl solver actually invoked per method value for sigma_B"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_B', method='wald' (variant=healthy) expected route -> .confint_sigma:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-057",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit'|'Sigma_B'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'B' tier (see .sigma_parm_info in R/z-confint-gllvmTMB.R) and both expect the identical route (default->profile)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_B\", method=:wald) [default(via profile_ci)/explicit wald], profile_ci(fit, \"sigma_B[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_B\") [bootstrap] \u2014 raw per-species diagonal SD term for the unit(B) tier",
+     "comparands": [
+      "R fixture rows CI-ROUTE-043..045 (Sigma_unit) and CI-ROUTE-055..057 (Sigma_B) \u2014 same expected route, confirming the R alias collapses to one handler",
+      "GLLVM.jl solver actually invoked per method value for sigma_B"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_B', method='bootstrap' (variant=healthy) expected route -> .confint_sigma:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-058",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit_obs'|'Sigma_W'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'W' tier",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_W\", method=:wald) [default/explicit wald], profile_ci(fit, \"sigma_W[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_W\") [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-046..048 (Sigma_unit_obs) and CI-ROUTE-058..060 (Sigma_W)",
+      "GLLVM.jl solver actually invoked per method value for sigma_W"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_W', method='DEFAULT' (variant=healthy) expected route -> .confint_sigma:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-059",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit_obs'|'Sigma_W'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'W' tier",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_W\", method=:wald) [default/explicit wald], profile_ci(fit, \"sigma_W[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_W\") [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-046..048 (Sigma_unit_obs) and CI-ROUTE-058..060 (Sigma_W)",
+      "GLLVM.jl solver actually invoked per method value for sigma_W"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_W', method='wald' (variant=healthy) expected route -> .confint_sigma:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-060",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm=<'Sigma_unit_obs'|'Sigma_W'>, method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...); both names alias the same internal 'W' tier",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_W\", method=:wald) [default/explicit wald], profile_ci(fit, \"sigma_W[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_W\") [bootstrap]",
+     "comparands": [
+      "R fixture rows CI-ROUTE-046..048 (Sigma_unit_obs) and CI-ROUTE-058..060 (Sigma_W)",
+      "GLLVM.jl solver actually invoked per method value for sigma_W"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='Sigma_W', method='bootstrap' (variant=healthy) expected route -> .confint_sigma:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-061",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='sigma_phy', method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_phy\", method=:wald) [default/explicit wald], profile_ci(fit, \"sigma_phy[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_phy\") [bootstrap] \u2014 raw term already named identically in confint.jl/confint_profile.jl/confint_bootstrap.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-061..063",
+      "GLLVM.jl solver actually invoked per method value for sigma_phy"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='sigma_phy', method='DEFAULT' (variant=healthy) expected route -> .confint_sigma:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-062",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='sigma_phy', method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_phy\", method=:wald) [default/explicit wald], profile_ci(fit, \"sigma_phy[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_phy\") [bootstrap] \u2014 raw term already named identically in confint.jl/confint_profile.jl/confint_bootstrap.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-061..063",
+      "GLLVM.jl solver actually invoked per method value for sigma_phy"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='sigma_phy', method='wald' (variant=healthy) expected route -> .confint_sigma:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-063",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='sigma_phy', method=<DEFAULT|'wald'|'bootstrap'>) routing to .confint_sigma(method=...)",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_phy\", method=:wald) [default/explicit wald], profile_ci(fit, \"sigma_phy[t]\") [profile], bootstrap_ci(fit; parms=\"sigma_phy\") [bootstrap] \u2014 raw term already named identically in confint.jl/confint_profile.jl/confint_bootstrap.jl",
+     "comparands": [
+      "R fixture rows CI-ROUTE-061..063",
+      "GLLVM.jl solver actually invoked per method value for sigma_phy"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='sigma_phy', method='bootstrap' (variant=healthy) expected route -> .confint_sigma:bootstrap. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-065",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='beta', method=<DEFAULT|'profile'>), including the no-sd_report guard variant (row CI-ROUTE-081) where profile still succeeds because it does not depend on sd_report",
+     "julia_surface": "GLLVM.jl profile_ci(fit, \"<beta term>\") for default/explicit profile; verify profile succeeds on a fit whose cached vcov/Hessian is unavailable, since profile refits rather than reading sd_report",
+     "comparands": [
+      "R fixture rows CI-ROUTE-065, 081",
+      "GLLVM.jl profile_ci behaviour with and without a cached Hessian/vcov present on the fit"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='beta', method='DEFAULT' (variant=healthy) expected route -> .confint_fixef_profile:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-066",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='beta', method=<DEFAULT|'profile'>), including the no-sd_report guard variant (row CI-ROUTE-081) where profile still succeeds because it does not depend on sd_report",
+     "julia_surface": "GLLVM.jl profile_ci(fit, \"<beta term>\") for default/explicit profile; verify profile succeeds on a fit whose cached vcov/Hessian is unavailable, since profile refits rather than reading sd_report",
+     "comparands": [
+      "R fixture rows CI-ROUTE-065, 081",
+      "GLLVM.jl profile_ci behaviour with and without a cached Hessian/vcov present on the fit"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='beta', method='wald' (variant=healthy) expected route -> tidy:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-067",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-BETA-BOOTSTRAP-FALLBACK-DIVERGENCE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-BETA-BOOTSTRAP-FALLBACK-DIVERGENCE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='beta', method='bootstrap') silently falls back to tidy():wald with a 'falling back' message (row CI-ROUTE-067) rather than performing a genuine bootstrap",
+     "julia_surface": "GLLVM.jl bootstrap_ci(fit; parms=\"<beta term>\") performs a real parametric bootstrap for beta \u2014 this is an intentional behavioural divergence from R's fallback quirk, not a bug to reproduce",
+     "comparands": [
+      "R fixture row CI-ROUTE-067 (fallback-to-wald behaviour, documented as a known R quirk)",
+      "GLLVM.jl bootstrap_ci output for a beta term: must differ from the Wald CI (distinct method, not a silent alias) and be documented as intentionally divergent"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='beta', method='bootstrap' (variant=healthy) expected route -> tidy:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-068",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='sigma_eps', method=<DEFAULT|'wald'>), including the no-sd_report guard variant (row CI-ROUTE-084) where profile still succeeds",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_eps\", method=:wald) [wald], profile_ci(fit, \"sigma_eps\") [default/explicit profile \u2014 uses the closed-form sigma_eps analytic profile-out per src/profile.jl], verified with and without a cached vcov",
+     "comparands": [
+      "R fixture rows CI-ROUTE-068, 069, 084",
+      "GLLVM.jl solver actually invoked per method value for sigma_eps, and profile success without cached sd_report"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='sigma_eps', method='DEFAULT' (variant=healthy) expected route -> .confint_profile_targets:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-069",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='sigma_eps', method=<DEFAULT|'wald'>), including the no-sd_report guard variant (row CI-ROUTE-084) where profile still succeeds",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_eps\", method=:wald) [wald], profile_ci(fit, \"sigma_eps\") [default/explicit profile \u2014 uses the closed-form sigma_eps analytic profile-out per src/profile.jl], verified with and without a cached vcov",
+     "comparands": [
+      "R fixture rows CI-ROUTE-068, 069, 084",
+      "GLLVM.jl solver actually invoked per method value for sigma_eps, and profile success without cached sd_report"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='sigma_eps', method='wald' (variant=healthy) expected route -> .confint_wald_targets:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-070",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-EPS-BOOTSTRAP-FALLBACK-DIVERGENCE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-EPS-BOOTSTRAP-FALLBACK-DIVERGENCE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='sigma_eps', method='bootstrap') silently falls back to tidy():wald with a 'falling back' message (row CI-ROUTE-070)",
+     "julia_surface": "GLLVM.jl bootstrap_ci(fit; parms=\"sigma_eps\") performs a real parametric bootstrap \u2014 intentional behavioural divergence from R's fallback quirk",
+     "comparands": [
+      "R fixture row CI-ROUTE-070",
+      "GLLVM.jl bootstrap_ci output for sigma_eps: must differ from the Wald CI and be documented as intentionally divergent"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='sigma_eps', method='bootstrap' (variant=healthy) expected route -> tidy:wald. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-081",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='beta', method=<DEFAULT|'profile'>), including the no-sd_report guard variant (row CI-ROUTE-081) where profile still succeeds because it does not depend on sd_report",
+     "julia_surface": "GLLVM.jl profile_ci(fit, \"<beta term>\") for default/explicit profile; verify profile succeeds on a fit whose cached vcov/Hessian is unavailable, since profile refits rather than reading sd_report",
+     "comparands": [
+      "R fixture rows CI-ROUTE-065, 081",
+      "GLLVM.jl profile_ci behaviour with and without a cached Hessian/vcov present on the fit"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='beta', method='profile' (variant=no-se) expected route -> .confint_fixef_profile:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "inference/CI-ROUTE-084",
+   "planned_case_ids": [
+    "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE",
+     "r_call": "confint.gllvmTMB_multi(object, parm='sigma_eps', method=<DEFAULT|'wald'>), including the no-sd_report guard variant (row CI-ROUTE-084) where profile still succeeds",
+     "julia_surface": "GLLVM.jl confint(fit, y; parm=\"sigma_eps\", method=:wald) [wald], profile_ci(fit, \"sigma_eps\") [default/explicit profile \u2014 uses the closed-form sigma_eps analytic profile-out per src/profile.jl], verified with and without a cached vcov",
+     "comparands": [
+      "R fixture rows CI-ROUTE-068, 069, 084",
+      "GLLVM.jl solver actually invoked per method value for sigma_eps, and profile success without cached sd_report"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R dispatch fixture: parm='sigma_eps', method='profile' (variant=no-se) expected route -> .confint_profile_targets:profile. GLLVM.jl exposes an analogous typed/named CI surface for this estimand+method; a planned case verifies GLLVM.jl's own default-method choice and explicit-method routing reproduce the same method-to-solver mapping intent on its own public API (no literal R internal function-name string is reproduced, since GLLVM.jl has no equivalent string-token dispatcher).",
+   "reclassify": null,
+   "uncertain": false
+  }
+ ]
+}

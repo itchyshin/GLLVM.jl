@@ -1,0 +1,305 @@
+{
+ "area": "postfit-2",
+ "rows": [
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-loading_profile",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-logLik.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-nobs.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-ordiplot",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-ordiplot.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot.gllvmTMBmesh",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot.profile_derived",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot.profile_loadings",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot.sdmTMBmesh",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_comparison",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_heatmap",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_table",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot_anisotropy",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot_anisotropy2",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot_correlations",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot_loadings_confidence_eye",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-plot_rotated_loadings",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-predict.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-predict_cross_covariance",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-predict_missing",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-predictive_check",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_Sigma_phy_slope",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_check_consistency",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_confint_inspect",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_coverage_study",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_identifiability",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_reportable_table",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_slope_ci",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-print.summary.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-profile_ci_phylo_signal",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-profile_ci_total_variance",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-profile_cross_rho",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-profile_cross_rho_ci",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-profile_phylo_signal",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-profile_targets",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-residuals.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-rotate_loadings",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-sanity_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-simulate.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-simulate_site_trait",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-simulate_unit_trait",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-slope_sd_ci",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-standard_errors",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-summary.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-tidy",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-tidy.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-tmbprofile_wrapper",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-vcov.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  }
+ ]
+}

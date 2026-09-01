@@ -1,0 +1,95 @@
+{
+ "area": "masks-known",
+ "rows": [
+  {
+   "source_id": "masks-known/KNOWN-ALIAS",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "reference_model_case_ids": [
+    "KNOWN-ALIAS"
+   ],
+   "reference_model_evidence": "docs/dev-log/core070/masks-known-evidence.json",
+   "rationale": "Frozen R public-input contract verified; native/formula/bridge equivalent and required numerical or rejection evidence remain unpaid. Reference-only IDs cannot satisfy full freeze."
+  },
+  {
+   "source_id": "masks-known/KNOWN-BLOCK",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "reference_model_case_ids": [
+    "KNOWN-BLOCK"
+   ],
+   "reference_model_evidence": "docs/dev-log/core070/masks-known-evidence.json",
+   "rationale": "Frozen R public-input contract verified; native/formula/bridge equivalent and required numerical or rejection evidence remain unpaid. Reference-only IDs cannot satisfy full freeze."
+  },
+  {
+   "source_id": "masks-known/KNOWN-EXACT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "reference_model_case_ids": [
+    "KNOWN-EXACT"
+   ],
+   "reference_model_evidence": "docs/dev-log/core070/masks-known-evidence.json",
+   "rationale": "Frozen R public-input contract verified; native/formula/bridge equivalent and required numerical or rejection evidence remain unpaid. Reference-only IDs cannot satisfy full freeze."
+  },
+  {
+   "source_id": "masks-known/KNOWN-POISSON",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "reference_model_case_ids": [
+    "KNOWN-POISSON"
+   ],
+   "reference_model_evidence": "docs/dev-log/core070/masks-known-evidence.json",
+   "rationale": "Frozen R public-input contract verified; native/formula/bridge equivalent and required numerical or rejection evidence remain unpaid. Reference-only IDs cannot satisfy full freeze."
+  },
+  {
+   "source_id": "masks-known/KNOWN-ZERO",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "reference_model_case_ids": [
+    "KNOWN-ZERO"
+   ],
+   "reference_model_evidence": "docs/dev-log/core070/masks-known-evidence.json",
+   "rationale": "Frozen R public-input contract verified; native/formula/bridge equivalent and required numerical or rejection evidence remain unpaid. Reference-only IDs cannot satisfy full freeze."
+  },
+  {
+   "source_id": "masks-known/MASK-B-ALLFIXED",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "reference_model_case_ids": [
+    "MASK-B-ALLFIXED"
+   ],
+   "reference_model_evidence": "docs/dev-log/core070/masks-known-evidence.json",
+   "rationale": "Frozen R public-input contract verified; native/formula/bridge equivalent and required numerical or rejection evidence remain unpaid. Reference-only IDs cannot satisfy full freeze."
+  },
+  {
+   "source_id": "masks-known/MASK-B-PINS",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "reference_model_case_ids": [
+    "MASK-B-PINS"
+   ],
+   "reference_model_evidence": "docs/dev-log/core070/masks-known-evidence.json",
+   "rationale": "Frozen R public-input contract verified; native/formula/bridge equivalent and required numerical or rejection evidence remain unpaid. Reference-only IDs cannot satisfy full freeze."
+  },
+  {
+   "source_id": "masks-known/MASK-B-UPPER",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "reference_model_case_ids": [
+    "MASK-B-UPPER"
+   ],
+   "reference_model_evidence": "docs/dev-log/core070/masks-known-evidence.json",
+   "rationale": "Frozen R public-input contract verified; native/formula/bridge equivalent and required numerical or rejection evidence remain unpaid. Reference-only IDs cannot satisfy full freeze."
+  },
+  {
+   "source_id": "masks-known/MASK-PHY-PINS",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "reference_model_case_ids": [
+    "MASK-PHY-PINS"
+   ],
+   "reference_model_evidence": "docs/dev-log/core070/masks-known-evidence.json",
+   "rationale": "Frozen R public-input contract verified; native/formula/bridge equivalent and required numerical or rejection evidence remain unpaid. Reference-only IDs cannot satisfy full freeze."
+  }
+ ]
+}

@@ -1,0 +1,173 @@
+{
+ "area": "data",
+ "rows": [
+  {
+   "source_id": "data/DATA-MISS-BOTH",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-MISS-DEFAULT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-MISS-INCLUDE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-MISS-MODEL",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-ALL-COUNT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-EXPOSURE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-MIXED",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-NB1",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-NONCOUNT-ZERO",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-NONE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-PREDICT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-PREDICT-NONFINITE-HELPER",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-SCALAR",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-TRAIN-LEGACY",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-OFF-TRAIN-STORED",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-DF-MASK-DROP",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-DF-MASK-INCLUDE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-DF-UNIT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-FRACTIONAL",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-LONG",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-MATRIX-CELLS",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-MATRIX-MASK-DROP",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-MATRIX-MASK-INCLUDE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-MATRIX-MASK-SCALAR",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-MATRIX-SCALAR",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-MATRIX-UNIT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-NULL",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "data/DATA-W-ZERO",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  }
+ ]
+}

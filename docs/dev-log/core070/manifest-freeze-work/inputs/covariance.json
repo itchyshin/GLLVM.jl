@@ -1,0 +1,285 @@
+{
+ "area": "covariance",
+ "rows": [
+  {
+   "source_id": "covariance/COV-ANIMAL-FOLDED-UNIQUE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-ANIMAL-LATENT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "structured_reference_case_ids": [
+    "STRUCT-ANI-PED-SPARSE"
+   ]
+  },
+  {
+   "source_id": "covariance/COV-KERNEL-FOLDED-UNIQUE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "structured_reference_case_ids": [
+    "STRUCT-KER-SINGLE-PSI",
+    "STRUCT-KER-MULTI",
+    "STRUCT-KER-MULTI-PSI-PRUNED"
+   ]
+  },
+  {
+   "source_id": "covariance/COV-KERNEL-LATENT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "structured_reference_case_ids": [
+    "STRUCT-KER-SINGLE-PSI",
+    "STRUCT-KER-MULTI",
+    "STRUCT-KER-MULTI-PSI-PRUNED"
+   ]
+  },
+  {
+   "source_id": "covariance/COV-META-EXACT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-META-LEGACY",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-ORD-LATENT-BARE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-ORD-LATENT-COMMON",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-ORD-LATENT-DEFAULT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-ORD-SLOPE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "slope_reference_case_ids": [
+    "SLOPE-ORD-LAT-DEFAULT",
+    "SLOPE-ORD-LAT-POISDEFAULT"
+   ],
+   "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+  },
+  {
+   "source_id": "covariance/COV-ORD-SLOPE-NOUNIQUE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "slope_reference_case_ids": [
+    "SLOPE-ORD-LAT-NOUNIQUE",
+    "SLOPE-ORD-LAT-POISNOUNIQUE"
+   ],
+   "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-A-ALIAS",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-DEP",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-FOLDED-UNIQUE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-INDEP",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "structured_reference_case_ids": [
+    "STRUCT-PHY-TREE-RR",
+    "STRUCT-PHY-DENSE-RR",
+    "STRUCT-PHY-TREE-PROPTO"
+   ]
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-LATENT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "structured_reference_case_ids": [
+    "STRUCT-PHY-TREE-RR",
+    "STRUCT-PHY-DENSE-RR",
+    "STRUCT-PHY-TREE-PROPTO"
+   ]
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F00-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "slope_reference_case_ids": [
+    "SLOPE-ORD-LAT-DEFAULT",
+    "SLOPE-ORD-LAT-NOUNIQUE",
+    "SLOPE-ORD-LAT-RANK4",
+    "SLOPE-ANIMAL-INDEP-BAR",
+    "SLOPE-ANIMAL-INDEP-DBAR",
+    "SLOPE-ANIMAL-DEP-BAR",
+    "SLOPE-ANIMAL-DEP-DBAR",
+    "SLOPE-ANIMAL-LAT-NOUNIQUE",
+    "SLOPE-ANIMAL-LAT-DEFAULT",
+    "SLOPE-PHYLO-DEP-MULTIGAUSS"
+   ],
+   "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F01-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F01-L1",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F02-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "slope_reference_case_ids": [
+    "SLOPE-ORD-LAT-POISDEFAULT",
+    "SLOPE-ORD-LAT-POISNOUNIQUE"
+   ],
+   "slope_case_plan": "docs/dev-log/core070/slopes-required-case-plan.json"
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F03-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F04-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F05-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F07-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F08-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F09-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F14-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F15-L0",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "covariance/COV-SPATIAL-DEP",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "structured_reference_case_ids": [
+    "STRUCT-SPA-INDEP",
+    "STRUCT-SPA-LATENT",
+    "STRUCT-SPA-LATENT-PSI",
+    "STRUCT-SPA-DEP",
+    "STRUCT-SPA-COMMON-MAP"
+   ]
+  },
+  {
+   "source_id": "covariance/COV-SPATIAL-FOLDED-UNIQUE",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "structured_reference_case_ids": [
+    "STRUCT-SPA-INDEP",
+    "STRUCT-SPA-LATENT",
+    "STRUCT-SPA-LATENT-PSI",
+    "STRUCT-SPA-DEP",
+    "STRUCT-SPA-COMMON-MAP"
+   ]
+  },
+  {
+   "source_id": "covariance/COV-SPATIAL-INDEP",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "structured_reference_case_ids": [
+    "STRUCT-SPA-INDEP",
+    "STRUCT-SPA-LATENT",
+    "STRUCT-SPA-LATENT-PSI",
+    "STRUCT-SPA-DEP",
+    "STRUCT-SPA-COMMON-MAP"
+   ]
+  },
+  {
+   "source_id": "covariance/COV-SPATIAL-LATENT",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required.",
+   "structured_case_plan": "docs/dev-log/core070/structured-required-case-plan.json",
+   "structured_reference_case_ids": [
+    "STRUCT-SPA-INDEP",
+    "STRUCT-SPA-LATENT",
+    "STRUCT-SPA-LATENT-PSI",
+    "STRUCT-SPA-DEP",
+    "STRUCT-SPA-COMMON-MAP"
+   ]
+  }
+ ]
+}

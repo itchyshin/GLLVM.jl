@@ -1,0 +1,902 @@
+{
+ "schema": "core070-required-case-plan/v1",
+ "status": "DRAFT_V2_PLANNED_PENDING_MAINTAINER_SIGNOFF",
+ "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+ "generated": "2026-09-01 manifest-freeze fan-out (adversarially verified drafts)",
+ "rows": [
+  {
+   "source_id": "namespace/export/getLoadings",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GETLOADINGS-POSTFIT-READBACK",
+     "r_call": "getLoadings(fit)` on a small Gaussian GLLVM fit from `gllvmTMB(...)",
+     "julia_surface": "corresponding accessor on a `GLLVM.jl` fit object returned by the Julia bridge for the same simulated data/formula",
+     "comparands": [
+      "getLoadings() numeric output (matrix/vector) to <=1e-6",
+      "dimnames/ordering of species and LV axes"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit accessor over a fitted gllvmTMB object; required to confirm the Julia bridge exposes the equivalent extracted quantity to numerical tolerance."
+  },
+  {
+   "source_id": "namespace/export/getREsd",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GETRESD-POSTFIT-READBACK",
+     "r_call": "getREsd(fit)` on a small Gaussian GLLVM fit from `gllvmTMB(...)",
+     "julia_surface": "corresponding accessor on a `GLLVM.jl` fit object returned by the Julia bridge for the same simulated data/formula",
+     "comparands": [
+      "getREsd() numeric output (matrix/vector) to <=1e-6",
+      "dimnames/ordering of species and LV axes"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit accessor over a fitted gllvmTMB object; required to confirm the Julia bridge exposes the equivalent extracted quantity to numerical tolerance."
+  },
+  {
+   "source_id": "namespace/export/getResidualCor",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GETRESIDUALCOR-POSTFIT-READBACK",
+     "r_call": "getResidualCor(fit)` on a small Gaussian GLLVM fit from `gllvmTMB(...)",
+     "julia_surface": "corresponding accessor on a `GLLVM.jl` fit object returned by the Julia bridge for the same simulated data/formula",
+     "comparands": [
+      "getResidualCor() numeric output (matrix/vector) to <=1e-6",
+      "dimnames/ordering of species and LV axes"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit accessor over a fitted gllvmTMB object; required to confirm the Julia bridge exposes the equivalent extracted quantity to numerical tolerance."
+  },
+  {
+   "source_id": "namespace/export/getResidualCov",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GETRESIDUALCOV-POSTFIT-READBACK",
+     "r_call": "getResidualCov(fit)` on a small Gaussian GLLVM fit from `gllvmTMB(...)",
+     "julia_surface": "corresponding accessor on a `GLLVM.jl` fit object returned by the Julia bridge for the same simulated data/formula",
+     "comparands": [
+      "getResidualCov() numeric output (matrix/vector) to <=1e-6",
+      "dimnames/ordering of species and LV axes"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit accessor over a fitted gllvmTMB object; required to confirm the Julia bridge exposes the equivalent extracted quantity to numerical tolerance."
+  },
+  {
+   "source_id": "namespace/export/gllvmTMB",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GLLVMTMB-NATIVE-FIT",
+     "r_call": "gllvmTMB(y ~ 1, family = gaussian(), num.lv = 2, data = dat)` on a small simulated dataset",
+     "julia_surface": "GLLVM.jl top-level fit entry point (`fit_gllvm`/family dispatch in `families/fit_gllvm.jl`) invoked via `gllvm_julia_fit` on the identical simulated data",
+     "comparands": [
+      "log-likelihood to <=1e-6 (or documented tolerance for non-Gaussian Laplace)",
+      "point estimates (loadings, coefficients)"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Package's core public fit entry point; already the subject of the AGHQ/family/covariance annexes for many cells, but the bare exported symbol itself still needs one native-vs-bridge admission case in this namespace annex."
+  },
+  {
+   "source_id": "namespace/export/gllvmTMB_wide",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GLLVMTMB-WIDE-NATIVE-FIT",
+     "r_call": "gllvmTMB_wide(Y, X = NULL, family = gaussian(), num.lv = 2)` wide-matrix-input fit entry point",
+     "julia_surface": "Julia bridge's wide/matrix-input fit path (or documented rejection if wide-input is not yet exposed by the bridge)",
+     "comparands": [
+      "log-likelihood parity to the equivalent long-format gllvmTMB() call",
+      "point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Alternate wide-matrix-input constructor for the same fitting engine as gllvmTMB(); requires its own admission case because the input-reshaping step is itself a source of divergence risk."
+  },
+  {
+   "source_id": "namespace/export/gllvmTMBcontrol",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GLLVMTMBCONTROL-STRUCTURE",
+     "r_call": "gllvmTMBcontrol(optimizer = 'nlminb', maxit = 500, ...)` default and non-default construction",
+     "julia_surface": "corresponding Julia bridge control/options structure (or keyword-argument surface) accepted by `gllvm_julia_fit`/`gllvm_julia_setup`",
+     "comparands": [
+      "field-by-field default values",
+      "documented rejection behavior for unknown/out-of-range options"
+     ],
+     "evidence_kind": "control"
+    }
+   ],
+   "rationale": "Exported control-object constructor gating optimizer/iteration options passed into every gllvmTMB() fit; the Julia bridge's option surface must be checked against these defaults."
+  },
+  {
+   "source_id": "namespace/export/miss_control",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-MISS-CONTROL-STRUCTURE",
+     "r_call": "miss_control(...)` default and non-default construction (R/gllvmTMB.R)",
+     "julia_surface": "N/A \u2014 no Julia missing-data-imputation subsystem is implemented (see impute_model/imputed reclassification above)",
+     "comparands": [
+      "field-by-field default values (R-side only, documented as out-of-bridge-scope for now)"
+     ],
+     "evidence_kind": "control"
+    }
+   ],
+   "rationale": "Control-object constructor for the missing-predictor imputation pipeline, which is itself reclassified compatibility_adapter (impute_model/imputed/phylo_signal_mi/predict_missing) pending a Julia MI port; kept as one lightweight structural case (documenting current field defaults) rather than a full reclassify, since gllvmTMBcontrol-style control objects are otherwise uniformly required_core in this annex."
+  },
+  {
+   "source_id": "namespace/export/gllvm_julia_fit",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GLLVM-JULIA-FIT-BRIDGE-ADMISSION",
+     "r_call": "gllvm_julia_fit(data, formula, family = gaussian(), num.lv = 2, ...)` R-side entry point that dispatches into the Julia bridge",
+     "julia_surface": "the Julia-side fit function it calls into (`GLLVM.fit_gllvm`/family dispatch) plus the JuliaCall/JuliaConnectoR marshalling layer",
+     "comparands": [
+      "successful round-trip admission (no marshalling error)",
+      "returned log-likelihood and point estimates vs. the equivalent native R gllvmTMB() fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "This is the R-side half of the bridge itself; its own required case is the admission/round-trip contract, distinct from the numeric-parity cases already owed per-family in the AGHQ/family annexes."
+  },
+  {
+   "source_id": "namespace/export/gllvm_julia_setup",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GLLVM-JULIA-SETUP-BRIDGE-ADMISSION",
+     "r_call": "gllvm_julia_setup(...)` environment/session bootstrap (Julia binary discovery, package activation)",
+     "julia_surface": "successful activation of the `GLLVM.jl` project environment it targets",
+     "comparands": [
+      "setup completes without error on a clean R session",
+      "reported Julia/GLLVM.jl version strings are consistent with the pinned bridge contract"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Bridge bootstrap function; required because a silent setup failure would invalidate every other bridge case in this and sibling annexes."
+  },
+  {
+   "source_id": "namespace/export/gllvmTMB_check_consistency",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GLLVMTMB-CHECK-CONSISTENCY-POSTFIT-READBACK",
+     "r_call": "gllvmTMB_check_consistency(fit)` on a small Gaussian GLLVM fit",
+     "julia_surface": "the equivalent diagnostic computed from the Julia bridge fit object's own postfit surface (gradient/Hessian/SE readback in confint.jl / the fit result struct)",
+     "comparands": [
+      "reported gradient-norm / SE / diagnostic flag values to documented tolerance",
+      "pass/fail verdict parity where the diagnostic is boolean-thresholded"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit diagnostic returning a internal-consistency diagnostic report on a fitted model; required to confirm the Julia bridge's own diagnostics agree with R's on the same fit."
+  },
+  {
+   "source_id": "namespace/export/gllvmTMB_diagnose",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GLLVMTMB-DIAGNOSE-POSTFIT-READBACK",
+     "r_call": "gllvmTMB_diagnose(fit)` on a small Gaussian GLLVM fit",
+     "julia_surface": "the equivalent diagnostic computed from the Julia bridge fit object's own postfit surface (gradient/Hessian/SE readback in confint.jl / the fit result struct)",
+     "comparands": [
+      "reported gradient-norm / SE / diagnostic flag values to documented tolerance",
+      "pass/fail verdict parity where the diagnostic is boolean-thresholded"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit diagnostic returning a convergence/gradient/Hessian diagnostic report; required to confirm the Julia bridge's own diagnostics agree with R's on the same fit."
+  },
+  {
+   "source_id": "namespace/export/sanity_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-SANITY-MULTI-POSTFIT-READBACK",
+     "r_call": "sanity_multi(fit)` on a small Gaussian GLLVM fit",
+     "julia_surface": "the equivalent diagnostic computed from the Julia bridge fit object's own postfit surface (gradient/Hessian/SE readback in confint.jl / the fit result struct)",
+     "comparands": [
+      "reported gradient-norm / SE / diagnostic flag values to documented tolerance",
+      "pass/fail verdict parity where the diagnostic is boolean-thresholded"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit diagnostic returning a gradient/SE sanity-threshold check across a multi-model fit; required to confirm the Julia bridge's own diagnostics agree with R's on the same fit."
+  },
+  {
+   "source_id": "namespace/export/predictive_check",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PREDICTIVE-CHECK-POSTFIT-READBACK",
+     "r_call": "predictive_check(fit)` on a small Gaussian GLLVM fit",
+     "julia_surface": "the equivalent diagnostic computed from the Julia bridge fit object's own postfit surface (gradient/Hessian/SE readback in confint.jl / the fit result struct)",
+     "comparands": [
+      "reported gradient-norm / SE / diagnostic flag values to documented tolerance",
+      "pass/fail verdict parity where the diagnostic is boolean-thresholded"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit diagnostic returning a posterior/predictive-check diagnostic summary; required to confirm the Julia bridge's own diagnostics agree with R's on the same fit."
+  },
+  {
+   "source_id": "namespace/export/standard_errors",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-STANDARD-ERRORS-POSTFIT-READBACK",
+     "r_call": "standard_errors(fit)` on a small Gaussian GLLVM fit",
+     "julia_surface": "the equivalent diagnostic computed from the Julia bridge fit object's own postfit surface (gradient/Hessian/SE readback in confint.jl / the fit result struct)",
+     "comparands": [
+      "reported gradient-norm / SE / diagnostic flag values to documented tolerance",
+      "pass/fail verdict parity where the diagnostic is boolean-thresholded"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit diagnostic returning a extracted parameter standard-error table; required to confirm the Julia bridge's own diagnostics agree with R's on the same fit."
+  },
+  {
+   "source_id": "namespace/export/profile_targets",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PROFILE-TARGETS-POSTFIT-READBACK",
+     "r_call": "profile_targets(fit)` on a small Gaussian GLLVM fit",
+     "julia_surface": "the equivalent diagnostic computed from the Julia bridge fit object's own postfit surface (gradient/Hessian/SE readback in confint.jl / the fit result struct)",
+     "comparands": [
+      "reported gradient-norm / SE / diagnostic flag values to documented tolerance",
+      "pass/fail verdict parity where the diagnostic is boolean-thresholded"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported postfit diagnostic returning a list of profile-likelihood-ready targets for a fitted model; required to confirm the Julia bridge's own diagnostics agree with R's on the same fit."
+  },
+  {
+   "source_id": "namespace/export/lognormal",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-LOGNORMAL-FAMILY-BRIDGE",
+     "r_call": "lognormal(link='log')` family-object construction, then `gllvmTMB(y ~ 1, family = lognormal(), num.lv = 2, data = dat)`",
+     "julia_surface": "no direct GLLVM.jl analytic-Laplace fitter yet; comparand is the bridge's documented rejection/'unsupported family' path",
+     "comparands": [
+      "family/link name strings match the bridge's dispatch key",
+      "for families with a wired Julia fitter: log-likelihood/point-estimate parity; for unwired families: a documented, non-crashing rejection with a clear error surfaced to R"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported family constructor; required to confirm the bridge either reproduces this family's fit or fails predictably rather than silently mis-dispatching to a different family."
+  },
+  {
+   "source_id": "namespace/export/multinomial",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-MULTINOMIAL-FAMILY-BRIDGE",
+     "r_call": "multinomial(link='logit', baseline=1)` family-object construction, then `gllvmTMB(y ~ 1, family = multinomial(), num.lv = 2, data = dat)`",
+     "julia_surface": "no direct GLLVM.jl analytic-Laplace fitter yet; comparand is the bridge's documented rejection/'unsupported family' path",
+     "comparands": [
+      "family/link name strings match the bridge's dispatch key",
+      "for families with a wired Julia fitter: log-likelihood/point-estimate parity; for unwired families: a documented, non-crashing rejection with a clear error surfaced to R"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported family constructor; required to confirm the bridge either reproduces this family's fit or fails predictably rather than silently mis-dispatching to a different family."
+  },
+  {
+   "source_id": "namespace/export/nbinom1",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-NBINOM1-FAMILY-BRIDGE",
+     "r_call": "nbinom1(link='log')` family-object construction, then `gllvmTMB(y ~ 1, family = nbinom1(), num.lv = 2, data = dat)`",
+     "julia_surface": "GLLVM.jl's Negative Binomial family (`families/negbin.jl`) under the NB1 mean-variance parameterization, or documented rejection if only NB2 is wired",
+     "comparands": [
+      "family/link name strings match the bridge's dispatch key",
+      "for families with a wired Julia fitter: log-likelihood/point-estimate parity; for unwired families: a documented, non-crashing rejection with a clear error surfaced to R"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported family constructor; required to confirm the bridge either reproduces this family's fit or fails predictably rather than silently mis-dispatching to a different family."
+  },
+  {
+   "source_id": "namespace/export/nbinom2",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-NBINOM2-FAMILY-BRIDGE",
+     "r_call": "nbinom2(link='log')` family-object construction, then `gllvmTMB(y ~ 1, family = nbinom2(), num.lv = 2, data = dat)`",
+     "julia_surface": "GLLVM.jl's Negative Binomial family (`families/negbin.jl`, scalar-auxiliary implicit gradient over (eta, log dispersion))",
+     "comparands": [
+      "family/link name strings match the bridge's dispatch key",
+      "for families with a wired Julia fitter: log-likelihood/point-estimate parity; for unwired families: a documented, non-crashing rejection with a clear error surfaced to R"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported family constructor; required to confirm the bridge either reproduces this family's fit or fails predictably rather than silently mis-dispatching to a different family."
+  },
+  {
+   "source_id": "namespace/export/ordinal_probit",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-ORDINAL-PROBIT-FAMILY-BRIDGE",
+     "r_call": "ordinal_probit(link='probit')` family-object construction, then `gllvmTMB(y ~ 1, family = ordinal_probit(), num.lv = 2, data = dat)`",
+     "julia_surface": "GLLVM.jl's Ordinal family (`families/ordinal.jl`, generic implicit cumulative-logit gradient) under a probit link, or documented rejection if only logit is wired",
+     "comparands": [
+      "family/link name strings match the bridge's dispatch key",
+      "for families with a wired Julia fitter: log-likelihood/point-estimate parity; for unwired families: a documented, non-crashing rejection with a clear error surfaced to R"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported family constructor; required to confirm the bridge either reproduces this family's fit or fails predictably rather than silently mis-dispatching to a different family."
+  },
+  {
+   "source_id": "namespace/export/student",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-STUDENT-FAMILY-BRIDGE",
+     "r_call": "student(link='identity', df=NULL)` family-object construction, then `gllvmTMB(y ~ 1, family = student(), num.lv = 2, data = dat)`",
+     "julia_surface": "no Student-t family in GLLVM.jl's implemented family list; comparand is the bridge's documented rejection/'unsupported family' path",
+     "comparands": [
+      "family/link name strings match the bridge's dispatch key",
+      "for families with a wired Julia fitter: log-likelihood/point-estimate parity; for unwired families: a documented, non-crashing rejection with a clear error surfaced to R"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported family constructor; required to confirm the bridge either reproduces this family's fit or fails predictably rather than silently mis-dispatching to a different family."
+  },
+  {
+   "source_id": "namespace/export/truncated_nbinom2",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-TRUNCATED-NBINOM2-FAMILY-BRIDGE",
+     "r_call": "truncated_nbinom2(link='log')` family-object construction, then `gllvmTMB(y ~ 1, family = truncated_nbinom2(), num.lv = 2, data = dat)`",
+     "julia_surface": "no truncated-NB2 fitter yet in GLLVM.jl; comparand is the bridge's documented rejection/'unsupported family' path",
+     "comparands": [
+      "family/link name strings match the bridge's dispatch key",
+      "for families with a wired Julia fitter: log-likelihood/point-estimate parity; for unwired families: a documented, non-crashing rejection with a clear error surfaced to R"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported family constructor; required to confirm the bridge either reproduces this family's fit or fails predictably rather than silently mis-dispatching to a different family."
+  },
+  {
+   "source_id": "namespace/export/truncated_poisson",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-TRUNCATED-POISSON-FAMILY-BRIDGE",
+     "r_call": "truncated_poisson(link='log')` family-object construction, then `gllvmTMB(y ~ 1, family = truncated_poisson(), num.lv = 2, data = dat)`",
+     "julia_surface": "no truncated-Poisson fitter yet in GLLVM.jl; comparand is the bridge's documented rejection/'unsupported family' path",
+     "comparands": [
+      "family/link name strings match the bridge's dispatch key",
+      "for families with a wired Julia fitter: log-likelihood/point-estimate parity; for unwired families: a documented, non-crashing rejection with a clear error surfaced to R"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported family constructor; required to confirm the bridge either reproduces this family's fit or fails predictably rather than silently mis-dispatching to a different family."
+  },
+  {
+   "source_id": "namespace/export/tweedie",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-TWEEDIE-FAMILY-BRIDGE",
+     "r_call": "tweedie(link='log', p=NULL)` family-object construction, then `gllvmTMB(y ~ 1, family = tweedie(), num.lv = 2, data = dat)`",
+     "julia_surface": "no Tweedie fitter yet in GLLVM.jl; comparand is the bridge's documented rejection/'unsupported family' path",
+     "comparands": [
+      "family/link name strings match the bridge's dispatch key",
+      "for families with a wired Julia fitter: log-likelihood/point-estimate parity; for unwired families: a documented, non-crashing rejection with a clear error surfaced to R"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported family constructor; required to confirm the bridge either reproduces this family's fit or fails predictably rather than silently mis-dispatching to a different family."
+  },
+  {
+   "source_id": "namespace/export/gr",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-GR-FORMULA-TERM",
+     "r_call": "~ gr(group, cov = NULL)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (grouping-factor keyword (glmmTMB/brms-style random-effect group syntax)); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/indep",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-INDEP-FORMULA-TERM",
+     "r_call": "~ indep(formula, common = FALSE)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (independent random-effect-structure keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/kernel_dep",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-KERNEL-DEP-FORMULA-TERM",
+     "r_call": "~ kernel_dep(unit, K, name='kernel')` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (dependent-structure custom-kernel keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/kernel_indep",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-KERNEL-INDEP-FORMULA-TERM",
+     "r_call": "~ kernel_indep(unit, K, name='kernel', common=FALSE)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (independent-structure custom-kernel keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/kernel_latent",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-KERNEL-LATENT-FORMULA-TERM",
+     "r_call": "~ kernel_latent(unit, K, d=1, name='kernel', unique=FALSE)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (latent-factor custom-kernel keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/kernel_scalar",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-KERNEL-SCALAR-FORMULA-TERM",
+     "r_call": "~ kernel_scalar(unit, K, name='kernel')` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (scalar custom-kernel keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/kernel_unique",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-KERNEL-UNIQUE-FORMULA-TERM",
+     "r_call": "~ kernel_unique(unit, K, name='kernel')` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (unique-structure custom-kernel keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/latent",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-LATENT-FORMULA-TERM",
+     "r_call": "~ latent(formula, d=2, unique=TRUE, common=FALSE, lv=NULL)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (latent-variable-factor formula keyword \u2014 the core GLLVM ordination term); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/meta",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-META-FORMULA-TERM",
+     "r_call": "~ meta(value, sampling_var)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (meta-analytic known-sampling-variance keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/meta_V",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-META-V-FORMULA-TERM",
+     "r_call": "~ meta_V(V, type='exact')` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (meta-analytic known-covariance-matrix keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/meta_known_V",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-META-KNOWN-V-FORMULA-TERM",
+     "r_call": "~ meta_known_V(V, type='exact')` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (meta-analytic known-V keyword (alternate entry point)); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/scalar",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-SCALAR-FORMULA-TERM",
+     "r_call": "~ scalar(formula)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (scalar (non-factor) random-effect keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/traits",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-TRAITS-FORMULA-TERM",
+     "r_call": "~ traits(...)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (fourth-corner trait-formula keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/phylo_dep",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PHYLO-DEP-FORMULA-TERM",
+     "r_call": "~ phylo_dep(formula, tree=NULL, vcv=NULL, A=NULL, Ainv=NULL)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (dependent phylogenetic-structure keyword \u2014 maps to `sparse_phy.jl`/`phylo_contrasts.jl`/`edge_incidence.jl` representations); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/phylo_indep",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PHYLO-INDEP-FORMULA-TERM",
+     "r_call": "~ phylo_indep(formula, tree=NULL, ...)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (independent phylogenetic-structure keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/phylo_latent",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PHYLO-LATENT-FORMULA-TERM",
+     "r_call": "~ phylo_latent(formula, d=1, ...)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (phylogenetic latent-factor keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/phylo_rr",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PHYLO-RR-FORMULA-TERM",
+     "r_call": "~ phylo_rr(species, d=1)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (phylogenetic reduced-rank keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/phylo_scalar",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PHYLO-SCALAR-FORMULA-TERM",
+     "r_call": "~ phylo_scalar(formula, ...)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (phylogenetic scalar keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/phylo_slope",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PHYLO-SLOPE-FORMULA-TERM",
+     "r_call": "~ phylo_slope(formula)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (phylogenetic random-slope keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/phylo_unique",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PHYLO-UNIQUE-FORMULA-TERM",
+     "r_call": "~ phylo_unique(formula, ...)` parsed inside a gllvmTMB() formula on a small simulated dataset",
+     "julia_surface": "the equivalent term recognized by GLLVM.jl's formula/StatsModels.jl integration (Boole's `@formula` grammar) or, where the keyword's backend is unimplemented, a documented parse-time rejection",
+     "comparands": [
+      "parsed term structure (kind, dimension d, unique/common flags)",
+      "resulting model's log-likelihood parity where the backend is wired; otherwise a clean rejection"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-DSL keyword (phylogenetic unique-structure keyword); required so the Julia bridge's formula grammar is checked against R's parser for this term, independent of whether the underlying latent structure is fully fit-able yet."
+  },
+  {
+   "source_id": "namespace/export/loading_ci",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-LOADING-CI-CI-POSTFIT-READBACK",
+     "r_call": "loading_ci(fit, ...)` on a small Gaussian or phylogenetic-Gaussian GLLVM fit",
+     "julia_surface": "GLLVM.jl `confint.jl`/`confint_derived_wald.jl` Wald CI on loadings",
+     "comparands": [
+      "CI bounds to <=1e-4 relative or documented CI tolerance",
+      "point estimate matches the corresponding non-CI extractor case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported CI/profile-likelihood accessor; GLLVM.jl carries a documented CI subsystem (confint*.jl) so a comparand is expected to exist, but the exact R-name-to-Julia-function mapping needs a maintainer/Fisher confirmation pass."
+  },
+  {
+   "source_id": "namespace/export/loading_profile",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-LOADING-PROFILE-CI-POSTFIT-READBACK",
+     "r_call": "loading_profile(fit, ...)` on a small Gaussian or phylogenetic-Gaussian GLLVM fit",
+     "julia_surface": "GLLVM.jl `confint_profile.jl` profile-likelihood CI on loadings",
+     "comparands": [
+      "CI bounds to <=1e-4 relative or documented CI tolerance",
+      "point estimate matches the corresponding non-CI extractor case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported CI/profile-likelihood accessor; GLLVM.jl carries a documented CI subsystem (confint*.jl) so a comparand is expected to exist, but the exact R-name-to-Julia-function mapping needs a maintainer/Fisher confirmation pass."
+  },
+  {
+   "source_id": "namespace/export/profile_ci_phylo_signal",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PROFILE-CI-PHYLO-SIGNAL-CI-POSTFIT-READBACK",
+     "r_call": "profile_ci_phylo_signal(fit, trait_idx=NULL, level=0.95)` on a small Gaussian or phylogenetic-Gaussian GLLVM fit",
+     "julia_surface": "GLLVM.jl `confint_derived.jl` profile CI on phylogenetic signal H^2",
+     "comparands": [
+      "CI bounds to <=1e-4 relative or documented CI tolerance",
+      "point estimate matches the corresponding non-CI extractor case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported CI/profile-likelihood accessor; GLLVM.jl carries a documented CI subsystem (confint*.jl) so a comparand is expected to exist, but the exact R-name-to-Julia-function mapping needs a maintainer/Fisher confirmation pass."
+  },
+  {
+   "source_id": "namespace/export/profile_ci_total_variance",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PROFILE-CI-TOTAL-VARIANCE-CI-POSTFIT-READBACK",
+     "r_call": "profile_ci_total_variance(fit, ...)` on a small Gaussian or phylogenetic-Gaussian GLLVM fit",
+     "julia_surface": "GLLVM.jl `confint_derived.jl` profile CI on total/communality variance",
+     "comparands": [
+      "CI bounds to <=1e-4 relative or documented CI tolerance",
+      "point estimate matches the corresponding non-CI extractor case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported CI/profile-likelihood accessor; GLLVM.jl carries a documented CI subsystem (confint*.jl) so a comparand is expected to exist, but the exact R-name-to-Julia-function mapping needs a maintainer/Fisher confirmation pass."
+  },
+  {
+   "source_id": "namespace/export/profile_cross_rho",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PROFILE-CROSS-RHO-CI-POSTFIT-READBACK",
+     "r_call": "profile_cross_rho(A_H, A_P, W, rho, refit, metrics=NULL, ...)` on a small Gaussian or phylogenetic-Gaussian GLLVM fit",
+     "julia_surface": "GLLVM.jl cross-trait-correlation profile machinery (`confint_derived.jl`), if a matching cross-kernel entry point exists \u2014 else documented as out-of-bridge-scope alongside make_cross_kernel",
+     "comparands": [
+      "CI bounds to <=1e-4 relative or documented CI tolerance",
+      "point estimate matches the corresponding non-CI extractor case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported CI/profile-likelihood accessor; GLLVM.jl carries a documented CI subsystem (confint*.jl) so a comparand is expected to exist, but the exact R-name-to-Julia-function mapping needs a maintainer/Fisher confirmation pass."
+  },
+  {
+   "source_id": "namespace/export/profile_cross_rho_ci",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PROFILE-CROSS-RHO-CI-CI-POSTFIT-READBACK",
+     "r_call": "profile_cross_rho_ci(profile, level=0.95)` on a small Gaussian or phylogenetic-Gaussian GLLVM fit",
+     "julia_surface": "bracket-then-bisect CI extraction over the profile_cross_rho() curve, same uncertain Julia mapping as profile_cross_rho",
+     "comparands": [
+      "CI bounds to <=1e-4 relative or documented CI tolerance",
+      "point estimate matches the corresponding non-CI extractor case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported CI/profile-likelihood accessor; GLLVM.jl carries a documented CI subsystem (confint*.jl) so a comparand is expected to exist, but the exact R-name-to-Julia-function mapping needs a maintainer/Fisher confirmation pass."
+  },
+  {
+   "source_id": "namespace/export/profile_phylo_signal",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PROFILE-PHYLO-SIGNAL-CI-POSTFIT-READBACK",
+     "r_call": "profile_phylo_signal(fit, ...)` on a small Gaussian or phylogenetic-Gaussian GLLVM fit",
+     "julia_surface": "GLLVM.jl `confint_derived.jl` profile curve for phylogenetic signal H^2 (curve-generation counterpart to profile_ci_phylo_signal)",
+     "comparands": [
+      "CI bounds to <=1e-4 relative or documented CI tolerance",
+      "point estimate matches the corresponding non-CI extractor case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported CI/profile-likelihood accessor; GLLVM.jl carries a documented CI subsystem (confint*.jl) so a comparand is expected to exist, but the exact R-name-to-Julia-function mapping needs a maintainer/Fisher confirmation pass."
+  },
+  {
+   "source_id": "namespace/export/slope_sd_ci",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-SLOPE-SD-CI-CI-POSTFIT-READBACK",
+     "r_call": "slope_sd_ci(fit, level=0.95, scale=c('sd','variance'))` on a small Gaussian or phylogenetic-Gaussian GLLVM fit",
+     "julia_surface": "GLLVM.jl Wald/profile CI on a random-slope SD, log-scale back-transform per `confint.jl`",
+     "comparands": [
+      "CI bounds to <=1e-4 relative or documented CI tolerance",
+      "point estimate matches the corresponding non-CI extractor case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported CI/profile-likelihood accessor; GLLVM.jl carries a documented CI subsystem (confint*.jl) so a comparand is expected to exist, but the exact R-name-to-Julia-function mapping needs a maintainer/Fisher confirmation pass."
+  },
+  {
+   "source_id": "namespace/export/tmbprofile_wrapper",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-TMBPROFILE-WRAPPER-CI-POSTFIT-READBACK",
+     "r_call": "tmbprofile_wrapper(fit, ...)` on a small Gaussian or phylogenetic-Gaussian GLLVM fit",
+     "julia_surface": "GLLVM.jl's underlying profile-likelihood bracket-then-bisect kernel (`confint_profile.jl`) that loading_profile/profile_ci_* build on",
+     "comparands": [
+      "CI bounds to <=1e-4 relative or documented CI tolerance",
+      "point estimate matches the corresponding non-CI extractor case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported CI/profile-likelihood accessor; GLLVM.jl carries a documented CI subsystem (confint*.jl) so a comparand is expected to exist, but the exact R-name-to-Julia-function mapping needs a maintainer/Fisher confirmation pass."
+  },
+  {
+   "source_id": "namespace/export/predict_cross_covariance",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-PREDICT-CROSS-COVARIANCE-POSTFIT",
+     "r_call": "predict_cross_covariance(fit, ...)` (R/extract-sigma.R) cross-trait predicted covariance",
+     "julia_surface": "GLLVM.jl's Sigma_y cross-covariance extraction (`confint_derived.jl` comparands / packing.jl reconstruction), or documented as out-of-scope if it depends on the cross-kernel/isdm pipeline reclassified above",
+     "comparands": [
+      "predicted covariance matrix entries to <=1e-6"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported cross-covariance predictor over a fitted model; kept required_core with uncertain mapping since it may depend on the make_cross_kernel/isdm pipeline reclassified compatibility_adapter above."
+  },
+  {
+   "source_id": "namespace/export/rotate_loadings",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE2-ROTATE-LOADINGS-POSTFIT",
+     "r_call": "rotate_loadings(fit, method='varimax', ...)` (R/rotate-loadings.R) post-hoc loading-matrix rotation",
+     "julia_surface": "GLLVM.jl equivalent rotation utility over the Lambda matrix returned by getLoadings()'s Julia comparand, if implemented; else documented rejection",
+     "comparands": [
+      "rotated loading matrix entries to <=1e-6",
+      "rotation-invariant quantities (communalities) match the un-rotated getLoadings() case"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported loading-rotation utility; required as a postfit transform of the already-required getLoadings() extraction."
+  }
+ ]
+}

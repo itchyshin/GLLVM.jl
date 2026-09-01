@@ -1,0 +1,210 @@
+{
+  "area": "masks-known",
+  "rows": [
+    {
+      "source_id": "masks-known/KNOWN-ALIAS",
+      "planned_case_ids": [
+        "CORE070-MASKS-KNOWN-ALIAS-PAIRED-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/masks-known-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-MASKS-KNOWN-ALIAS-PAIRED-CONTROL",
+          "r_call": "gllvmTMB(value~0+trait+meta_known_V(V=V),df,known_V=V,control=control)",
+          "julia_surface": "Julia `meta_known_V` formula-term alias must prepare an identical Gaussian predictor-effect covariance object to `meta_V(V=V)` (same known_V handling, same V+1e-8I addition to sigma^2I), and the resulting fixed-point log-likelihood/gradient must reproduce the frozen R record for KNOWN-EXACT (the alias captures an identical input to the base name per masks-known-contract.md).",
+          "comparands": [
+            "reference normalized log-likelihood at fixed parameter point (b4d5fee6 record, KNOWN-ALIAS-record.rds; abs diff <=1e-6)",
+            "central-FD scaled gradient at step 1e-5 (scaled error <=1e-5)",
+            "cross-check against KNOWN-EXACT paired-control record (alias must match base-name preparation exactly)"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "meta_known_V is documented as a legacy alias of meta_V with no distinct behavior; the reference record confirms identical prepared input to KNOWN-EXACT. A fixed-point paired-control case is required to prove Julia's alias resolves to the same code path rather than silently diverging; a live native fit is a separate, currently-unpaid obligation because GLLVM.jl does not yet expose a known-covariance Gaussian-predictor-effect term.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "masks-known/KNOWN-BLOCK",
+      "planned_case_ids": [
+        "CORE070-MASKS-KNOWN-BLOCK-PAIRED-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/masks-known-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-MASKS-KNOWN-BLOCK-PAIRED-CONTROL",
+          "r_call": "gllvmTMB(value~0+trait+meta_V(V=VB),df,known_V=VB,control=control)",
+          "julia_surface": "Julia `meta_V` term must accept a block-structured known_V matrix (`block_V`: noncontiguous study row groups, heterogeneous per-study diagonal variances, within-study rho=.25, lower rho bound -1/(m-1)) and reproduce the identical V+1e-8I Gaussian predictor-effect covariance and row ordering as the R reference.",
+          "comparands": [
+            "reference normalized log-likelihood at fixed parameter point (b4d5fee6 record, KNOWN-BLOCK-record.rds; abs diff <=1e-6)",
+            "central-FD scaled gradient at step 1e-5 (scaled error <=1e-5)",
+            "row-order / block-diagonal structure equality check against VB as constructed in test/parity/fixtures/core070_masks_known.R"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "block_V exercises study-grouped structure and a non-trivial rho bound not covered by the simpler KNOWN-EXACT/KNOWN-ZERO cases. This finite subset does not cover every block_V error branch (per masks-known-leaf.md), so the fixed-point case is scoped to the captured VB construction only; native fit and formula-grammar coverage of `block_V()` itself remain separate unpaid obligations.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "masks-known/KNOWN-EXACT",
+      "planned_case_ids": [
+        "CORE070-MASKS-KNOWN-EXACT-PAIRED-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/masks-known-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-MASKS-KNOWN-EXACT-PAIRED-CONTROL",
+          "r_call": "gllvmTMB(value~0+trait+meta_V(V=V),df,known_V=V,control=control)",
+          "julia_surface": "Julia `meta_V` term with a full n_obs x n_obs known_V matrix must add V+1e-8I to the Gaussian identity-link marginal covariance (sigma^2 I + V + 1e-8 I) and reproduce the fixed-point normalized log-likelihood and gradient of the frozen R record.",
+          "comparands": [
+            "reference normalized log-likelihood at fixed parameter point (b4d5fee6 record, KNOWN-EXACT-record.rds; abs diff <=1e-6)",
+            "central-FD scaled gradient at step 1e-5 (scaled error <=1e-5)",
+            "negative control: mean-shifted parameter point must fail the same threshold (per masks-known-contract.md)"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "This is the base case for the known-covariance Gaussian predictor-effect feature; the alias (KNOWN-ALIAS) and block variant (KNOWN-BLOCK) are pinned against it. Fixed-point evidence is required first because GLLVM.jl has no public known_V surface yet; native fit is a separate unpaid obligation once that surface exists.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "masks-known/KNOWN-POISSON",
+      "planned_case_ids": [
+        "CORE070-MASKS-KNOWN-POISSON-PAIRED-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/masks-known-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-MASKS-KNOWN-POISSON-PAIRED-CONTROL",
+          "r_call": "gllvmTMB(value~0+trait+meta_V(V=V),counts,known_V=V,family=poisson(),control=control)",
+          "julia_surface": "Julia Poisson-log family fit with a `meta_V` known_V term must treat V as a log-predictor (linear-predictor-scale) additive covariance, not a response-scale sampling covariance, and reproduce the frozen R MakeADFun preparation for this mixed Gaussian-predictor-effect + Poisson-response model.",
+          "comparands": [
+            "reference model preparation only (masks-known-contract.md: 'it has no density/fit claim' for the ninth prepared model) — no fixed-point nll/gradient comparand is claimed by the R reference itself",
+            "structural check that the prepared model object matches the frozen record (KNOWN-POISSON-input.rds) for known_V-as-log-predictor-covariance semantics"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "The R reference explicitly disclaims a density/fit claim for this case (masks-known-contract.md: 'the ninth prepared model uses Poisson and known Gaussian log-predictor effects; it has no density/fit claim'), so the paired-control case is scoped to MakeADFun-preparation structural equality only, not a numeric fixed-point match. A future native Julia fit claim for Poisson+known_V is a separate, currently-unpaid obligation.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "masks-known/KNOWN-ZERO",
+      "planned_case_ids": [
+        "CORE070-MASKS-KNOWN-ZERO-PAIRED-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/masks-known-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-MASKS-KNOWN-ZERO-PAIRED-CONTROL",
+          "r_call": "gllvmTMB(value~0+trait+meta_V(V=V0),df,known_V=V0,control=control)",
+          "julia_surface": "Julia `meta_V` term supplied a zero matrix must be admitted (regularized to V0+1e-8I, not rejected as degenerate) and reproduce the frozen R fixed-point log-likelihood/gradient; this case is exempt from the 'dropping nonzero known_V must fail' negative control since V0 is already zero.",
+          "comparands": [
+            "reference normalized log-likelihood at fixed parameter point (b4d5fee6 record, KNOWN-ZERO-record.rds; abs diff <=1e-6)",
+            "central-FD scaled gradient at step 1e-5 (scaled error <=1e-5)"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "Zero-V admission is a documented edge case distinct from KNOWN-EXACT (regularization path, not general SPD validity); the record explicitly notes 'zero-V case exempt from that control' for the drop-known-V negative test. No arbitrary indefinite/asymmetric/nonfinite-matrix claim is made or required here.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "masks-known/MASK-B-ALLFIXED",
+      "planned_case_ids": [
+        "CORE070-MASKS-KNOWN-MASK-B-ALLFIXED-PAIRED-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/masks-known-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-MASKS-KNOWN-MASK-B-ALLFIXED-PAIRED-CONTROL",
+          "r_call": "gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),df,lambda_constraint=list(B=allfixed),control=control)",
+          "julia_surface": "Julia `latent()` term with `lambda_constraint=(B=allfixed,)` (all five raw loading coordinates pinned to c(.8,.7,.1,.2,-.15)) must leave zero free `theta_rr_B` coordinates while retaining z_B as a random effect, and reproduce the frozen R fixed-point log-likelihood/gradient.",
+          "comparands": [
+            "reference normalized log-likelihood at fixed parameter point (b4d5fee6 record, MASK-B-ALLFIXED-record.rds; abs diff <=1e-6)",
+            "central-FD scaled gradient at step 1e-5 (scaled error <=1e-5)",
+            "free-parameter-count check: theta_rr_B free count == 0"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "This is the boundary case of the loading-mask feature (fully pinned loadings, latent random effect retained). Julia has no `lambda_constraint` surface yet, so a native fit claim is a separate unpaid obligation; the paired-control case establishes the reference target now.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "masks-known/MASK-B-PINS",
+      "planned_case_ids": [
+        "CORE070-MASKS-KNOWN-MASK-B-PINS-PAIRED-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/masks-known-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-MASKS-KNOWN-MASK-B-PINS-PAIRED-CONTROL",
+          "r_call": "gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),df,lambda_constraint=list(B=mask),control=control)",
+          "julia_surface": "Julia `latent()` term with `lambda_constraint=(B=mask,)` (NA=free, non-NA=fixed raw loading, packed diagonal-first then strict lower columns over the 5 raw coordinates L11,L22,L21,L31,L32; here L11=.8 and L32=0 fixed, 3 free) must reproduce the frozen R packed free/fixed layout and fixed-point log-likelihood/gradient.",
+          "comparands": [
+            "reference normalized log-likelihood at fixed parameter point (b4d5fee6 record, MASK-B-PINS-record.rds; abs diff <=1e-6)",
+            "central-FD scaled gradient at step 1e-5 (scaled error <=1e-5)",
+            "packed free/fixed layout check: theta_rr_B length 3, fixed values c('1'=.8,'5'=0)"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "Base partial-pin case for the raw-loading mask feature; MASK-B-UPPER and MASK-B-ALLFIXED are variants pinned against it. No native fit claim yet: GLLVM.jl has no `lambda_constraint` argument.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "masks-known/MASK-B-UPPER",
+      "planned_case_ids": [
+        "CORE070-MASKS-KNOWN-MASK-B-UPPER-PAIRED-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/masks-known-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-MASKS-KNOWN-MASK-B-UPPER-PAIRED-CONTROL",
+          "r_call": "gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),df,lambda_constraint=list(B=upper),control=control)",
+          "julia_surface": "Julia `latent()` term must ignore above-triangle mask entries entirely (an upper-triangle L12=99 entry must produce an input identical to MASK-B-PINS, which has no such entry) and reproduce the same packed free/fixed layout and fixed-point log-likelihood/gradient as MASK-B-PINS.",
+          "comparands": [
+            "reference normalized log-likelihood at fixed parameter point (b4d5fee6 record, MASK-B-UPPER-record.rds; abs diff <=1e-6)",
+            "central-FD scaled gradient at step 1e-5 (scaled error <=1e-5)",
+            "byte-for-byte equality of captured prepared input against MASK-B-PINS (per masks-known-contract.md: 'identical to the same case without that entry')"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "Above-diagonal mask entries are documented as inert; this is a negative-shape regression guard, not a distinct feature. Marked compatibility_adapter-flavoured in the input manifest, but retained here as required_core-style paired-control evidence since silently mishandling ignored upper-triangle entries would be an observable correctness bug in Julia, not merely a naming/adapter concern; no reclassification is proposed.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "masks-known/MASK-PHY-PINS",
+      "planned_case_ids": [
+        "CORE070-MASKS-KNOWN-MASK-PHY-PINS-PAIRED-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/masks-known-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-MASKS-KNOWN-MASK-PHY-PINS-PAIRED-CONTROL",
+          "r_call": "gllvmTMB(value~0+trait+animal_latent(species,A=C,d=2,unique=FALSE),df,cluster='species',lambda_constraint=list(phy=mask),control=control)",
+          "julia_surface": "Julia `animal_latent()` phylogenetic loading term with `lambda_constraint=(phy=mask,)` (same packed diagonal-first/strict-lower layout, L11=.8, L32=0 fixed, 3 free `theta_rr_phy`) over animal source C=.7I+.3J+1e-8I must reproduce the frozen R free/fixed layout and fixed-point log-likelihood/gradient.",
+          "comparands": [
+            "reference normalized log-likelihood at fixed parameter point (b4d5fee6 record, MASK-PHY-PINS-record.rds; abs diff <=1e-6)",
+            "central-FD scaled gradient at step 1e-5 (scaled error <=1e-5)",
+            "packed free/fixed layout check: theta_rr_phy length 3, fixed values c('1'=.8,'5'=0)"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "Phylogenetic analogue of MASK-B-PINS, confirming the raw-loading mask mechanism applies identically to the animal_latent term. MASK-PHY-INDEP-CONFLICT (animal_indep rejects a user mask because it supplies its own diagonal mask) is the paired negative control and is out of scope for this row (it is a rejected-classification source_id, not part of this required-source input).",
+      "reclassify": null,
+      "uncertain": false
+    }
+  ]
+}

@@ -1,0 +1,431 @@
+{
+ "area": "inference",
+ "rows": [
+  {
+   "source_id": "inference/CI-ROUTE-001",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-002",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-003",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-004",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-005",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-006",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-007",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-008",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-009",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-010",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-011",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-012",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-013",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-014",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-015",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-016",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-017",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-018",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-019",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-020",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-021",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-022",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-023",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-024",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-025",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-026",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-027",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-028",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-029",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-030",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-031",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-032",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-033",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-034",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-035",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-036",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-037",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-038",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-039",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-040",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-041",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-042",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-043",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-044",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-045",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-046",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-047",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-048",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-049",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-050",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-051",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-052",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-053",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-054",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-055",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-056",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-057",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-058",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-059",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-060",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-061",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-062",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-063",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-065",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-066",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-067",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-068",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-069",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-070",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-081",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-084",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  }
+ ]
+}
