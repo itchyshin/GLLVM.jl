@@ -1020,8 +1020,8 @@
    "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json",
    "evidence": {
     "batch": "codex-cycle covariance qualification",
-    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS)",
-    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids"
+    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS) + docs/dev-log/core070/source-fixed-residual-final-evidence.json (FIXED_RESIDUAL_SOURCE_SLICE_PASS_NOT_FULL_PARITY; names MODE-ORD-INDEP and MODE-ORD-COMMON as executed new_case_ids, 16 negative controls)",
+    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids; 2026-09-01 Rose round-2 residual: the native-model case ids MODE-ORD-INDEP/MODE-ORD-COMMON are receipted in the fixed-residual slice evidence added here, with its explicit NOT_FULL_PARITY qualifier"
    }
   },
   {
@@ -1039,8 +1039,8 @@
    "reference_model_evidence": "docs/dev-log/core070/covariance-modes-evidence.json",
    "evidence": {
     "batch": "codex-cycle covariance qualification",
-    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS)",
-    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids"
+    "receipts": "docs/dev-log/core070/covariance-mode-fits-evidence.json (SEVEN_NATIVE_GAUSSIAN_FIT_CONTRACTS_PASS_WITH_EXPLICIT_R_CONTROLS) + docs/dev-log/core070/covariance-formula-evidence.json (NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME, max delta 2.56e-11) + docs/dev-log/core070/public-r-bridge-programme-evidence.json (status PASS) + docs/dev-log/core070/source-fixed-residual-final-evidence.json (FIXED_RESIDUAL_SOURCE_SLICE_PASS_NOT_FULL_PARITY; names MODE-ORD-INDEP and MODE-ORD-COMMON as executed new_case_ids, 16 negative controls)",
+    "note": "2026-09-01 Rose audit blocker B: rows previously cited only reference_model_evidence (covariance-modes-evidence.json, whose status is REFERENCE_FIXED_POINTS_NATIVE_FITS_UNPAID \u2014 the fixed-point reference stage, not the fits); repointed to the three evidence files that actually carry the executed native/formula/bridge PASS receipts for these case ids; 2026-09-01 Rose round-2 residual: the native-model case ids MODE-ORD-INDEP/MODE-ORD-COMMON are receipted in the fixed-residual slice evidence added here, with its explicit NOT_FULL_PARITY qualifier"
    }
   },
   {
