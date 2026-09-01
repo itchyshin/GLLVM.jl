@@ -956,3 +956,45 @@ function fit_gllvmtmb_parity_tweedie(y::AbstractMatrix, K::Integer;
         reference_constraint_adapter = rcopy(Bool, R".gllvm_parity_tweedie$reference_constraint_adapter"),
     )
 end
+
+# ---------------------------------------------------------------------------
+# Cross-objective identity delta (panel 2026-09-01 generalization), usable by
+# parity fixtures. This only adds the shared evaluator; wiring it into any
+# individual fixture (Gaussian-sources, Binomial, Poisson, ...) is a separate,
+# reviewed slice and is deliberately NOT done here.
+# ---------------------------------------------------------------------------
+include(joinpath(@__DIR__, "..", "..", "tools", "core070_cross_objective.jl"))
+
+"""
+    core070_cross_objective_delta(family_kind, Y, r; rank,
+        beta_key = "beta", crossprod_key = "crossprod",
+        dispersion_key = nothing, loglik_key = "loglik",
+        N = nothing, link = nothing, mask = nothing, offset = nothing,
+        source = nothing) -> Float64
+
+Cross-objective identity delta for one retained-coordinate route `r` (e.g. one
+table of a `TOML.parsefile` fixture, keyed like
+`test/fixtures/core070_latent_bare_retained.toml`'s `[native_julia]` /
+`[r_reference]` tables): evaluate `family_kind`'s objective (via
+`cross_objective_at`, defined in `tools/core070_cross_objective.jl`) at `r`'s
+serialized fitted coordinates and return
+`abs(loglik_at_coordinates - r[loglik_key])`. A near-zero delta (<= 1e-8, the
+known-answer gate's tolerance — see `test/test_cross_objective_known_answer.jl`)
+is the likelihood-function identity claim itself.
+"""
+function core070_cross_objective_delta(family_kind::Symbol, Y::AbstractMatrix, r::AbstractDict;
+        rank::Integer, beta_key::AbstractString = "beta",
+        crossprod_key::AbstractString = "crossprod",
+        dispersion_key::Union{Nothing, AbstractString} = nothing,
+        loglik_key::AbstractString = "loglik",
+        N = nothing, link = nothing, mask = nothing, offset = nothing,
+        source = nothing)
+    beta = Vector{Float64}(r[beta_key])
+    crossprod = Matrix{Float64}(reduce(hcat,
+        [Vector{Float64}(c) for c in r[crossprod_key]]))
+    dispersion = dispersion_key === nothing ? nothing : Float64(r[dispersion_key])
+    ll = cross_objective_at(family_kind, Y; beta = beta,
+        crossprod_or_loadings = crossprod, rank = rank, dispersion = dispersion,
+        N = N, link = link, mask = mask, offset = offset, source = source)
+    return abs(ll - Float64(r[loglik_key]))
+end
