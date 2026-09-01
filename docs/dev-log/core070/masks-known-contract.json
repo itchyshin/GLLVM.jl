@@ -1,0 +1,162 @@
+{
+  "schema": "core070-masks-known-contract/v1",
+  "status": "FROZEN_BEFORE_NATIVE_SURFACE",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "required_case_plan": "docs/dev-log/core070/masks-known-required-case-plan.json",
+  "claim_boundary": "Passing this contract establishes eight fixed-point Gaussian control cases and one structural-only Poisson-preparation control across the loading-mask and known-covariance R feature. It does not establish a GLLVM.jl `lambda_constraint` or `known_V` public surface, a native fit, a formula surface, an RCall.jl bridge, or coverage of the eight rejected fixture cases beyond the two used here as negative controls.",
+  "source_pins": {
+    "test/parity/fixtures/core070_masks_known.R": "5716cd335416ac375affbb32e1369e3bb1cd2471ad08b2a38459f14f7cd09132",
+    "docs/dev-log/core070/masks-known-subset.json": "038e019629fe48670415b309ad8fb9442794608f6309ebd59b0636c9776059b7",
+    "docs/dev-log/core070/masks-known-evidence.json": "9a0e299df9207d9d74a013f94a9208d3a9648e768584766d703a66afbc7863a3",
+    "tools/core070_masks_known_points.R": "c58f73769b758f407b8c53f256f41ff6d4b235c2af84f88643a19e35f4868a89"
+  },
+  "frozen_parameter_points": [
+    {"id": "P1", "beta": [0.2, -0.1, 0.3], "sigma_eps": 0.8, "theta": [0.8, 0.7, 0.1, 0.2, -0.15]},
+    {"id": "P2", "beta": [-0.1, 0.25, 0.05], "sigma_eps": 0.55, "theta": [0.55, 0.9, -0.1, 0.25, 0.15]}
+  ],
+  "loading_layout": "Raw rank-two loading vector has five coordinates L11,L22,L21,L31,L32 packed as: L[1,1]=theta[1], L[2,2]=theta[2], L[2,1]=theta[3], L[3,1]=theta[4], L[3,2]=theta[5].",
+  "cases": [
+    {
+      "case_id": "CORE070-MASKS-KNOWN-EXACT-PAIRED-CONTROL",
+      "source_id": "masks-known/KNOWN-EXACT",
+      "fixture_id": "KNOWN-EXACT",
+      "r_call": "gllvmTMB(value~0+trait+meta_V(V=V),df,known_V=V,control=control)",
+      "julia_surface": "Julia must add V+1e-8I to sigma_eps^2*I over the 54 stacked observations and reproduce the frozen R normalized nll and gradient at points P1/P2.",
+      "evidence_kind": "control",
+      "point_ids": ["KNOWN-EXACT-P1", "KNOWN-EXACT-P2"],
+      "comparands": ["abs_nll_delta", "central_fd_scaled_gradient_error", "mean_shift_negative_control"],
+      "negative_controls": ["mean_shift", "drop_known_V"],
+      "tolerances": {"abs_nll_delta": 1e-6, "central_fd_scaled_gradient_error": 1e-5, "central_fd_step": 1e-5,
+                      "mean_shift_delta_floor": 1e-4, "drop_known_V_delta_floor": 1e-4}
+    },
+    {
+      "case_id": "CORE070-MASKS-KNOWN-ALIAS-PAIRED-CONTROL",
+      "source_id": "masks-known/KNOWN-ALIAS",
+      "fixture_id": "KNOWN-ALIAS",
+      "r_call": "gllvmTMB(value~0+trait+meta_known_V(V=V),df,known_V=V,control=control)",
+      "julia_surface": "meta_known_V must prepare an input byte-identical to KNOWN-EXACT (same prepared R input; there is no independent Julia code path to test beyond that identity), and must reproduce the same frozen nll/gradient at P1/P2.",
+      "evidence_kind": "control",
+      "point_ids": ["KNOWN-ALIAS-P1", "KNOWN-ALIAS-P2"],
+      "comparands": ["abs_nll_delta", "central_fd_scaled_gradient_error", "byte_identical_input_to_KNOWN-EXACT"],
+      "negative_controls": ["mean_shift", "drop_known_V"],
+      "paired_with": "CORE070-MASKS-KNOWN-EXACT-PAIRED-CONTROL",
+      "tolerances": {"abs_nll_delta": 1e-6, "central_fd_scaled_gradient_error": 1e-5, "central_fd_step": 1e-5,
+                      "mean_shift_delta_floor": 1e-4, "drop_known_V_delta_floor": 1e-4}
+    },
+    {
+      "case_id": "CORE070-MASKS-KNOWN-BLOCK-PAIRED-CONTROL",
+      "source_id": "masks-known/KNOWN-BLOCK",
+      "fixture_id": "KNOWN-BLOCK",
+      "r_call": "gllvmTMB(value~0+trait+meta_V(V=VB),df,known_V=VB,control=control)",
+      "julia_surface": "Julia must add the block-structured VB+1e-8I (noncontiguous study row groups, heterogeneous per-study diagonal variance, within-study rho=.25) to sigma_eps^2*I and reproduce the frozen nll/gradient at P1/P2.",
+      "evidence_kind": "control",
+      "point_ids": ["KNOWN-BLOCK-P1", "KNOWN-BLOCK-P2"],
+      "comparands": ["abs_nll_delta", "central_fd_scaled_gradient_error"],
+      "negative_controls": ["mean_shift", "drop_known_V"],
+      "tolerances": {"abs_nll_delta": 1e-6, "central_fd_scaled_gradient_error": 1e-5, "central_fd_step": 1e-5,
+                      "mean_shift_delta_floor": 1e-4, "drop_known_V_delta_floor": 1e-4}
+    },
+    {
+      "case_id": "CORE070-MASKS-KNOWN-ZERO-PAIRED-CONTROL",
+      "source_id": "masks-known/KNOWN-ZERO",
+      "fixture_id": "KNOWN-ZERO",
+      "r_call": "gllvmTMB(value~0+trait+meta_V(V=V0),df,known_V=V0,control=control)",
+      "julia_surface": "Julia must admit a zero known_V (regularized to V0+1e-8I, not rejected as degenerate) and reproduce the frozen nll/gradient at P1/P2. Exempt from the drop-known-V negative control since V0 is already zero.",
+      "evidence_kind": "control",
+      "point_ids": ["KNOWN-ZERO-P1", "KNOWN-ZERO-P2"],
+      "comparands": ["abs_nll_delta", "central_fd_scaled_gradient_error"],
+      "negative_controls": ["mean_shift"],
+      "tolerances": {"abs_nll_delta": 1e-6, "central_fd_scaled_gradient_error": 1e-5, "central_fd_step": 1e-5,
+                      "mean_shift_delta_floor": 1e-4}
+    },
+    {
+      "case_id": "CORE070-MASKS-KNOWN-MASK-B-PINS-PAIRED-CONTROL",
+      "source_id": "masks-known/MASK-B-PINS",
+      "fixture_id": "MASK-B-PINS",
+      "r_call": "gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),df,lambda_constraint=list(B=mask),control=control)",
+      "julia_surface": "Julia must reconstruct Lambda from 3 free `theta_rr_B` coordinates plus 2 pinned coordinates (L11=.8, L32=0) packed diagonal-first then strict-lower, form sigma_eps^2*I + I_18[site,site]*(Lambda Lambda')[trait,trait], and reproduce the frozen nll/gradient at P1/P2.",
+      "evidence_kind": "control",
+      "point_ids": ["MASK-B-PINS-P1", "MASK-B-PINS-P2"],
+      "comparands": ["abs_nll_delta", "central_fd_scaled_gradient_error", "free_parameter_count"],
+      "negative_controls": ["mean_shift"],
+      "free_parameter_count": 3,
+      "tolerances": {"abs_nll_delta": 1e-6, "central_fd_scaled_gradient_error": 1e-5, "central_fd_step": 1e-5,
+                      "mean_shift_delta_floor": 1e-4}
+    },
+    {
+      "case_id": "CORE070-MASKS-KNOWN-MASK-B-UPPER-PAIRED-CONTROL",
+      "source_id": "masks-known/MASK-B-UPPER",
+      "fixture_id": "MASK-B-UPPER",
+      "r_call": "gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),df,lambda_constraint=list(B=upper),control=control)",
+      "julia_surface": "Julia must ignore the above-diagonal mask entry (L12=99) entirely: the prepared input must be byte-identical to MASK-B-PINS, and the same reconstruction and frozen nll/gradient at P1/P2 must reproduce MASK-B-PINS exactly.",
+      "evidence_kind": "control",
+      "point_ids": ["MASK-B-UPPER-P1", "MASK-B-UPPER-P2"],
+      "comparands": ["abs_nll_delta", "central_fd_scaled_gradient_error", "byte_identical_input_to_MASK-B-PINS"],
+      "negative_controls": ["mean_shift"],
+      "paired_with": "CORE070-MASKS-KNOWN-MASK-B-PINS-PAIRED-CONTROL",
+      "free_parameter_count": 3,
+      "tolerances": {"abs_nll_delta": 1e-6, "central_fd_scaled_gradient_error": 1e-5, "central_fd_step": 1e-5,
+                      "mean_shift_delta_floor": 1e-4}
+    },
+    {
+      "case_id": "CORE070-MASKS-KNOWN-MASK-B-ALLFIXED-PAIRED-CONTROL",
+      "source_id": "masks-known/MASK-B-ALLFIXED",
+      "fixture_id": "MASK-B-ALLFIXED",
+      "r_call": "gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),df,lambda_constraint=list(B=allfixed),control=control)",
+      "julia_surface": "Julia must leave zero free `theta_rr_B` coordinates (all five raw coordinates pinned to c(.8,.7,.1,.2,-.15)) while retaining z_B as a random effect, and reproduce the frozen nll/gradient at P1/P2.",
+      "evidence_kind": "control",
+      "point_ids": ["MASK-B-ALLFIXED-P1", "MASK-B-ALLFIXED-P2"],
+      "comparands": ["abs_nll_delta", "central_fd_scaled_gradient_error", "free_parameter_count"],
+      "negative_controls": ["mean_shift"],
+      "free_parameter_count": 0,
+      "tolerances": {"abs_nll_delta": 1e-6, "central_fd_scaled_gradient_error": 1e-5, "central_fd_step": 1e-5,
+                      "mean_shift_delta_floor": 1e-4}
+    },
+    {
+      "case_id": "CORE070-MASKS-KNOWN-MASK-PHY-PINS-PAIRED-CONTROL",
+      "source_id": "masks-known/MASK-PHY-PINS",
+      "fixture_id": "MASK-PHY-PINS",
+      "r_call": "gllvmTMB(value~0+trait+animal_latent(species,A=C,d=2,unique=FALSE),df,cluster='species',lambda_constraint=list(phy=mask),control=control)",
+      "julia_surface": "Julia must reconstruct Lambda from 3 free `theta_rr_phy` coordinates plus 2 pinned coordinates (L11=.8, L32=0), form sigma_eps^2*I + C[species,species]*(Lambda Lambda')[trait,trait] over the animal source C=.7I+.3J+1e-8I, and reproduce the frozen nll/gradient at P1/P2.",
+      "evidence_kind": "control",
+      "point_ids": ["MASK-PHY-PINS-P1", "MASK-PHY-PINS-P2"],
+      "comparands": ["abs_nll_delta", "central_fd_scaled_gradient_error", "free_parameter_count"],
+      "negative_controls": ["mean_shift"],
+      "free_parameter_count": 3,
+      "tolerances": {"abs_nll_delta": 1e-6, "central_fd_scaled_gradient_error": 1e-5, "central_fd_step": 1e-5,
+                      "mean_shift_delta_floor": 1e-4}
+    },
+    {
+      "case_id": "CORE070-MASKS-KNOWN-POISSON-PAIRED-CONTROL",
+      "source_id": "masks-known/KNOWN-POISSON",
+      "fixture_id": "KNOWN-POISSON",
+      "r_call": "gllvmTMB(value~0+trait+meta_V(V=V),counts,known_V=V,family=poisson(),control=control)",
+      "julia_surface": "Structural preparation equality only: R itself makes no density/fit claim for this case (it is the ninth prepared model, Poisson response with known Gaussian log-predictor effects). No fixed-point nll/gradient comparand exists.",
+      "evidence_kind": "structural_only",
+      "point_ids": [],
+      "comparands": ["prepared_status_equals_PREPARED", "family_id_vec_all_poisson", "use_equalto_flag_set", "random_effect_is_e_eq"],
+      "negative_controls": [],
+      "tolerances": {}
+    }
+  ],
+  "negative_controls_batch": {
+    "note": "Two fixture rows outside the 9 required cases double as batch-level absent/corrupt-input rejection controls; both are REJECTED_BEFORE_TAPE in the frozen fixture.",
+    "cases": [
+      {"fixture_id": "KNOWN-MISSING", "r_call": "gllvmTMB(value~0+trait+meta_V(V=V),df,control=control)",
+       "expected": "REJECTED_BEFORE_TAPE", "expected_error_contains": "`known_V` is NULL."},
+      {"fixture_id": "KNOWN-DIM", "r_call": "gllvmTMB(value~0+trait+meta_V(V=V),df,known_V=V[-1,-1],control=control)",
+       "expected": "REJECTED_BEFORE_TAPE", "expected_error_contains": "known_V must be n_obs x n_obs"}
+    ]
+  },
+  "required_health_checks": [
+    "each required-case R call reaches the frozen fixture's expected admission outcome (PREPARED for all 9)",
+    "KNOWN-ALIAS input byte-identical to KNOWN-EXACT input; MASK-B-UPPER input byte-identical to MASK-B-PINS input",
+    "KNOWN-BLOCK's VB independently reconstructed from per-study rho=.25 block structure matches the fixture's VB to <1e-14",
+    "both batch negative-control fixture rows are rejected with their expected diagnostic substring",
+    "every Gaussian point (16 of them) passes abs_nll_delta, central_fd_scaled_gradient_error and its negative-control floors",
+    "KNOWN-POISSON reaches PREPARED with no nll/gradient claim attached"
+  ],
+  "runtime_budget_seconds": 600,
+  "roles": ["r_reference_replay", "julia_fixed_point_reconstruction"],
+  "failure_action": "Retain the complete attempt. A case whose spec is unimplementable as written gets status SPEC-DEFECT with the reason recorded, never a silent skip. Do not widen tolerances."
+}
