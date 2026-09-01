@@ -146,13 +146,27 @@ write_attempt()
 # reimplemented), then the independent Julia reconstruction child, on the
 # same fresh inputs directory.
 # ---------------------------------------------------------------------------
+## The dense fixed-point child asserts WHOLE-OBJECT identical() between the
+## PINS/UPPER and EXACT/ALIAS input pairs — a property only the RETAINED
+## frozen capture (masks-known-01, saved from one object per pair) satisfies;
+## freshly constructed TMB objects never compare identical at object level.
+## The points stage is therefore a REPLAY over the retained frozen inputs
+## (SHA-recorded below); the fresh capture above remains the admission
+## evidence (stages 1-4).
+retained_inputs_dir <- file.path(
+  ".unlazy", "core070-aghq", "masks-known-01", "attempt1", "out")
 points_inputs_dir <- file.path(output_dir, "points-inputs")
 dir.create(points_inputs_dir)
-saveRDS(fixture_env$fixtures, file.path(points_inputs_dir, "fixtures.rds"))
-for (id in required_case_ids) {
-  if (!is.null(inputs[[id]])) {
-    saveRDS(inputs[[id]], file.path(points_inputs_dir, paste0(id, "-input.rds")))
+result$points_input_provenance <- list(source_dir=retained_inputs_dir, sha256=list())
+points_ids <- c("MASK-B-PINS", "MASK-B-UPPER", "MASK-PHY-PINS", "MASK-B-ALLFIXED",
+                "KNOWN-EXACT", "KNOWN-ALIAS", "KNOWN-BLOCK", "KNOWN-ZERO")
+for (id in points_ids) {
+  src <- file.path(retained_inputs_dir, paste0(id, "-input.rds"))
+  if (!file.exists(src)) {
+    stop("retained frozen input missing for points replay: ", src)
   }
+  file.copy(src, file.path(points_inputs_dir, paste0(id, "-input.rds")))
+  result$points_input_provenance$sha256[[id]] <- sha256_file(src)
 }
 points_out_dir <- file.path(output_dir, "points-out")
 points_status <- system2("Rscript", c("--vanilla", "tools/core070_masks_known_points.R",
