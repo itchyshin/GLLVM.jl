@@ -2878,9 +2878,10 @@
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
    "evidence": {
     "batch": "fit-input-batch (wave1)",
-    "note": "SPEC_DEFECT in planned case(s): CORE070-FIT-INPUT-MN-ANIMAL-LATENT-NATIVE-MODEL,CORE070-FIT-INPUT-MN-ANIMAL-LATENT-FORMULA-INTERFACE,CORE070-FIT-INPUT-MN-ANIMAL-LATENT-PUBLIC-R-BRIDGE",
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)",
     "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef"
-   }
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "fit-input/INPUT-MN-ANIMAL-UNIQUE",
@@ -2908,9 +2909,10 @@
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
    "evidence": {
     "batch": "fit-input-batch (wave1)",
-    "note": "SPEC_DEFECT in planned case(s): CORE070-FIT-INPUT-MN-LATENT-NATIVE-MODEL,CORE070-FIT-INPUT-MN-LATENT-FORMULA-INTERFACE,CORE070-FIT-INPUT-MN-LATENT-PUBLIC-R-BRIDGE",
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)",
     "preservation_sha256": "67c664e737c7d09985c5e4649675b9c49e3199dd9719666ff96de6ead8a8edef"
-   }
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION"
   },
   {
    "source_id": "fit-input/INPUT-POISSON-DEFAULT",
@@ -3360,6 +3362,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's confint(parm='rho:...', method='wald') routes to an untransformed delta-method Wald distinct from method='fisher-z' (rows CI-ROUTE-031 vs 029/034). GLLVM.jl implements only the Fisher-z transformed-Wald for bounded [-1,1] correlations (confint_derived_wald.jl; CLAUDE.md confint_derived_wald.jl entry). No untransformed Wald for rho exists in the Julia port, and none is planned \u2014 the transformed-scale CI is the documented choice for a bounded correlation. Revisit only if a future R-parity requirement demands the untransformed variant."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's confint(parm='rho:...', method='wald') routes to an untransformed delta-method Wald distinct from method='fisher-z' (rows CI-ROUTE-031 vs 029/034). GLLV"
    }
   },
   {
@@ -3636,6 +3642,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
    }
   },
   {
@@ -3646,6 +3656,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
    }
   },
   {
@@ -3656,6 +3670,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
    }
   },
   {
@@ -3666,6 +3684,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
    }
   },
   {
@@ -3676,6 +3698,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
    }
   },
   {
@@ -3686,6 +3712,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
    }
   },
   {
@@ -4772,6 +4802,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "plot.gllvmTMB_multi (plot-gllvmTMB.R) renders a generic diagnostic/residual plot; it is a visualization-only S3 method with no distinct numeric Julia parity target beyond the residuals/fitted accessors already required above."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"plot.gllvmTMB_multi (plot-gllvmTMB.R) renders a generic diagnostic/residual plot; it is a visualization-only S3 method with no distinct numeric Julia parity"
    }
   },
   {
@@ -4782,6 +4816,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Rendering of a spatial SPDE mesh (mesh.R). GLLVM.jl's SPDE surface (src/spde.jl, src/spde_mesh.jl) is exercised by its own construction/fitting cases; the plot method itself has no numeric parity target."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Rendering of a spatial SPDE mesh (mesh.R). GLLVM.jl's SPDE surface (src/spde.jl, src/spde_mesh.jl) is exercised by its own construction/fitting cases; the p"
    }
   },
   {
@@ -4792,6 +4830,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Visualization of profile_ci_derived() output already covered by GLLVM.jl's src/confint_derived.jl profile-CI required cases; the plot itself renders no new numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Visualization of profile_ci_derived() output already covered by GLLVM.jl's src/confint_derived.jl profile-CI required cases; the plot itself renders no new "
    }
   },
   {
@@ -4802,6 +4844,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Visualization of profile-CI-on-loadings values already covered by GLLVM.jl's src/confint_profile.jl required cases; no independent numeric target."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Visualization of profile-CI-on-loadings values already covered by GLLVM.jl's src/confint_profile.jl required cases; no independent numeric target.\"}"
    }
   },
   {
@@ -4812,6 +4858,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Rendering-only S3 method for a spatial mesh object; no independent numeric Julia parity target."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Rendering-only S3 method for a spatial mesh object; no independent numeric Julia parity target.\"}"
    }
   },
   {
@@ -4848,6 +4898,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_Sigma_phy_slope (extract-sigma.R) only formats an already-computed R diagnostic object (the phylogenetic-slope Sigma table already covered by extract_Sigma-family required cases) for console display; it carries no independent numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_Sigma_phy_slope (extract-sigma.R) only formats an already-computed R diagnostic object (the phylogenetic-slope Sigma table already covered by "
    }
   },
   {
@@ -4858,6 +4912,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_check_consistency (check-consistency.R) only formats an already-computed R diagnostic object (check_gllvmTMB()'s internal consistency diagnostic, already required_core via check_gllvmTMB) for console display; it carries no independent numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_check_consistency (check-consistency.R) only formats an already-computed R diagnostic object (check_gllvmTMB()'s internal consistency diagnost"
    }
   },
   {
@@ -4868,6 +4926,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_confint_inspect (confint-inspect.R) only formats an already-computed R diagnostic object (the confint_inspect() object, already required_core via confint_inspect) for console display; it carries no independent numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_confint_inspect (confint-inspect.R) only formats an already-computed R diagnostic object (the confint_inspect() object, already required_core "
    }
   },
   {
@@ -4878,6 +4940,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_coverage_study (coverage-study.R) only formats an already-computed R diagnostic object (a simulation coverage-study summary object (dev/reporting tooling, not a fitted-model accessor)) for console display; it carries no independent numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_coverage_study (coverage-study.R) only formats an already-computed R diagnostic object (a simulation coverage-study summary object (dev/report"
    }
   },
   {
@@ -4888,6 +4954,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_identifiability (diagnose.R) only formats an already-computed R diagnostic object (an identifiability-diagnostic object produced by check_gllvmTMB()) for console display; it carries no independent numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_identifiability (diagnose.R) only formats an already-computed R diagnostic object (an identifiability-diagnostic object produced by check_gllv"
    }
   },
   {
@@ -4898,6 +4968,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Pure R-side console formatting of bridge-object fields that are separately covered as required_core (coef/confint/fitted/logLik/predict/residuals/simulate,gllvmTMB_julia). No numeric parity target of its own."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Pure R-side console formatting of bridge-object fields that are separately covered as required_core (coef/confint/fitted/logLik/predict/residuals/simulate,gl"
    }
   },
   {
@@ -4908,6 +4982,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Console formatting only; underlying numeric accessors are separately required_core."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; underlying numeric accessors are separately required_core.\"}"
    }
   },
   {
@@ -4918,6 +4996,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_reportable_table (reportable-table.R) only formats an already-computed R diagnostic object (a formatted reporting table assembled from already-validated diagnostic values) for console display; it carries no independent numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_reportable_table (reportable-table.R) only formats an already-computed R diagnostic object (a formatted reporting table assembled from already"
    }
   },
   {
@@ -4940,6 +5022,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_slope_ci (slope-sd-ci.R) only formats an already-computed R diagnostic object (the slope-SD CI object, already required_core via the slope confint machinery) for console display; it carries no independent numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_slope_ci (slope-sd-ci.R) only formats an already-computed R diagnostic object (the slope-SD CI object, already required_core via the slope con"
    }
   },
   {
@@ -4956,6 +5042,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Console formatting of a summary object whose numeric content is separately required_core (summary,gllvmTMB_julia). No distinct Julia surface."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting of a summary object whose numeric content is separately required_core (summary,gllvmTMB_julia). No distinct Julia surface.\"}"
    }
   },
   {
@@ -4966,6 +5056,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Console formatting only; the summary object's numeric content is separately required_core."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; the summary object's numeric content is separately required_core.\"}"
    }
   },
   {
@@ -5138,6 +5232,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Pure R coordinate-system convenience utility outside GLLVM.jl's modeling surface (no CRS/UTM equivalent in src/)."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Pure R coordinate-system convenience utility outside GLLVM.jl's modeling surface (no CRS/UTM equivalent in src/).\"}"
    }
   },
   {
@@ -5205,6 +5303,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "animal_unique() (animal-keyword.R:89-96) carries an explicit lifecycle::badge(\"deprecated\") in its own docstring: 'soft-deprecated as compatibility syntax in gllvmTMB 0.2.0. Use animal_indep() for standalone marginal diagonal animal-model terms ... use animal_latent(..., unique = TRUE) when the folded latent term itself should carry this diagonal companion.' It is a deprecated alias whose behaviour is already covered by the required_core animal_indep and animal_latent(unique=TRUE) cases (SLOPE-ANIMAL-INDEP-*, SLOPE-ANIMAL-LAT-*)."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"animal_unique() (animal-keyword.R:89-96) carries an explicit lifecycle::badge(\\\"deprecated\\\") in its own docstring: 'soft-deprecated as compatibility syntax "
    }
   },
   {
@@ -5215,6 +5317,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Beta-binomial is not among GLLVM.jl's implemented families (README/CLAUDE.md family list); no Julia surface exists to compare against until it ships."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Beta-binomial is not among GLLVM.jl's implemented families (README/CLAUDE.md family list); no Julia surface exists to compare against until it ships.\"}"
    }
   },
   {
@@ -5225,6 +5331,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Two-stage meta-analytic block-variance construction utility, outside GLLVM.jl's GLLVM/phylogenetic modeling scope (no meta-analysis two-stage pipeline in src/)."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Two-stage meta-analytic block-variance construction utility, outside GLLVM.jl's GLLVM/phylogenetic modeling scope (no meta-analysis two-stage pipeline in sr"
    }
   },
   {
@@ -5245,6 +5355,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "categorical() (R/missing-predictor.R:143) is a formula-grammar sentinel marking a predictor's imputation type at parse time; it carries no independent Julia numeric surface of its own."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"categorical() (R/missing-predictor.R:143) is a formula-grammar sentinel marking a predictor's imputation type at parse time; it carries no independent Julia "
    }
   },
   {
@@ -5261,6 +5375,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "check_auto_residual(fit) (check-auto-residual.R:60) reads fit$tmb_data$family_id_vec and fit$tmb_data$trait_id -- metadata already built by the fitting call -- and checks for within-trait family mixing / ordinal-family conflicts, returning a status/messages list. It computes no numeric quantity of its own (no likelihood, no covariance, no residual value); it is a pure R-side consistency validator over fields the fit already carries, so there is no independent Julia surface to compare against."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"check_auto_residual(fit) (check-auto-residual.R:60) reads fit$tmb_data$family_id_vec and fit$tmb_data$trait_id -- metadata already built by the fitting call "
    }
   },
   {
@@ -5281,6 +5399,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "compare_Sigma_table operates on already-extracted R objects and compares two already-extracted Sigma tables; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"compare_Sigma_table operates on already-extracted R objects and compares two already-extracted Sigma tables; it is a comparison/diagnostic utility, not itsel"
    }
   },
   {
@@ -5291,6 +5413,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "compare_dep_vs_two_psi operates on already-extracted R objects and cross-checks the dep vs. two-psi covariance parameterizations against each other (an R-internal consistency check between two R parameterizations); it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"compare_dep_vs_two_psi operates on already-extracted R objects and cross-checks the dep vs. two-psi covariance parameterizations against each other (an R-int"
    }
   },
   {
@@ -5301,6 +5427,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "compare_indep_vs_two_psi operates on already-extracted R objects and cross-checks the indep vs. two-psi covariance parameterizations against each other; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"compare_indep_vs_two_psi operates on already-extracted R objects and cross-checks the indep vs. two-psi covariance parameterizations against each other; it i"
    }
   },
   {
@@ -5311,6 +5441,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "compare_loadings operates on already-extracted R objects and compares two already-extracted loadings matrices (Lambda_a, Lambda_b) generically; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"compare_loadings operates on already-extracted R objects and compares two already-extracted loadings matrices (Lambda_a, Lambda_b) generically; it is a compa"
    }
   },
   {
@@ -5331,6 +5465,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "confirmatory_lambda(species, group, d, loads_on, ...) (confirmatory-lambda.R:72) is pure R-side construction: it validates its arguments and builds an n x d NA/0 fixed-zero pattern matrix from the loads_on group->axis mapping, with no call into a fit or the TMB/Julia engine. It is the same class of R-only helper as suggest_lambda_constraint(s) (already compatibility_adapter in this manifest): a specification/advisory object with no numeric quantity to compare against a Julia surface."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirmatory_lambda(species, group, d, loads_on, ...) (confirmatory-lambda.R:72) is pure R-side construction: it validates its arguments and builds an n x d "
    }
   },
   {
@@ -5341,6 +5479,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "cumulative_logit() (R/missing-predictor.R:104) is a formula-grammar link-name sentinel used when parsing ordinal formulas; the underlying cumulative-logit likelihood is already required_core via the Ordinal family plan (GLLVM.jl families/ordinal.jl), so this sentinel constructor has no independent numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"cumulative_logit() (R/missing-predictor.R:104) is a formula-grammar link-name sentinel used when parsing ordinal formulas; the underlying cumulative-logit li"
    }
   },
   {
@@ -5357,6 +5499,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Two-part delta-Gamma family is not implemented in GLLVM.jl (see AGENTS.md \"Planned next\"); no Julia surface exists to compare against yet."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Two-part delta-Gamma family is not implemented in GLLVM.jl (see AGENTS.md \\\"Planned next\\\"); no Julia surface exists to compare against yet.\"}"
    }
   },
   {
@@ -5379,6 +5525,10 @@
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Two-part delta-lognormal family is not implemented in GLLVM.jl (see AGENTS.md \"Planned next\"); no Julia surface exists to compare against yet."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Two-part delta-lognormal family is not implemented in GLLVM.jl (see AGENTS.md \\\"Planned next\\\"); no Julia surface exists to compare against yet.\"}"
    }
   },
   {
@@ -5429,6 +5579,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "diagnose_kernel_separability(...) (kernel-helpers.R:581) takes user-supplied kernel matrices directly as its ... arguments (not a fitted model) and computes a pairwise Frobenius-style similarity between them in pure R, returning an advisory classification (near_orthogonal/high overlap) and recommendation text. It never touches a gllvmTMB fit or the TMB/Julia engine, so it has no Julia numeric surface to compare against -- the same class as suggest_lambda_constraint(s)."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"diagnose_kernel_separability(...) (kernel-helpers.R:581) takes user-supplied kernel matrices directly as its ... arguments (not a fitted model) and computes "
    }
   },
   {
@@ -5439,6 +5593,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Aggregates already-validated diagnostic values (from check_gllvmTMB and friends, separately required_core) into an R display table; no independent numeric content of its own."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Aggregates already-validated diagnostic values (from check_gllvmTMB and friends, separately required_core) into an R display table; no independent numeric co"
    }
   },
   {
@@ -5509,6 +5667,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Display-table wrapper around extract_Sigma() and its CIs, both separately required_core; no independent numeric content."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Display-table wrapper around extract_Sigma() and its CIs, both separately required_core; no independent numeric content.\"}"
    }
   },
   {
@@ -5742,7 +5904,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/gllvmTMB",
@@ -5833,7 +5999,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/imputed",
@@ -5844,7 +6014,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/indep",
@@ -5865,7 +6039,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/isdm_sources",
@@ -5876,7 +6054,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/kernel_dep",
@@ -5967,7 +6149,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-LOGNORMAL-FAMILY-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/lognormal_mix",
@@ -5984,7 +6170,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/make_mesh",
@@ -5995,7 +6185,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/meta",
@@ -6036,7 +6230,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-MISS-CONTROL-STRUCTURE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/multinomial",
@@ -6047,7 +6245,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-MULTINOMIAL-FAMILY-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/nbinom1",
@@ -6058,7 +6260,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-NBINOM1-FAMILY-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/nbinom2",
@@ -6085,7 +6291,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-ORDINAL-PROBIT-FAMILY-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/ordiplot",
@@ -6096,7 +6306,11 @@
     "to": "intentionally_excluded",
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
+   }
   },
   {
    "source_id": "namespace/export/pedigree_to_A",
@@ -6107,7 +6321,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/pedigree_to_Ainv_sparse",
@@ -6118,7 +6336,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/phylo",
@@ -6128,6 +6350,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "confirms input classification: phylo() (R/brms-sugar.R:343-355) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto phylo_dep/phylo_indep/phylo_latent/phylo_scalar/phylo_rr/phylo_slope/phylo_unique, each already carrying its own required_core planned case in this manifest."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: phylo() (R/brms-sugar.R:343-355) is a marker function whose body is explicitly commented 'Body unused -- never called at evalu"
    }
   },
   {
@@ -6189,7 +6415,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/phylo_slope",
@@ -6220,7 +6450,11 @@
     "to": "intentionally_excluded",
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
+   }
   },
   {
    "source_id": "namespace/export/plot_Sigma_heatmap",
@@ -6231,7 +6465,11 @@
     "to": "intentionally_excluded",
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
+   }
   },
   {
    "source_id": "namespace/export/plot_Sigma_table",
@@ -6242,7 +6480,11 @@
     "to": "intentionally_excluded",
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
+   }
   },
   {
    "source_id": "namespace/export/plot_anisotropy",
@@ -6253,7 +6495,11 @@
     "to": "intentionally_excluded",
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
+   }
   },
   {
    "source_id": "namespace/export/plot_anisotropy2",
@@ -6264,7 +6510,11 @@
     "to": "intentionally_excluded",
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
+   }
   },
   {
    "source_id": "namespace/export/plot_correlations",
@@ -6275,7 +6525,11 @@
     "to": "intentionally_excluded",
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
+   }
   },
   {
    "source_id": "namespace/export/plot_loadings_confidence_eye",
@@ -6286,7 +6540,11 @@
     "to": "intentionally_excluded",
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
+   }
   },
   {
    "source_id": "namespace/export/plot_rotated_loadings",
@@ -6297,7 +6555,11 @@
     "to": "intentionally_excluded",
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
+   }
   },
   {
    "source_id": "namespace/export/predict_cross_covariance",
@@ -6308,7 +6570,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PREDICT-CROSS-COVARIANCE-POSTFIT"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/predict_missing",
@@ -6319,7 +6585,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/predictive_check",
@@ -6360,7 +6630,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PROFILE-CROSS-RHO-CI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/profile_cross_rho_ci",
@@ -6371,7 +6645,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PROFILE-CROSS-RHO-CI-CI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/profile_phylo_signal",
@@ -6408,7 +6686,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-ROTATE-LOADINGS-POSTFIT"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/sanity_multi",
@@ -6457,7 +6739,11 @@
     "to": "compatibility_adapter",
     "reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required"
+   }
   },
   {
    "source_id": "namespace/export/simulate_unit_trait",
@@ -6468,7 +6754,11 @@
     "to": "compatibility_adapter",
     "reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required"
+   }
   },
   {
    "source_id": "namespace/export/slope_sd_ci",
@@ -6488,6 +6778,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "confirms input classification: spatial() (R/brms-sugar.R:1309-1317) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto spatial_dep/spatial_indep/spatial_latent/spatial_scalar/spatial_unique, which are separately reclassified compatibility_adapter elsewhere in this manifest."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: spatial() (R/brms-sugar.R:1309-1317) is a marker function whose body is explicitly commented 'Body unused -- never called at e"
    }
   },
   {
@@ -6499,7 +6793,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/spatial_indep",
@@ -6510,7 +6808,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/spatial_latent",
@@ -6521,7 +6823,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/spatial_scalar",
@@ -6532,7 +6838,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/spatial_unique",
@@ -6543,7 +6853,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/spde",
@@ -6554,7 +6868,11 @@
     "to": "compatibility_adapter",
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
+   }
   },
   {
    "source_id": "namespace/export/standard_errors",
@@ -6575,7 +6893,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-STUDENT-FAMILY-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/suggest_lambda_constraint",
@@ -6585,6 +6907,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "confirms input classification: suggest_lambda_constraint() (R/suggest-lambda-constraint.R:90) inspects a single already-fitted R model and prints/returns advisory constraint-suggestion text; it is a singular convenience wrapper around suggest_lambda_constraints() with no numeric quantity and no Julia bridge surface to compare against."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: suggest_lambda_constraint() (R/suggest-lambda-constraint.R:90) inspects a single already-fitted R model and prints/returns adv"
    }
   },
   {
@@ -6595,6 +6921,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "confirms input classification: suggest_lambda_constraints() (R/suggest-lambda-constraint.R:544) produces human-readable advisory guidance text from R-side fit internals (not a numeric quantity), so it has no Julia comparand to test against."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: suggest_lambda_constraints() (R/suggest-lambda-constraint.R:544) produces human-readable advisory guidance text from R-side fi"
    }
   },
   {
@@ -6606,7 +6936,11 @@
     "to": "compatibility_adapter",
     "reason": "R/generics-imports.R re-exports generics::tidy as a bare S3 generic (`generics::tidy`) with no package-specific body; the only package behavior is the tidy.gllvmTMB_multi method, a tabular-summary view whose postfit numeric content is already exercised by the standard_errors / gllvmTMB_check_consistency / sanity_multi required cases. Testing the bare generic re-export would duplicate that coverage without adding a distinct contract. Reclassify to compatibility_adapter."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"R/generics-imports.R re-exports generics::tidy as a bare S3 generic (`generics::tidy`) with no package-specific body; the only package behavior is the tidy.g"
+   }
   },
   {
    "source_id": "namespace/export/tmbprofile_wrapper",
@@ -6643,7 +6977,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-TRUNCATED-NBINOM2-FAMILY-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/truncated_poisson",
@@ -6654,7 +6992,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-TRUNCATED-POISSON-FAMILY-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/export/tweedie",
@@ -6665,7 +7007,11 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-TWEEDIE-FAMILY-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "namespace/useDynLib/gllvmTMB (.registration=TRUE)",
@@ -6675,6 +7021,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "confirms input classification: NAMESPACE:237 'useDynLib(gllvmTMB, .registration = TRUE)' registers the package's compiled TMB shared object at load time; it is a package-loading directive, not an R function with observable public behaviour, so it has no executable case of its own."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: NAMESPACE:237 'useDynLib(gllvmTMB, .registration = TRUE)' registers the package's compiled TMB shared object at load time; it "
    }
   },
   {
@@ -6819,7 +7169,11 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-LOGNORMAL-RESPONSE-MEAN-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"No lognormal family exists in GLLVM.jl's response-family set (src/families/); the response-mean-vs-median distinction has no Julia surface to compare agains"
+   }
   },
   {
    "source_id": "postfit-policy/POST-MIXED-LINK-DISPATCH",
@@ -6834,7 +7188,11 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-MIXED-LINK-DISPATCH-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"GLLVM.jl has no mixed-family/mixed-link single-fit architecture (src/families/ types are each single-family); this fact is scoped to R's long-format multi-t"
+   }
   },
   {
    "source_id": "postfit-policy/POST-NOBS-COUNT",
@@ -6875,7 +7233,11 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-NOBS-MASK-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "postfit-policy/POST-PREDICT-DEFAULT",
@@ -6920,7 +7282,11 @@
     "to": "compatibility_adapter",
     "reason": "NA-as-alias-for-~0 is an R argument-parsing convenience with no independent numerical content once POST-RE-FORM-ZERO's fixed-effects-only mode exists in Julia; it belongs with that adapter work rather than as its own required_core fact, and has no Julia surface to compare against until then."
    },
-   "uncertain": true
+   "uncertain": true,
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"NA-as-alias-for-~0 is an R argument-parsing convenience with no independent numerical content once POST-RE-FORM-ZERO's fixed-effects-only mode exists in Juli"
+   }
   },
   {
    "source_id": "postfit-policy/POST-RE-FORM-ZERO",
@@ -6931,7 +7297,11 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-RE-FORM-ZERO-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "postfit-policy/POST-RESIDUAL-CONDITIONAL",
@@ -6994,7 +7364,11 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-SE-GUARD-ADMIT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "postfit-policy/POST-SE-MISSING-PREDICTOR-REJECT",
@@ -7053,7 +7427,11 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-TIDY-EFFECTS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
+   "evidence": {
+    "note": "uncertain row from the verified fan-out; open question recorded: (see draft rationale)"
+   }
   },
   {
    "source_id": "postfit-policy/POST-TRUNCPOIS-RESPONSE-PARAMETER",
@@ -7068,7 +7446,11 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-TRUNCPOIS-RESPONSE-PARAMETER-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"No zero-truncated Poisson family exists in GLLVM.jl (src/families/); this fact about predict()'s response-scale value (returning the untruncated rate rather"
+   }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-.proportions_bootstrap_ci",
@@ -7078,6 +7460,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"bootstrap\"); no standalone public surface for GLLVM.jl to twin beyond what the confint.gllvmTMB_multi row already covers."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\\\"proportions\\\", method=\\\"bootstrap\\\"); no standalone pub"
    }
   },
   {
@@ -7088,6 +7474,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"wald\"); no standalone public surface beyond the confint.gllvmTMB_multi row."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\\\"proportions\\\", method=\\\"wald\\\"); no standalone public s"
    }
   },
   {
@@ -7350,6 +7740,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit\"); the numeric surface is fully covered by the extract_Sigma required row. A Julia twin need only keep an alias, not an independent verified case."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\\\"unit\\\"); the numeric surface is fully covered by t"
    }
   },
   {
@@ -7360,6 +7754,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit_obs\"); covered by the extract_Sigma required row."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\\\"unit_obs\\\"); covered by the extract_Sigma required"
    }
   },
   {
@@ -7765,6 +8163,10 @@
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Pure S3 generic dispatcher (`UseMethod(\"imputed\")`) with zero independent logic; the numeric surface is entirely in imputed.gllvmTMB, already a required row. A Julia twin needs only a matching function name/dispatch, not a separately verified numeric case."
+   },
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Pure S3 generic dispatcher (`UseMethod(\\\"imputed\\\")`) with zero independent logic; the numeric surface is entirely in imputed.gllvmTMB, already a required ro"
    }
   },
   {
