@@ -294,25 +294,35 @@ function _fit_poisson_gllvm_laplace(Y::AbstractMatrix; K::Integer,
     elseif gradient === :analytic && offset === nothing &&
            (hessian === _default_hessian(Poisson(), link) ||
             _glm_weight_matches_observed(Poisson(), link))
-        function g!(G, θ)
-            β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-            gg = try
-                poisson_laplace_grad(Yc, Λ, β; mask = msk)
-            catch
-                nothing
-            end
-            if gg === nothing || !all(isfinite, gg)
-                hh = 1e-6
-                @inbounds for i in eachindex(θ)
-                    θp = copy(θ); θp[i] += hh; θm = copy(θ); θm[i] -= hh
-                    G[i] = (negll(θp) - negll(θm)) / (2hh)
+        # R4 (only_fg!, core070): a single combined closure so an accepted iterate
+        # that needs BOTH the value and the gradient pays for value+gradient in one
+        # `Optim.optimize` bookkeeping pass rather than two separate closures the
+        # optimizer must call at the same θ. See
+        # docs/dev-log/core070/poisson-perf-repair-notes.md for the measured effect.
+        function fg!(F, G, θ)
+            if G !== nothing
+                β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+                gg = try
+                    poisson_laplace_grad(Yc, Λ, β; mask = msk)
+                catch
+                    nothing
                 end
-            else
-                G .= .-gg                       # ∇(negll) = −∇(marginal)
+                if gg === nothing || !all(isfinite, gg)
+                    hh = 1e-6
+                    @inbounds for i in eachindex(θ)
+                        θp = copy(θ); θp[i] += hh; θm = copy(θ); θm[i] -= hh
+                        G[i] = (negll(θp) - negll(θm)) / (2hh)
+                    end
+                else
+                    G .= .-gg                   # ∇(negll) = −∇(marginal)
+                end
             end
-            return G
+            if F !== nothing
+                return negll(θ)
+            end
+            return nothing
         end
-        Optim.optimize(negll, g!, θ0, ls, opts)
+        Optim.optimize(Optim.only_fg!(fg!), θ0, ls, opts)
     else
         Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
     end
