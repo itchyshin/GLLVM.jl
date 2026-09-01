@@ -378,4 +378,48 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
             row_traits = collect(row_traits), col_traits = collect(col_traits))
     end
 
+    @testset "1.12 imputed — reduced Gaussian-FIML table" begin
+        Random.seed!(12)
+        p, K, n = 4, 1, 300
+        x_true = randn(n)
+        b_x_true = 1.2
+        Λ_true = 0.5 .* randn(p, K)
+        a_true = 0.3 .* randn(p)
+        y = a_true .+ b_x_true .* x_true' .+ Λ_true * randn(K, n) .+ 0.3 .* randn(p, n)
+
+        x = Vector{Union{Missing, Float64}}(x_true)
+        miss_idx = sort(randperm(n)[1:20])
+        for i in miss_idx
+            x[i] = missing
+        end
+
+        fitmi = fit_gaussian_mi_fiml(y, x; K = K)
+        @test fitmi.converged
+        @test fitmi.n_missing == 20
+
+        tab = imputed(fitmi, x)
+        @test length(tab.level) == n
+        @test all(tab.variable .== :x)
+        @test tab.estimate == fitmi.eblup_x   # thin wrapper, direct oracle
+        @test all(tab.status .== :se_not_computed)
+        @test all(isnan.(tab.std_error))
+
+        # observed flags exactly complement the mask.
+        observed_expected = trues(n)
+        observed_expected[miss_idx] .= false
+        @test tab.observed == observed_expected
+
+        # complete-data oracle: at observed sites, estimate == x itself.
+        for i in setdiff(1:n, miss_idx)
+            @test tab.estimate[i] == x_true[i]
+        end
+
+        # error on a fit with no modelled predictor (a plain GllvmFit).
+        Random.seed!(13)
+        plain_fit = fit_gaussian_gllvm(randn(4, 100); K = 1)
+        @test_throws ArgumentError imputed(plain_fit, x)
+
+        @test_throws ArgumentError imputed(fitmi, x[1:(n - 1)])
+    end
+
 end

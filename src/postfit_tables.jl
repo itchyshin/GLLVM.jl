@@ -765,3 +765,48 @@ function extract_coevolution_modules(Sigma_shared::AbstractMatrix;
 
     return (R = Matrix(R), modules = modules, row_axes = row_axes, col_axes = col_axes)
 end
+
+# ---------------------------------------------------------------------------
+# Item 1.12 — imputed, reduced Gaussian-FIML form (mirrors
+# missing-predictor.R:2597-2725 / gll_imputed_missing_predictor_se:2731-2755).
+# ---------------------------------------------------------------------------
+
+"""
+    imputed(fitmi, x::AbstractVector) -> NamedTuple
+
+Table of imputed/observed values for the missing site-level predictor `x` of
+a [`fit_gaussian_mi_fiml`](@ref) result, mirroring `gllvmTMB::imputed`
+(`missing-predictor.R:2597-2725`) for the Gaussian-FIML route.
+
+`fitmi` is the `NamedTuple` returned by `fit_gaussian_mi_fiml` (must carry an
+`eblup_x` field — a `GllvmFit` or any other fit type throws `ArgumentError`).
+`x` is the SAME predictor vector passed to `fit_gaussian_mi_fiml` (the fit
+does not store it): `estimate` is `fitmi.eblup_x` (the observed value where
+`x` is observed, the Gaussian conditional mode `E[x_s | y_s]` where it is
+`missing`/`NaN` — free from the fit, `fit_gaussian_mi_fiml` already computes
+it), and `observed` flags exactly the non-missing entries of `x`.
+
+Scope reduction (this slice, core070 spec §1.12): conditional standard
+errors (`gll_imputed_missing_predictor_se`, `:2731-2755`, an extra
+per-site Hessian-block computation over the augmented latent) are NOT
+computed — every row reports `std_error = NaN`, `status = :se_not_computed`,
+honestly, rather than a stub SE. `fit_gllvm_mi` (non-Gaussian response,
+`missing_predictor_poisson.jl:380-386`) returns no imputed values in R
+either — out of scope here.
+
+Returns `(variable, level, estimate, observed, std_error, status)` —
+`variable` is `:x` on every row (this slice supports one predictor);
+`level` is the 1-based site index.
+"""
+function imputed(fitmi, x::AbstractVector)
+    hasproperty(fitmi, :eblup_x) || throw(ArgumentError(
+        "imputed() requires a fit_gaussian_mi_fiml() result (a NamedTuple with an " *
+        "`eblup_x` field); got $(typeof(fitmi))."))
+    n = length(fitmi.eblup_x)
+    length(x) == n || throw(ArgumentError("length(x) = $(length(x)) must equal the fit's n_sites = $n."))
+
+    isobs = [!(ismissing(xi) || (xi isa Real && isnan(xi))) for xi in x]
+    return (variable = fill(:x, n), level = collect(1:n),
+            estimate = collect(Float64, fitmi.eblup_x), observed = isobs,
+            std_error = fill(NaN, n), status = fill(:se_not_computed, n))
+end
