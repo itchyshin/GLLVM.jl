@@ -2013,3 +2013,15 @@ NOT in this campaign (profile-CI cost; separate decision). Wave A agents:
 derived-CI slice committed (12 exports, 66/66 slice tests, suite tally
 pending); extractors finishing; Poisson perf repair in progress (diagnosis
 committed: chunked-FD mode-resolve waste).
+
+## Wave-5 conversion bound — 2026-09-01
+
+Surface-conversion batch green on attempt 7 (six receipted repair rounds:
+argv, soft-scope, oracle coverage guard, accessor call shapes, tolerance
+recalibration to paired-fit class, invariant fixes tcrossprod/lv, fixture
+reassignment, Omega composition trace). 20 rows bound; 5 rows form the
+ESTIMAND-ALIGNMENT FAMILY (communality/correlations/proportions/Omega +
+cross-correlations fixture gap) surfaced as PARTIAL_PARITY_DEFECT_PENDING_
+DECISION — Julia total-variance vs R tier-scoped compositions.
+BLOCKED_NEEDS_JULIA_SURFACE 142 -> 117. Consolidated Totoro suite: 11362
+pass / 5 known-canary fails / 0 new-slice failures.
