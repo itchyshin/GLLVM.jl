@@ -654,3 +654,102 @@ tools/core070_verify_surface_conversion_batch.py --self-test` →
 cases=23 deferred=18` (6 rejected mutations now, up from 5 — added a
 `bootstrap_structural`-specific mutation, `julia_structural.ordered`
 flipped false, exercising the new kind's rejection path explicitly).
+
+## Repair 4 (2026-09-01): wave5-conversion5 — 4 fails, one family
+
+`wave5-conversion5` ran 19/23 PASS. All 4 fails traced to source; resolved
+per-case rather than tolerance-widened, per the coordinator's directive to
+prefer a real fix where one exists.
+
+### (a) `EXTRACT-ICC-SITE` — fixture reassignment, not a deferral
+
+R's `extract_ICC_site()` returned empty on `gaussian_small`: its
+`vB/vW` ratio needs BOTH a `unit` (B) tier AND a `unit_obs` (W) tier to be
+defined at all (`extract_Sigma(level="unit_obs", ...)` is `NULL` on a
+single-tier fit), and `gaussian_small` has no W tier (`K_W=0`). **Fixed by
+reassigning the fixture**: `icc_site` now runs on `twolevel_small`
+(`fit_tl`) on both sides, where both tiers exist by construction. Bonus
+finding while tracing this: `GLLVM.extract_ICC_site(fit::TwoLevelFit)` is
+itself defined as `= extract_repeatability(fit)`
+(`src/extractors.jl:458`) — so this case is now numerically identical to
+`repeatability_point` on the same fixture. That's an intentional
+consequence of the two engines' own internal equivalence (R's
+`extract_ICC_site` on a two-tier fit reduces to the same `vB/(vB+vW)`
+ratio `extract_repeatability`'s wald route computes), not redundant test
+design — both are still independently valid conversions of two different
+ledger rows (`postfit/POSTFIT-SURFACE-extract_ICC_site` vs
+`postfit/POSTFIT-SURFACE-extract_repeatability`).
+
+### (b) `EXTRACT-OMEGA` — R-side coercion bug, fixed
+
+`extract_Omega()` returns a **list**
+(`list(Omega=, R_Omega=, tiers_used=, note=, [residual_split=])`, confirmed
+by reading `extract-omega.R`'s final `out <- list(...)`), not a bare
+matrix. The runner's `as.numeric(extract_Omega(fit_g))` tried to coerce
+the whole list — `'list' object cannot be coerced to type 'double'`.
+**Fixed**: `as.numeric(extract_Omega(fit_g)$Omega)`. Unlike
+`communality`/`correlations`/`proportions`, `Omega` is a **covariance
+sum** across tiers, not a variance *ratio* — it never divides by a
+total-variance denominator, so there is no tier-scoped-vs-full-total
+estimand question here at all. On `gaussian_small` (single `B` tier, no
+diag, Gaussian family contributes 0 link-residual), both R's and Julia's
+`Omega` reduce to the same `Λ Λᵀ` sum — a real, fixable bug, not a
+definition mismatch, exactly as the coordinator's framing predicted.
+
+### (c) `EXTRACT-CORRELATIONS` + `EXTRACT-PROPORTIONS` — same estimand mismatch as `extract_communality`, deferred
+
+Traced both to source, as instructed:
+
+- **`correlations`** (diff `0.668`): this quantity's R-side route was
+  already `extract_Sigma(fit_g, level="unit", part="total")$R` (chosen in
+  Repair 2 because `extract_correlations()` itself returns an un-coercible
+  long-format table) — standardises by the **unit (B) tier total only**,
+  which never includes `sigma_eps²` for a Gaussian fit. Julia's
+  `extract_correlations(fit) = correlation(fit)`
+  (`src/confint_derived.jl:280`) standardises by `sigma_y_site(fit)`, the
+  **full** total variance including `sigma_eps²`. Same mismatch class as
+  `extract_communality`, confirmed by reading `correlation()`'s body
+  directly (`Σ = sigma_y_site(fit)`).
+- **`proportions`** (diff `0.8713` — **the exact value `extract_communality`
+  failed at**): `GLLVM.extract_proportions(fit; component=:shared)` and
+  `communality(fit)` are the **same function mathematically** — both
+  `ΛΛᵀ[t,t] / sigma_y_site(fit)[t,t]`. R's `extract_proportions()`'s
+  `shared_unit` component's `proportion` column has denominator
+  `total <- rowSums(M)`, where `M` only ever contains the tier-scoped
+  components R's system tracks (`shared_unit` alone on this fixture) —
+  `sigma_eps²` is never one of them, so `proportion` degenerates to
+  `shared_unit/shared_unit == 1.0` for every trait, for the identical
+  reason `extract_communality` degenerates. The matching diff value is not
+  a coincidence — it's the same underlying computation on both sides.
+
+**Both moved from `cases[]` to `deferred[]`** with the full trace recorded
+in-contract (`reason` field), joining `extract_communality` — all three
+now await the same maintainer estimand-alignment decision: either widen
+GLLVM.jl's `communality`/`correlation`/`proportions` family to also expose
+a tier-scoped (non-`sigma_eps²`) variant matching R's convention, or accept
+that R's tier-scoped and Julia's total-variance-scoped versions are
+deliberately different estimands that should never be cross-compared
+numerically. That decision is out of this batch's scope (batch = ledger
+conversion evidence, not estimand design).
+
+### Net counts
+
+`extract_correlations` and `extract_proportions` moved to `deferred[]`;
+`extract_ICC_site` stayed in `cases[]` (fixture changed, not removed);
+`extract_Omega` stayed in `cases[]` (bug fixed in place):
+**23 → 21 executable, 18 → 20 deferred, 41 total unchanged.**
+
+### Coverage guard, soft-fail, structural-bootstrap machinery — all kept unchanged
+
+No changes to the loud coverage check, the Julia `missing_oracle_value`
+soft-fail, or the `bootstrap_structural` kind from Repairs 2–3; this round
+only changed which quantities are computed and on which fixture.
+
+**Re-verified locally**: `Rscript -e 'parse(...)'` → R parse OK; `julia -e
+'Meta.parseall(...)'` → Julia parse OK; `python3
+tools/core070_verify_surface_conversion_batch.py --self-test` →
+`CORE070_SURFACE_CONVERSION_VERIFY_SELF_TEST_OK rejected_mutations=6
+cases=21 deferred=20`. A fresh case_id → R-branch dry-mapping (same python
+cross-check method as Repair 2) confirms all 21 cases map to a real
+`r_quantity()` branch or the `refusal_pair`/`bootstrap_structural`
+bypasses, zero dead branches.

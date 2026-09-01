@@ -1,9 +1,9 @@
-"""Verify the surface-conversion batch: 23 BLOCKED_NEEDS_JULIA_SURFACE
+"""Verify the surface-conversion batch: 21 BLOCKED_NEEDS_JULIA_SURFACE
 ledger rows converted to bound cases (postfit/, namespace/, inference/
 prefixes, evidence naming a function that now exists in src/GLLVM.jl's
 export list -- the extractors slice, src/extractors.jl, and the derived-CI
 slice, src/confint_derived_wald.jl / src/confint_derived.jl /
-src/twolevel.jl). 18 further target rows are recorded in the contract's
+src/twolevel.jl). 20 further target rows are recorded in the contract's
 `deferred` bucket with an explicit reason and deliberately carry no
 fabricated pass. See docs/dev-log/core070/surface-conversion-notes.md for
 the full accounting and docs/dev-log/core070/surface-conversion-batch-contract.json
@@ -36,8 +36,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "docs/dev-log/core070/surface-conversion-batch-contract.json"
 
 REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
-CASE_COUNT = 23
-DEFERRED_COUNT = 18
+CASE_COUNT = 21
+DEFERRED_COUNT = 20
 TARGET_ROW_COUNT = CASE_COUNT + DEFERRED_COUNT  # 41
 
 KNOWN_QUANTITIES = {

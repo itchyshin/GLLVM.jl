@@ -151,7 +151,7 @@ root = normpath(joinpath(@__DIR__, ".."))
 contract = json_read(joinpath(root, "docs/dev-log/core070/surface-conversion-batch-contract.json"))
 cases = contract["cases"]
 length(cases) == contract["expected_case_count"] || error("case count mismatch vs contract")
-Int(contract["expected_case_count"]) == 23 || error("expected_case_count drifted from 23; update this script")
+Int(contract["expected_case_count"]) == 21 || error("expected_case_count drifted from 21; update this script")
 
 # ---------------------------------------------------------------------------
 # Fixture 1: gaussian_small -- fit natively on the R oracle's simulated Y.
@@ -225,8 +225,13 @@ function julia_quantity(quantity::AbstractString)
     # sigma_eps^2, while R's extract_communality() is single-tier-scoped
     # and never includes sigma_eps^2 for a Gaussian fit -- a genuine
     # cross-engine estimand mismatch, not a call-shape bug.
-    elseif quantity == "correlations"
-        return vec(GLLVM.extract_correlations(fit_g))
+    # correlations (postfit/POSTFIT-SURFACE-extract_correlations) is NOT
+    # computed here -- deferred (see contract.deferred, REPAIR 2026-09-01
+    # wave5-conversion5): same tier-scoped-vs-total-variance estimand
+    # mismatch as extract_communality (GLLVM.jl's extract_correlations(fit)
+    # = correlation(fit) standardises by sigma_y_site(fit), the FULL total
+    # variance incl. sigma_eps^2; R's route standardises by a single tier
+    # that never includes sigma_eps^2 for a Gaussian fit).
     elseif quantity == "cross_correlations"
         return vec(GLLVM.extract_cross_correlations(fit_g; level = :unit,
                                                       traits_i = [1, 2], traits_j = [3, 4, 5]))
@@ -242,12 +247,27 @@ function julia_quantity(quantity::AbstractString)
         sites, _, _ = GLLVM.extract_ordination(fit_g, Y_g)
         S = Matrix(sites)
         return size(S, 1) == n ? vec(sum(abs2, S; dims = 2)) : vec(sum(abs2, S; dims = 1))
-    elseif quantity == "proportions"
-        return vec(GLLVM.extract_proportions(fit_g; component = :shared))
+    # proportions (postfit/POSTFIT-SURFACE-extract_proportions) is NOT
+    # computed here -- deferred (see contract.deferred, REPAIR 2026-09-01
+    # wave5-conversion5): SAME estimand mismatch as extract_communality --
+    # extract_proportions(fit; component=:shared) IS communality(fit)
+    # mathematically (both ΛΛ^T[t,t] / sigma_y_site(fit)[t,t]); confirmed
+    # by the observed max_abs_diff (0.8713) exactly matching
+    # extract_communality's own failure.
     elseif quantity == "omega"
         return vec(GLLVM.extract_Omega(fit_g))
     elseif quantity == "icc_site"
-        return vec(GLLVM.extract_ICC_site(fit_g))
+        # REPAIR (2026-09-01, wave5-conversion5): R's extract_ICC_site()
+        # needs BOTH a "unit" and a "unit_obs" tier; gaussian_small
+        # (single-tier) has no unit_obs block, so R returned empty. Fixture
+        # reassignment (not a call bug): now computed on fit_tl
+        # (twolevel_small), matching the R-side fix. GLLVM's
+        # extract_ICC_site(fit::TwoLevelFit) is itself defined as
+        # `= extract_repeatability(fit)` (src/extractors.jl), so this is
+        # numerically the same quantity as repeatability_point on the same
+        # fixture -- an intentional consequence of the two engines' own
+        # internal equivalence, not redundant test design.
+        return vec(GLLVM.extract_ICC_site(fit_tl))
     elseif quantity == "loading_ci_wald_asym"
         tbl = GLLVM.loading_ci(fit_g, Y_g; method = :wald_asym, conf_level = 0.95)
         return vcat(Float64[r.lower for r in tbl], Float64[r.upper for r in tbl])

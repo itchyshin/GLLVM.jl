@@ -46,8 +46,8 @@
     "postfit/POSTFIT-SURFACE-slope_sd_ci",
     "postfit/POSTFIT-SURFACE-standard_errors"
   ],
-  "expected_case_count": 23,
-  "expected_deferred_count": 18,
+  "expected_case_count": 21,
+  "expected_deferred_count": 20,
   "cases": [
     {
       "source_id": "namespace/export/getLoadings",
@@ -115,18 +115,6 @@
       "julia_call": "GLLVM.extract_Sigma_table(fit; level=:unit, part=:total)  # sorted (trait_i,trait_j)",
       "notes": "",
       "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-SIGMA-TABLE",
-      "tolerance_note": "Recalibrated from an earlier (miscalibrated) 1e-6 'same-process deterministic transform' tier to the 1e-4 paired-independent-fit precedent: this quantity is a transform of Lambda/sigma^2 estimated by TWO SEPARATE optimiser runs (R's TMB fit, Julia's LBFGS fit) on the same simulated Y, never the same fitted numbers passed through a single process. REPAIR 2026-09-01 (wave5-conversion4: EXTRACT-SIGMA/EXTRACT-SIGMA-TABLE failed at max_abs_diff=2.42e-6 vs the old 1e-6 bar, which is exactly the class of drift two independent LBFGS/TMB runs produce -- not a bug, a miscalibrated tolerance)."
-    },
-    {
-      "source_id": "postfit/POSTFIT-SURFACE-extract_correlations",
-      "quantity": "correlations",
-      "fixture": "gaussian_small",
-      "tolerance": 0.0001,
-      "kind": "point",
-      "r_call": "extract_correlations(fit_r)  # upper triangle incl diag",
-      "julia_call": "GLLVM.extract_correlations(fit)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-CORRELATIONS",
       "tolerance_note": "Recalibrated from an earlier (miscalibrated) 1e-6 'same-process deterministic transform' tier to the 1e-4 paired-independent-fit precedent: this quantity is a transform of Lambda/sigma^2 estimated by TWO SEPARATE optimiser runs (R's TMB fit, Julia's LBFGS fit) on the same simulated Y, never the same fitted numbers passed through a single process. REPAIR 2026-09-01 (wave5-conversion4: EXTRACT-SIGMA/EXTRACT-SIGMA-TABLE failed at max_abs_diff=2.42e-6 vs the old 1e-6 bar, which is exactly the class of drift two independent LBFGS/TMB runs produce -- not a bug, a miscalibrated tolerance)."
     },
     {
@@ -213,18 +201,6 @@
       "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ORDINATION"
     },
     {
-      "source_id": "postfit/POSTFIT-SURFACE-extract_proportions",
-      "quantity": "proportions",
-      "fixture": "gaussian_small",
-      "tolerance": 0.0001,
-      "kind": "point",
-      "r_call": "extract_proportions(fit_r, component='shared')",
-      "julia_call": "GLLVM.extract_proportions(fit; component=:shared)",
-      "notes": "",
-      "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-PROPORTIONS",
-      "tolerance_note": "Recalibrated from an earlier (miscalibrated) 1e-6 'same-process deterministic transform' tier to the 1e-4 paired-independent-fit precedent: this quantity is a transform of Lambda/sigma^2 estimated by TWO SEPARATE optimiser runs (R's TMB fit, Julia's LBFGS fit) on the same simulated Y, never the same fitted numbers passed through a single process. REPAIR 2026-09-01 (wave5-conversion4: EXTRACT-SIGMA/EXTRACT-SIGMA-TABLE failed at max_abs_diff=2.42e-6 vs the old 1e-6 bar, which is exactly the class of drift two independent LBFGS/TMB runs produce -- not a bug, a miscalibrated tolerance)."
-    },
-    {
       "source_id": "postfit/POSTFIT-SURFACE-extract_Omega",
       "quantity": "omega",
       "fixture": "gaussian_small",
@@ -239,14 +215,15 @@
     {
       "source_id": "postfit/POSTFIT-SURFACE-extract_ICC_site",
       "quantity": "icc_site",
-      "fixture": "gaussian_small",
+      "fixture": "twolevel_small",
       "tolerance": 0.0001,
       "kind": "point",
-      "r_call": "extract_ICC_site(fit_r)",
-      "julia_call": "GLLVM.extract_ICC_site(fit)",
+      "r_call": "extract_ICC_site(fit_r)  # fit_r is the TWO-TIER twolevel_small fixture (needs both unit and unit_obs tiers)",
+      "julia_call": "GLLVM.extract_ICC_site(fit_tl)  # = extract_repeatability(fit_tl) for a TwoLevelFit",
       "notes": "",
       "case_id": "CORE070-SURFCONV-POSTFIT-POSTFIT-SURFACE-EXTRACT-ICC-SITE",
-      "tolerance_note": "Recalibrated from an earlier (miscalibrated) 1e-6 'same-process deterministic transform' tier to the 1e-4 paired-independent-fit precedent: this quantity is a transform of Lambda/sigma^2 estimated by TWO SEPARATE optimiser runs (R's TMB fit, Julia's LBFGS fit) on the same simulated Y, never the same fitted numbers passed through a single process. REPAIR 2026-09-01 (wave5-conversion4: EXTRACT-SIGMA/EXTRACT-SIGMA-TABLE failed at max_abs_diff=2.42e-6 vs the old 1e-6 bar, which is exactly the class of drift two independent LBFGS/TMB runs produce -- not a bug, a miscalibrated tolerance)."
+      "tolerance_note": "Recalibrated from an earlier (miscalibrated) 1e-6 'same-process deterministic transform' tier to the 1e-4 paired-independent-fit precedent: this quantity is a transform of Lambda/sigma^2 estimated by TWO SEPARATE optimiser runs (R's TMB fit, Julia's LBFGS fit) on the same simulated Y, never the same fitted numbers passed through a single process. REPAIR 2026-09-01 (wave5-conversion4: EXTRACT-SIGMA/EXTRACT-SIGMA-TABLE failed at max_abs_diff=2.42e-6 vs the old 1e-6 bar, which is exactly the class of drift two independent LBFGS/TMB runs produce -- not a bug, a miscalibrated tolerance).",
+      "fixture_note": "REPAIR (2026-09-01, wave5-conversion5): R's extract_ICC_site() returned empty on gaussian_small (single-tier fixture, no unit_obs/W block) -- the accessor needs BOTH a unit and a unit_obs tier to be defined at all. Fixture reassignment (not a call bug, per the coordinator's directive): now runs on twolevel_small on both sides, where both tiers exist by construction. Numerically identical to repeatability_point on the same fixture, since Julia's extract_ICC_site(::TwoLevelFit) is itself defined as `= extract_repeatability(fit)`."
     },
     {
       "source_id": "postfit/POSTFIT-SURFACE-extract_repeatability",
@@ -389,6 +366,14 @@
     {
       "source_id": "postfit/POSTFIT-SURFACE-extract_communality",
       "reason": "Julia surface exists (extract_communality(fit::GllvmFit) = communality(fit), src/confint_derived.jl), but the two engines compute a DIFFERENT ESTIMAND, not just a different call shape -- traced both to source. GLLVM.jl's communality(fit) denominator is sigma_y_site(fit), the FULL model-implied total variance across ALL tiers PLUS sigma_eps^2 (the Gaussian observation residual). R's extract_communality(fit, level) denominator is extract_Sigma(fit, level, part='total')$Sigma -- a SINGLE TIER's total only; sigma_eps^2 never enters any R extract_communality/extract_Sigma tier computation for a Gaussian fit at all (it is not one of the 'B'/'W'/'phy' component tiers the R tier system tracks). On gaussian_small (unique=FALSE, no W tier): level='unit' degenerates to an uninformative constant 1.0 for every trait (shared_B == total_B exactly, since there is no diag_B term to make them differ) -- confirmed the observed wave5-conversion4 diff (0.871) is exactly this: R's degenerate ~1.0 vs Julia's real shared/(shared+sigma_eps^2) ratio. level='unit_obs' returns NULL outright (fit$use$rr_W is FALSE, no W-tier loadings). No R call on this fixture targets the same 'shared vs grand total including the Gaussian residual' estimand Julia computes; this is a genuine cross-engine definition mismatch, not a fixable call bug. REPAIR (2026-09-01, wave5-conversion4): moved from cases[] to deferred[]."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_correlations",
+      "reason": "Julia surface exists (extract_correlations(fit::GllvmFit) = correlation(fit), src/confint_derived.jl), but traced both definitions to source (same class of mismatch as extract_communality). GLLVM.jl's correlation(fit) standardises by sigma_y_site(fit), the FULL model-implied total variance INCLUDING sigma_eps^2. R's route for this quantity (extract_Sigma(fit, level='unit', part='total')$R -- used because extract_correlations() itself returns an un-coercible long-format table, not a matrix) standardises by the 'unit' (B) tier total only, which never includes sigma_eps^2 for a Gaussian fit. On gaussian_small this produces a materially different correlation matrix (observed max_abs_diff 0.668, wave5-conversion5) -- a genuine cross-engine estimand mismatch, not a fixable call bug. REPAIR (2026-09-01): moved from cases[] to deferred[], joining extract_communality in the maintainer's estimand-alignment decision."
+    },
+    {
+      "source_id": "postfit/POSTFIT-SURFACE-extract_proportions",
+      "reason": "Julia surface exists (extract_proportions(fit::GllvmFit; component) forwards to proportions(fit; component), src/confint_derived.jl), but traced to source: this is the SAME estimand mismatch as extract_communality, exactly -- extract_proportions(fit; component=:shared) IS communality(fit) mathematically (both \u039b\u039b^T[t,t] / sigma_y_site(fit)[t,t], the FULL total-variance denominator incl. sigma_eps^2). R's extract_proportions()'s 'shared_unit' component's proportion column denominator (total <- rowSums(M)) only ever sums the tier-scoped components R's system tracks; sigma_eps^2 is not one of them, so on gaussian_small (only the shared_unit component present) proportion degenerates to shared_unit/shared_unit == 1.0 for every trait -- the exact reason the observed max_abs_diff (0.8713, wave5-conversion5) matched extract_communality's own failure value precisely. REPAIR (2026-09-01): moved from cases[] to deferred[], joining extract_communality and extract_correlations in the maintainer's estimand-alignment decision."
     }
   ],
   "fixtures": {

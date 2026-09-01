@@ -1,11 +1,11 @@
-# Receipted batch that converts the 23 BLOCKED_NEEDS_JULIA_SURFACE ledger
+# Receipted batch that converts the 21 BLOCKED_NEEDS_JULIA_SURFACE ledger
 # rows in docs/dev-log/core070/required-source-case-map.json whose surfaces
 # were JUST implemented by the extractors slice (src/extractors.jl, Cluster
 # 1) and the derived-CI slice (src/confint_derived_wald.jl /
 # src/confint_derived.jl / src/twolevel.jl, Cluster 2) -- see
 # docs/dev-log/core070/extractors-slice-notes.md and
 # docs/dev-log/core070/derived-ci-slice-notes.md for what those two slices
-# shipped. The exact 41-row target list (23 executable here + 18 deferred with
+# shipped. The exact 41-row target list (21 executable here + 20 deferred with
 # reasons) is pinned VERBATIM in
 # docs/dev-log/core070/surface-conversion-batch-contract.json
 # (`target_source_ids`).
@@ -74,9 +74,9 @@ stopifnot(
   identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
   identical(contract$status, "FROZEN_SURFACE_CONVERSION_BATCH_CONTRACT"),
   length(contract$cases) == contract$expected_case_count,
-  contract$expected_case_count == 23L,
+  contract$expected_case_count == 21L,
   length(contract$deferred) == contract$expected_deferred_count,
-  contract$expected_deferred_count == 18L,
+  contract$expected_deferred_count == 20L,
   length(contract$negative_controls) >= 2L
 )
 
@@ -225,17 +225,20 @@ r_quantity <- function(quantity) {
       t <- t[order(t$trait_i, t$trait_j), ]
       as.numeric(t$estimate)
     },
-    correlations = {
-      # extract_correlations(tier="all") returns a long-format data.frame
-      # (columns tier/trait_i/trait_j/correlation/...), not a coercible
-      # matrix -- confirmed by reading extract-correlations.R's data.frame()
-      # call, which is exactly what made `as.numeric(extract_correlations(fit_g))`
-      # silently error in the first attempt. Read the mathematically
-      # identical unit-tier correlation matrix off extract_Sigma()$R instead
-      # (same quantity extract_correlations() computes internally at the
-      # unit tier), avoiding an unverified table-schema/pairing assumption.
-      as.numeric(extract_Sigma(fit_g, level = "unit", part = "total")$R)
-    },
+    # correlations (postfit/POSTFIT-SURFACE-extract_correlations) is NOT
+    # computed here -- deferred (see contract.deferred, REPAIR
+    # 2026-09-01 wave5-conversion5): traced both definitions to source like
+    # extract_communality. GLLVM.jl's extract_correlations(fit) =
+    # correlation(fit) (src/confint_derived.jl) standardises by
+    # sigma_y_site(fit), the FULL total variance INCLUDING sigma_eps^2. R's
+    # extract_Sigma(fit, level="unit", part="total")$R (the route this
+    # quantity used, since extract_correlations() itself returns an
+    # un-coercible long-format table) standardises by the "unit" (B) TIER
+    # total only, which never includes sigma_eps^2 for a Gaussian fit --
+    # the same tier-scoped-vs-total-variance estimand mismatch as
+    # extract_communality (observed max_abs_diff 0.668, consistent with
+    # comparing a shared-only correlation structure against a
+    # residual-diluted one).
     # REPAIR (2026-09-01, wave5-conversion4: r_len=0 on both residual_cov
     # and residual_cor). getResidualCov/getResidualCor(fit, level="unit")
     # is the R DEFAULT (output-methods.R: `level = "unit"`); the first
@@ -259,17 +262,37 @@ r_quantity <- function(quantity) {
       ord <- extract_ordination(fit_g)
       as.numeric(rowSums(as.matrix(ord$scores)^2))
     },
-    proportions = {
-      # extract_proportions(fit, link_residual, format) has NO `component`
-      # argument (confirmed by reading extract-omega.R's formal args);
-      # format="long" returns trait/component/variance/proportion rows --
-      # filter to the "shared_unit" component (the rr_B contribution, the
-      # only component gaussian_small's unique=FALSE single-tier fit has).
-      df <- extract_proportions(fit_g, format = "long")
-      as.numeric(df$proportion[df$component == "shared_unit"])
-    },
-    omega = as.numeric(extract_Omega(fit_g)),
-    icc_site = as.numeric(extract_ICC_site(fit_g)),
+    # proportions (postfit/POSTFIT-SURFACE-extract_proportions) is NOT
+    # computed here -- deferred (see contract.deferred, REPAIR
+    # 2026-09-01 wave5-conversion5): SAME estimand mismatch as
+    # extract_communality, exactly (observed max_abs_diff 0.8713, the
+    # identical value communality failed at). extract_proportions()'s
+    # "shared_unit" component's `proportion` column has denominator
+    # total <- rowSums(M), where M only ever contains the tier-scoped
+    # components R's system tracks (shared_unit here, since
+    # gaussian_small has no diag_B/W/link_residual) -- sigma_eps^2 is not
+    # one of them, so on this fixture proportion == shared_unit/shared_unit
+    # == 1.0 for every trait, degenerate for the same reason
+    # extract_communality degenerates. GLLVM.jl's
+    # extract_proportions(fit; component=:shared) IS mathematically
+    # identical to communality(fit) (both ΛΛ^T[t,t] / sigma_y_site(fit)[t,t],
+    # the FULL total-variance denominator) -- confirming this is the exact
+    # same cross-engine estimand mismatch, not a second independent bug.
+    omega = as.numeric(extract_Omega(fit_g)$Omega),
+    # REPAIR (2026-09-01, wave5-conversion5: R returned empty on
+    # gaussian_small). extract_ICC_site()'s vB/vW ratio needs BOTH a
+    # "unit" (B) tier AND a "unit_obs" (W) tier to be non-degenerate;
+    # gaussian_small (K_W=0, single-tier) has no W tier at all, so the
+    # accessor is not properly defined there -- this is a FIXTURE
+    # reassignment, not a call bug (per the coordinator's directive):
+    # icc_site is now computed on fit_tl (twolevel_small), which has both
+    # tiers by construction. Julia's extract_ICC_site(fit::TwoLevelFit) is
+    # itself defined as `= extract_repeatability(fit)` (src/extractors.jl),
+    # so this case is now numerically the SAME quantity as
+    # repeatability_point on the SAME fixture -- an intentional
+    # consequence of R's and Julia's own within-engine equivalence, not
+    # redundant test design.
+    icc_site = as.numeric(extract_ICC_site(fit_tl)),
     repeatability_point = {
       # extract_repeatability()'s point-estimate column is `R`, not
       # `estimate` (confirmed by reading extract-repeatability.R's
