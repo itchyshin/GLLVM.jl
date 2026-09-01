@@ -1746,3 +1746,31 @@ Goal file for every future arc: `LOOP/core070-goal.md` (immutable; the old
   exit code; conductor stays lean; pause at every OPEN GATE; overwrite this
   checkpoint section's NEXT each arc. CONTINUE FROM: arc M1-suite. Pause at any
   push/merge/DRAC gate.
+
+## Overnight update — 2026-09-01 ~00:30 (Claude cycle, running to 05:00)
+
+Supersedes the NEXT list of the previous section; retained history unchanged.
+
+- DONE since last entry (all local commits, unpushed):
+  - A5 Tweedie fresh-candidate replay PASS (contract 29/29 incl. StatsAPI;
+    parity 28/28, raw stdout retained; Melissa finding 1 paid). b7d4320f.
+  - Bridge coverage matrix committed (567f28f1): engine="julia" = 9 PASS /
+    13 R-ADAPTER-BLOCKED / 68 UNTESTED / 0 JULIA-GAP. R-side work order
+    written for the gllvmTMB 0.7.1 lane.
+  - 0.7.1 gap sheet committed (13239dc0): no re-freeze needed; ψ vs ψ²
+    total-variance bugfix flagged for verification when derived-CI work ports.
+  - Manifest draft-v2 committed (9d085954): 475 rows planned via 11 planners +
+    11 adversarial verifiers + 3 repairs + 3 round-2 verifiers (all OK).
+    533 required rows = 12 bound + 441 planned + 80 pending decision
+    (94 reclassify PROPOSALS + 67 uncertain). NOT a freeze.
+  - DRAC recovery-campaign sized draft committed (3984f886) — awaiting
+    maintainer approval; nothing launched.
+  - Parity artifact updated at the standing URL (Road to 0.7.0 Parity).
+- IN FLIGHT: full core suite (local, ~30 CPU-min in); full required parity
+  harness (runparity.jl required mode) on Totoro attempt2 with per-cell
+  receipts (first attempt failed on missing oracle receipts in the workspace —
+  retained as runparity-fail01.log; receipts synced, relaunched).
+- NEXT: suite tally -> M1 panel (2 fresh Sonnet + 1 fresh Opus, D-43) ->
+  harness receipts pulled/preserved -> M2 bridge-first qualification.
+- OPEN GATES (morning): A6 Student-t fixture decision; DRAC campaign approval;
+  94 reclassification proposals; push/merge; R-side bridge work order handoff.
