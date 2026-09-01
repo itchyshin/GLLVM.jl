@@ -106,3 +106,7 @@
 - postfit/POSTFIT-SURFACE-extract_Sigma_B
 - postfit/POSTFIT-SURFACE-extract_Sigma_W
 - postfit/POSTFIT-SURFACE-imputed
+
+## Second pass (draft-v2 reclassify_proposed join)
+
+73 rows reclassified out of the required set per their draft-v2 proposals; 0 remain PARTIAL (no proposal found).

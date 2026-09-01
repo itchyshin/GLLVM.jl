@@ -2813,7 +2813,9 @@
   {
    "source_id": "family/FAMILY-01-LOGIT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL",
@@ -2821,20 +2823,18 @@
     "CORE070-FAMILY-01-LOGIT-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native binomial-logit parity executed and green in the 40/40 harness under id NATIVE-02-BINOMIAL, but formula-interface and public-R-bridge cases have no executed artifact anywhere; a registration decision is needed to bind the smoke receipt to the planned native case.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-01-LOGIT-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-02-BINOMIAL.toml",
-      "detail": "status=\"success\", passed=6/failed=0, fixture=test/parity/test_binomial_parity.jl; helper default binomial_link=:logit (test/parity/parity_helpers.jl), so this is binomial(link=logit) native-model parity, executed under harness id NATIVE-02-BINOMIAL"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native binomial-logit parity executed and green in the 40/40 harness under id NATIVE-02-BINOMIAL, but formula-interface and public-R-bridge cases have no executed artifact anywhere; a registration decision is needed to bind the smoke receipt to the planned native case.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -2904,7 +2904,9 @@
   {
    "source_id": "family/FAMILY-03-LOG",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-03-LOG-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-03-LOG-NATIVE-MODEL",
@@ -2912,20 +2914,18 @@
     "CORE070-FAMILY-03-LOG-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native lognormal parity green in the 40/40 harness (NATIVE-04); formula and bridge cases unexecuted everywhere.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-03-LOG-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-04-LOGNORMAL.toml",
-      "detail": "status=\"success\", passed=15/failed=0, fixture=test/parity/test_lognormal_parity.jl (lognormal(link=log) native-model parity)"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native lognormal parity green in the 40/40 harness (NATIVE-04); formula and bridge cases unexecuted everywhere.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -2941,7 +2941,9 @@
   {
    "source_id": "family/FAMILY-04-LOG",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-04-LOG-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-04-LOG-NATIVE-MODEL",
@@ -2949,20 +2951,18 @@
     "CORE070-FAMILY-04-LOG-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native Gamma-log parity green in the 40/40 harness (NATIVE-05); formula and bridge cases unexecuted everywhere.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-04-LOG-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-05-GAMMA.toml",
-      "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_nox_dispersion_parity.jl; oracle maps gamma -> stats::Gamma(link=\"log\") (parity_helpers.jl), matching the planned descriptor Gamma(link=\"log\")"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native Gamma-log parity green in the 40/40 harness (NATIVE-05); formula and bridge cases unexecuted everywhere.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -3009,7 +3009,9 @@
   {
    "source_id": "family/FAMILY-06-FIXED-SHAPE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL",
@@ -3017,26 +3019,26 @@
     "CORE070-FAMILY-06-FIXED-SHAPE-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "The fixed-common-power Tweedie contract was executed and verified inside the green NATIVE-07 cell; formula and bridge cases unexecuted everywhere. Whether p=1.5 specifically vs p_true satisfies the planned descriptor tweedie(p=1.5) is a registration detail for the reclassify decision.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-06-FIXED-SHAPE-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-07-TWEEDIE.toml",
-      "detail": "status=\"success\", passed=28/failed=0; the fixture's first testset (test/parity/test_tweedie_parity.jl line 27, 'fixed common power is the same public model on both engines') fits fit_tweedie_gllvm_grouped(power=p_true) against gllvmTMB with n_power_free=0 asserted \u2014 the tweedie(p=fixed) contract"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "The fixed-common-power Tweedie contract was executed and verified inside the green NATIVE-07 cell; formula and bridge cases unexecuted everywhere. Whether p=1.5 specifically vs p_true satisfies the planned descriptor tweedie(p=1.5) is a registration detail for the reclassify decision.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
    "source_id": "family/FAMILY-06-LOG",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-06-LOG-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-06-LOG-NATIVE-MODEL",
@@ -3044,20 +3046,18 @@
     "CORE070-FAMILY-06-LOG-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native tweedie(link=log) parity green in the 40/40 harness (NATIVE-07); formula and bridge cases unexecuted everywhere.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-06-LOG-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-07-TWEEDIE.toml",
-      "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_tweedie_parity.jl covering three distinct frozen-R Tweedie power contracts (fixed common power, reference-constrained shared power, public per-species default; see decision doc 2026-08-30-core070-tweedie-power.md)"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native tweedie(link=log) parity green in the 40/40 harness (NATIVE-07); formula and bridge cases unexecuted everywhere.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -3164,7 +3164,9 @@
   {
    "source_id": "family/FAMILY-08-LOGIT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL",
@@ -3172,20 +3174,18 @@
     "CORE070-FAMILY-08-LOGIT-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native betabinomial-logit parity green in the 40/40 harness (NATIVE-09); formula and bridge cases unexecuted everywhere.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-08-LOGIT-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-09-BETABINOMIAL.toml",
-      "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_nox_dispersion_parity.jl (betabinomial(logit) via gllvmTMB::betabinomial() oracle mapping in parity_helpers.jl)"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native betabinomial-logit parity green in the 40/40 harness (NATIVE-09); formula and bridge cases unexecuted everywhere.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -3305,7 +3305,9 @@
   {
    "source_id": "family/FAMILY-10-LOG",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-10-LOG-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-10-LOG-NATIVE-MODEL",
@@ -3313,20 +3315,18 @@
     "CORE070-FAMILY-10-LOG-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native truncated-Poisson parity green in the 40/40 harness (NATIVE-11); formula and bridge cases unexecuted everywhere.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-10-LOG-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-11-TRUNCATED-POISSON.toml",
-      "detail": "status=\"success\", passed=8/failed=0, fixture=test/parity/test_truncated_poisson_parity.jl (truncated_poisson(link=log))"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native truncated-Poisson parity green in the 40/40 harness (NATIVE-11); formula and bridge cases unexecuted everywhere.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -3373,7 +3373,9 @@
   {
    "source_id": "family/FAMILY-12-LOGIT-LOG",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL",
@@ -3381,20 +3383,18 @@
     "CORE070-FAMILY-12-LOGIT-LOG-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native delta-lognormal parity green in the 40/40 harness (NATIVE-13) using the *_required.jl fixture; formula and bridge cases unexecuted everywhere.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-12-LOGIT-LOG-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-13-DELTA-LOGNORMAL.toml",
-      "detail": "status=\"success\", passed=24/failed=0, fixture=test/parity/test_delta_lognormal_required.jl (delta_lognormal())"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native delta-lognormal parity green in the 40/40 harness (NATIVE-13) using the *_required.jl fixture; formula and bridge cases unexecuted everywhere.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -3430,7 +3430,9 @@
   {
    "source_id": "family/FAMILY-13-LOGIT-LOG",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL",
@@ -3438,20 +3440,18 @@
     "CORE070-FAMILY-13-LOGIT-LOG-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native delta-gamma parity green in the 40/40 harness (NATIVE-14); formula and bridge cases unexecuted everywhere.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-13-LOGIT-LOG-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-14-DELTA-GAMMA.toml",
-      "detail": "status=\"success\", passed=24/failed=0, fixture=test/parity/test_delta_gamma_required.jl (delta_gamma())"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native delta-gamma parity green in the 40/40 harness (NATIVE-14); formula and bridge cases unexecuted everywhere.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -3497,7 +3497,9 @@
   {
    "source_id": "family/FAMILY-14-PROBIT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL",
@@ -3505,20 +3507,18 @@
     "CORE070-FAMILY-14-PROBIT-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native ordinal-probit parity green in the 40/40 harness (NATIVE-15, only 5 assertions \u2014 thin); formula and bridge cases unexecuted everywhere.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-14-PROBIT-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-15-ORDINAL-PROBIT.toml",
-      "detail": "status=\"success\", passed=5/failed=0, fixture=test/parity/test_ordinal_probit_parity.jl (ordinal_probit(link=probit)); note noether-ordinal-link-review.md exists for the link identity"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native ordinal-probit parity green in the 40/40 harness (NATIVE-15, only 5 assertions \u2014 thin); formula and bridge cases unexecuted everywhere.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -3534,7 +3534,9 @@
   {
    "source_id": "family/FAMILY-15-LOG",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-15-LOG-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-15-LOG-NATIVE-MODEL",
@@ -3542,20 +3544,18 @@
     "CORE070-FAMILY-15-LOG-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Native NB1 parity green in the 40/40 harness (NATIVE-16); formula and bridge cases unexecuted everywhere.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-15-LOG-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts/cell-NATIVE-16-NB1.toml",
-      "detail": "status=\"success\", passed=28/failed=0, fixture=test/parity/test_nox_dispersion_parity.jl (nbinom1(link=log) via gllvmTMB::nbinom1() oracle mapping in parity_helpers.jl)"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "Native NB1 parity green in the 40/40 harness (NATIVE-16); formula and bridge cases unexecuted everywhere.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -3618,26 +3618,26 @@
   {
    "source_id": "family/FAMILY-BETA-ALIAS",
    "classification": "compatibility_adapter",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "The alias descriptor's admission was exercised on both engines (R admission subset pass; Julia entry probe hit the expected sentinel) but no fit was executed; a decision is needed on whether an adapter obligation is satisfiable at admission level or requires an equivalence fit.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-BETA-ALIAS-COMPATIBILITY-ADAPTER",
-      "artifact": ".unlazy/core070-aghq/family-routes-01/execution2/julia/output.log",
-      "detail": "line 22: 'ENTRY-FAMILY-BETA-ALIAS\\tRESPONSE_READ_SENTINEL' \u2014 the probe fit_gllvm(Y; family=GLLVM.Beta(), K=1, link=LogitLink()) reached response read as expected; receipt.json scope is explicitly ENTRY_ONLY_NO_FITS, and docs/dev-log/core070/family-route-evidence.json status is FAMILY_ENTRY_ONLY_FITTED_COVERAGE_UNPAID; R-side descriptor admission of the alias is inside docs/dev-log/core070/family-admission-evidence.json (status R_ADMISSION_SUBSET_PASS_JULIA_UNPAID, classifications include compatibility_adapter: 1)"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "family registration decision (round2-3 #9 bulk acceptance)",
+    "action": "harness NATIVE-XX receipt registered as binding for the native planned case per maintainer bulk approval; formula-interface and public-R-bridge cases remain unexecuted and are NOT claimed",
+    "harness_receipts": ".unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+    "audit": "docs/dev-log/core070/family-reconciliation-2026-09-01.json",
+    "prior": {
+     "triage": "family reconciliation audit 2026-09-01",
+     "verdict": "PARTIAL_EVIDENCE",
+     "reason": "The alias descriptor's admission was exercised on both engines (R admission subset pass; Julia entry probe hit the expected sentinel) but no fit was executed; a decision is needed on whether an adapter obligation is satisfiable at admission level or requires an equivalence fit.",
+     "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
+     "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    }
    }
   },
   {
@@ -4483,17 +4483,19 @@
   },
   {
    "source_id": "inference/CI-ROUTE-031",
-   "classification": "compatibility_adapter",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's confint(parm='rho:...', method='wald') routes to an untransformed delta-method Wald distinct from method='fisher-z' (rows CI-ROUTE-031 vs 029/034). GLLVM.jl implements only the Fisher-z transformed-Wald for bounded [-1,1] correlations (confint_derived_wald.jl; CLAUDE.md confint_derived_wald.jl entry). No untransformed Wald for rho exists in the Julia port, and none is planned \u2014 the transformed-scale CI is the documented choice for a bounded correlation. Revisit only if a future R-parity requirement demands the untransformed variant."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's confint(parm='rho:...', method='wald') routes to an untransformed delta-method Wald distinct from method='fisher-z' (rows CI-ROUTE-031 vs 029/034). GLLV"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R's confint(parm='rho:...', method='wald') routes to an untransformed delta-method Wald distinct from method='fisher-z' (rows CI-ROUTE-031 vs 029/034). GLLVM.jl implements only the Fisher-z transformed-Wald for bounded [-1,1] correlations (confint_derived_wald.jl; CLAUDE.md confint_derived_wald.jl entry). No untransformed Wald for rho exists in the Julia port, and none is planned \u2014 the transformed-scale CI is the documented choice for a bounded correlation. Revisit only if a future R-parity requirement demands the untransformed variant."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "inference/CI-ROUTE-032",
@@ -4813,87 +4815,99 @@
   },
   {
    "source_id": "inference/CI-ROUTE-049",
-   "classification": "compatibility_adapter",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "inference/CI-ROUTE-050",
-   "classification": "compatibility_adapter",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "inference/CI-ROUTE-051",
-   "classification": "compatibility_adapter",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "inference/CI-ROUTE-052",
-   "classification": "compatibility_adapter",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "inference/CI-ROUTE-053",
-   "classification": "compatibility_adapter",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "inference/CI-ROUTE-054",
-   "classification": "compatibility_adapter",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/uni"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R's Sigma_cluster/Sigma_cluster2 parm tokens address multi-level clustered random-effect covariance tiers (a third and fourth grouping level beyond unit/unit_obs). GLLVM.jl's covariance model exposes only the unit(B)/unit_obs(W)/phy tiers (Lambda_B/Lambda_W/Lambda_phy, sigma_B/sigma_W/sigma_phy) with no cluster or cluster2 tier anywhere in src/ (grep confirms zero matches). There is no Julia surface to route to, so this is an intentional capability gap, not a mapping to draft."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "inference/CI-ROUTE-055",
@@ -6083,73 +6097,85 @@
   },
   {
    "source_id": "namespace/S3method/plot,gllvmTMB_multi",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "plot.gllvmTMB_multi (plot-gllvmTMB.R) renders a generic diagnostic/residual plot; it is a visualization-only S3 method with no distinct numeric Julia parity target beyond the residuals/fitted accessors already required above."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"plot.gllvmTMB_multi (plot-gllvmTMB.R) renders a generic diagnostic/residual plot; it is a visualization-only S3 method with no distinct numeric Julia parity"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "plot.gllvmTMB_multi (plot-gllvmTMB.R) renders a generic diagnostic/residual plot; it is a visualization-only S3 method with no distinct numeric Julia parity target beyond the residuals/fitted accessors already required above."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/plot,gllvmTMBmesh",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Rendering of a spatial SPDE mesh (mesh.R). GLLVM.jl's SPDE surface (src/spde.jl, src/spde_mesh.jl) is exercised by its own construction/fitting cases; the plot method itself has no numeric parity target."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Rendering of a spatial SPDE mesh (mesh.R). GLLVM.jl's SPDE surface (src/spde.jl, src/spde_mesh.jl) is exercised by its own construction/fitting cases; the p"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Rendering of a spatial SPDE mesh (mesh.R). GLLVM.jl's SPDE surface (src/spde.jl, src/spde_mesh.jl) is exercised by its own construction/fitting cases; the plot method itself has no numeric parity target."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/plot,profile_derived",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Visualization of profile_ci_derived() output already covered by GLLVM.jl's src/confint_derived.jl profile-CI required cases; the plot itself renders no new numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Visualization of profile_ci_derived() output already covered by GLLVM.jl's src/confint_derived.jl profile-CI required cases; the plot itself renders no new "
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Visualization of profile_ci_derived() output already covered by GLLVM.jl's src/confint_derived.jl profile-CI required cases; the plot itself renders no new numeric content."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/plot,profile_loadings",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Visualization of profile-CI-on-loadings values already covered by GLLVM.jl's src/confint_profile.jl required cases; no independent numeric target."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Visualization of profile-CI-on-loadings values already covered by GLLVM.jl's src/confint_profile.jl required cases; no independent numeric target.\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Visualization of profile-CI-on-loadings values already covered by GLLVM.jl's src/confint_profile.jl required cases; no independent numeric target.",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Visualization of profile-CI-on-loadings values already covered by GLLVM.jl's src/confint_profile.jl required cases; no ind"
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/plot,sdmTMBmesh",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Rendering-only S3 method for a spatial mesh object; no independent numeric Julia parity target."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Rendering-only S3 method for a spatial mesh object; no independent numeric Julia parity target.\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Rendering-only S3 method for a spatial mesh object; no independent numeric Julia parity target.",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Rendering-only S3 method for a spatial mesh object; no independent numeric Julia parity target.\"}"
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/predict,gllvmTMB_julia",
@@ -6199,115 +6225,132 @@
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_Sigma_phy_slope",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_Sigma_phy_slope (extract-sigma.R) only formats an already-computed R diagnostic object (the phylogenetic-slope Sigma table already covered by extract_Sigma-family required cases) for console display; it carries no independent numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_Sigma_phy_slope (extract-sigma.R) only formats an already-computed R diagnostic object (the phylogenetic-slope Sigma table already covered by "
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "print.gllvmTMB_Sigma_phy_slope (extract-sigma.R) only formats an already-computed R diagnostic object (the phylogenetic-slope Sigma table already covered by extract_Sigma-family required cases) for console display; it carries no independent numeric content."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_check_consistency",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_check_consistency (check-consistency.R) only formats an already-computed R diagnostic object (check_gllvmTMB()'s internal consistency diagnostic, already required_core via check_gllvmTMB) for console display; it carries no independent numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_check_consistency (check-consistency.R) only formats an already-computed R diagnostic object (check_gllvmTMB()'s internal consistency diagnost"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "print.gllvmTMB_check_consistency (check-consistency.R) only formats an already-computed R diagnostic object (check_gllvmTMB()'s internal consistency diagnostic, already required_core via check_gllvmTMB) for console display; it carries no independent numeric content."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_confint_inspect",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_confint_inspect (confint-inspect.R) only formats an already-computed R diagnostic object (the confint_inspect() object, already required_core via confint_inspect) for console display; it carries no independent numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_confint_inspect (confint-inspect.R) only formats an already-computed R diagnostic object (the confint_inspect() object, already required_core "
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "print.gllvmTMB_confint_inspect (confint-inspect.R) only formats an already-computed R diagnostic object (the confint_inspect() object, already required_core via confint_inspect) for console display; it carries no independent numeric content."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_coverage_study",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_coverage_study (coverage-study.R) only formats an already-computed R diagnostic object (a simulation coverage-study summary object (dev/reporting tooling, not a fitted-model accessor)) for console display; it carries no independent numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_coverage_study (coverage-study.R) only formats an already-computed R diagnostic object (a simulation coverage-study summary object (dev/report"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "print.gllvmTMB_coverage_study (coverage-study.R) only formats an already-computed R diagnostic object (a simulation coverage-study summary object (dev/reporting tooling, not a fitted-model accessor)) for console display; it carries no independent numeric content."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_identifiability",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_identifiability (diagnose.R) only formats an already-computed R diagnostic object (an identifiability-diagnostic object produced by check_gllvmTMB()) for console display; it carries no independent numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_identifiability (diagnose.R) only formats an already-computed R diagnostic object (an identifiability-diagnostic object produced by check_gllv"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "print.gllvmTMB_identifiability (diagnose.R) only formats an already-computed R diagnostic object (an identifiability-diagnostic object produced by check_gllvmTMB()) for console display; it carries no independent numeric content."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_julia",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Pure R-side console formatting of bridge-object fields that are separately covered as required_core (coef/confint/fitted/logLik/predict/residuals/simulate,gllvmTMB_julia). No numeric parity target of its own."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Pure R-side console formatting of bridge-object fields that are separately covered as required_core (coef/confint/fitted/logLik/predict/residuals/simulate,gl"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Pure R-side console formatting of bridge-object fields that are separately covered as required_core (coef/confint/fitted/logLik/predict/residuals/simulate,gllvmTMB_julia). No numeric parity target of its own."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_multi",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Console formatting only; underlying numeric accessors are separately required_core."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; underlying numeric accessors are separately required_core.\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Console formatting only; underlying numeric accessors are separately required_core.",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; underlying numeric accessors are separately required_core.\"}"
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_reportable_table",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_reportable_table (reportable-table.R) only formats an already-computed R diagnostic object (a formatted reporting table assembled from already-validated diagnostic values) for console display; it carries no independent numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_reportable_table (reportable-table.R) only formats an already-computed R diagnostic object (a formatted reporting table assembled from already"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "print.gllvmTMB_reportable_table (reportable-table.R) only formats an already-computed R diagnostic object (a formatted reporting table assembled from already-validated diagnostic values) for console display; it carries no independent numeric content."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_ridge_path",
@@ -6323,17 +6366,19 @@
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_slope_ci",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "print.gllvmTMB_slope_ci (slope-sd-ci.R) only formats an already-computed R diagnostic object (the slope-SD CI object, already required_core via the slope confint machinery) for console display; it carries no independent numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"print.gllvmTMB_slope_ci (slope-sd-ci.R) only formats an already-computed R diagnostic object (the slope-SD CI object, already required_core via the slope con"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "print.gllvmTMB_slope_ci (slope-sd-ci.R) only formats an already-computed R diagnostic object (the slope-SD CI object, already required_core via the slope confint machinery) for console display; it carries no independent numeric content."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,gllvmTMB_va",
@@ -6343,31 +6388,37 @@
   },
   {
    "source_id": "namespace/S3method/print,summary.gllvmTMB_julia",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Console formatting of a summary object whose numeric content is separately required_core (summary,gllvmTMB_julia). No distinct Julia surface."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting of a summary object whose numeric content is separately required_core (summary,gllvmTMB_julia). No distinct Julia surface.\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Console formatting of a summary object whose numeric content is separately required_core (summary,gllvmTMB_julia). No distinct Julia surface.",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting of a summary object whose numeric content is separately required_core (summary,gllvmTMB_julia). No disti"
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,summary.gllvmTMB_multi",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Console formatting only; the summary object's numeric content is separately required_core."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; the summary object's numeric content is separately required_core.\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Console formatting only; the summary object's numeric content is separately required_core.",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Console formatting only; the summary object's numeric content is separately required_core.\"}"
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/S3method/print,summary.gllvmTMB_va",
@@ -6660,10 +6711,13 @@
     "to": "compatibility_adapter",
     "reason": "Pure R coordinate-system convenience utility outside GLLVM.jl's modeling surface (no CRS/UTM equivalent in src/)."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Pure R coordinate-system convenience utility outside GLLVM.jl's modeling surface (no CRS/UTM equivalent in src/).\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Pure R coordinate-system convenience utility outside GLLVM.jl's modeling surface (no CRS/UTM equivalent in src/).",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Pure R coordinate-system convenience utility outside GLLVM.jl's modeling surface (no CRS/UTM equivalent in src/).\"}"
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "namespace/export/animal_dep",
@@ -6834,45 +6888,52 @@
   },
   {
    "source_id": "namespace/export/animal_unique",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "animal_unique() (animal-keyword.R:89-96) carries an explicit lifecycle::badge(\"deprecated\") in its own docstring: 'soft-deprecated as compatibility syntax in gllvmTMB 0.2.0. Use animal_indep() for standalone marginal diagonal animal-model terms ... use animal_latent(..., unique = TRUE) when the folded latent term itself should carry this diagonal companion.' It is a deprecated alias whose behaviour is already covered by the required_core animal_indep and animal_latent(unique=TRUE) cases (SLOPE-ANIMAL-INDEP-*, SLOPE-ANIMAL-LAT-*)."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"animal_unique() (animal-keyword.R:89-96) carries an explicit lifecycle::badge(\\\"deprecated\\\") in its own docstring: 'soft-deprecated as compatibility syntax "
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "animal_unique() (animal-keyword.R:89-96) carries an explicit lifecycle::badge(\"deprecated\") in its own docstring: 'soft-deprecated as compatibility syntax in gllvmTMB 0.2.0. Use animal_indep() for standalone marginal diagonal animal-model terms ... use animal_latent(..., unique = TRUE) when the folded latent term itself should carry this diagonal companion.' It is a deprecated alias whose behaviour is already covered by the required_core animal_indep and animal_latent(unique=TRUE) cases (SLOPE-ANIMAL-INDEP-*, SLOPE-ANIMAL-LAT-*)."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/betabinomial",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Beta-binomial is not among GLLVM.jl's implemented families (README/CLAUDE.md family list); no Julia surface exists to compare against until it ships."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Beta-binomial is not among GLLVM.jl's implemented families (README/CLAUDE.md family list); no Julia surface exists to compare against until it ships.\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Beta-binomial is not among GLLVM.jl's implemented families (README/CLAUDE.md family list); no Julia surface exists to compare against until it ships.",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Beta-binomial is not among GLLVM.jl's implemented families (README/CLAUDE.md family list); no Julia surface exists to comp"
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/block_V",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Two-stage meta-analytic block-variance construction utility, outside GLLVM.jl's GLLVM/phylogenetic modeling scope (no meta-analysis two-stage pipeline in src/)."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Two-stage meta-analytic block-variance construction utility, outside GLLVM.jl's GLLVM/phylogenetic modeling scope (no meta-analysis two-stage pipeline in sr"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Two-stage meta-analytic block-variance construction utility, outside GLLVM.jl's GLLVM/phylogenetic modeling scope (no meta-analysis two-stage pipeline in src/)."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/bootstrap_Sigma",
@@ -6903,10 +6964,12 @@
     "to": "compatibility_adapter",
     "reason": "categorical() (R/missing-predictor.R:143) is a formula-grammar sentinel marking a predictor's imputation type at parse time; it carries no independent Julia numeric surface of its own."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"categorical() (R/missing-predictor.R:143) is a formula-grammar sentinel marking a predictor's imputation type at parse time; it carries no independent Julia "
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "categorical() (R/missing-predictor.R:143) is a formula-grammar sentinel marking a predictor's imputation type at parse time; it carries no independent Julia numeric surface of its own."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "namespace/export/censored_poisson",
@@ -6916,17 +6979,19 @@
   },
   {
    "source_id": "namespace/export/check_auto_residual",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "check_auto_residual(fit) (check-auto-residual.R:60) reads fit$tmb_data$family_id_vec and fit$tmb_data$trait_id -- metadata already built by the fitting call -- and checks for within-trait family mixing / ordinal-family conflicts, returning a status/messages list. It computes no numeric quantity of its own (no likelihood, no covariance, no residual value); it is a pure R-side consistency validator over fields the fit already carries, so there is no independent Julia surface to compare against."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"check_auto_residual(fit) (check-auto-residual.R:60) reads fit$tmb_data$family_id_vec and fit$tmb_data$trait_id -- metadata already built by the fitting call "
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "check_auto_residual(fit) (check-auto-residual.R:60) reads fit$tmb_data$family_id_vec and fit$tmb_data$trait_id -- metadata already built by the fitting call -- and checks for within-trait family mixing / ordinal-family conflicts, returning a status/messages list. It computes no numeric quantity of its own (no likelihood, no covariance, no residual value); it is a pure R-side consistency validator over fields the fit already carries, so there is no independent Julia surface to compare against."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/check_gllvmTMB",
@@ -6950,59 +7015,67 @@
   },
   {
    "source_id": "namespace/export/compare_Sigma_table",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "compare_Sigma_table operates on already-extracted R objects and compares two already-extracted Sigma tables; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"compare_Sigma_table operates on already-extracted R objects and compares two already-extracted Sigma tables; it is a comparison/diagnostic utility, not itsel"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "compare_Sigma_table operates on already-extracted R objects and compares two already-extracted Sigma tables; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/compare_dep_vs_two_psi",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "compare_dep_vs_two_psi operates on already-extracted R objects and cross-checks the dep vs. two-psi covariance parameterizations against each other (an R-internal consistency check between two R parameterizations); it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"compare_dep_vs_two_psi operates on already-extracted R objects and cross-checks the dep vs. two-psi covariance parameterizations against each other (an R-int"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "compare_dep_vs_two_psi operates on already-extracted R objects and cross-checks the dep vs. two-psi covariance parameterizations against each other (an R-internal consistency check between two R parameterizations); it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/compare_indep_vs_two_psi",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "compare_indep_vs_two_psi operates on already-extracted R objects and cross-checks the indep vs. two-psi covariance parameterizations against each other; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"compare_indep_vs_two_psi operates on already-extracted R objects and cross-checks the indep vs. two-psi covariance parameterizations against each other; it i"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "compare_indep_vs_two_psi operates on already-extracted R objects and cross-checks the indep vs. two-psi covariance parameterizations against each other; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/compare_loadings",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "compare_loadings operates on already-extracted R objects and compares two already-extracted loadings matrices (Lambda_a, Lambda_b) generically; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"compare_loadings operates on already-extracted R objects and compares two already-extracted loadings matrices (Lambda_a, Lambda_b) generically; it is a compa"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "compare_loadings operates on already-extracted R objects and compares two already-extracted loadings matrices (Lambda_a, Lambda_b) generically; it is a comparison/diagnostic utility, not itself a fitted-model accessor with an independent Julia numeric surface."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/confint_inspect",
@@ -7026,17 +7099,19 @@
   },
   {
    "source_id": "namespace/export/confirmatory_lambda",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "confirmatory_lambda(species, group, d, loads_on, ...) (confirmatory-lambda.R:72) is pure R-side construction: it validates its arguments and builds an n x d NA/0 fixed-zero pattern matrix from the loads_on group->axis mapping, with no call into a fit or the TMB/Julia engine. It is the same class of R-only helper as suggest_lambda_constraint(s) (already compatibility_adapter in this manifest): a specification/advisory object with no numeric quantity to compare against a Julia surface."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirmatory_lambda(species, group, d, loads_on, ...) (confirmatory-lambda.R:72) is pure R-side construction: it validates its arguments and builds an n x d "
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "confirmatory_lambda(species, group, d, loads_on, ...) (confirmatory-lambda.R:72) is pure R-side construction: it validates its arguments and builds an n x d NA/0 fixed-zero pattern matrix from the loads_on group->axis mapping, with no call into a fit or the TMB/Julia engine. It is the same class of R-only helper as suggest_lambda_constraint(s) (already compatibility_adapter in this manifest): a specification/advisory object with no numeric quantity to compare against a Julia surface."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/cumulative_logit",
@@ -7047,10 +7122,12 @@
     "to": "compatibility_adapter",
     "reason": "cumulative_logit() (R/missing-predictor.R:104) is a formula-grammar link-name sentinel used when parsing ordinal formulas; the underlying cumulative-logit likelihood is already required_core via the Ordinal family plan (GLLVM.jl families/ordinal.jl), so this sentinel constructor has no independent numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"cumulative_logit() (R/missing-predictor.R:104) is a formula-grammar link-name sentinel used when parsing ordinal formulas; the underlying cumulative-logit li"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "cumulative_logit() (R/missing-predictor.R:104) is a formula-grammar link-name sentinel used when parsing ordinal formulas; the underlying cumulative-logit likelihood is already required_core via the Ordinal family plan (GLLVM.jl families/ordinal.jl), so this sentinel constructor has no independent numeric content."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "namespace/export/delta_beta",
@@ -7060,17 +7137,20 @@
   },
   {
    "source_id": "namespace/export/delta_gamma",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Two-part delta-Gamma family is not implemented in GLLVM.jl (see AGENTS.md \"Planned next\"); no Julia surface exists to compare against yet."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Two-part delta-Gamma family is not implemented in GLLVM.jl (see AGENTS.md \\\"Planned next\\\"); no Julia surface exists to compare against yet.\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Two-part delta-Gamma family is not implemented in GLLVM.jl (see AGENTS.md \"Planned next\"); no Julia surface exists to compare against yet.",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Two-part delta-Gamma family is not implemented in GLLVM.jl (see AGENTS.md \\\"Planned next\\\"); no Julia surface exists to co"
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/delta_gamma_mix",
@@ -7086,17 +7166,20 @@
   },
   {
    "source_id": "namespace/export/delta_lognormal",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "intentionally_excluded",
     "reason": "Two-part delta-lognormal family is not implemented in GLLVM.jl (see AGENTS.md \"Planned next\"); no Julia surface exists to compare against yet."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Two-part delta-lognormal family is not implemented in GLLVM.jl (see AGENTS.md \\\"Planned next\\\"); no Julia surface exists to compare against yet.\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Two-part delta-lognormal family is not implemented in GLLVM.jl (see AGENTS.md \"Planned next\"); no Julia surface exists to compare against yet.",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Two-part delta-lognormal family is not implemented in GLLVM.jl (see AGENTS.md \\\"Planned next\\\"); no Julia surface exists t"
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/delta_lognormal_mix",
@@ -7150,31 +7233,35 @@
   },
   {
    "source_id": "namespace/export/diagnose_kernel_separability",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "diagnose_kernel_separability(...) (kernel-helpers.R:581) takes user-supplied kernel matrices directly as its ... arguments (not a fitted model) and computes a pairwise Frobenius-style similarity between them in pure R, returning an advisory classification (near_orthogonal/high overlap) and recommendation text. It never touches a gllvmTMB fit or the TMB/Julia engine, so it has no Julia numeric surface to compare against -- the same class as suggest_lambda_constraint(s)."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"diagnose_kernel_separability(...) (kernel-helpers.R:581) takes user-supplied kernel matrices directly as its ... arguments (not a fitted model) and computes "
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "diagnose_kernel_separability(...) (kernel-helpers.R:581) takes user-supplied kernel matrices directly as its ... arguments (not a fitted model) and computes a pairwise Frobenius-style similarity between them in pure R, returning an advisory classification (near_orthogonal/high overlap) and recommendation text. It never touches a gllvmTMB fit or the TMB/Julia engine, so it has no Julia numeric surface to compare against -- the same class as suggest_lambda_constraint(s)."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/diagnostic_table",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Aggregates already-validated diagnostic values (from check_gllvmTMB and friends, separately required_core) into an R display table; no independent numeric content of its own."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Aggregates already-validated diagnostic values (from check_gllvmTMB and friends, separately required_core) into an R display table; no independent numeric co"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Aggregates already-validated diagnostic values (from check_gllvmTMB and friends, separately required_core) into an R display table; no independent numeric content of its own."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/extract_Gamma",
@@ -7298,17 +7385,20 @@
   },
   {
    "source_id": "namespace/export/extract_Sigma_table",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Display-table wrapper around extract_Sigma() and its CIs, both separately required_core; no independent numeric content."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Display-table wrapper around extract_Sigma() and its CIs, both separately required_core; no independent numeric content.\"}"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per the adversarially verified draft-v2 proposal, maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Display-table wrapper around extract_Sigma() and its CIs, both separately required_core; no independent numeric content.",
+    "prior_note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Display-table wrapper around extract_Sigma() and its CIs, both separately required_core; no independent numeric content.\"}"
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/extract_coevolution_modules",
@@ -7744,7 +7834,7 @@
   },
   {
    "source_id": "namespace/export/get_crs",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -7752,10 +7842,12 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/gllvmTMB",
@@ -7909,7 +8001,7 @@
   },
   {
    "source_id": "namespace/export/impute_model",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -7917,14 +8009,16 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/imputed",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -7932,10 +8026,12 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/indep",
@@ -7955,7 +8051,7 @@
   },
   {
    "source_id": "namespace/export/isdm_source",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -7963,14 +8059,16 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/isdm_sources",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -7978,10 +8076,12 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/kernel_dep",
@@ -8163,7 +8263,7 @@
   },
   {
    "source_id": "namespace/export/make_cross_kernel",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8171,14 +8271,16 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/make_mesh",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8186,10 +8288,12 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/meta",
@@ -8333,7 +8437,7 @@
   },
   {
    "source_id": "namespace/export/ordiplot",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8341,14 +8445,16 @@
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/pedigree_to_A",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8356,14 +8462,16 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/pedigree_to_Ainv_sparse",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8371,10 +8479,12 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/phylo",
@@ -8385,10 +8495,12 @@
     "to": "compatibility_adapter",
     "reason": "confirms input classification: phylo() (R/brms-sugar.R:343-355) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto phylo_dep/phylo_indep/phylo_latent/phylo_scalar/phylo_rr/phylo_slope/phylo_unique, each already carrying its own required_core planned case in this manifest."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: phylo() (R/brms-sugar.R:343-355) is a marker function whose body is explicitly commented 'Body unused -- never called at evalu"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "confirms input classification: phylo() (R/brms-sugar.R:343-355) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto phylo_dep/phylo_indep/phylo_latent/phylo_scalar/phylo_rr/phylo_slope/phylo_unique, each already carrying its own required_core planned case in this manifest."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "namespace/export/phylo_dep",
@@ -8482,7 +8594,7 @@
   },
   {
    "source_id": "namespace/export/phylo_signal_mi",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8490,10 +8602,12 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/phylo_slope",
@@ -8533,7 +8647,7 @@
   },
   {
    "source_id": "namespace/export/plot_Sigma_comparison",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8541,14 +8655,16 @@
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/plot_Sigma_heatmap",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8556,14 +8672,16 @@
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/plot_Sigma_table",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8571,14 +8689,16 @@
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/plot_anisotropy",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8586,14 +8706,16 @@
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/plot_anisotropy2",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8601,14 +8723,16 @@
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/plot_correlations",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8616,14 +8740,16 @@
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/plot_loadings_confidence_eye",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8631,14 +8757,16 @@
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/plot_rotated_loadings",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8646,10 +8774,12 @@
     "reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate,"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Produces an R-only graphical object (ggplot2/base plot or print side effect); GLLVM.jl's figure work (Confidence Eye contract, CairoMakie.jl) is a separate, independently-specified port owned by Florence, not a call-for-call reproduction of this R plotting function. No cross-language public-behavior contract exists to adjudicate here. Reclassify to intentionally_excluded; R-side correctness of the plot stays covered by gllvmTMB's own test suite, outside this bridge-parity manifest."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/predict_cross_covariance",
@@ -8668,7 +8798,7 @@
   },
   {
    "source_id": "namespace/export/predict_missing",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8676,10 +8806,12 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/predictive_check",
@@ -8873,7 +9005,7 @@
   },
   {
    "source_id": "namespace/export/simulate_site_trait",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8881,14 +9013,16 @@
     "reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/simulate_unit_trait",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8896,10 +9030,12 @@
     "reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R-side ADEMP data-generating simulator for its own recovery-test suite. GLLVM.jl carries an independent simulator (src/simulate.jl); the two are not required to reproduce identical RNG streams or call signatures, only DGP-level parameter recovery, which is a separate validation programme (see repo AGENTS.md 'recovery-over-pdHess'), not a bridge/native/formula call-parity fact. Reclassify to compatibility_adapter."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/slope_sd_ci",
@@ -8927,14 +9063,16 @@
     "to": "compatibility_adapter",
     "reason": "confirms input classification: spatial() (R/brms-sugar.R:1309-1317) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto spatial_dep/spatial_indep/spatial_latent/spatial_scalar/spatial_unique, which are separately reclassified compatibility_adapter elsewhere in this manifest."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: spatial() (R/brms-sugar.R:1309-1317) is a marker function whose body is explicitly commented 'Body unused -- never called at e"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "confirms input classification: spatial() (R/brms-sugar.R:1309-1317) is a marker function whose body is explicitly commented 'Body unused -- never called at evaluation time' -- it is a pure argument-sniffing dispatcher onto spatial_dep/spatial_indep/spatial_latent/spatial_scalar/spatial_unique, which are separately reclassified compatibility_adapter elsewhere in this manifest."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "namespace/export/spatial_dep",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8942,14 +9080,16 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/spatial_indep",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8957,14 +9097,16 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/spatial_latent",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8972,14 +9114,16 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/spatial_scalar",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -8987,14 +9131,16 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/spatial_unique",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -9002,14 +9148,16 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/spde",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -9017,10 +9165,12 @@
     "reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, anima"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl's current implemented surface (per repo CLAUDE.md) is Gaussian + phylogenetic + six dense-Laplace non-Gaussian families only; no spatial/SPDE, animal-pedigree, integrated-SDM (isdm), or missing-data-imputation subsystem is ported, so there is no Julia comparand for this R source fact today. Reclassify to compatibility_adapter pending that subsystem landing; revisit when the corresponding Julia representation ships."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/standard_errors",
@@ -9063,10 +9213,12 @@
     "to": "compatibility_adapter",
     "reason": "confirms input classification: suggest_lambda_constraint() (R/suggest-lambda-constraint.R:90) inspects a single already-fitted R model and prints/returns advisory constraint-suggestion text; it is a singular convenience wrapper around suggest_lambda_constraints() with no numeric quantity and no Julia bridge surface to compare against."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: suggest_lambda_constraint() (R/suggest-lambda-constraint.R:90) inspects a single already-fitted R model and prints/returns adv"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "confirms input classification: suggest_lambda_constraint() (R/suggest-lambda-constraint.R:90) inspects a single already-fitted R model and prints/returns advisory constraint-suggestion text; it is a singular convenience wrapper around suggest_lambda_constraints() with no numeric quantity and no Julia bridge surface to compare against."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "namespace/export/suggest_lambda_constraints",
@@ -9077,14 +9229,16 @@
     "to": "compatibility_adapter",
     "reason": "confirms input classification: suggest_lambda_constraints() (R/suggest-lambda-constraint.R:544) produces human-readable advisory guidance text from R-side fit internals (not a numeric quantity), so it has no Julia comparand to test against."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: suggest_lambda_constraints() (R/suggest-lambda-constraint.R:544) produces human-readable advisory guidance text from R-side fi"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "confirms input classification: suggest_lambda_constraints() (R/suggest-lambda-constraint.R:544) produces human-readable advisory guidance text from R-side fit internals (not a numeric quantity), so it has no Julia comparand to test against."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "namespace/export/tidy",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -9092,10 +9246,12 @@
     "reason": "R/generics-imports.R re-exports generics::tidy as a bare S3 generic (`generics::tidy`) with no package-specific body; the only package behavior is the tidy.gllvmTMB_multi method, a tabular-summary view whose postfit numeric content is already exercised by the standard_errors / gllvmTMB_check_consistency / sanity_multi required cases. Testing the bare generic re-export would duplicate that coverage without adding a distinct contract. Reclassify to compatibility_adapter."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"R/generics-imports.R re-exports generics::tidy as a bare S3 generic (`generics::tidy`) with no package-specific body; the only package behavior is the tidy.g"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "R/generics-imports.R re-exports generics::tidy as a bare S3 generic (`generics::tidy`) with no package-specific body; the only package behavior is the tidy.gllvmTMB_multi method, a tabular-summary view whose postfit numeric content is already exercised by the standard_errors / gllvmTMB_check_consistency / sanity_multi required cases. Testing the bare generic re-export would duplicate that coverage without adding a distinct contract. Reclassify to compatibility_adapter."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "namespace/export/tmbprofile_wrapper",
@@ -9192,10 +9348,12 @@
     "to": "compatibility_adapter",
     "reason": "confirms input classification: NAMESPACE:237 'useDynLib(gllvmTMB, .registration = TRUE)' registers the package's compiled TMB shared object at load time; it is a package-loading directive, not an R function with observable public behaviour, so it has no executable case of its own."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"confirms input classification: NAMESPACE:237 'useDynLib(gllvmTMB, .registration = TRUE)' registers the package's compiled TMB shared object at load time; it "
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified compatibility_adapter -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "confirms input classification: NAMESPACE:237 'useDynLib(gllvmTMB, .registration = TRUE)' registers the package's compiled TMB shared object at load time; it is a package-loading directive, not an R function with observable public behaviour, so it has no executable case of its own."
+   },
+   "original_classification": "compatibility_adapter"
   },
   {
    "source_id": "postfit-policy/POST-COEF-EMPTY",
@@ -9341,7 +9499,7 @@
   },
   {
    "source_id": "postfit-policy/POST-LOGNORMAL-RESPONSE-MEAN",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -9353,14 +9511,16 @@
     "CORE070-POSTFIT-LOGNORMAL-RESPONSE-MEAN-NATIVE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"No lognormal family exists in GLLVM.jl's response-family set (src/families/); the response-mean-vs-median distinction has no Julia surface to compare agains"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "No lognormal family exists in GLLVM.jl's response-family set (src/families/); the response-mean-vs-median distinction has no Julia surface to compare against until a lognormal family is implemented, at which point this should be reinstated as required_core."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "postfit-policy/POST-MIXED-LINK-DISPATCH",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -9372,10 +9532,12 @@
     "CORE070-POSTFIT-MIXED-LINK-DISPATCH-NATIVE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"GLLVM.jl has no mixed-family/mixed-link single-fit architecture (src/families/ types are each single-family); this fact is scoped to R's long-format multi-t"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "GLLVM.jl has no mixed-family/mixed-link single-fit architecture (src/families/ types are each single-family); this fact is scoped to R's long-format multi-trait engine and has no current or near-term Julia counterpart per the Planned-next roadmap in CLAUDE.md."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "postfit-policy/POST-NOBS-COUNT",
@@ -9458,7 +9620,7 @@
   },
   {
    "source_id": "postfit-policy/POST-RE-FORM-NA",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -9466,10 +9628,12 @@
     "reason": "NA-as-alias-for-~0 is an R argument-parsing convenience with no independent numerical content once POST-RE-FORM-ZERO's fixed-effects-only mode exists in Julia; it belongs with that adapter work rather than as its own required_core fact, and has no Julia surface to compare against until then."
    },
    "uncertain": true,
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"NA-as-alias-for-~0 is an R argument-parsing convenience with no independent numerical content once POST-RE-FORM-ZERO's fixed-effects-only mode exists in Juli"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "NA-as-alias-for-~0 is an R argument-parsing convenience with no independent numerical content once POST-RE-FORM-ZERO's fixed-effects-only mode exists in Julia; it belongs with that adapter work rather than as its own required_core fact, and has no Julia surface to compare against until then."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "postfit-policy/POST-RE-FORM-ZERO",
@@ -9618,7 +9782,7 @@
   },
   {
    "source_id": "postfit-policy/POST-TRUNCPOIS-RESPONSE-PARAMETER",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
@@ -9630,38 +9794,44 @@
     "CORE070-POSTFIT-TRUNCPOIS-RESPONSE-PARAMETER-NATIVE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"intentionally_excluded\", \"reason\": \"No zero-truncated Poisson family exists in GLLVM.jl (src/families/); this fact about predict()'s response-scale value (returning the untruncated rate rather"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> intentionally_excluded per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "No zero-truncated Poisson family exists in GLLVM.jl (src/families/); this fact about predict()'s response-scale value (returning the untruncated rate rather than the truncated mean) has no Julia counterpart until that family is implemented, at which point it should be reinstated as required_core."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-.proportions_bootstrap_ci",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"bootstrap\"); no standalone public surface for GLLVM.jl to twin beyond what the confint.gllvmTMB_multi row already covers."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\\\"proportions\\\", method=\\\"bootstrap\\\"); no standalone pub"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"bootstrap\"); no standalone public surface for GLLVM.jl to twin beyond what the confint.gllvmTMB_multi row already covers."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-.proportions_wald_ci",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"wald\"); no standalone public surface beyond the confint.gllvmTMB_multi row."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\\\"proportions\\\", method=\\\"wald\\\"); no standalone public s"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"wald\"); no standalone public surface beyond the confint.gllvmTMB_multi row."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-bootstrap_Sigma",
@@ -9979,31 +10149,35 @@
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_B",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit\"); the numeric surface is fully covered by the extract_Sigma required row. A Julia twin need only keep an alias, not an independent verified case."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\\\"unit\\\"); the numeric surface is fully covered by t"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit\"); the numeric surface is fully covered by the extract_Sigma required row. A Julia twin need only keep an alias, not an independent verified case."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_W",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit_obs\"); covered by the extract_Sigma required row."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\\\"unit_obs\\\"); covered by the extract_Sigma required"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit_obs\"); covered by the extract_Sigma required row."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_table",
@@ -10497,17 +10671,19 @@
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-imputed",
-   "classification": "required_core",
+   "classification": "compatibility_adapter",
    "executable_case_ids": [],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "reclassify_proposed": {
     "to": "compatibility_adapter",
     "reason": "Pure S3 generic dispatcher (`UseMethod(\"imputed\")`) with zero independent logic; the numeric surface is entirely in imputed.gllvmTMB, already a required row. A Julia twin needs only a matching function name/dispatch, not a separately verified numeric case."
    },
-   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
    "evidence": {
-    "note": "reclassification proposal from the adversarially verified manifest fan-out (draft-v2, commit 9d085954); maintainer sign-off required: {\"to\": \"compatibility_adapter\", \"reason\": \"Pure S3 generic dispatcher (`UseMethod(\\\"imputed\\\")`) with zero independent logic; the numeric surface is entirely in imputed.gllvmTMB, already a required ro"
-   }
+    "batch": "bulk triage acceptance round2-3 #9",
+    "action": "reclassified required_core -> compatibility_adapter per draft-v2 reclassify_proposed (commit 9d085954), maintainer-approved in bulk 2026-09-01",
+    "proposal_reason": "Pure S3 generic dispatcher (`UseMethod(\"imputed\")`) with zero independent logic; the numeric surface is entirely in imputed.gllvmTMB, already a required row. A Julia twin needs only a matching function name/dispatch, not a separately verified numeric case."
+   },
+   "original_classification": "required_core"
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-imputed.gllvmTMB",
