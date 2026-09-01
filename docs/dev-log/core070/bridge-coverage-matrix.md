@@ -88,3 +88,19 @@ Also flag for the 0.7.1 R lane, lower priority (source-confirmed but not receipt
 ## EVIDENCE-LIMITS
 
 This matrix was compiled from retained JSON/markdown receipts under `docs/dev-log/core070/`, gate leaves under `.unlazy/core070-aghq/gates/leaf-*.md`, and direct reading of the frozen R 0.7.0 readback sources (`R/families.R`, `R/julia-bridge.R`, `R/fit-multi.R`, `R/isdm-sources.R`, `R/gllvmTMB.R`) plus GLLVM.jl's own `src/families/` directory listing — **not from any fresh fit or fresh R/Julia execution performed in this session**. Cells marked PASS each cite the specific receipt file and status string that supports them; every other cell (JULIA-GAP, R-ADAPTER-BLOCKED, UNTESTED) is a classification derived from source-reading or from an existing receipt's explicit scope-boundary field, not a new test result. Several PASS receipts themselves carry explicit non-generalization scope strings (e.g. `TWO_REQUIRED_FAMILY_SMOKE_CASES_VERIFIED_NOT_FULL_CAPABILITY`, `EIGHT_REJECTIONS_ONE_ADAPTER_FAILURE_VERIFIED_NOT_BRIDGE_PARITY`) — those strings are preserved verbatim in the cells above rather than summarized away, per the frozen manifest's own admission-evidence discipline. `docs/dev-log/core070/required-case-coverage.md` independently states 698 of 752 catalogued source facts still lack reviewed executable-case links program-wide; this matrix's UNTESTED count is consistent with, but narrower in scope than, that broader unresolved count.
+
+
+## Update 2026-09-01 — R-side bridge lane movement
+
+The maintainer-authorized lane (gllvmTMB claude/julia-bridge-expansion-20260901)
+exposed three families fit-only with live paired round-trips green vs
+engine="tmb": lognormal, truncated_poisson, betabinomial (trials-N marshalling
+included; deliberate X/mask/predict gates REGISTERED in the new drift
+registry). Their fit-route cells move UNTESTED -> EXPOSED+LIVE-PAIRED (lane,
+pre-merge; formal receipted qualification against the frozen oracle follows
+landing). The zip/zinb/zib cells are reclassified from UNTESTED to
+MAINTAINER-DECISION (no native R family exists; engine-only exposure is a
+public-surface design call). The structured-term gate slice is open: paired
+design docs at docs/dev-log/julia-bridge-structured-design-julia-side.md
+(this repo) and docs/dev-log/julia-bridge/structured-design-r-side.md
+(gllvmTMB lane).
