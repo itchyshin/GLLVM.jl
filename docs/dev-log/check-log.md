@@ -16874,3 +16874,16 @@ failed, 8 broken. The 4 failures are exactly test_phylo_poisson_xlv.jl:170-174
 slice). The warm-start fix held; the night's ~40 new tests (boundary honesty,
 cross-objective known-answer + helpers, bridge gradient payload, optimizer
 health) all pass. Zero unexplained reds in the suite.
+
+## 2026-09-01 — postfit-policy batch: 12 bound, and a CONFIRMED nobs parity defect
+
+The repaired policy batch (pure-GLLVM Julia stage, oracle handoff via file)
+ran green except three cases sharing one root: Julia StatsAPI.nobs returns
+n units (80) where R returns p*n cells (400) — and GLLVM's own bridge
+payload already reports p*n, so the native surface is inconsistent with both
+the R twin and our bridge. Also flagged for the same repair leaf: the bridge
+payload computes bic = df*log(n_units), which under the p*n convention needs
+an audit. Aligning nobs is a PUBLIC behavior change -> maintainer decision
+(recommendation: adopt p*n). Rows dispositioned
+PARTIAL_PARITY_DEFECT_PENDING_DECISION; 12 clean cases bound.
+M2 ledger: 231/533 accounted (134 bound + 97 receipted dispositions).

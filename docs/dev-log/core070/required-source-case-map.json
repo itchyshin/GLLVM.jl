@@ -6680,33 +6680,54 @@
   {
    "source_id": "postfit-policy/POST-COEF-EMPTY",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-COEF-EMPTY-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-COEF-EMPTY-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-COEF-NAMED",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-COEF-NAMED-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-COEF-NAMED-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-CONFINT-METHODS",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-CONFINT-METHODS-WALD-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "uncertain": true,
    "planned_case_ids": [
     "CORE070-POSTFIT-CONFINT-METHODS-WALD-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-DEVIANCE",
@@ -6721,23 +6742,37 @@
   {
    "source_id": "postfit-policy/POST-FITTED-DEFAULT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-FITTED-DEFAULT-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-FITTED-DEFAULT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-LOGLIK-DF",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-LOGLIK-DF-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "uncertain": true,
    "planned_case_ids": [
     "CORE070-POSTFIT-LOGLIK-DF-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-LOGLIK-NOBS",
@@ -6747,17 +6782,29 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-LOGLIK-NOBS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "note": "CONFIRMED cross-engine mismatch: Julia StatsAPI.nobs = n units (80) vs R attr(logLik,nobs) = p*n cells (400); bridge payload already uses p*n. Aligning is a public behavior change -> maintainer decision; recommendation: adopt p*n (matches R twin and bridge)."
+   }
   },
   {
    "source_id": "postfit-policy/POST-LOGLIK-VALUE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-LOGLIK-VALUE-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-LOGLIK-VALUE-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-LOGNORMAL-RESPONSE-MEAN",
@@ -6797,7 +6844,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-NOBS-COUNT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "note": "CONFIRMED cross-engine mismatch: Julia StatsAPI.nobs = n units (80) vs R attr(logLik,nobs) = p*n cells (400); bridge payload already uses p*n. Aligning is a public behavior change -> maintainer decision; recommendation: adopt p*n (matches R twin and bridge)."
+   }
   },
   {
    "source_id": "postfit-policy/POST-NOBS-FALLBACK",
@@ -6807,7 +6859,12 @@
    "planned_case_ids": [
     "CORE070-POSTFIT-NOBS-FALLBACK-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "note": "CONFIRMED cross-engine mismatch: Julia StatsAPI.nobs = n units (80) vs R attr(logLik,nobs) = p*n cells (400); bridge payload already uses p*n. Aligning is a public behavior change -> maintainer decision; recommendation: adopt p*n (matches R twin and bridge)."
+   }
   },
   {
    "source_id": "postfit-policy/POST-NOBS-MASK",
@@ -6823,22 +6880,36 @@
   {
    "source_id": "postfit-policy/POST-PREDICT-DEFAULT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-PREDICT-DEFAULT-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-PREDICT-DEFAULT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-RE-FORM-FULL",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-RE-FORM-FULL-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-RE-FORM-FULL-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-RE-FORM-NA",
@@ -6865,33 +6936,54 @@
   {
    "source_id": "postfit-policy/POST-RESIDUAL-CONDITIONAL",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-RESIDUAL-CONDITIONAL-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-RESIDUAL-CONDITIONAL-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-RESIDUAL-SCALES",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-RESIDUAL-SCALES-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "uncertain": true,
    "planned_case_ids": [
     "CORE070-POSTFIT-RESIDUAL-SCALES-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-RESIDUAL-TYPES",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-RESIDUAL-TYPES-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-RESIDUAL-TYPES-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-SE-GUARD-ADMIT",
@@ -6937,13 +7029,20 @@
   {
    "source_id": "postfit-policy/POST-SIMULATE-DEFAULT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-SIMULATE-DEFAULT-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "uncertain": true,
    "planned_case_ids": [
     "CORE070-POSTFIT-SIMULATE-DEFAULT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
+   "evidence": {
+    "batch": "postfit-policy wave2-policy3",
+    "receipts": ".unlazy/core070-aghq/wave2-batches/wave2-policy3",
+    "note": "verified per-case; batch-level all_checks false only via the nobs defect cases"
+   }
   },
   {
    "source_id": "postfit-policy/POST-TIDY-EFFECTS",
