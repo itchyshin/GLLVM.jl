@@ -246,7 +246,9 @@ def _synthetic_state(contract):
                                           "tolerance": r["tolerance"], "max_abs_diff": r["tolerance"] / 2,
                                           "r_len": 1, "julia_len": 1, "error": ""}
 
-    julia_rejections = {r["case_id"]: {"pass": True, "r_raised": True, "julia_raised": True,
+    julia_rejections = {r["case_id"]: {"pass": True,
+                                       "r_raised": r.get("expect_r_raised", True),
+                                       "julia_raised": r.get("expect_julia_raised", True),
                                         "julia_message": "ArgumentError(...)"} for r in rejection_cases}
 
     julia_report = {
