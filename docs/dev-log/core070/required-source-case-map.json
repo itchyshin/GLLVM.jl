@@ -4651,22 +4651,42 @@
   {
    "source_id": "namespace/S3method/coef,gllvmTMB_julia",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-COEF-JULIA-BRIDGE-COMPARE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-COEF-JULIA-BRIDGE-COMPARE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/coef,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-COEF-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-COEF-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/coef,gllvmTMB_va",
@@ -4677,22 +4697,42 @@
   {
    "source_id": "namespace/S3method/confint,gllvmTMB_julia",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-CONFINT-JULIA-BRIDGE-COMPARE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-CONFINT-JULIA-BRIDGE-COMPARE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/confint,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-CONFINT-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-CONFINT-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/confint,gllvmTMB_va",
@@ -4703,12 +4743,22 @@
   {
    "source_id": "namespace/S3method/deviance,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/deviance,gllvmTMB_va",
@@ -4725,22 +4775,42 @@
   {
    "source_id": "namespace/S3method/fitted,gllvmTMB_julia",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-FITTED-JULIA-BRIDGE-COMPARE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-FITTED-JULIA-BRIDGE-COMPARE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/fitted,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-FITTED-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-FITTED-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/fitted,gllvmTMB_va",
@@ -4751,32 +4821,62 @@
   {
    "source_id": "namespace/S3method/imputed,gllvmTMB",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-IMPUTED-MISSING-PREDICTOR"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-IMPUTED-MISSING-PREDICTOR"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/logLik,gllvmTMB_julia",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-LOGLIK-JULIA-BRIDGE-COMPARE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-LOGLIK-JULIA-BRIDGE-COMPARE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/logLik,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-LOGLIK-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-LOGLIK-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/logLik,gllvmTMB_va",
@@ -4787,12 +4887,22 @@
   {
    "source_id": "namespace/S3method/ordiplot,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-ORDIPLOT-MULTI-SCORES"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-ORDIPLOT-MULTI-SCORES"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/plot,gllvmTMB_multi",
@@ -4867,22 +4977,42 @@
   {
    "source_id": "namespace/S3method/predict,gllvmTMB_julia",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-PREDICT-JULIA-BRIDGE-COMPARE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-PREDICT-JULIA-BRIDGE-COMPARE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/predict,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-PREDICT-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-PREDICT-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/predict,gllvmTMB_va",
@@ -5071,22 +5201,42 @@
   {
    "source_id": "namespace/S3method/residuals,gllvmTMB_julia",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-RESIDUALS-JULIA-BRIDGE-COMPARE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-RESIDUALS-JULIA-BRIDGE-COMPARE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/residuals,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-RESIDUALS-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-RESIDUALS-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/residuals,gllvmTMB_va",
@@ -5097,32 +5247,62 @@
   {
    "source_id": "namespace/S3method/simulate,gllvmTMB_julia",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-SIMULATE-JULIA-BRIDGE-COMPARE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-SIMULATE-JULIA-BRIDGE-COMPARE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/simulate,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-SIMULATE-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-SIMULATE-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/stats::nobs,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-NOBS-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-NOBS-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/stats::nobs,gllvmTMB_va",
@@ -5139,22 +5319,42 @@
   {
    "source_id": "namespace/S3method/summary,gllvmTMB_julia",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-SUMMARY-JULIA-BRIDGE-COMPARE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-SUMMARY-JULIA-BRIDGE-COMPARE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/summary,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-SUMMARY-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-SUMMARY-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/summary,gllvmTMB_va",
@@ -5165,22 +5365,42 @@
   {
    "source_id": "namespace/S3method/tidy,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-TIDY-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-TIDY-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/vcov,gllvmTMB_multi",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-VCOV-MULTI-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-VCOV-MULTI-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/S3method/vcov,gllvmTMB_va",
@@ -5191,32 +5411,62 @@
   {
    "source_id": "namespace/export/.proportions_bootstrap_ci",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-PROPORTIONS-BOOTSTRAP-CI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-PROPORTIONS-BOOTSTRAP-CI"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/.proportions_wald_ci",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-PROPORTIONS-WALD-CI"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-PROPORTIONS-WALD-CI"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/Beta",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-BETA-FAMILY-NATIVE-MODEL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-BETA-FAMILY-NATIVE-MODEL"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/VP",
@@ -5248,7 +5498,21 @@
     "SLOPE-ANIMAL-DEP-DBAR"
    ],
    "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
-   "reused_from": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "reused_from": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "status": "REUSED_OR_RECLASSIFY",
+    "pointer": {
+     "kind": "reused_from",
+     "annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+     "planned_case_ids": [
+      "SLOPE-ANIMAL-DEP-BAR",
+      "SLOPE-ANIMAL-DEP-DBAR"
+     ]
+    },
+    "reason": "contract triage: reuse existing receipted evidence or reclassify"
+   }
   },
   {
    "source_id": "namespace/export/animal_indep",
@@ -5260,7 +5524,21 @@
     "SLOPE-ANIMAL-INDEP-DBAR"
    ],
    "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
-   "reused_from": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "reused_from": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "status": "REUSED_OR_RECLASSIFY",
+    "pointer": {
+     "kind": "reused_from",
+     "annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+     "planned_case_ids": [
+      "SLOPE-ANIMAL-INDEP-BAR",
+      "SLOPE-ANIMAL-INDEP-DBAR"
+     ]
+    },
+    "reason": "contract triage: reuse existing receipted evidence or reclassify"
+   }
   },
   {
    "source_id": "namespace/export/animal_latent",
@@ -5273,27 +5551,62 @@
     "SLOPE-ANIMAL-LAT-RANK4"
    ],
    "case_plan": "docs/dev-log/core070/slopes-required-case-plan.json",
-   "reused_from": "docs/dev-log/core070/slopes-required-case-plan.json"
+   "reused_from": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "disposition": "PARTIAL_PENDING_DECISION_RECLASSIFY",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "status": "REUSED_OR_RECLASSIFY",
+    "pointer": {
+     "kind": "reused_from",
+     "annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+     "planned_case_ids": [
+      "SLOPE-ANIMAL-LAT-DEFAULT",
+      "SLOPE-ANIMAL-LAT-NOUNIQUE",
+      "SLOPE-ANIMAL-LAT-RANK4"
+     ]
+    },
+    "reason": "contract triage: reuse existing receipted evidence or reclassify"
+   }
   },
   {
    "source_id": "namespace/export/animal_scalar",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-ANIMAL-SCALAR-FIT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-ANIMAL-SCALAR-FIT"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/animal_slope",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-ANIMAL-SLOPE-FIT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-ANIMAL-SLOPE-FIT"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/animal_unique",
@@ -5340,12 +5653,22 @@
   {
    "source_id": "namespace/export/bootstrap_Sigma",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-BOOTSTRAP-SIGMA-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-BOOTSTRAP-SIGMA-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/categorical",
@@ -5384,12 +5707,22 @@
   {
    "source_id": "namespace/export/check_gllvmTMB",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-CHECK-GLLVMTMB-DIAGNOSTIC"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-CHECK-GLLVMTMB-DIAGNOSTIC"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/compare_Sigma_table",
@@ -5450,12 +5783,22 @@
   {
    "source_id": "namespace/export/confint_inspect",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-CONFINT-INSPECT-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-CONFINT-INSPECT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/confirmatory_lambda",
@@ -5564,12 +5907,22 @@
   {
    "source_id": "namespace/export/dep",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-DEP-FORMULA-KEYWORD"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-DEP-FORMULA-KEYWORD"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/diagnose_kernel_separability",
@@ -5602,62 +5955,122 @@
   {
    "source_id": "namespace/export/extract_Gamma",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-GAMMA-BLOCK"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-GAMMA-BLOCK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_ICC_site",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-ICC-SITE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-ICC-SITE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_Omega",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-OMEGA-SUM"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-OMEGA-SUM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_Sigma",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-SIGMA-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-SIGMA-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_Sigma_B",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-SIGMA-B-TWOLEVEL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-SIGMA-B-TWOLEVEL"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_Sigma_W",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-SIGMA-W-TWOLEVEL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-SIGMA-W-TWOLEVEL"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_Sigma_table",
@@ -5676,162 +6089,322 @@
   {
    "source_id": "namespace/export/extract_coevolution_modules",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-COEVOLUTION-MODULES-SVD"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-COEVOLUTION-MODULES-SVD"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_communality",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-COMMUNALITY-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-COMMUNALITY-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_correlations",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-CORRELATIONS-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-CORRELATIONS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_cross_correlations",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-CROSS-CORRELATIONS-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-CROSS-CORRELATIONS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_cutpoints",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-CUTPOINTS-ORDINAL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-CUTPOINTS-ORDINAL"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_loadings",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-LOADINGS-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-LOADINGS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_lv_effects",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-LV-EFFECTS-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-LV-EFFECTS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_ordination",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-ORDINATION-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-ORDINATION-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_phylo_signal",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-PHYLO-SIGNAL-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-PHYLO-SIGNAL-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_proportions",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-PROPORTIONS-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-PROPORTIONS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_repeatability",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-REPEATABILITY-TWOLEVEL"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-REPEATABILITY-TWOLEVEL"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_residual_cor",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-RESIDUAL-COR-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-RESIDUAL-COR-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_residual_cov",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-RESIDUAL-COV-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-RESIDUAL-COV-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_residual_split",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-RESIDUAL-SPLIT-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-RESIDUAL-SPLIT-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/extract_rotated_loadings_table",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-EXTRACT-ROTATED-LOADINGS-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-EXTRACT-ROTATED-LOADINGS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/flag_unreliable_loadings",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-FLAG-UNRELIABLE-LOADINGS-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-FLAG-UNRELIABLE-LOADINGS-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/gamma_mix",
@@ -5848,12 +6421,22 @@
   {
    "source_id": "namespace/export/getLV",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE-GETLV-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE-GETLV-NATIVE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-1 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns1",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns1.tar.gz",
+    "preservation_sha256": "d3550349d74409f49f64afb3096cae7e5e16fbe9025944ff619f609b23ded97c",
+    "verifier": "tools/core070_verify_namespace_1_batch.py --self-test (CORE070_NAMESPACE_1_STATE_OK wave3-ns1)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns1"
+   }
   },
   {
    "source_id": "namespace/export/getLoadings",
@@ -5863,7 +6446,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GETLOADINGS-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "R getLoadings(fit, level=..., rotate=...) has no matching Julia surface",
+    "reason": "GLLVM.getLoadings(fit; rotate::Bool) exists (src/postfit.jl:74) but has no `level` tier argument and does not special-case a gllvmTMB_julia bridge fit the way R's getLoadings does (R/output-methods.R:33); confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (case CORE070-POSTFIT-GETLOADINGS-READBACK).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/getREsd",
@@ -5873,7 +6464,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GETRESD-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named or equivalent to getREsd()",
+    "reason": "grep -rniE 'getREsd|re_sd' src/*.jl: 0 hits. Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-getREsd).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/getResidualCor",
@@ -5883,7 +6482,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GETRESIDUALCOR-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named or equivalent to getResidualCor()",
+    "reason": "grep -rniE 'residual.?cor' src/*.jl: 0 hits (only unrelated comment matches). Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-getResidualCor).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/getResidualCov",
@@ -5893,7 +6500,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GETRESIDUALCOV-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named or equivalent to getResidualCov()",
+    "reason": "grep -rniE 'residual.?cov' src/*.jl: 0 hits (only unrelated comment matches). Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-getResidualCov).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/get_crs",
@@ -5913,12 +6528,22 @@
   {
    "source_id": "namespace/export/gllvmTMB",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE2-GLLVMTMB-NATIVE-FIT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GLLVMTMB-NATIVE-FIT"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns2.tar.gz",
+    "preservation_sha256": "942ea7924e1e524cf03adf898f988191c3542bbec80800c42b5ae77c7176fb76",
+    "verifier": "tools/core070_verify_namespace_2_batch.py --self-test (CORE070_NAMESPACE_2_BATCH_VERIFIED 9 negative_controls 4)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/gllvmTMB_check_consistency",
@@ -5928,7 +6553,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GLLVMTMB-CHECK-CONSISTENCY-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named or equivalent to gllvmTMB_check_consistency()",
+    "reason": "grep -rniE 'check_consistency' src/*.jl: 0 hits; only scattered raw components (gradient norm in confint.jl, SE via vcov) exist without a packaged diagnostic surface, same gap class as the sibling gllvmTMB_diagnose row below.",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/gllvmTMB_diagnose",
@@ -5938,17 +6571,35 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GLLVMTMB-DIAGNOSE-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named or equivalent to gllvmTMB_diagnose()",
+    "reason": "grep -rniE 'diagnose' src/*.jl: 0 hits. Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-gllvmTMB_diagnose).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/gllvmTMB_wide",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE2-GLLVMTMB-WIDE-NATIVE-FIT"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GLLVMTMB-WIDE-NATIVE-FIT"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns2.tar.gz",
+    "preservation_sha256": "942ea7924e1e524cf03adf898f988191c3542bbec80800c42b5ae77c7176fb76",
+    "verifier": "tools/core070_verify_namespace_2_batch.py --self-test (CORE070_NAMESPACE_2_BATCH_VERIFIED 9 negative_controls 4)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/gllvmTMBcontrol",
@@ -5958,27 +6609,55 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GLLVMTMBCONTROL-STRUCTURE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia control/options struct mirroring gllvmTMBcontrol()'s field-and-default contract",
+    "reason": "src/bridge.jl's bridge_fit(...; options::Dict{String,Any}=Dict()) reads keys ad hoc via _bridge_get(options, key, default) with no enumerated struct or exported defaults table; there is nothing to diff field-by-field against R's gllvmTMBcontrol(optimizer=, maxit=, ...) defaults.",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/gllvm_julia_fit",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE2-GLLVM-JULIA-FIT-BRIDGE-ADMISSION"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GLLVM-JULIA-FIT-BRIDGE-ADMISSION"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns2.tar.gz",
+    "preservation_sha256": "942ea7924e1e524cf03adf898f988191c3542bbec80800c42b5ae77c7176fb76",
+    "verifier": "tools/core070_verify_namespace_2_batch.py --self-test (CORE070_NAMESPACE_2_BATCH_VERIFIED 9 negative_controls 4)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/gllvm_julia_setup",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE2-GLLVM-JULIA-SETUP-BRIDGE-ADMISSION"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GLLVM-JULIA-SETUP-BRIDGE-ADMISSION"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns2.tar.gz",
+    "preservation_sha256": "942ea7924e1e524cf03adf898f988191c3542bbec80800c42b5ae77c7176fb76",
+    "verifier": "tools/core070_verify_namespace_2_batch.py --self-test (CORE070_NAMESPACE_2_BATCH_VERIFIED 9 negative_controls 4)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/gr",
@@ -5988,7 +6667,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-GR-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'gr(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"gr\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (gr() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ gr(...)) in Julia the way R parses ~ gr(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/impute_model",
@@ -6028,7 +6715,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-INDEP-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'indep(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"indep\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (indep() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ indep(...)) in Julia the way R parses ~ indep(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/isdm_source",
@@ -6068,7 +6763,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-DEP-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_dep(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_dep\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_dep() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_dep(...)) in Julia the way R parses ~ kernel_dep(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/kernel_indep",
@@ -6078,7 +6781,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-INDEP-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_indep(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_indep\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_indep() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_indep(...)) in Julia the way R parses ~ kernel_indep(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/kernel_latent",
@@ -6088,7 +6799,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-LATENT-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_latent(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_latent\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_latent() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_latent(...)) in Julia the way R parses ~ kernel_latent(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/kernel_scalar",
@@ -6098,7 +6817,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-SCALAR-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_scalar(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_scalar\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_scalar() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_scalar(...)) in Julia the way R parses ~ kernel_scalar(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/kernel_unique",
@@ -6108,7 +6835,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-KERNEL-UNIQUE-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'kernel_unique(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"kernel_unique\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (kernel_unique() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ kernel_unique(...)) in Julia the way R parses ~ kernel_unique(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/latent",
@@ -6118,7 +6853,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-LATENT-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'latent(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"latent\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (latent() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ latent(...)) in Julia the way R parses ~ latent(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/loading_ci",
@@ -6128,7 +6871,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-LOADING-CI-CI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named loading_ci; confint.jl is joint, not a loading-only table",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE in docs/dev-log/core070/postfit-1-batch-contract.json (POSTFIT-SURFACE-loading_ci): 'confint.jl's confint(fit;y) returns a CI over all packed parameters jointly, not a loading-only table matching R's loading_ci() output shape; grep -rn \"function loading_ci\\b\" src/*.jl: 0 hits'.",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/loading_profile",
@@ -6138,7 +6889,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-LOADING-PROFILE-CI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named loading_profile",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-loading_profile).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/lognormal",
@@ -6199,7 +6958,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-META-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'meta(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"meta\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (meta() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ meta(...)) in Julia the way R parses ~ meta(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/meta_V",
@@ -6209,7 +6976,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-META-V-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'meta_V(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"meta_V\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (meta_V() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ meta_V(...)) in Julia the way R parses ~ meta_V(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/meta_known_V",
@@ -6219,7 +6994,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-META-KNOWN-V-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'meta_known_V(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"meta_known_V\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (meta_known_V() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ meta_known_V(...)) in Julia the way R parses ~ meta_known_V(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/miss_control",
@@ -6269,12 +7052,22 @@
   {
    "source_id": "namespace/export/nbinom2",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-NAMESPACE2-NBINOM2-FAMILY-BRIDGE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-NAMESPACE2-NBINOM2-FAMILY-BRIDGE"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2",
+    "preservation_tarball": ".unlazy/core070-aghq/wave3-batches/wave3-ns2.tar.gz",
+    "preservation_sha256": "942ea7924e1e524cf03adf898f988191c3542bbec80800c42b5ae77c7176fb76",
+    "verifier": "tools/core070_verify_namespace_2_batch.py --self-test (CORE070_NAMESPACE_2_BATCH_VERIFIED 9 negative_controls 4)",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/nbinom2_mix",
@@ -6364,7 +7157,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PHYLO-DEP-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'phylo_dep(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"phylo_dep\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (phylo_dep() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ phylo_dep(...)) in Julia the way R parses ~ phylo_dep(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/phylo_indep",
@@ -6374,7 +7175,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PHYLO-INDEP-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'phylo_indep(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"phylo_indep\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (phylo_indep() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ phylo_indep(...)) in Julia the way R parses ~ phylo_indep(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/phylo_latent",
@@ -6384,7 +7193,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PHYLO-LATENT-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'phylo_latent(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"phylo_latent\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (phylo_latent() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ phylo_latent(...)) in Julia the way R parses ~ phylo_latent(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/phylo_rr",
@@ -6394,7 +7211,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PHYLO-RR-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'phylo_rr(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"phylo_rr\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (phylo_rr() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ phylo_rr(...)) in Julia the way R parses ~ phylo_rr(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/phylo_scalar",
@@ -6404,7 +7229,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PHYLO-SCALAR-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'phylo_scalar(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"phylo_scalar\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (phylo_scalar() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ phylo_scalar(...)) in Julia the way R parses ~ phylo_scalar(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/phylo_signal_mi",
@@ -6429,7 +7262,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PHYLO-SLOPE-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'phylo_slope(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"phylo_slope\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (phylo_slope() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ phylo_slope(...)) in Julia the way R parses ~ phylo_slope(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/phylo_unique",
@@ -6439,7 +7280,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PHYLO-UNIQUE-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'phylo_unique(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"phylo_unique\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (phylo_unique() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ phylo_unique(...)) in Julia the way R parses ~ phylo_unique(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/plot_Sigma_comparison",
@@ -6599,7 +7448,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PREDICTIVE-CHECK-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named or equivalent to predictive_check()",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-predictive_check).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/profile_ci_phylo_signal",
@@ -6609,7 +7466,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PROFILE-CI-PHYLO-SIGNAL-CI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named profile_ci_phylo_signal",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-profile_ci_phylo_signal); GLLVM.jl only has the generic point-estimate phylo_signal(fit) and the generic profiler profile_ci_derived(fit, derived_fn) (src/confint_derived.jl), not a like-named wrapper.",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/profile_ci_total_variance",
@@ -6619,7 +7484,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PROFILE-CI-TOTAL-VARIANCE-CI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named profile_ci_total_variance",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-profile_ci_total_variance).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/profile_cross_rho",
@@ -6659,7 +7532,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PROFILE-PHYLO-SIGNAL-CI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named profile_phylo_signal",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-profile_phylo_signal).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/profile_targets",
@@ -6669,7 +7550,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-PROFILE-TARGETS-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named or equivalent to profile_targets()",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-profile_targets).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/ridge_path",
@@ -6700,7 +7589,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-SANITY-MULTI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named or equivalent to sanity_multi()",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-sanity_multi); see the receipt behind tools/core070_postfit_2_batch.jl.",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/scalar",
@@ -6710,7 +7607,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-SCALAR-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'scalar(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"scalar\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (scalar() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ scalar(...)) in Julia the way R parses ~ scalar(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/screen_control",
@@ -6768,7 +7673,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-SLOPE-SD-CI-CI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named slope_sd_ci",
+    "reason": "grep -rniE 'randomslope|random_slope' src/confint*.jl: 0 hits (GaussianRandomSlopeFit has no CI machinery at all). Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-slope_sd_ci).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/spatial",
@@ -6882,7 +7795,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-STANDARD-ERRORS-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named or equivalent to standard_errors()",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-standard_errors).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/student",
@@ -6950,7 +7871,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-TMBPROFILE-WRAPPER-CI-POSTFIT-READBACK"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "no Julia function/export named tmbprofile_wrapper",
+    "reason": "Confirmed already NEEDS_NEW_JULIA_SURFACE (real isdefined()+functional-probe runtime evidence) in docs/dev-log/core070/postfit-2-batch-contract.json (POSTFIT-SURFACE-tmbprofile_wrapper); GLLVM.jl's profile_ci(fit, param_index; ...) (src/confint_profile.jl) is a same-purpose but differently-named/shaped bracket-then-bisect kernel, not a like-named wrapper.",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/traits",
@@ -6960,7 +7889,15 @@
    "planned_case_ids": [
     "CORE070-NAMESPACE2-TRAITS-FORMULA-TERM"
    ],
-   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json"
+   "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+   "evidence": {
+    "batch": "namespace-2 wave3",
+    "contract": "docs/dev-log/core070/namespace-2-batch-contract.json",
+    "missing_surface": "GLLVM.jl's @formula front-end (src/formula.jl) has no term-recognizer for 'traits(...)'",
+    "reason": "src/formula.jl (module header: 'Slices 1-2 of the formula-front-end design spec') implements only plain StatsModels covariate/interaction terms; grep -rniE '\"traits\"' src/formula.jl src/bridge.jl: 0 hits for a term-name dispatch. gllvmTMB's brms-sugar keyword grammar (traits() and its 19 siblings, all defined in R/brms-sugar.R, R/kernel-keywords.R or R/traits-keyword.R) is parsed entirely on the R side into structured arguments (K, mode, tree, kernel spec, ...) before ever reaching the Julia bridge; bridge_fit/fit_gllvm receive those already-decomposed keyword arguments directly, never the literal term text. Some underlying mechanisms exist elsewhere in the engine (e.g. phylo_glm.jl, cross_kernel.jl) but there is no formula-term parser that would let a user write @formula(y ~ traits(...)) in Julia the way R parses ~ traits(...).",
+    "receipts": ".unlazy/core070-aghq/wave3-batches/wave3-ns2"
+   }
   },
   {
    "source_id": "namespace/export/truncated_nbinom1",
