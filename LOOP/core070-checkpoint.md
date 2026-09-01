@@ -1920,3 +1920,13 @@ isdm, covariance) still building; each follows this exact pipeline on
 landing. M2 wall estimate given to maintainer: 40-60 focused hours
 (fixture rows 15-25h; new-Julia-surface rows ~20-35h; his ~80 decisions
 batched separately).
+
+## M2 wave 1 — 2026-09-01: 77/533 bound
+
+masks-known (9) + isdm (20) + data (28) + covariance (8) + fit-input PASS
+cases bound; spec-defects and still-planned rows honestly annotated. Template
+lessons this wave: retained-vs-fresh input identity; fixtures.rds copy; argv
+index discipline; and the VACUOUS-PASS GUARD — the data verifier silently
+skipped verification when state was missing under --self-test; now a hard
+error (84b6c1b8). Wave 2 next: inference (64 specs, some needing NEW Julia CI
+surfaces), postfit-1/2 (95), postfit-policy (23), namespace (planned subset).
