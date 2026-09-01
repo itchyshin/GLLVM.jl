@@ -197,4 +197,63 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test_throws ArgumentError simulate_unit_trait(; alpha = [1.0, 2.0])
     end
 
+    @testset "1.6 profile_cross_rho — duck-typed grid driver" begin
+        A_H = [1.0 0.3; 0.3 1.0]
+        A_P = [1.0 0.2; 0.2 1.0]
+        W = [1.0 0.0; 0.5 1.0]
+
+        # stub refit: known logLik = -(rho - 0.2)^2, mirrors R's stats::lm example.
+        stub_refit(K, rho) = (logLik = -(rho - 0.2)^2, converged = true)
+        rho_grid = collect(-0.8:0.2:0.8)
+        out = profile_cross_rho(A_H, A_P, W, stub_refit; rho_grid = rho_grid)
+
+        @test Set(propertynames(out.table)) ⊇ Set((:rho, :logLik, :relative_logLik,
+            :delta_deviance, :is_best, :convergence, :pd_hessian, :status, :error))
+        best_idx = argmin(abs.(rho_grid .- 0.2))
+        @test out.table.is_best[best_idx]
+        @test out.best_rho == rho_grid[best_idx]
+        @test out.table.relative_logLik ≈ out.table.logLik .- maximum(out.table.logLik)
+        @test out.table.delta_deviance ≈ 2 .* (maximum(out.table.logLik) .- out.table.logLik)
+        @test all(out.table.status .== :ok)
+        @test out.fits === nothing
+
+        # error capture: a refit that always throws ⇒ every row errors, and
+        # since no finite logLik survives the sweep throws (nothing to rank).
+        throwing_refit(K, rho) = error("boom")
+        @test_throws ArgumentError profile_cross_rho(A_H, A_P, W, throwing_refit;
+            rho_grid = [0.1, 0.2])
+
+        # partial failure — some rho values throw, best is picked from survivors.
+        mixed_refit(K, rho) = rho < 0 ? error("bad rho") : (logLik = -(rho - 0.5)^2, converged = true)
+        out_mixed = profile_cross_rho(A_H, A_P, W, mixed_refit; rho_grid = [-0.5, 0.3, 0.5],
+                                      keep_fits = true)
+        @test out_mixed.table.status == [:error, :ok, :ok]
+        @test out_mixed.best_rho == 0.5
+        @test out_mixed.fits !== nothing
+        @test out_mixed.fits[1] === nothing
+
+        @test_throws ArgumentError profile_cross_rho(A_H, A_P, W, stub_refit; rho_grid = [1.5])
+
+        # integration case through fit_coevolution_gaussian: K_star is the
+        # n×n column (SPECIES) covariance of the T×n matrix-normal Y, T being
+        # the stacked-TRAIT axis — independent of A_H/A_P/W's own dimension.
+        Random.seed!(6)
+        rho_true = 0.35
+        n_species = size(A_H, 1) + size(A_P, 1)   # 4
+        K_true = Matrix(make_cross_kernel(A_H, A_P, W; rho = rho_true))
+        L_true = cholesky(Symmetric(K_true)).L    # n_species × n_species
+        T_traits, d = 3, 1
+        Λtrait = 0.6 .* randn(T_traits, d)
+        Ystack = Λtrait * (randn(d, n_species) * L_true') .+
+                 0.4 .* (randn(T_traits, n_species) * L_true')
+        function real_refit(K, rho)
+            r = fit_coevolution_gaussian(Ystack, K; d = 1)
+            return r
+        end
+        out_real = profile_cross_rho(A_H, A_P, W, real_refit;
+                                     rho_grid = [0.0, 0.2, 0.35, 0.5, 0.7])
+        @test any(out_real.table.status .== :ok)
+        @test isfinite(out_real.best_rho)
+    end
+
 end

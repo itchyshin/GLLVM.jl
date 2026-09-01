@@ -319,3 +319,113 @@ function simulate_unit_trait(rng::Random.AbstractRNG = Random.default_rng();
             sigma2_eps = Float64(sigma2_eps), Sigma_B = Matrix(Σ_B), Sigma_W = Matrix(Σ_W))
     return (Y = Y, individual = individual, truth = truth)
 end
+
+# ---------------------------------------------------------------------------
+# Item 1.6 — profile_cross_rho (mirrors kernel-helpers.R:166-262): a
+# fixed-kernel sensitivity driver over the cross-lineage rho, NOT a TMB
+# parameter profile. Unblocks §1.2's integration test case.
+# ---------------------------------------------------------------------------
+
+# Best-effort duck-typed field lookup on the caller's refit return value.
+function _cross_rho_field(f, names::Tuple{Vararg{Symbol}}, default)
+    for nm in names
+        hasproperty(f, nm) && return getproperty(f, nm)
+    end
+    return default
+end
+
+"""
+    profile_cross_rho(A_H, A_P, W, refit; rho_grid = range(-0.9, 0.9; length=19),
+                      eps = 1e-8, metrics = nothing, keep_fits = false)
+        -> NamedTuple
+
+Fixed-kernel sensitivity driver over the cross-LINEAGE coevolution kernel
+parameter `rho` — mirrors `gllvmTMB::profile_cross_rho`
+(`kernel-helpers.R:166-262`). This is NOT a TMB profile likelihood of a
+fitted parameter; it re-derives `K = make_cross_kernel(A_H, A_P, W; rho, eps)`
+at each grid value and calls the caller-supplied `refit(K, rho)` in a
+`try`/`catch` (so one failing grid point does not abort the sweep). `refit`
+targets e.g. [`fit_coevolution_gaussian`](@ref) / `fit_coevolution_blockna`,
+which take `K_star` directly.
+
+`rho_grid` entries must be finite and in `[-1, 1]`. `metrics`, when given, is
+a function `f -> NamedTuple` called on each successful refit result and its
+fields are appended as extra table columns (`missing` on rows that errored
+or were never reached). `keep_fits::Bool` additionally returns the raw
+refit results.
+
+The refit result's fields are read by best-effort duck typing:
+log-likelihood from `:logLik` or `:loglik`; convergence from `:converged`
+(defaults to `true` when absent); `pd_hessian` from `:pd_hessian` (defaults
+to `true` when absent — most refit targets here have no Hessian check yet).
+
+Returns `(table, best_rho, fits)`, `fits === nothing` unless `keep_fits`.
+`table` is a `NamedTuple` of equal-length vectors with columns `rho, logLik,
+relative_logLik, delta_deviance, is_best, convergence, pd_hessian, status,
+error` (+ any `metrics` columns) — `relative_logLik = logLik - max(logLik)`,
+`delta_deviance = 2*(max(logLik) - logLik)`, `is_best` flags the maximiser,
+`status` is `:ok`/`:error`, `error` the caught exception message (empty
+string on success).
+"""
+function profile_cross_rho(A_H, A_P, W, refit;
+                           rho_grid::AbstractVector{<:Real} = range(-0.9, 0.9; length = 19),
+                           eps::Real = 1e-8,
+                           metrics::Union{Nothing, Function} = nothing,
+                           keep_fits::Bool = false)
+    applicable(refit, A_H, 0.0) || throw(ArgumentError("refit must be callable as refit(K, rho)."))
+    all(r -> isfinite(r) && abs(r) <= 1, rho_grid) ||
+        throw(ArgumentError("every rho_grid entry must be finite and in [-1, 1]."))
+
+    n = length(rho_grid)
+    rho = Float64.(collect(rho_grid))
+    logLik = fill(NaN, n)
+    convergence = falses(n)
+    pd_hessian = falses(n)
+    status = Vector{Symbol}(undef, n)
+    errmsg = fill("", n)
+    fits = Vector{Any}(undef, n)
+    metric_cols = Dict{Symbol, Vector{Any}}()
+
+    for i in 1:n
+        try
+            K = make_cross_kernel(A_H, A_P, W; rho = rho[i], eps = eps)
+            f = refit(K, rho[i])
+            fits[i] = f
+            logLik[i] = Float64(_cross_rho_field(f, (:logLik, :loglik), NaN))
+            convergence[i] = Bool(_cross_rho_field(f, (:converged, :convergence), true))
+            pd_hessian[i] = Bool(_cross_rho_field(f, (:pd_hessian,), true))
+            status[i] = :ok
+            if metrics !== nothing
+                m = metrics(f)
+                for k in propertynames(m)
+                    col = get!(() -> fill(missing, n), metric_cols, k)
+                    col[i] = getproperty(m, k)
+                end
+            end
+        catch e
+            fits[i] = nothing
+            status[i] = :error
+            errmsg[i] = sprint(showerror, e)
+        end
+    end
+
+    finite_ll = findall(isfinite, logLik)
+    isempty(finite_ll) &&
+        throw(ArgumentError("every refit failed or returned a non-finite logLik; see the `error` column."))
+    maxll = maximum(view(logLik, finite_ll))
+    relative_logLik = logLik .- maxll
+    delta_deviance = 2 .* (maxll .- logLik)
+    is_best = falses(n)
+    is_best[finite_ll[argmax(view(logLik, finite_ll))]] = true
+    best_rho = rho[findfirst(is_best)]
+
+    table = (rho = rho, logLik = logLik, relative_logLik = relative_logLik,
+            delta_deviance = delta_deviance, is_best = is_best,
+            convergence = convergence, pd_hessian = pd_hessian,
+            status = status, error = errmsg)
+    for k in keys(metric_cols)
+        table = merge(table, NamedTuple{(k,)}((metric_cols[k],)))
+    end
+
+    return (table = table, best_rho = best_rho, fits = keep_fits ? fits : nothing)
+end
