@@ -3203,7 +3203,9 @@
   {
    "source_id": "family/FAMILY-09-FIXED-SHAPE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-A6-STUDENTT-FIXED-DF-PAIRED"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL",
@@ -3211,26 +3213,22 @@
     "CORE070-FAMILY-09-FIXED-SHAPE-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "The fixed-df student contract was exercised and its own subtests passed, but only inside the failed/contested NATIVE-10-STUDENT cell whose health classification the D-43 panel overturned; formula and bridge cases unexecuted.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-09-FIXED-SHAPE-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt2/parity-receipts/cell-NATIVE-10-STUDENT.toml",
-      "detail": "test/parity/test_studentt_parity.jl lines 59-73 run a fixed-nu control (gllvmTMB::student(df=nu_true) vs fit_studentt_gllvm(nu=nu_true)) inside the NATIVE-10-STUDENT cell; the fixed-df subtests passed, but the enclosing cell status=\"failed\" (31 pass / 2 fail)"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "A6 studentt fixture (a6-run2)",
+    "receipts": ".unlazy/core070-aghq/a6-studentt/a6-run2",
+    "preservation_tarball": ".unlazy/core070-aghq/a6-studentt/a6-run2.tar.gz",
+    "preservation_sha256": "6b0b6ea78996652a7de9487165fa27be34de3b92589c6adb96e1930825d1be9c",
+    "verifier": "tools/core070_a6_studentt_fixture.jl self-test 10 mutations; CORE070_A6_STUDENTT_PAIRED_VERIFIED case=fixed tol=1e-4",
+    "detail": "matched fixed-shape model (df pinned 6 both engines, per-trait sigma both sides) paired at 1e-4; nu-boundary now honestly fails convergence (ec3f5820); the FREE-nu case is a RECORDED structural divergence (R per-trait nu, R/gllvmTMB.R:167-168, vs Julia shared nu; delta 4.79 informational, non-gating) joining the dispersion-structure alignment family",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/a6-run2"
    }
   },
   {
    "source_id": "family/FAMILY-09-IDENTITY",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-A6-STUDENTT-FIXED-DF-PAIRED"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL",
@@ -3238,20 +3236,14 @@
     "CORE070-FAMILY-09-IDENTITY-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PENDING_DECISION_OPEN_QUESTION",
    "evidence": {
-    "triage": "family reconciliation audit 2026-09-01",
-    "verdict": "PARTIAL_EVIDENCE",
-    "reason": "Student native parity was executed twice with the same 2 health-assertion failures, and parity-panel-2026-09-01.md (Panel C, finding 4) overturned the 'R-side only' classification \u2014 both engines sit on the nu->infinity boundary and Julia missed it \u2014 so the cell cannot be credited as verified; formula and bridge cases unexecuted.",
-    "evidence_items": [
-     {
-      "case_id": "CORE070-FAMILY-09-IDENTITY-NATIVE-MODEL",
-      "artifact": ".unlazy/core070-aghq/tweedie-replay-01/attempt2/parity-receipts/cell-NATIVE-10-STUDENT.toml",
-      "detail": "status=\"failed\", passed=31/failed=2, fixture=test/parity/test_studentt_parity.jl; A6 rerun (.unlazy/core070-aghq/A6/original-final2.log) reproduces 31 pass / 2 fail with logLik agreement passing and the 2 failures on R-health assertions; NATIVE-10-STUDENT was excluded from the green attempt5 40-cell set"
-     }
-    ],
-    "report": "scratchpad family-reconciliation.json (session-retained); native harness receipts at .unlazy/core070-aghq/tweedie-replay-01/attempt5/parity-receipts",
-    "note": "harness cells run under NATIVE-XX ids; formula-interface and public-R-bridge cases unexecuted for this row \u2014 registration/substitution is a maintainer decision"
+    "batch": "A6 studentt fixture (a6-run2)",
+    "receipts": ".unlazy/core070-aghq/a6-studentt/a6-run2",
+    "preservation_tarball": ".unlazy/core070-aghq/a6-studentt/a6-run2.tar.gz",
+    "preservation_sha256": "6b0b6ea78996652a7de9487165fa27be34de3b92589c6adb96e1930825d1be9c",
+    "verifier": "tools/core070_a6_studentt_fixture.jl self-test 10 mutations; CORE070_A6_STUDENTT_PAIRED_VERIFIED case=fixed tol=1e-4",
+    "detail": "matched fixed-shape model (df pinned 6 both engines, per-trait sigma both sides) paired at 1e-4; nu-boundary now honestly fails convergence (ec3f5820); the FREE-nu case is a RECORDED structural divergence (R per-trait nu, R/gllvmTMB.R:167-168, vs Julia shared nu; delta 4.79 informational, non-gating) joining the dispersion-structure alignment family",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/a6-run2"
    }
   },
   {
