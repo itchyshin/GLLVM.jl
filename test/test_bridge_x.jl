@@ -40,12 +40,35 @@ function _bx_ci_max_absdiff(n1, lo1, hi1, n2, lo2, hi2)
     d = 0.0
     for i in eachindex(n1)
         for (x, y) in ((lo1[i], lo2[i]), (hi1[i], hi2[i]))
+            # T14 F3: agreement first, for ANY value — covers `Inf == Inf` and
+            # `-Inf == -Inf` (a correctly unbounded Wald CI at a dispersion
+            # boundary agreeing on both sides), which would otherwise reach
+            # `abs(Inf - Inf) = NaN` below and poison `d` via two-arg `max`.
+            (x == y) && continue
             (isnan(x) && isnan(y)) && continue
             @test !(isnan(x) ⊻ isnan(y))
             isnan(x) || (d = max(d, abs(x - y)))
         end
     end
     return d
+end
+
+# T14 F3 (docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md): `_bx_ci_max_absdiff`
+# computed `abs(x - y)` for any non-NaN pair, so two SIDES AGREEING at `Inf` (a
+# correctly unbounded Wald CI at a dispersion boundary) produced `abs(Inf-Inf) =
+# NaN`, and two-arg `max` propagates that NaN for the rest of the loop — turning
+# agreement into a spurious failure. Contract: `x == y` (covers `Inf == Inf` and
+# `-Inf == -Inf`) is zero difference; a genuinely mixed Inf/finite pair (a real
+# disagreement) must still surface as `Inf` (or another large finite value), not
+# `NaN`, so it is not silently swallowed by the `(isnan(x)&&isnan(y))` skip.
+@testset "_bx_ci_max_absdiff treats agreed Inf as agreement" begin
+    @test _bx_ci_max_absdiff(["a"], [Inf], [1.0], ["a"], [Inf], [1.0]) == 0.0
+    @test _bx_ci_max_absdiff(["a"], [-Inf], [1.0], ["a"], [-Inf], [1.0]) == 0.0
+    # Mixed: one side Inf, the other finite — a real disagreement; must be Inf,
+    # never NaN (NaN would again be silently skipped by the isnan-agreement check).
+    d_mixed = _bx_ci_max_absdiff(["a"], [Inf], [1.0], ["a"], [3.0], [1.0])
+    @test !isnan(d_mixed)
+    @test d_mixed == Inf
 end
 
 # Simulate one-part responses with a covariate-driven mean (η = β + Xγ + Λz).
