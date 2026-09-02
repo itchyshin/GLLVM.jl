@@ -17188,3 +17188,69 @@ orchestrator runs it separately.
   set with reason "no public R surface" and asked the maintainer whether that
   drops them from the AGHQ denominator (0/39 → 0/31) or needs a separate
   non-parity bucket. No src/test edits.
+
+## 2026-09-02 — CI sharding (GLLVM_TEST_SHARD) + coverage off on routine runs
+
+- **Problem**: CI run 33643764358 took 135–170 min per Julia job (2 Linux
+  runners, ~13,000 tests across 237 `include("test_*.jl")` calls in
+  `test/runtests.jl`, coverage on by default via `julia-runtest@v1`).
+  Maintainer approved (2026-09-02): "shard CI and drop coverage on routine
+  runs; full matrix and coverage stay on workflow_dispatch."
+- **Sharding mechanism** (`test/shard_util.jl`, new; `test/runtests.jl`):
+  `GLLVM_TEST_SHARD="k/N"` (1-based `k`) partitions the ordered
+  `include("test_*.jl")` list by file position — `_shard_include` increments a
+  counter once per call and includes file `i` only when
+  `(i - 1) % N == k - 1`. Unset (default) runs every file, unchanged
+  behaviour. `test_quality.jl` (Aqua + JET) is excluded from that modulo count
+  and instead gated `_RUN_QUALITY = _SHARD === nothing || _SHARD[1] == 1`:
+  timed standalone at ~35–40s combined (Aqua 0.8.16 + JET 0.12.1 against a
+  dev'd GLLVM in a scratch project, Julia 1.12.6) — far cheaper than spreading
+  it across shards, so it runs once, in shard 1 only. The header line
+  (`GLLVM tests: shard k/N — <n> files` / `GLLVM tests: all files (<n>
+  files)`) counts `_shard_include("` occurrences in `runtests.jl`'s own
+  source at runtime, so the count can never drift from the actual include
+  list as files are added or removed.
+- **Red-first pure-logic test** (`test/test_shard_selection.jl`, new,
+  included in the list itself): asserts `_shard_indices(n, k, N)` (n=61,
+  N∈{1,3,4,7}) partitions `1:n` exactly (disjoint ∪ complete across all k),
+  and `_parse_shard_spec` rejects `"0/4"`, `"5/4"`, `"a/b"`, `"1/0"`, `"1"`,
+  `"1/2/3"` with `ArgumentError`. `julia +1.12 -e 'include("test/test_shard_selection.jl")'`:
+  `test sharding: _shard_indices / _parse_shard_spec | 43 43 0.3s` — 43/43 pass.
+- **CI.yml**: added `matrix.shard: [1, 2, 3, 4]` to the routine ubuntu-only
+  `test` job (2 versions × 1 os × 4 shards = 8 Julia jobs, replacing 2
+  multi-hour jobs), passed as `GLLVM_TEST_SHARD: "${{ matrix.shard }}/4"` env
+  on the `julia-runtest@v1` step. The pre-release `full_matrix` macOS/Windows
+  `include:` combos are unchanged (no `shard` key set → env resolves to `""`
+  → unsharded, full-suite job, as before). Added a `coverage` boolean
+  `workflow_dispatch` input (default `false`); `julia-runtest@v1`'s own
+  `coverage:` input, and the `julia-processcoverage@v1` + `codecov-action@v4`
+  steps (`if:`), are now gated on
+  `github.event_name == 'workflow_dispatch' && inputs.coverage` — off on every
+  push/PR, on only when a maintainer dispatches with coverage=true. Job name:
+  `Julia ${{ matrix.version }} - ${{ matrix.os }}${{ matrix.shard && format('
+  shard {0}/4', matrix.shard) || '' }}`. `test-parity` (frozen-R smoke) and
+  the Documenter workflow are untouched.
+- **Local verification** (Julia 1.12.6, `~/.juliaup/bin/julialauncher +1.12`,
+  `JULIA_NUM_THREADS=1`, `OPENBLAS_NUM_THREADS=1`, background run,
+  `GLLVM_TEST_SHARD=4/4 julia --project=. test/runtests.jl`):
+  ```
+  GLLVM tests: shard 4/4 — 59 files
+  Test Summary: | Pass  Broken  Total      Time
+  GLLVM.jl      | 3156       2   3158  29m43.6s
+  ```
+  3156/3158 pass, 2 pre-existing `@test_broken` (not new failures; unrelated
+  to sharding — the shard mechanism only changes which files run, not their
+  content). ~29m44s for 1/4 of the suite is consistent with the ~135–170 min
+  full-suite baseline. `python3 -c "import yaml; yaml.safe_load(open('.github/workflows/CI.yml'))"`
+  parses the new workflow cleanly.
+- **How to run one shard locally**: `GLLVM_TEST_SHARD=2/4 julia --project=.
+  test/runtests.jl` runs ~1/4 of the suite (shard 1 also carries Aqua/JET,
+  so it reports one more file). Unset `GLLVM_TEST_SHARD` (or omit it) to run
+  everything, as before.
+- **Stays on workflow_dispatch only**: the macOS/Windows `full_matrix` legs
+  and `coverage=true` — both cost real runner-minutes (macOS 10×, Windows 2×
+  the Linux rate) and are for pre-release validation, not every push/PR.
+- **test/Project.toml**: found modified (uncommitted) at session start,
+  unrelated to this task (added `GLLVM` as a direct test-env dependency) and
+  outside this task's edit scope. Reverted to match `HEAD` (backed up first)
+  since the shard mechanism needs zero new dependencies.
