@@ -100,6 +100,16 @@ jobs:
       - name: Run parity suite with LD_PRELOAD libunwind
         run: |
           export LD_PRELOAD="$(julia -e 'print(abspath(joinpath(Sys.BINDIR, "..", "lib", "julia", "libunwind.so.8")))')"
+          # Single-threaded BLAS is the campaign's standing convention
+          # (AGENTS.md compute rules; every Totoro/DRAC run pins it). Without
+          # it the runner's multi-threaded BLAS takes a different optimizer
+          # path and R's own fit lands at a different optimum — CI measured
+          # r_gradient_max 2.4e-3 where the retained Totoro receipt for the
+          # SAME fixture (cell-NATIVE-06-NB2.toml, 18/18 assertions) passes
+          # the cells' 1e-4 gate.
+          export OPENBLAS_NUM_THREADS=1
+          export OMP_NUM_THREADS=1
+          export JULIA_NUM_THREADS=1
           export GLLVM_PARITY_TESTS=1
           export CORE070_PARITY_REQUIRED=1
           export GLLVM_PARITY_RECEIPT_DIR="$PWD/.unlazy/ci-parity-receipts"
