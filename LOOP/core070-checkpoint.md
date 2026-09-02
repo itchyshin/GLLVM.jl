@@ -2070,3 +2070,23 @@ mode, 38 same-name-different-surface API-alignment decisions, 5 fixture-
 engineering gaps (surface exists, no proven frozen-oracle pairing),
 remainder decision families. Nothing left that code alone converts.
 Suite3 watcher pending (last consolidated run: 12614 pass, canary-only).
+
+## Decision queue EXECUTED — 2026-09-01 (rounds 1-3, 12 decisions)
+
+All 12 maintainer decisions recorded (decisions/2026-09-01-*) and executed:
+nobs p·n adopted (+ latent select_lv crash fix); CLOGLOG PARITY DEFECT
+RESOLVED — it was OURS (cloglog fell through to :fisher curvature where TMB
+uses observed; one line, identity 2.099 -> 7.4e-12; famlinks batch fully
+green, row bound); estimands tier-scoped w/ level= (92/92); 6 API-collision
+renames + depwarn shims; fit_gaussian_structured public (docs cascade owed);
+phylo-transport design committed for review (hybrid: topology native,
+precision crosses the wire; 4 sub-questions pending); A6 Student-t GREEN at
+pinned df=6 (1e-4 paired; free-nu = R per-trait vs Julia shared, recorded
+structural divergence; nu-boundary now fails convergence); bulk triage: 83
+rows reclassified out per verified proposals (required set 533 -> 505,
+review table committed), 16 bound, invariant re-audited 0 free; plot family
+-> CairoMakie-later; ZI -> Julia-beyond (ADEMP array queued); Wald coverage
+campaign queued next. Both lanes PUSHED as draft PRs (GLLVM.jl#277,
+gllvmTMB#1236). LEDGER: 505 required = 285 bound + 220 dispositioned.
+Closing suite4 running. NEW alignment-family members found: R per-trait nu
+(student) and the wave-6/A6 dispersion-structure class.
