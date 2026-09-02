@@ -1,0 +1,12 @@
+zip 5 50
+zip 5 200
+zip 25 50
+zip 25 200
+zinb 5 50
+zinb 5 200
+zinb 25 50
+zinb 25 200
+zib 5 50
+zib 5 200
+zib 25 50
+zib 25 200
