@@ -216,3 +216,84 @@ The first invocation generates `a6-data.tsv` (deterministic, seed
 `a6-r-out.tsv`; the final, repeated Julia invocation performs the paired
 comparison and prints `CORE070_A6_STUDENTT_PAIRED_VERIFIED` (exit 0) or
 `CORE070_A6_STUDENTT_PAIRED_FAILED` with a per-quantity message list (exit 1).
+
+## Revision 2026-09-01b — Totoro finding: split into fixed (gating) + free (structural finding)
+
+The first Totoro run (`suite-run-01/a6-run`, logs `a6-1/2/3.log`) worked
+exactly as designed: gen and R both exited 0, and the compare step failed
+**honestly**, with a structural finding rather than a numeric near-miss. R's
+`student()` with `df = NULL` estimates a degrees-of-freedom parameter **per
+trait** (a length-5 vector); GLLVM.jl's default `disp_group = :shared` fits
+**one shared** degrees of freedom across all 5 traits. The two fits were
+never the same model, so the ~0.05-scale loading divergence the run measured
+was model-mismatch noise, not an engine defect — the same class of problem
+as "the NB2 benchmark's shared-r-vs-per-trait-phi lesson" the coordinator
+named.
+
+**Verified from the R readback, not assumed**: `R/gllvmTMB.R:167-168`
+documents this unconditionally — "The student() family fits one log-sigma
+and one log(df-1) per trait" — and `R/fit-multi.R:5317-5349` implements it
+(`dispersion_trait_family_mask` + `dispersion_trait_map` for both
+`log_sigma_student` and `log_df_student`, with an explicit per-trait
+`df_pin` loop when the user supplies a numeric `df`). This is genuine
+documented R behaviour, not a quirk. A second finding surfaced while
+verifying: **`sigma_student` is always per-trait in R, unconditionally** —
+passing a numeric `df` pins only `log_df_student` per trait
+(`R/fit-multi.R:5325-5342`), it does not collapse `sigma_student` to one
+shared value. This meant the obvious first fix (just add `nu = 6.0` on the
+Julia side, leaving `disp_group = :shared`) would still have mismatched
+`sigma` shape (Julia 1 value vs R 5 values) even after pinning `nu`.
+
+**The fix, in two parts** (`tools/core070_a6_studentt_fixture.R`,
+`tools/core070_a6_studentt_fixture.jl`):
+
+1. **New PRIMARY, GATING "fixed" case**: R fits
+   `student(link = "identity", df = 6)` (pins every trait's df at the
+   scalar 6); Julia fits
+   `fit_studentt_gllvm(Y; K = 1, nu = 6.0, disp_group = :species)` — the
+   `nu::Real` branch of `fit_studentt_gllvm` (`src/families/studentt.jl`,
+   "FAMILY-09-FIXED-SHAPE") pins `ν` at a single scalar identically to R's
+   `df` pin, and `disp_group = :species` gives per-trait `σ`, matching R's
+   unconditional per-trait `sigma_student`. This is now a genuinely
+   matched model on both sides. The one remaining shape difference is
+   cosmetic, not structural: Julia's fixed `ν` stays a single `Float64`
+   (nu is never per-trait when passed as a `Real`, regardless of
+   `disp_group`), while R's `report$df_student` is still a length-5 vector
+   (five identical entries, from the pin) — `_a6_compare` now broadcasts
+   the Julia scalar against every R per-trait entry rather than requiring
+   equal lengths. This "fixed" case alone determines the script's exit
+   code, at the same `1e-4` paired tolerance as before.
+2. **"free" case re-typed as a non-gating structural finding**: R fits
+   `student(link = "identity")` (its documented per-trait default); Julia
+   fits `fit_studentt_gllvm(Y; K = 1)` (its `disp_group = :shared`
+   default) — the SAME configuration as the original Totoro run, kept
+   deliberately unchanged per the coordinator's instruction. Both sides'
+   values (`loglik`, health, `nu`, `sigma`) are printed
+   (`_a6_report_free`, `CORE070_A6_STUDENTT_FREE_CASE_STRUCTURAL_FINDING`)
+   but never compared against a tolerance and never affect the exit code.
+   The contract JSON's new `dispersion_structure_finding` section records
+   the class of the problem and notes that `disp_group = :species` on the
+   Julia side *would* structurally match R's free-nu default — that is a
+   natural follow-up leaf, not built here, because round2-3 #11 asked to
+   keep the free-nu case as a recorded finding at its original
+   default-vs-default configuration, not to fix it into a second gating
+   case.
+
+**Local re-verification after the revision**: `Rscript -e 'parse(...)'` on
+the revised R script → parse OK (no live fit, per the maintainer's
+"do NOT try to run R locally" instruction). `julia -e 'Meta.parseall(...)'`
+on the revised Julia script → parse OK.
+`julia tools/core070_a6_studentt_fixture.jl --self-test` →
+`CORE070_A6_STUDENTT_SELF_TEST_OK rejected_mutations=10` (was 9; the
+self-test's synthetic pair was updated to the realistic per-trait-`sigma`/
+broadcast-`nu` "fixed"-case shapes, and one new mutation exercises the
+broadcast comparison path directly). End-to-end plumbing re-run with a
+fresh fixture and a hand-built stand-in R output (built from Julia's own
+real `disp_group = :species, nu = 6.0` fitted coordinates for the "fixed"
+case, plus a plausible independent row set for the "free" case): the
+generate phase, the R-not-run-yet soft-fail phase, the free-case
+non-gating report, and both the PASS and FAIL branches of the fixed-case
+comparison all exercised correctly. `test/test_studentt_boundary.jl` and
+`test/test_studentt_boundary_honesty.jl` re-run green (unaffected by this
+tooling-only revision — no change to `src/families/studentt.jl` in this
+round).
