@@ -18,6 +18,32 @@ page is the live **catch-up scoreboard** — where GLLVM.jl stands against the
 
 Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advantage.
 
+## What parity does NOT mean
+
+"Parity" on this page is **harness parity**, not **true parity**: agreement on
+small, toy fixtures (`p ≤ 5`, `n ≤ 150`), not agreement on a real-workflow
+acceptance case run end-to-end as a user would
+(`docs/dev-log/core070/true-parity-decision-map.md` §Destination).
+**First-order** receipts (log-likelihood at each optimum, cross-objective
+identity) exist for the batch of five paired families now entering
+second-order work — Gaussian, Poisson-log, Binomial-logit, Beta-logit,
+NB2-log (`second-order-parity-contract.md` §6). **Second-order** receipts
+(standard errors, the fixed-effect `vcov` block, Wald CI endpoints) exist
+only as a **5-cell toy pre-run** on those same families
+(`docs/dev-log/core070/second-order-prerun-2026-09-02.md`) — explicitly *not
+a parity claim*, no tolerance asserted or gated. **Realistic-size cells**
+(p ≥ 20, n ≥ 500) carry no receipts of either order yet. **Interval
+*coverage* is not part of parity** — it is a separate, Julia-only
+certification (the DRAC coverage campaign), not an R↔Julia comparison.
+
+The qualification claim itself is **one-directional**: R workflows against
+Julia, at the frozen `gllvmTMB` 0.7.0 oracle
+(`docs/dev-log/decisions/2026-09-02-maintainer-decisions-true-parity.md`).
+**Capabilities are tracked both ways**: what Julia has that R lacks is a
+written, tool-produced list (`tools/parity_ledger.py`; **FORWARD = 77**
+R exports with no Julia twin, **REVERSE = 82** Julia exports with no R
+twin, at the frozen oracle) — a record, not an obligation owed by this repo.
+
 ## Response families
 
 | Family | GLLVM.jl | Notes |
@@ -238,17 +264,25 @@ why the discrepancy went unnoticed. They differ everywhere else.
   `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`: TMB structurally
   differentiates the joint nll, so its log-det is observed for every family it
   ships, not a per-family exception).
-- **Still using the Fisher weight, by decision rather than oversight:** GP-1
-  (adjudicated 2026-08-28, Fisher retained — a minority of cells derail badly
-  under the observed weight) and `Binomial` at the **cloglog** link (the
-  diagnosed Laplace saturation pathology, check-log 2026-08-28). Nothing else
-  remains open. (NB2, Beta, NB1 and Student-t all flipped to observed
-  2026-08-27 on the curvature-adjudication campaign evidence — decision A;
-  Exponential's registry default was declared the same day.) A log-likelihood
-  from these two will not match `gllvmTMB` to machine precision. The Tweedie
-  **grouped** route (`fit_tweedie_gllvm_grouped`, per-species dispersion) also
-  stays Fisher — it carries no `hessian` selector at all, a recorded scope
-  limit rather than a curvature decision (see `docs/src/response-families.md`).
+- **Still using the Fisher weight, by decision rather than oversight:** only
+  **GP-1** (adjudicated 2026-08-28, Fisher retained — a minority of cells
+  derail badly under the observed weight; `src/families/laplace.jl:235`, no
+  per-family override in `src/families/gp1.jl`). A log-likelihood from GP-1
+  will not match `gllvmTMB` to machine precision. (NB2, Beta, NB1 and
+  Student-t all flipped to observed 2026-08-27 on the curvature-adjudication
+  campaign evidence — decision A; Exponential's registry default was
+  declared the same day.)
+- **Resolved since the last pass, not still open:** `Binomial` at the
+  **cloglog** link now defaults to `:observed`
+  (`_default_hessian(::Binomial, ::CLogLogLink) = :observed`,
+  `src/families/binomial.jl:95`; CONFIRMED 2026-09-01, maintainer decisions
+  round 1, item 2 — quadrature check matches R to 7.4e-12, `:fisher` was a
+  genuine Julia-side defect, not an R deviation). The Tweedie **grouped**
+  route (`fit_tweedie_gllvm_grouped`, per-species dispersion) was likewise
+  fixed 2026-08-28 and now threads the same `hessian::Symbol = :observed`
+  default through its log-det weight
+  (`src/families/grouped_dispersion.jl:1630-1633,1748-1750`), reducing
+  exactly to the shared Tweedie route under its own default when `G = 1`.
 - **Not a uniform improvement.** Against numerical quadrature, the observed
   curvature is decisively closer for Gamma (12/12 seeds, 20–60× smaller error)
   and for NB2 (87% of 150 curvature-adjudication campaign cells, 2026-08-27),
