@@ -88,6 +88,21 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **Core 0.7.0 + AGHQ: M2 complete + decision day executed (2026-09-02).**
+  Branch `codex/core070-aghq-20260830`, DRAFT PR #277 (Julia) + gllvmTMB DRAFT
+  PR #1236 (R bridge, green). Ledger 505 required = 285 bound + 220
+  dispositioned, 0 free (Rose-audited over 3 rounds; required set honestly
+  resized from 533 by maintainer-approved bulk triage). ~100 new surfaces
+  across 8 receipted conversion waves; all 12 maintainer decisions executed —
+  incl. the CLOGLOG parity defect resolved as OURS (Fisher-vs-observed
+  curvature; identity 2.099 -> 7.4e-12) and Student-t paired green at pinned
+  df. FIRST FULLY-GREEN SUITE: 13325 pass / 0 fail / 0 error. Compute: 10,000-fit
+  DRAC recovery campaign + Wald coverage 0.932-0.958 across 20 cells.
+  CARRIED-OVER: merge (maintainer must press), DRAC MFA re-auth (ZI campaign
+  queued), phylo-transport design awaiting review, frozen-R CI smoke advisory
+  (documented build-reproducibility finding), 8 prior-cycle acceptance ledgers
+  unmet. START HERE: docs/dev-log/handover/2026-09-02-claude-handover.md
+
 - **Full-parity campaign day (2026-08-28).** PR #273 (12 commits,
   branch `claude/lane-beyond-20260824`): the Fisher-vs-observed curvature
   fault class CLOSED (census `KNOWN_OPEN` empty; Tweedie+probit flipped,
