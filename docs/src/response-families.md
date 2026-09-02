@@ -1099,6 +1099,49 @@ probability), `:positive` / `:mean` (the value-part mean), and `:response` (the
 unconditional mean). `residuals` gives randomized-quantile (Dunn–Smyth) residuals
 under the correct two-part CDF.
 
+### ZIP / ZINB / ZIB — Julia-beyond, evidenced by recovery not parity
+
+`fit_zip_gllvm`, `fit_zinb_gllvm`, and `fit_zib_gllvm` are **Julia-beyond**
+capabilities: no `gllvmTMB` twin exists for any of the three at the frozen
+0.7.0 oracle, so there is nothing to run a parity comparison against (the
+maintainer has since decided the R side will gain `zip`/`zinb`/`zib` as
+native families, planned on the R side, no date set). The evidence backing
+these three fitters is therefore an **ADEMP simulation-based recovery**
+campaign, not a parity receipt
+(`docs/dev-log/core070/zi-ademp-recovery-findings.md`; K = 1 latent factor,
+intercept-only zero-inflation, i.e. `Λ_z = 0` by construction; 500 seeds per
+cell):
+
+| family | p | n | conv (n) | conv rate (MCSE) | βz bias mean/med | βz RMSE mean/med | βc bias mean/med | βc RMSE mean/med | Cerr med/p90 | fit_s med/max |
+|---|---|---|---|---|---|---|---|---|---|---|
+| zip  | 5  | 50  | 500/500 | 100.0% (0.00pp) | −1.213 / −0.342 | 2.834 / 0.901 | −0.177 / −0.173 | 0.467 / 0.455 | 1.245 / 2.035 | 1.09 / 4.69 |
+| zip  | 5  | 200 | 500/500 | 100.0% (0.00pp) | 0.001 / 0.056  | 0.486 / 0.356 | −0.033 / −0.032 | 0.179 / 0.173 | 0.466 / 0.774 | 4.19 / 10.11 |
+| zip  | 25 | 50  | **175/500** | **35.0% (2.13pp)** | −2.463 / −0.797 | 7.155 / 3.857 | −0.059 / −0.061 | 0.367 / 0.365 | 1.034 / 1.358 | 68.3 / 173.2 |
+| zip  | 25 | 200 | 481/500 | 96.2% (0.86pp) | 0.009 / 0.014  | 0.568 / 0.365 | 0.147 / 0.000 | 0.307 / 0.167 | 0.313 / 0.935 | 172.2 / 932.5 |
+| zinb | 5  | 50  | 500/500 | 100.0% (0.00pp) | −0.681 / 0.015 | 2.229 / 0.908 | −0.142 / −0.119 | 0.605 / 0.580 | 1.889 / 3.022 | 3.26 / 12.76 |
+| zinb | 5  | 200 | 496/500 | 99.2% (0.40pp) | −0.349 / 0.003 | 1.238 / 0.515 | −0.079 / −0.076 | 0.305 / 0.298 | 0.833 / 1.302 | 9.17 / 43.18 |
+| zinb | 25 | 50  | **350/500** | **70.0% (2.05pp)** | −0.981 / −0.419 | 4.457 / 3.487 | 0.009 / 0.004 | 0.468 / 0.458 | 1.483 / 1.906 | 129.8 / 373.7 |
+| zinb | 25 | 200 | 493/500 | 98.6% (0.53pp) | 0.237 / 0.131 | 0.493 / 0.448 | 0.262 / 0.036 | 0.434 / 0.239 | 0.435 / 0.951 | 162.3 / 1515.2 |
+| zib  | 5  | 50  | 500/500 | 100.0% (0.00pp) | 0.024 / 0.049 | 0.373 / 0.318 | −0.032 / −0.017 | 0.269 / 0.220 | 0.911 / 2.319 | 0.63 / 4.97 |
+| zib  | 5  | 200 | 500/500 | 100.0% (0.00pp) | 0.079 / 0.082 | 0.177 / 0.177 | 0.002 / 0.003 | 0.102 / 0.099 | 0.408 / 0.611 | 2.27 / 6.41 |
+| zib  | 25 | 50  | 500/500 | 100.0% (0.00pp) | −0.014 / −0.010 | 0.357 / 0.338 | −0.025 / −0.024 | 0.231 / 0.227 | 1.009 / 1.425 | 12.4 / 58.2 |
+| zib  | 25 | 200 | 500/500 | 100.0% (0.00pp) | 0.028 / 0.030 | 0.172 / 0.170 | −0.009 / −0.006 | 0.116 / 0.105 | 0.297 / 0.444 | 55.4 / 686.8 |
+
+**Small-n limitation, stated plainly.** `zib` recovers cleanly across the
+whole grid (100.0% convergence in all four cells). `zip` and `zinb` recover
+well except at the smallest-n/largest-p corner tested: **zip at p=25, n=50
+converges only 35.0% of the time**, and among the fits that do converge the
+zero-inflation intercept `βz` is badly biased (median −0.80, RMSE median
+3.86); **zinb at the same corner converges 70.0% of the time**, with a
+similarly degraded `βz`. The count/conditional part (`βc`) and the
+rotation-invariant loading crossproduct stay reasonable at that corner — the
+difficulty is concentrated in the zero-inflation intercept, not a global fit
+collapse. Treat `zip`/`zinb` at `p ≈ 25, n ≈ 50` as a documented limitation,
+not a supported capability. This campaign used K = 1 and intercept-only
+zero-inflation only, evaluated point-estimate bias/RMSE and the fitter's own
+convergence gate — **no coverage or SE evaluation was done**, so it says
+nothing about interval calibration for any of the three families.
+
 ## Extractors
 
 The same post-fit extractors (`communality`, `correlation`, `sigma_y_site`, …)
