@@ -2791,7 +2791,9 @@
   {
    "source_id": "family/FAMILY-01-CLOGLOG",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-FAMILY-01-CLOGLOG-NATIVE-MODEL"
+   ],
    "rationale": "Family descriptor decomposed into typed model/interface or boundary cases; fixture leads are not executable coverage.",
    "planned_case_ids": [
     "CORE070-FAMILY-01-CLOGLOG-NATIVE-MODEL",
@@ -2799,15 +2801,14 @@
     "CORE070-FAMILY-01-CLOGLOG-PUBLIC-R-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/family-required-case-plan.json",
-   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "family-links wave4 (attempt2)",
-    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-famlinks2 (+ attempt1 wave4-famlinks)",
-    "preservation_sha256": "c5dd4780bc07a4e5d256beb96b5ba05c8889c82d95801ad1537ac0ced3ad2719",
-    "detail": "CONFIRMED cross-engine likelihood disagreement for binomial cloglog: at R's fitted coordinates, Julia's objective is -309.9947 vs R's reported -307.8958 (identity delta 2.099), while the probit case on the same transport path shows identity delta 6.6e-12 \u2014 so this is a cloglog likelihood/marginalization implementation difference, not coordinate transport or an optimizer miss. Neither engine flags saturation (n_clamp=0, n_wcollapse=0). Julia's own optimum -309.3413; naive fit deltas: loglik 1.445, coef 0.0385.",
-    "suspects": "GLLVM cloglog Laplace-objective handling (see the 2026-08-28 cloglog saturation-region machinery in src/families/binomial.jl) vs the frozen TMB cloglog kernel; repair leaf owns the root cause",
-    "recommendation": "open a reviewed repair leaf: reproduce the identity gap on the retained fixture (seed 81012), bisect the per-cell contribution difference at R's coordinates",
-    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-famlinks2"
+    "batch": "family-links wave4 attempt4 (post cloglog curvature repair 26ebf0b6)",
+    "receipts": ".unlazy/core070-aghq/wave4-batches/wave4-famlinks4",
+    "preservation_tarball": ".unlazy/core070-aghq/wave4-batches/wave4-famlinks4.tar.gz",
+    "preservation_sha256": "adaa5dd2da545e7bc7b8438ec65041bbd86bdab1717b33d5ef24e4443708648a",
+    "verifier": "tools/core070_verify_family_links_batch.py (CORE070_FAMILY_LINKS_BATCH_VERIFIED 2, negatives 4)",
+    "defect_resolution": "the confirmed cross-engine cloglog likelihood disagreement (identity delta 2.099) was a JULIA defect \u2014 cloglog silently used :fisher curvature where TMB uses observed; fixed with _default_hessian(::Binomial, ::CLogLogLink)=:observed; identity delta now 7.4e-12",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/suite-run-01/wave4-famlinks4"
    }
   },
   {
@@ -2857,7 +2858,8 @@
     "preservation_sha256": "c5dd4780bc07a4e5d256beb96b5ba05c8889c82d95801ad1537ac0ced3ad2719",
     "detail": "probit case PASS: loglik_delta 1.28e-9, coef_delta 4.1e-6, no saturation; all 4 negative controls PASS; cross-objective identity at R coordinates 6.6e-12 (probe tools/probe_famlinks_identity.jl)",
     "caveat": "overall batch receipt.json status=FAIL solely because the sibling cloglog case is a confirmed cross-engine likelihood disagreement (dispositioned separately); the strict state verifier therefore refuses the whole state \u2014 the probit PASS is evidenced by results.tsv + julia-results.json in the retained tarball",
-    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-famlinks2"
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/tweedie-replay-01/wave4-famlinks2",
+    "upgrade": "wave4-famlinks4 (sha adaa5dd2da545e7bc7b8438ec65041bbd86bdab1717b33d5ef24e4443708648a) is fully green \u2014 the earlier FAIL-receipt caveat is obsolete"
    }
   },
   {
