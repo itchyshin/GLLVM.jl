@@ -16965,3 +16965,16 @@ After the full decision-queue execution (nobs p·n, cloglog curvature fix,
 tier-scoped estimands, 6 renames, public structure kwarg, A6 wiring):
 13315 passed, 5 failed (all the receipted phylo-poisson canary; zero
 non-canary), 0 errored, 8 broken. Zero regressions.
+
+## 2026-09-01 — suite5 (Totoro) at a9e22ef5: FULLY GREEN, first in the programme
+
+13325 passed, 0 failed, 0 errored, 8 broken (SUITE_EXIT=0, 67m38s). The
+phylo-poisson canary — red on every run of this programme — was repaired at
+the root: the profile-CI endpoint ok-gate required Optim's NelderMead
+converged flag, which flickers across adjacent calls at a sigma2_phy
+underflow boundary (~8e-308) while the DOMAIN criterion (constraint error
+~1.3e-5 vs 1e-3 tolerance, finite objective) held throughout. The gate now
+accepts a boundary refit that satisfies the domain criterion, mirroring the
+Tweedie :power_at_boundary and Student-t nu_boundary conventions, and
+records endpoint_boundary so acceptance is observable. A red-first test with
+an unreachable constraint_tol proves the gate still reports :failed.
