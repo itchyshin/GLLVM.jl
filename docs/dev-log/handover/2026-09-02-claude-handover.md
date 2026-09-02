@@ -21,7 +21,7 @@ retained receipt backs it; a red gate opens a diagnosis, never a gate edit.
 
 | repo | branch → main | CI | what shipped | plan by leverage |
 |---|---|---|---|---|
-| GLLVM.jl | `codex/core070-aghq-20260830` → main via **draft PR #277** | Documenter ✅ · 2 Ubuntu Julia jobs **in flight** · frozen-R smoke **advisory/failing (known, documented)** | M2 ledger complete + audited; ~100 new surfaces; 8 receipted conversion waves; 2 DRAC campaigns; 13 review defects repaired; **first fully-green suite (13 325 pass / 0 fail)** | 1) merge decisions 2) DRAC re-auth → ZI campaign 3) phylo design review 4) engine work |
+| GLLVM.jl | `codex/core070-aghq-20260830` → main via **draft PR #277** | Documenter ✅ · Julia jobs **never yet reached a verdict — all `cancelled` by subsequent pushes** (see Next Step 1) · frozen-R smoke **advisory/failing (known, documented)** | M2 ledger complete + audited; ~100 new surfaces; 8 receipted conversion waves; 2 DRAC campaigns; 13 review defects repaired; **first fully-green suite (13 325 pass / 0 fail)** | 1) merge decisions 2) DRAC re-auth → ZI campaign 3) phylo design review 4) engine work |
 | gllvmTMB | `claude/julia-bridge-expansion-20260901` → main via **draft PR #1236** | ✅ green | `engine="julia"` reachability: lognormal, truncated_poisson, betabinomial; structured-term gate (dep/indep/scalar + kernel) | maintainer API review, then merge |
 
 ## Current working state
@@ -100,10 +100,20 @@ plus additions to `formula.jl`, `confint_derived*.jl`, `confint_profile.jl`, `tw
 
 ## Next immediate steps (OWED — do these, in order)
 
-1. **Read the CI verdict** on the in-flight run and act:
-   `gh run view 33611435843 --json jobs -q '.jobs[]|"\(.name)\t\(.conclusion // .status)"'`
-   Two Ubuntu Julia jobs. If red, diagnose (the suite is green locally, so suspect CI-env
-   drift, not the engine); if green, the Julia lane is mergeable.
+1. **Read the CI verdict.** No Julia job has ever produced a verdict on this branch: every
+   one so far ended `cancelled`, because `cancel-in-progress` kills a ~2-3 h run whenever a new
+   commit lands — **including this handover's own final push**, which cancelled run
+   `33611435843` and started a fresh one. That fresh run has no further pushes behind it, so it
+   is the first that can finish. Find and read it:
+   ```sh
+   gh run list --branch codex/core070-aghq-20260830 --workflow CI.yml --limit 1 \
+     --json databaseId,status,conclusion
+   gh run view <id> --json jobs -q '.jobs[]|"\(.name)\t\(.conclusion // .status)"'
+   ```
+   Two Ubuntu Julia jobs (the matrix was trimmed from four OSes for exactly this reason). If
+   red, diagnose CI-environment drift first — the suite is **green locally** (13 325/0/0), so
+   the engine is not the suspect; if green, the Julia lane is mergeable.
+   **Do not push again while you want a verdict.**
 2. **Tell the maintainer the merge state.** Both PRs are DRAFT. **The authoring session could
    not press merge** (permission guard). PR #1236 (R lane) is green and ready.
 3. **DRAC re-auth is blocking the ZI campaign.** Narval's ControlMaster socket expired and the
