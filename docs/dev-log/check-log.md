@@ -17036,3 +17036,51 @@ pre-run). Not touched: diagnosis first, no tolerance or test edit. Advisory froz
 failed as documented. Both fix classes from the df7009b3 verdict are confirmed closed by
 this run (7 → 1 failures on 1.12.7, 7 → 0 on 1.10.12). Local docs commits pushed after the
 run concluded (f2223ac3..d4c6b44a).
+
+## 2026-09-02 — T14 fix set landed: F3 helper, F2 fixture, F1 dispersion_boundary + per-parameter Wald
+
+Implemented the maintainer-approved fix set from `core070/t14-nb2-wald-nan-diagnosis.md`,
+red-first, three engineering commits in root-cause order (F3, F2, F1) plus this docs
+commit, in the lane worktree (`codex/core070-aghq-20260830`):
+
+- **F3** (`98b9f0bb`, test-only): `_bx_ci_max_absdiff` (test/test_bridge_x.jl) now treats
+  `x == y` as zero difference before the NaN check, closing the `abs(Inf-Inf) = NaN`
+  helper bug that turned two engines agreeing on an unbounded CI into a spurious failure.
+- **F2** (`d1e61ea7`, test-only): seed 523's fixture is renamed and documented as the
+  explicitly-named degenerate case (two of three NB2 traits at the Poisson boundary); its
+  identity check tightened to `isfinite(d) && d == 0.0`. The fix-set's other ask — a
+  SEPARATE well-conditioned NB2 grouped-cov fixture verified on both Julia 1.12 and
+  1.10.12 — was searched for (scanned ~35,000 seeds total: 500-600, 1-33000, plus two
+  further 15,000-seed batches) and NOT found: ~190 seeds are well-conditioned
+  (`all(0.5 .<= r_group .<= 100)`, `pd_hessian == true`) on Julia 1.12 alone, and every one
+  of those, re-checked at the SAME seed on Julia 1.10.12, fails there. The two Julia
+  versions' well-conditioned seed sets for this exact 3-trait/n=70 fixture appear close to
+  disjoint (unpinned `Manifest.toml` resolving different Optim.jl/LineSearches.jl per
+  version, per the diagnosis doc, interacting with a genuinely near-degenerate
+  optimisation). Left out rather than forcing a seed that fails on one Julia version;
+  flagged for the maintainer.
+- **F1** (`4d2a5d84`, src + tests): `dispersion_boundary::Vector{Bool}` on
+  `NBGroupedFit`/`NBGroupedCovFit`/`NB1GroupedFit`/`NB1GroupedCovFit`/`BetaGroupedFit`/
+  `BetaGroupedCovFit`/`GammaGroupedFit`/`GammaGroupedCovFit` (threshold `[1e-6, 1e6]`,
+  mirrors `_studentt_nu_boundary`/`_TWEEDIE_XI_MAX`), `converged` forced `false` at the
+  boundary. `_family_wald` (`src/confint_family.jl`) now degrades per-parameter on a
+  non-PD joint Hessian instead of NaN-ing every entry: known-boundary parameters (plus,
+  if needed, any further direction via `_wald_boundary_indices`) are conditioned out; the
+  rest get finite bounds from the reduced sub-Hessian; `boundary_terms` names what was
+  conditioned out; `pd_hessian` keeps its existing meaning. `src/confint.jl` (the separate
+  Gaussian path) is deliberately untouched — `test/test_confint.jl`'s existing
+  `pd_hessian || all(isnan, lower)` assertion would contradict the same fix there; that is
+  a separate, maintainer-approved slice.
+
+**Verification, Julia 1.12.6 and 1.10.12 (`JULIA_NUM_THREADS=OPENBLAS_NUM_THREADS=1`),
+five affected files, both green on both versions**: `test/test_bridge_x.jl` 183/183;
+`test/test_confint.jl` 14/14; `test/test_se_machinery.jl` 1096/1096;
+`test/test_grouped_dispersion.jl` 20/20; `test/test_confint_family.jl` 296/296. A PD-fixture
+regression check (bit-identical pre/post-F1 output) was done via a temporary `git stash` of
+the two source files, run on both Julia versions, confirming the new per-parameter
+degradation branch is unreachable (and therefore a no-op) whenever the joint Hessian is
+already PD.
+
+Left out (reported, not silently dropped): the F2(a) well-conditioned cross-Julia-version
+seed (see above); the full suite (`Pkg.test()`) was not re-run in this slice — the
+orchestrator runs it separately.
