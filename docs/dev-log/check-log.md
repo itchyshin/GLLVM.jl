@@ -17154,3 +17154,37 @@ orchestrator runs it separately.
   All 7 files, 57/57 pass. Flipped the row to `implemented`
   (`docs/design/capability-status.md:264`); no summary-count table to update
   in that file (line 10: "counts derived at render time — never hand-typed").
+- **T12 grouping-levels design note** (`docs/dev-log/core070/t12-grouping-levels-design.md`):
+  read R's `unit`/`unit_obs`/`cluster`/`cluster2` semantics from the frozen
+  0.7.0 `gllvmTMB()` signature and docstrings (`R/gllvmTMB.R:80-141,596-599,637-640`)
+  and the crossed-vs-nested taxonomy (`docs/design/01-formula-grammar.md:569-596`,
+  `docs/design/04-random-effects.md:789-807`, origin/main), then read the Julia
+  surfaces that partially cover them (`src/families/row_effects.jl`,
+  `src/families/row_random.jl` — unit-level scalar intercept, fixed/random;
+  `src/twolevel.jl` — Gaussian-only nested unit/unit_obs two-tier decomposition).
+  Found: `unit`/`unit_obs` partial (Gaussian full, non-Gaussian scalar-only or
+  absent); `cluster` (as a non-species third axis) and `cluster2` entirely
+  missing; no Julia fitter accepts a named `unit=`/`unit_obs=`/`cluster=`/
+  `cluster2=` kwarg at all. Wrote a mapping table, a symbolic one-equation
+  linear predictor covering all four levels with an identifiability read
+  (AGENT-INFERRED), a 4-step sequenced build proposal with red-first test
+  sketches, and four open questions for the maintainer (naming, priority vs
+  phylo transport, `cluster`/`cluster2` scope, struct-collision with the
+  existing row-effect structs). No src/test edits.
+- **T8 AGHQ policy-row proposal** (`docs/dev-log/core070/t8-aghq-policy-rows-proposal.md`):
+  pulled the 22 `BLOCKED_SPEC_DEFECT` `aghq/` rows from
+  `required-source-case-map.json` via `jq`/python, then read the frozen R
+  source (`R/aghq-control.R`, `R/aghq-gate.R`, `R/fit-multi.R:6320-6400,9588-9611`)
+  to find the actual fit-time call site. Found the already-drafted `r_call`s in
+  `aghq-control-subset.json` all invoke internal `.`-prefixed helpers directly
+  (the defect itself) except `AGHQ-DEFAULT-OFF`'s `formals(gllvmTMBcontrol)$aghq`,
+  which is already public. Determined bindability by checking whether each row's
+  scenario can arise from a real fit's `family`/`n_traits`/`control$aghq` (14 rows:
+  yes, via a same-model public fit reading `fit$aghq$k`/`used`/`reason`) or only
+  from a hand-corrupted internal argument the production call site never produces
+  (8 rows — e.g. `n` is hard-coded `NA_integer_` at the one real call site,
+  `fit-multi.R:6365-6367`, so `AGHQ-POLICY-SITES-INDEPENDENT`'s `n=100000` test
+  exercises a dead parameter). Proposed reclassifying those 8 out of the required
+  set with reason "no public R surface" and asked the maintainer whether that
+  drops them from the AGHQ denominator (0/39 → 0/31) or needs a separate
+  non-parity bucket. No src/test edits.
