@@ -25,7 +25,9 @@ so no later session re-asks them. Companion map: `../core070/true-parity-decisio
 - *"Bring zip/zinb/zib to R."* → R gains the ZI trio natively; supersedes decision #12's "no R twin" on
   the R side only.
 - *"Both ways, for user-facing capabilities; the bridge stays R→Julia."* → compatible with decision 1
-  above: the claim runs one way, capabilities are tracked both ways.
+  above: the claim runs one way, capabilities are tracked both ways. **Confirmed directly the same
+  day as vault D-204** (Shinichi, drmTMB session: *"both ways for user-facing; keep the legacy
+  rewrite; file the issues"*); no longer relayed-only.
 
 Compute decisions of the day (plan v1): the ZI-trio ADEMP campaign runs on Totoro (Narval has no live
 socket; Nibi under a full-cluster maintenance reservation until 2026-09-03 08:00).
