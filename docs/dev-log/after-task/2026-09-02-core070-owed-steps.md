@@ -148,6 +148,8 @@ pre-run sampled only the cheapest cells, so the campaign's wall time was under-e
 
 ## 11. Team Learning
 
+**Memory receipt:** loaded before work — the repo LOAD-FIRST manifest (AGENTS.md), `lane_preflight.sh` (verdict pasted in the plan), the hub rules D-64 / D-139 / D-143 / D-201 via deterministic greps of `memory/DECISIONS.md`, the `compute-routing` skill (invoked, not paraphrased), `ultra-plan` + `unlazy`, and the brain query (`search_notes`, `search_all_projects`). What actually shaped the work: D-201 (validate on Totoro before queue time) and D-64 (no forced Duo) decided the compute relocation; D-139 produced the pre-run gate; the sister lane's true-parity map (D-202) and DRM.jl's `parity_ledger.py` were recalled first via `/ask-brain` and co-opted rather than re-scouted; a cross-team WHAT-WORKS entry was filed back to the vault (local commit) so the next agent recalls this routing. **Golden Set:** checked in scope — the known-mistake class was FAILURE-TAXONOMY #11 (compute ignored until reminded). `tools/memory_regression.py` is a transcript judge (FAIL/PASS/UNSURE on bad/good signatures); no transcript export was run, so no formal verdict is recorded. The good-signature evidence is in this report: the `compute-routing` skill was invoked at scope time, the campaign ran on Totoro after a D-139 pre-run, and the overrun was re-reported rather than hidden.
+
 A pre-run must sample the *most expensive* cell class, not the cheapest, or the D-139 estimate is fiction.
 A scout's "RE-BINDABLE" on one engine's tests is not a paired receipt — the verdict vocabulary must name the
 evidence class. Gate files must use `ID:` immediately after the checkbox; a parenthetical before the colon
@@ -155,7 +157,7 @@ silently breaks the checker (now known to be the legacy A5 defect). Rose verdict
 
 ## 12. Cross-Product Coverage
 
-Not covered (and not claimed): second-order parity beyond a 5-cell toy pre-run; realistic-size fixtures;
+This arc **does NOT cover** (and does not claim): second-order parity beyond a 5-cell toy pre-run; realistic-size fixtures;
 real-data acceptance runs (need PR #1236 merged + data access); the 76 required_core rows needing a Julia
 surface; AGHQ receipts (0/39); phylo transport code; spatial/slopes; the reverse (Julia-ahead) ports on
 the R side — owned by the gllvmTMB lane. Melissa plan-vs-actual: `plan-actual/2026-09-02-core070-true-parity.md`.
