@@ -4,6 +4,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      full_matrix:
+        description: 'Run macOS + Windows too (use before a release)'
+        type: boolean
+        default: false
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -14,13 +20,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Routine runs are Linux-only (LTS + current stable): the suite is now
+        # ~13k tests and takes hours per OS, so a 4-OS matrix on every push
+        # costs real money (macOS 10x, Windows 2x the Linux rate) and — with
+        # cancel-in-progress — rarely even finishes before the next push.
+        # macOS/Windows coverage runs on demand via workflow_dispatch with
+        # full_matrix=true, which is what a release needs.
         version: ['1.10', '1']     # LTS + current stable
         os: [ubuntu-latest]
-        include:
-          - version: '1'
-            os: macOS-latest
-          - version: '1'
-            os: windows-latest
+        include: ${{ (github.event_name == 'workflow_dispatch' && inputs.full_matrix) && fromJSON('[{"version":"1","os":"macOS-latest"},{"version":"1","os":"windows-latest"}]') || fromJSON('[]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
