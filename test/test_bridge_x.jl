@@ -72,9 +72,9 @@ end
 end
 
 # Simulate one-part responses with a covariate-driven mean (η = β + Xγ + Λz).
-function _bx_sim(family_marker, p, n, K, q; seed = 7, Ntrial = 1)
+function _bx_sim(family_marker, p, n, K, q; seed = 7, Ntrial = 1, nb_r = 8.0, intercept = 0.0)
     rng = Random.MersenneTwister(seed)
-    β = 0.3 .* randn(rng, p)
+    β = intercept .+ 0.3 .* randn(rng, p)
     γ = 0.6 .* randn(rng, q)
     Λ = 0.4 .* randn(rng, p, K)
     xs = [randn(rng, n) for _ in 1:q]
@@ -91,7 +91,7 @@ function _bx_sim(family_marker, p, n, K, q; seed = 7, Ntrial = 1)
             pr = 1 / (1 + exp(-η_ts))
             Y[t, s] = float(rand(rng, Binomial(Ntrial, pr)))
         elseif family_marker isa NegativeBinomial
-            r = 8.0; μ = exp(η_ts)
+            r = nb_r; μ = exp(η_ts)
             Y[t, s] = float(rand(rng, NegativeBinomial(r, r / (r + μ))))
         elseif family_marker isa Beta
             φ = 8.0; μ = clamp(1 / (1 + exp(-η_ts)), 1e-3, 1 - 1e-3)
@@ -367,6 +367,31 @@ end
         # `== 0.0` since bridge_fit calls the SAME `fit_nb_gllvm_grouped_cov` on
         # the same data) and, after F1, must carry the SAME `dispersion_boundary` /
         # `converged` verdict on both sides.
+        # T14 F2(a): the identity on a WELL-CONDITIONED NB2 fixture. The default
+        # generator (r = 8, mean counts ~1, n = 70) leaves the per-trait dispersion
+        # nearly unidentified — ~35,000 seeds gave no fixture well-conditioned on
+        # both Julia 1.10 and 1.12. Identification needs real overdispersion and
+        # larger means/n: r = 2, intercept 1.5 (mean counts ~4.5), n = 200. The
+        # conditioning is ASSERTED so a future drift fails with its reason.
+        @testset "negbinomial Wald (grouped_cov): well-conditioned fixture (T14 F2)" begin
+            Y, X = _bx_sim(NegativeBinomial(), 3, 200, 1, 1; seed = 523, nb_r = 2.0, intercept = 1.5)
+            Yi = round.(Int, Y)
+            oracle = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:3))
+            @test all(0.5 .<= oracle.r_group .<= 100)
+            @test !any(oracle.dispersion_boundary)
+            @test oracle.converged
+            nat = GLLVM.confint(oracle, Yi; method = :wald, X = X)
+            @test nat.pd_hessian
+            @test all(isfinite, nat.lower) && all(isfinite, nat.upper)
+            br = bridge_fit(; y = Y, family = "negbinomial", d = 1, X = X,
+                            options = Dict("ci_method" => "wald"))
+            @test br.ci_method == "wald"
+            @test any(==("gamma[1]"), br.ci_param_names)
+            d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
+                                   nat.term, nat.lower, nat.upper)
+            @test d < 1e-8
+        end
+
         @testset "negbinomial Wald (grouped_cov): seed-523 degenerate case (T14 F2)" begin
             Y, X = _bx_sim(NegativeBinomial(), 3, 70, 1, 1; seed = 523)
             Yi = round.(Int, Y)

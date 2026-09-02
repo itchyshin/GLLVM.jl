@@ -202,10 +202,11 @@ precedent; (d) no existing passing test's tolerance was widened.
 ## Ada verdict (2026-09-02, after independent verification)
 
 Verified by reading the code, not the child's summary: `test/test_bridge_x.jl:38-49` computes
-`abs(x - y)` for any non-NaN pair, so `Inf == Inf` yields `NaN`; `src/confint.jl:278-289` takes
-`inv(Hsym)` of the full symmetrised **ForwardDiff** Hessian (the pre-run's "finite-difference
-19×19" wording is wrong — it is AD), with no pseudo-inverse and no partition of boundary
-parameters; `src/confint.jl:330-334` exponentiates dispersion bounds, so a huge log-scale SE
+`abs(x - y)` for any non-NaN pair, so `Inf == Inf` yields `NaN`; `src/confint.jl:278-289` (Gaussian path) takes
+`inv(Hsym)` of the full symmetrised ForwardDiff Hessian, and the family/grouped route
+`src/confint_family.jl` (~:1931) uses a finite-difference joint Hessian (so the pre-run's
+"finite-difference 19×19" wording was right for that route; an earlier draft of this verdict
+said otherwise), in both cases with no pseudo-inverse and no partition of boundary parameters; `src/confint.jl:330-334` exponentiates dispersion bounds, so a huge log-scale SE
 becomes `Inf`; `Manifest.toml` is git-ignored (`.gitignore:1`), so CI resolves dependencies
 fresh each run.
 
