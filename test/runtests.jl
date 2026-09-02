@@ -38,6 +38,7 @@ using GLLVM
     include("test_fit_phylo.jl")
     include("test_families.jl")
     include("test_binomial_laplace.jl")
+    include("test_cloglog_likelihood.jl")
     include("test_aghq_grid.jl")
     include("test_aghq_adapt.jl")
     include("test_aghq_frozen.jl")

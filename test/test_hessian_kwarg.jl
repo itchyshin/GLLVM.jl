@@ -119,11 +119,17 @@ using GLLVM, Test, Random, Distributions
         # a probit fit is never silently desynchronised from a logit-only
         # analytic gradient.
         @test !(GLLVM.ProbitLink() isa GLLVM.LogitLink)
-        # cloglog stays :fisher (the diagnosed saturation pathology) — the
-        # selector still runs and differs when forced, it is simply not the
-        # default.
+        # cloglog ALSO flips to :observed (2026-09-01, maintainer decisions
+        # round 1 item 2 — confirmed Julia-side likelihood-value defect vs
+        # R/gllvmTMB at fixed coordinates; see
+        # docs/dev-log/core070/cloglog-leaf-notes.md). The 2026-08-28
+        # optimizer-runaway pathology was measured under BOTH curvature
+        # selectors and is unaffected by this default.
         bc0 = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.CLogLogLink())
+        bco = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.CLogLogLink(), hessian = :observed)
+        @test bc0.loglik == bco.loglik                                  # default IS :observed for cloglog
         bcf = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.CLogLogLink(), hessian = :fisher)
-        @test bc0.loglik == bcf.loglik                                  # default IS :fisher for cloglog
+        @test bcf.converged && isfinite(bcf.loglik)
+        @test abs(bcf.loglik - bco.loglik) > 1e-6                       # genuinely different, selector still reachable
     end
 end

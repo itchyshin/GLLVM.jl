@@ -43,14 +43,18 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         # docs/dev-log/decisions/2026-08-28-arc-decision-batch.md): TweedieED/log
         # and Binomial/probit both flip to :observed — TMB/gllvmTMB structural
         # parity (TMB differentiates the joint nll, so its log-det is observed
-        # for every family it ships). Binomial/cloglog is explicitly EXCLUDED —
-        # the diagnosed Laplace saturation pathology (check-log 2026-08-28) — and
-        # stays :fisher; it is not asserted here because Poisson/log above
-        # already pins a trait-true :fisher default and this file must not grow
-        # a THIRD "stays :fisher" pin whose only job is to encode a name.
+        # for every family it ships).
         @test GLLVM._default_hessian(GLLVM.TweedieED(1.2, 1.5), GLLVM.LogLink()) === :observed
         @test GLLVM._default_hessian(Binomial(), GLLVM.ProbitLink()) === :observed
-        @test GLLVM._default_hessian(Binomial(), GLLVM.CLogLogLink()) === :fisher
+        # Binomial/cloglog flips to :observed too (2026-09-01, maintainer
+        # decisions round 1 item 2): at R's fitted coordinates on the retained
+        # seed-81012 fixture, Julia's :fisher marginal disagreed with
+        # R/gllvmTMB by 2.0988510... nats, and exact quadrature confirms
+        # :observed is the correct curvature (matches R to 7.4e-12; see
+        # docs/dev-log/core070/cloglog-leaf-notes.md). The 2026-08-28
+        # optimizer-runaway pathology (check-log same date) was measured under
+        # BOTH curvature selectors, so it does not bear on this default.
+        @test GLLVM._default_hessian(Binomial(), GLLVM.CLogLogLink()) === :observed
     end
 
     @testset "invalid selector fails loud" begin

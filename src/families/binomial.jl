@@ -67,6 +67,33 @@ _glm_obs_weight(f::Binomial, μ, n, me, y, link::ProbitLink, η) =
     me^2 * (y / μ^2 + (n - y) / (one(μ) - μ)^2)
 _default_hessian(::Binomial, ::ProbitLink) = :observed
 
+# CLogLogLink is non-canonical (like ProbitLink): observed ≠ Fisher pointwise,
+# so it needs the same treatment. No hand-coded `_glm_obs_weight` override is
+# supplied here — the generic nested-ForwardDiff fallback in
+# `families/laplace.jl` (`_glm_obs_weight(family, μ, n, me, y, link::Link, η)`)
+# already computes the correct observed curvature for cloglog; adding a
+# closed-form override is optional future work, not required for correctness.
+#
+# CONFIRMED (2026-09-01, maintainer decisions round 1, item 2 —
+# `docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md`): at R's
+# fitted coordinates on the seed-81012 retained fixture, Julia's `:fisher`
+# marginal disagreed with R/`gllvmTMB`'s value by 2.0988510... nats. Exact
+# quadrature of the Bernoulli-cloglog Laplace integral at the largest-gap site
+# confirms `:observed` is the correct curvature (|gap to quadrature| =
+# 0.0099 vs `:fisher`'s 0.1081, an ~11× improvement) and matches R to
+# 7.4e-12. R/TMB differentiates its coded joint negative log-density via AD,
+# which is definitionally the observed Hessian — TMB never substitutes the
+# Fisher/expected information. `:fisher` was a genuine Julia-side defect, not
+# an R deviation. See `docs/dev-log/core070/cloglog-leaf-notes.md` for the
+# full diagnosis (ground-truth evidence, per-site gap decomposition,
+# probe outputs) and its relationship to the SEPARATE 2026-08-28
+# optimizer-runaway finding below (`_laplace_saturation_health` /
+# `LaplaceSaturationHealth`): that pathology was measured under BOTH
+# curvature selectors, so it is not a reason to keep `:fisher` as the
+# marginal-likelihood default — the saturation guard, not a wrong-by-default
+# likelihood value, is the correct place to police that runaway.
+_default_hessian(::Binomial, ::CLogLogLink) = :observed
+
 # Binomial-default convenience methods (back-compat: family ⇒ Binomial()), used
 # by getLV(::BinomialFit) and the Binomial tests.
 _laplace_mode(y::AbstractVector, n::AbstractVector, Λ::AbstractMatrix,
@@ -307,9 +334,12 @@ initial latent scores on `X_lv`.
 Fisher-scored. Default: canonical logit — the two coincide (`:fisher`).
 Probit defaults to `:observed` (changed 2026-08-28, maintainer decision — TMB/
 `gllvmTMB` parity, see `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`).
-Cloglog stays `:fisher` (the diagnosed Laplace saturation pathology, see
-check-log 2026-08-28 — a deliberate exception, not an oversight). Omitting the
-kwarg is exactly the default-path behaviour for every link.
+Cloglog ALSO defaults to `:observed` (changed 2026-09-01, maintainer decisions
+round 1 item 2 — a confirmed Julia-side likelihood-value defect against R,
+not the 2026-08-28 optimizer-runaway pathology, which was measured under
+BOTH curvature selectors and is unaffected by this default; see
+`docs/dev-log/core070/cloglog-leaf-notes.md`). Omitting the kwarg is exactly
+the default-path behaviour for every link.
 """
 function _fit_binomial_gllvm_laplace(Y::AbstractMatrix; K::Integer,
         link::Link = LogitLink(),
