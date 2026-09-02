@@ -294,7 +294,7 @@ using Distributions: Poisson
         @test_throws ArgumentError tmbprofile_wrapper(fit_masked, 1; y = y)
     end
 
-    @testset "profile_targets batches tmbprofile_wrapper" begin
+    @testset "profile_curve_targets batches tmbprofile_wrapper (+ deprecated shim)" begin
         rng = MersenneTwister(6)
         p, n, K = 3, 100, 1
         Λtrue = randn(rng, p, K)
@@ -303,7 +303,8 @@ using Distributions: Poisson
         y = Λtrue * z' .+ σ_eps .* randn(rng, p, n)
         fit = fit_gaussian_gllvm(y; K = K)
 
-        out = profile_targets(fit, ["sigma_eps"]; y = y, max_expand = 10)
+        @test_deprecated GLLVM.profile_targets(fit, ["sigma_eps"]; y = y, max_expand = 10)
+        out = profile_curve_targets(fit, ["sigma_eps"]; y = y, max_expand = 10)
         @test haskey(out, "sigma_eps")
         direct = tmbprofile_wrapper(fit, "sigma_eps"; y = y, max_expand = 10)
         @test out["sigma_eps"].lower === direct.lower ||

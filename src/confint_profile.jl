@@ -556,7 +556,7 @@ end
 # away, and returns the sorted trace alongside the reduced bound (obtained
 # by simply calling `profile_ci` — no need to duplicate the root-finding
 # root-finding logic, since only the CURVE was the missing surface, not the
-# bound). `profile_targets` batches this over several parameters;
+# bound). `profile_curve_targets` batches this over several parameters;
 # `profile_phylo_signal` is the phylo_unique-scoped convenience form — see
 # its docstring for the honest scope note (packed `sigma_phy[t]`, not the
 # composite H²-like `phylo_signal(fit)[t]` derived quantity).
@@ -706,7 +706,7 @@ tmbprofile_wrapper(fit::GllvmFit, parm::Symbol; kwargs...) =
     tmbprofile_wrapper(fit, String(parm); kwargs...)
 
 """
-    profile_targets(fit::GllvmFit, targets=nothing; kwargs...)
+    profile_curve_targets(fit::GllvmFit, targets=nothing; kwargs...)
         -> Dict{String, NamedTuple}
 
 Batch curve wrapper: calls [`tmbprofile_wrapper`](@ref) for every entry of
@@ -728,7 +728,7 @@ which is the honest failure mode.
 `kwargs` (in particular `y`, and `X`/`Σ_phy` if the fit used them) are
 forwarded verbatim to every `tmbprofile_wrapper` call.
 """
-function profile_targets(fit::GllvmFit, targets::Union{Nothing, AbstractVector} = nothing;
+function profile_curve_targets(fit::GllvmFit, targets::Union{Nothing, AbstractVector} = nothing;
                          kwargs...)
     terms, _ = _profile_all_term_names(fit)
     targs = targets === nothing ? collect(1:length(terms)) : targets
@@ -764,4 +764,16 @@ function profile_phylo_signal(fit::GllvmFit, t::Integer; kwargs...)
     1 ≤ t ≤ fit.model.p ||
         throw(ArgumentError("t = $t out of range 1:$(fit.model.p)"))
     return tmbprofile_wrapper(fit, "sigma_phy[$t]"; kwargs...)
+end
+
+"""
+    profile_targets(args...; kwargs...)
+
+Deprecated forwarding shim: renamed to [`profile_curve_targets`](@ref) per
+maintainer decision round2-3 #5 (the name `profile_targets` is reserved for a
+future mirror of R's readiness-registry surface, a different function).
+"""
+function profile_targets(args...; kwargs...)
+    Base.depwarn("profile_targets is renamed to profile_curve_targets; the name profile_targets is reserved for a future R-mirroring readiness-registry surface", :profile_targets)
+    return profile_curve_targets(args...; kwargs...)
 end
