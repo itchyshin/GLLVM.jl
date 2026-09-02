@@ -69,14 +69,14 @@ Everything below is a lead for the R lane to verify against R `origin/main`; not
 
 ## Summary counts
 
-- **A (silent behavior):** 5
-- **B (adapter gate):** 10
+- **A (silent behavior):** 4 (the cloglog item was removed — it was a Julia defect)
+- **B (adapter gate):** 11
 - **C (0.7.0 vs 0.7.1):** 3
 - **D (fragile oracle health):** 3
 - **E (API collisions that are R inconsistencies):** 6
 - **F (R-side ACC classes):** 8
 
-**Total: 35 findings**
+**Total: 35 leads** (recounted by group after removing the misfiled cloglog item; the scout's own summary had under-counted group B)
 
 ---
 

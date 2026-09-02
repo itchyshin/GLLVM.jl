@@ -40,7 +40,7 @@ identical to the sbatch mapping) launched 11:57:07Z under GNU parallel `-j 120` 
 p=25 cells fit at ~110 s per fit (zip, n=50) vs 1.6 s at p=5, so the second wave (100 chunks) runs
 1–3 h beyond the 40–60 min estimate. Not killed: the run sits inside the approved envelope (≤ 120 cores,
 now 100), and killing would discard finished work. State at 12:20Z: 140/240 chunks complete, 0 non-zero
-exits, 240 CSVs open. **Run ended 14:06:54Z (2 h 10 m wall): 240/240 chunks, 0 non-zero exits, 240 CSVs, 6 000 fit rows, 0 error rows** (watch task output: `joblog rows 240 · nonzero exit 0 · csv files 240 · data rows 6000 · error rows 0`). ADEMP summary `core070/zi-ademp-recovery-findings.md` (raw CSVs + joblog under `core070/zi-ademp-out/`): convergence 100 % for zib in all four cells and for zip/zinb at p=5; at p=25, n=50 zip converges **35.0 %** (175/500, MCSE 2.1 pp; among converged fits βz bias median −0.80, RMSE median 3.86 — the worst cell on the grid) and zinb 70.0 %; at p=25, n=200 zip 96.2 %, zinb 98.6 %. Recorded as a small-n limitation of intercept-only zero-inflation at p=25, not a capability; no coverage or SE evaluated; no R twin exists (decision #12).
+exits, 240 CSVs open. **Run ended 14:06:54Z (2 h 10 m wall): 240/240 chunks, 0 non-zero exits, 240 CSVs, 6 000 fit rows, 0 error rows** (watch task output: `joblog rows 240 · nonzero exit 0 · csv files 240 · data rows 6000 · error rows 0`). ADEMP summary `core070/zi-ademp-recovery-findings.md` (raw CSVs + joblog under `core070/zi-ademp-out/`): convergence 100 % for zib in all four cells; at p=5 zip 100 % in both cells, zinb 100 % (n=50) and 99.2 % (n=200); at p=25, n=50 zip converges **35.0 %** (175/500, MCSE 2.1 pp; among converged fits βz bias median −0.80, RMSE median 3.86 — the worst cell on the grid) and zinb 70.0 %; at p=25, n=200 zip 96.2 %, zinb 98.6 %. Recorded as a small-n limitation of intercept-only zero-inflation at p=25, not a capability; no coverage or SE evaluated; no R twin exists (decision #12).
 
 **Owed step 4 — phylo transport.** `core070/phylo-transport-questions-2026-09-02.md`: Q1 estimand
 convention (recommend opt-in `correlation=true`, bridge always sets it), Q2 dense `vcv=` (admit, ship the
@@ -55,7 +55,7 @@ second-order scope = SE + fixed-effect vcov block + Wald endpoints; go). Knowabl
 re-bind check of the 8 PARTIAL_PARITY_DEFECT rows (`core070/parity-defect-rebind-2026-09-02.md`: 4
 extract_* rows LIKELY-FIXED on Julia tests only, 3 nobs rows + loading_profile need a paired batch or an
 estimand decision — no row re-bound); R-side defect leads for the gllvmTMB lane
-(`core070/r-side-defects-2026-09-02.md`, 34 leads, cloglog item removed as ours); second-order parity
+(`core070/r-side-defects-2026-09-02.md`, 35 leads by recount — A 4 · B 11 · C 3 · D 3 · E 6 · F 8; the cloglog item removed as ours; the peer message said 34, corrected here); second-order parity
 contract DRAFT (`core070/second-order-parity-contract.md`, tolerances proposed for signature — see §10);
 se=TRUE pre-run on Totoro (`core070/second-order-prerun-2026-09-02.md`: four families agree — max relative ΔSE on the β block: gaussian 1.02e-06 (σ_eps only), poisson 5.83e-06, binomial 4.49e-06, beta 2.22e-06; vcov block relative Frobenius 6.46e-06 / 1.09e-05 / 7.76e-06 / 5.98e-06; NB2 could not produce SEs on the Julia side: `confint` hit a `SingularException` on the joint 19×19 finite-difference Hessian at a degenerate huge-dispersion optimum while R's `sdreport()` returned finite SEs except the two boundary-trait `log_phi` entries — a numbered finding with a hypothesis, nothing tuned; all cells p=5, n≤80, unmatched coordinates);
 both-direction parity-ledger tool (`tools/parity_ledger.py`, `core070/parity-ledger-run-2026-09-02.md`:
@@ -94,8 +94,8 @@ no tolerance, no CI file touched. Remote: Totoro `core070-aghq-20260830/zi-ademp
 - `python3 tools/core070_ledger_counts.py …` → `TOTAL=769 … REQUIRED=505 BOUND=285 DISPOSITIONED=220 FREE=0`.
 - `gate-check.mjs --reverify` (root = worktree): leaf-recount 2/2, leaf-map 2/2, leaf-rebind 2/2,
   leaf-rdefects 2/2 (manual gates with recorded evidence); leaf-contract 3/3 (CT-G2 failed once because the draft never spelled out "standard error"; the author expanded the acronym, the gate was not loosened), leaf-tool 2/2 (CHECK flag corrected from a guessed `--julia` to the tool's actual `--root`; same measurement), leaf-prerun 2/2;
-  leaf-close **CLOSE_GATES_PLACEHOLDER**.
-- Owed-steps ledger `.unlazy/core070-owed-20260902/`: **OWED_GATES_PLACEHOLDER**.
+  leaf-close 1/1 met + CL-G1 ABANDONED with reason (the no-push invariant was superseded by the maintainer-approved single push) — all 8 true-parity leaves ALL MET.
+- Owed-steps ledger `.unlazy/core070-owed-20260902/`: leaf-ci 2/2, leaf-zi 3/3, leaf-report 1/1 + RPT-G2 ABANDONED (same reason) — ALL MET. Tallies measured with `gate-check.mjs --root <worktree> --status` on all 11 leaves at close.
 
 ## 6. Tests of the Tests
 
@@ -116,7 +116,8 @@ no tolerance, no CI file touched. Remote: Totoro `core070-aghq-20260830/zi-ademp
 | 3 | Fisher-retained family list in `docs/src/gllvmtmb-parity.md` §Honest gaps is stale: source shows Binomial-cloglog (`src/families/binomial.jl:95`) and the Tweedie grouped route flipped to `:observed` on 2026-09-01; only GP-1 remains Fisher | open — docs cascade owed (Rose principle: check every neighbour of that section) |
 | 4 | 4 extract_* defect rows need a paired re-run on the frozen oracle before re-binding | open — next arc |
 | 5 | 3 nobs rows need `postfit-policy-batch-01` paired on Totoro; `loading_profile` needs an estimand-scope decision | open |
-| 6 | Owner requirements relayed via the gllvmTMB lane (grouping levels on both engines; ZI trio to R; capabilities both ways) | recorded as RELAYED; **maintainer to confirm directly** |
+| 6 | Owner requirements relayed via the gllvmTMB lane: grouping levels on both engines; ZI trio to R | recorded as RELAYED; **maintainer to confirm directly** |
+| 6b | "Capabilities both ways for user-facing; bridge one-way" | **confirmed** the same day as vault D-204 (Shinichi in the drmTMB session); cited in the map and the decision record |
 | 7 | Legacy `.unlazy/core070-aghq` ledgers: 8 unmet, `leaf-A5.md:25` parse defect | carried over, untouched |
 
 ## 8. Consistency Audit
@@ -150,7 +151,7 @@ pre-run sampled only the cheapest cells, so the campaign's wall time was under-e
 A pre-run must sample the *most expensive* cell class, not the cheapest, or the D-139 estimate is fiction.
 A scout's "RE-BINDABLE" on one engine's tests is not a paired receipt — the verdict vocabulary must name the
 evidence class. Gate files must use `ID:` immediately after the checkbox; a parenthetical before the colon
-silently breaks the checker (now known to be the legacy A5 defect). Rose verdict (S9): **ROSE_PLACEHOLDER**.
+silently breaks the checker (now known to be the legacy A5 defect). Rose verdict (S9, claim-vs-evidence audit of this report): **BLOCKERS — 3, all repaired before commit**: (1) zinb p=5,n=200 is 99.2 %, not 100 % — wording fixed; (2) the report said 34 leads and the file's summary 35 — a per-group recount gives 35 (group B has 11, the scout's summary said 10); both now say 35; (3) the D-204-confirmed direction rule was lumped with the two still-relayed requirements — split into issues 6 and 6b. Audit file: session scratchpad `rose-audit.md`; every numeric claim in §2 and §5 was checked against its artifact.
 
 ## 12. Cross-Product Coverage
 

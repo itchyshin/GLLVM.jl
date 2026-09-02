@@ -2108,3 +2108,17 @@ Re-bind check: 4 extract_* rows likely fixed (Julia tests only), 4 need a paired
 or a decision. 34 R-side leads handed to the gllvmTMB lane. Cross-lane page from
 drmTMB2 acknowledged: no contradictions. In flight: second-order contract, se=TRUE
 pre-run (Totoro, 5 toy cells), parity_ledger.py port.
+
+## Close — 2026-09-02 (Claude): verdict read, campaign done, fixes pushed once
+
+CI 33622687447 on df7009b3 concluded red on both Julia jobs (13360/7 on 1.10.12,
+13362/8 on 1.12.7): six deprecation-shim wordings vs `@test_deprecated` (silently
+skipped locally without --depwarn=yes), one 1e8-offset phylo fixture at rtol 1e-9, and
+one open NB2 grouped-cov Wald NaN on 1.12.7 (T14). Maintainer chose apply + push once:
+fix verified locally with --depwarn=yes on 1.12.6 and 1.10.12 (1211/0 each), pushed
+df7009b3..f2223ac3 (9 commits); post-fix run 33643764358 monitored. ZI-trio ADEMP
+campaign finished on Totoro 14:06Z (6000 fits, 0 errors; zip p=25 n=50 converges 35 %).
+Vault D-204 confirms capability parity both ways for user-facing surfaces. Ledgers:
+11 leaves ALL MET (2 gates ABANDONED with reasons). Rose audit: 3 wording blockers,
+repaired. Next arc: sign the second-order tolerances (T3), realistic-size grid (T4),
+NB2 second-order health (T14), acceptance runs after #1236 merges (T7).
