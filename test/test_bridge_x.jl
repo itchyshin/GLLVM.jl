@@ -359,7 +359,15 @@ end
             end
         end
 
-        @testset "negbinomial Wald (grouped_cov)" begin
+        # T14 (docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md): seed 523 is a
+        # KNOWN degenerate fixture — two of three traits fit at the NB2->Poisson
+        # boundary (r_group ~ 1e9-1e20 depending on environment). It is kept here,
+        # explicitly named, as the degenerate-pattern case: native and bridge must
+        # agree (same NaN/Inf positions via the F3 helper fix; `d` finite, and
+        # `== 0.0` since bridge_fit calls the SAME `fit_nb_gllvm_grouped_cov` on
+        # the same data) and, after F1, must carry the SAME `dispersion_boundary` /
+        # `converged` verdict on both sides.
+        @testset "negbinomial Wald (grouped_cov): seed-523 degenerate case (T14 F2)" begin
             Y, X = _bx_sim(NegativeBinomial(), 3, 70, 1, 1; seed = 523)
             Yi = round.(Int, Y)
             oracle = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:3))
@@ -370,7 +378,8 @@ end
             @test any(==("gamma[1]"), br.ci_param_names)
             d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
                                    nat.term, nat.lower, nat.upper)
-            @test d < 1e-8
+            @test isfinite(d)
+            @test d == 0.0
         end
 
         @testset "beta Wald (grouped_cov)" begin
