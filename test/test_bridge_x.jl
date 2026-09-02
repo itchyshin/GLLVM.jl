@@ -380,6 +380,12 @@ end
                                    nat.term, nat.lower, nat.upper)
             @test isfinite(d)
             @test d == 0.0
+            # this fixture is confirmed degenerate on THIS environment: at least
+            # one group is at the boundary, and native/bridge share that verdict
+            # (bridge_fit calls the identical fitter, so this is not a coincidence).
+            @test any(oracle.dispersion_boundary)
+            @test oracle.converged == false
+            @test br.converged == oracle.converged
         end
 
         @testset "beta Wald (grouped_cov)" begin

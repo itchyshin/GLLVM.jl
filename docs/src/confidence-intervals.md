@@ -57,8 +57,25 @@ The Hessian of the negative Laplace log-likelihood is formed by **central finite
 differences** at the MLE (the Laplace inner mode-finder is not forward-AD-
 friendly, matching how the fitters themselves are optimised), then inverted for
 the asymptotic covariance; `lower/upper = θ̂ ± z·SE`. Returns an extra
-`pd_hessian::Bool` flagging whether the observed information was positive
-definite. Cheapest method; assumes approximate normality on the working scale.
+`pd_hessian::Bool` flagging whether the FULL joint observed information was
+positive definite. Cheapest method; assumes approximate normality on the
+working scale.
+
+**Per-parameter degradation at a boundary (T14 F1, 2026-09-02).** If the joint
+Hessian is not PD — a grouped NB2/NB1/Beta/Gamma dispersion parameter at its
+`dispersion_boundary` (the Poisson / near-Bernoulli / near-deterministic
+limit), or any other numerically flat direction — `pd_hessian` stays `false`,
+but the CI no longer NaNs *every* parameter. The known-boundary parameters
+(plus any further direction needed for the remaining sub-Hessian to pass a
+positive-definiteness check) are conditioned out; the rest of the parameters
+(β, γ, Λ, and any non-boundary dispersion) get finite bounds from that reduced
+Hessian's inverse. The extra `boundary_terms::Vector{String}` names exactly
+which terms were conditioned out (empty when `pd_hessian == true`). This
+mirrors R's `sdreport()`, which NaNs only the degenerate block rather than the
+whole covariance matrix. Note this per-parameter degradation applies to the
+family/grouped-dispersion route (`confint(fit::_CIFit, Y; ...)`,
+`src/confint_family.jl`); the Gaussian path (`confint(fit::GllvmFit; ...)`,
+`src/confint.jl`) is unchanged and still reports all-NaN on a non-PD Hessian.
 
 ### Profile likelihood — `method = :profile`
 

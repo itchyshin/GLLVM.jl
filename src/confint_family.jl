@@ -52,6 +52,11 @@ const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, _GroupedDis
 #   kinds    — :linear (β, Λ) or :log (a log-scale dispersion: r / φ / α)
 #   simulate — rng -> Yᵇ (a fresh parametric draw from the fitted model)
 #   refit    — Yᵇ -> working vector θ̂ᵇ (or `nothing` on refit failure)
+#   boundary — per-parameter KNOWN-boundary flag (T14 F1, 2026-09-02): true at
+#              positions carried over from a fit's own `dispersion_boundary`
+#              (grouped NB2/NB1/Beta/Gamma). Defaults to all-`false` via the
+#              6-arg constructor below, so every pre-existing `_FamilyCI(...)`
+#              call site is unaffected.
 # ---------------------------------------------------------------------------
 struct _FamilyCI
     θ::Vector{Float64}
@@ -60,7 +65,11 @@ struct _FamilyCI
     kinds::Vector{Symbol}
     simulate::Function
     refit::Function
+    boundary::Vector{Bool}
 end
+
+_FamilyCI(θ, nll, names, kinds, simulate, refit) =
+    _FamilyCI(θ, nll, names, kinds, simulate, refit, falses(length(θ)))
 
 # Shared GLM term names: β[t] for t in 1:p, then Λ[i,k] in pack_lambda order.
 _glm_lin_names(p::Integer, K::Integer) =
@@ -422,7 +431,8 @@ function _family_ci(fit::NBGroupedFit, Y::AbstractMatrix;
     end
     names = _grouped_dispersion_names(p, K, "r", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + rr), fit.dispersion_boundary)   # T14 F1: trailing G entries are r[1..G]
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::NB1GroupedFit, Y::AbstractMatrix;
@@ -466,7 +476,8 @@ function _family_ci(fit::NB1GroupedFit, Y::AbstractMatrix;
     end
     names = _grouped_dispersion_names(p, K, "phi", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + rr), fit.dispersion_boundary)   # T14 F1: trailing G entries are phi[1..G]
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::BetaGroupedFit, Y::AbstractMatrix;
@@ -510,7 +521,8 @@ function _family_ci(fit::BetaGroupedFit, Y::AbstractMatrix;
     end
     names = _grouped_dispersion_names(p, K, "phi", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + rr), fit.dispersion_boundary)   # T14 F1: trailing G entries are phi[1..G]
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 # --- Grouped dispersion + shared site-X (NB2 / Beta API B under X) ---------
@@ -570,7 +582,8 @@ function _family_ci(fit::NBGroupedCovFit, Y::AbstractMatrix;
                  _confint_lambda_term_names("Lambda", p, K),
                  ["r[$g]" for g in 1:G])
     kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + q + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::NB1GroupedCovFit, Y::AbstractMatrix;
@@ -629,7 +642,8 @@ function _family_ci(fit::NB1GroupedCovFit, Y::AbstractMatrix;
                  _confint_lambda_term_names("Lambda", p, K),
                  ["phi[$g]" for g in 1:G])
     kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + q + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::BetaGroupedCovFit, Y::AbstractMatrix;
@@ -688,7 +702,8 @@ function _family_ci(fit::BetaGroupedCovFit, Y::AbstractMatrix;
                  _confint_lambda_term_names("Lambda", p, K),
                  ["phi[$g]" for g in 1:G])
     kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + q + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::BetaBinomialGroupedFit, Y::AbstractMatrix;
@@ -846,7 +861,8 @@ function _family_ci(fit::GammaGroupedFit, Y::AbstractMatrix;
     end
     names = _grouped_dispersion_names(p, K, "alpha", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::GammaGroupedCovFit, Y::AbstractMatrix;
@@ -905,7 +921,8 @@ function _family_ci(fit::GammaGroupedCovFit, Y::AbstractMatrix;
                  _confint_lambda_term_names("Lambda", p, K),
                  ["alpha[$g]" for g in 1:G])
     kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + q + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 # Compound Poisson–Gamma draw from a Tweedie (1 < p < 2) with mean μ, dispersion
@@ -1963,6 +1980,38 @@ end
 # Natural-scale point estimate for entry i (exp() for log-scale dispersion).
 _family_estimate(ad::_FamilyCI, i::Integer) = ad.kinds[i] === :log ? exp(ad.θ[i]) : ad.θ[i]
 
+# T14 F1 (docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md), per-parameter Wald
+# degradation. When the FULL joint Hessian is not usable (Cholesky fails, or any
+# resulting variance is non-finite/non-positive), the previous behaviour NaN'd
+# EVERY parameter — including well-identified β/γ/Λ entries sharing a joint
+# Hessian with one degenerate direction (e.g. a grouped-dispersion trait at the
+# Poisson/near-Bernoulli/near-deterministic boundary, `dispersion_boundary`).
+# R's `sdreport` degrades per-block instead. This conditions the KNOWN-boundary
+# parameters (`known::Vector{Int}`, from a fit's own `dispersion_boundary` via
+# `ad.boundary`) out of the joint Hessian and, if the remaining sub-Hessian is
+# still not PD, greedily removes the remaining direction whose eigenvector has
+# the largest weight on the smallest eigenvalue — the same numerical PD test
+# (`isposdef`, a Cholesky attempt under the hood, i.e. the same machine-epsilon-
+# scale tolerance already used above) applied to a shrinking index set, rather
+# than a hand-rolled eigenvalue cutoff. Bounded to at most `m` iterations (can
+# drop at most every parameter, at which point the old all-NaN behaviour is
+# recovered exactly).
+function _wald_boundary_indices(Hsym::Symmetric, known::Vector{Int})
+    m = size(Hsym, 1)
+    idx = Set(known)
+    for _ in 1:m
+        rem = sort(setdiff(1:m, idx))
+        isempty(rem) && break
+        Hsub = Symmetric(Hsym[rem, rem])
+        isposdef(Hsub) && return sort(collect(idx))
+        vals, vecs = eigen(Hsub)
+        j = argmin(vals)
+        worst_local = argmax(abs.(view(vecs, :, j)))
+        push!(idx, rem[worst_local])
+    end
+    return sort(collect(idx))
+end
+
 # ---------------------------------------------------------------------------
 # Wald
 # ---------------------------------------------------------------------------
@@ -1971,9 +2020,11 @@ function _family_wald(ad::_FamilyCI, sel::Vector{Int}, level::Real; hessian=noth
     H = hessian===nothing ? _fd_hessian(ad.nll, ad.θ) : hessian
     size(H)==(m,m) || throw(DimensionMismatch("Wald Hessian dimension mismatch"))
     se=fill(NaN,m);pd=false
+    boundary_terms = String[]
     if all(isfinite,H)
+        Hsym = Symmetric((H .+ H') ./ 2)
         factor=try
-            cholesky(Symmetric((H .+ H') ./ 2);check=true)
+            cholesky(Hsym;check=true)
         catch e
             e isa InterruptException && rethrow()
             nothing
@@ -1983,6 +2034,26 @@ function _family_wald(ad::_FamilyCI, sel::Vector{Int}, level::Real; hessian=noth
             variances=diag(covariance)
             pd=all(v->isfinite(v) && v>0,variances)
             pd && (se .= sqrt.(variances))
+        end
+        if !pd
+            # `pd_hessian` keeps its existing meaning below (true only when the
+            # FULL joint Hessian's Cholesky succeeded with all-positive
+            # variances) — this branch only fills in what it can on top of the
+            # NaN default, it never flips `pd` back to true.
+            bidx = _wald_boundary_indices(Hsym, findall(ad.boundary))
+            rem = setdiff(1:m, bidx)
+            if !isempty(rem)
+                Hsub = Symmetric((H[rem, rem] .+ H[rem, rem]') ./ 2)
+                if isposdef(Hsub)
+                    Σsub = inv(Hsub)
+                    dΣ = diag(Σsub)
+                    for (k, i) in enumerate(rem)
+                        v = dΣ[k]
+                        (isfinite(v) && v > 0) && (se[i] = sqrt(v))
+                    end
+                end
+            end
+            boundary_terms = ad.names[bidx]
         end
     end
     z = quantile(Normal(), 0.5 + level / 2)
@@ -2001,7 +2072,7 @@ function _family_wald(ad::_FamilyCI, sel::Vector{Int}, level::Real; hessian=noth
         end
     end
     return (term = term, estimate = est, lower = lo, upper = hi, se = ses,
-            method = :wald, pd_hessian = pd)
+            method = :wald, pd_hessian = pd, boundary_terms = boundary_terms)
 end
 
 # ---------------------------------------------------------------------------
