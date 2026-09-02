@@ -31,3 +31,16 @@ so no later session re-asks them. Companion map: `../core070/true-parity-decisio
 
 Compute decisions of the day (plan v1): the ZI-trio ADEMP campaign runs on Totoro (Narval has no live
 socket; Nibi under a full-cluster maintenance reservation until 2026-09-03 08:00).
+
+## Overnight envelope (Shinichi, 2026-09-02 ~23:05Z, AskUserQuestion, four answers)
+
+5. **Pushes and CI**: up to three pushes overnight; shard the CI suite into parallel jobs and
+   drop coverage on routine runs (full matrix and coverage stay on `workflow_dispatch`).
+6. **Phylo Q1–Q4**: the recorded defaults are accepted — opt-in `correlation=true` (bridge forces
+   it); dense `vcv=` admitted with a condition-number warning; kernel split to its own slice;
+   non-ultrametric trees deferred behind `GJL-GATE-PHYLO-NONULTRAMETRIC`. S1–S2 may proceed.
+7. **Ledger authority**: re-bind rows on passing paired receipts; flip the `mi()` status row to
+   implemented on a test receipt; every flip listed in the morning report.
+8. **Arc scope**: second-order receipts on all paired cells; T5 paired re-runs; T4 realistic-size
+   pre-run; ZI-trio + scoreboard docs; *"consider using DRAC cleverly"* → Nibi array queued to
+   start when its maintenance lifts (08:00 EDT), Totoro for pre-runs and the suite.
