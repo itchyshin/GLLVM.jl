@@ -16958,3 +16958,10 @@ Consolidated run at the wave-7/8 + final-surface HEAD: 13237 passed,
 5 failed (ALL in test_phylo_poisson_xlv.jl — the receipted BLOCKED canary;
 zero non-canary failures), 0 errored, 8 broken. Zero regressions across
 the postfit_tables slice and the wave-7/8 tooling.
+
+## 2026-09-01 — closing suite4 (Totoro) at 9a375339: 13315 pass, canary-only
+
+After the full decision-queue execution (nobs p·n, cloglog curvature fix,
+tier-scoped estimands, 6 renames, public structure kwarg, A6 wiring):
+13315 passed, 5 failed (all the receipted phylo-poisson canary; zero
+non-canary), 0 errored, 8 broken. Zero regressions.
