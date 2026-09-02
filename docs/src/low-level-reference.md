@@ -77,3 +77,64 @@ GLLVM._fit_poisson_gllvm_laplace
 GLLVM._fit_binomial_gllvm_laplace
 GLLVM._fit_gaussian_gllvm_exact
 ```
+
+## Structured-term grammar recognizer
+
+Lane-internal machinery behind the public
+[`fit_gaussian_structured`](structured-term-fitting.md) wrapper: walks raw,
+unevaluated `Expr` trees for the `indep`/`dep`/`scalar`/`kernel_*` term
+vocabulary (StatsModels' `@formula` macro rejects the `lhs | group` bar
+syntax these terms use, so this recognizer is not built on `@formula`).
+Not exported; can change without notice.
+
+```@docs
+GLLVM.SourceTermSpec
+GLLVM._recognize_source_term
+GLLVM._source_term_covariance
+GLLVM._check_source_term_exclusions
+GLLVM._read_literal_flag
+GLLVM._assert_no_augmented_lhs
+GLLVM._resolve_kernel
+GLLVM._fit_gaussian_structured_sources
+```
+
+## Other internal helpers
+
+```@docs
+GLLVM._psd_sqrt_factor
+GLLVM.LaplaceModeWorkspace
+```
+
+## Cross-referenced internal helpers without a docstring
+
+The following names have no `"""..."""` docstring of their own — they are
+plain internal functions with an ordinary `#` code comment — but are
+cross-referenced by name from other docstrings on this page and elsewhere.
+Listed here only so those cross-references resolve; consult the cited source
+file directly for their implementation.
+
+### `_laplace_mode`
+
+The inner-loop dense-Laplace mode finder for the non-Gaussian families
+(`src/families/laplace.jl`, `src/families/binomial.jl`). [`GLLVM.LaplaceModeWorkspace`](@ref)
+holds its reusable buffers.
+
+### `_profile_ci_bounded`
+
+Boundary-aware wrapper around the generic derived-quantity profiler
+(`src/confint_derived.jl`) used by [`profile_ci_total_variance`](@ref) and
+[`profile_ci_phylo_signal`](@ref) (see
+[Derived confidence intervals](derived-confidence-intervals.md)): clamps a
+bound that overshoots the quantity's natural feasible range, and reports a
+deviance plateau at the range edge as `boundary = true` rather than a bare
+`NaN`/`:partial`.
+
+### `_principal_angles`
+
+Textbook principal-angle-between-subspaces computation (Björck & Golub 1973):
+orthonormalises each column space via a thin QR, then takes the SVD of the
+product of the two orthonormal bases. Used by
+[`compare_loadings`](diagnostics.md) and
+[`diagnose_kernel_separability`](diagnostics.md)
+(`src/diagnostics.jl`) rather than the naive (and geometrically wrong)
+`svd(A'B).S` on non-orthonormal bases.
