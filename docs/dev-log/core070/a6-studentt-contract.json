@@ -1,0 +1,58 @@
+{
+  "status": "FROZEN_A6_STUDENTT_INTERIOR_NU_CONTRACT",
+  "leaf": "A6 (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #11)",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "scope": "PAIRED_ENGINE_AGREEMENT_AT_INTERIOR_NU_PLUS_JULIA_HEALTH_WIRING",
+  "gap_it_closes": "docs/dev-log/core070/parity-panel-2026-09-01.md finding 4: the shared A6 harness cell sat both engines on the nu->infinity boundary; R correctly diagnosed it (false-convergence(8)), Julia missed it (converged=true at nu=3.0e31). This contract's fixture is deliberately genuinely heavy-tailed so BOTH engines are expected interior, isolating the health-wiring repair from the boundary pathology itself (which remains a separate, honestly-reported finding wherever it recurs).",
+  "files": {
+    "r_stage": "tools/core070_a6_studentt_fixture.R",
+    "julia_stage_and_verifier": "tools/core070_a6_studentt_fixture.jl",
+    "notes": "docs/dev-log/core070/a6-studentt-notes.md",
+    "julia_health_wiring_test": "test/test_studentt_boundary.jl",
+    "julia_health_wiring_source": "src/families/studentt.jl"
+  },
+  "julia_health_wiring": {
+    "before": "StudentTFit.nu_boundary was additive only (commit efe3d644): converged semantics unchanged, so a boundary fit could still present as converged=true.",
+    "after": "fit_studentt_gllvm forces converged = converged && !nu_boundary (mirrors _tweedie_verdict's :power_at_boundary rule, families/tweedie.jl), which flows into the GENERIC family-agnostic fit-health gate (sanity_multi / gllvmTMB_diagnose, diagnostics.jl) via fit.converged with no diagnostics.jl edit needed. Tightens the gate only; no existing pass case is affected.",
+    "unit_test": "GLLVM._studentt_nu_boundary and the conv && !boundary composition, test/test_studentt_boundary.jl",
+    "red_first_fixture_test": "pure-Gaussian data (test/test_studentt_boundary.jl, 'red-first: near-Gaussian data walks estimated nu to the boundary'; same construction as test_studentt_boundary_honesty.jl) -- asserts fit.converged == false, sanity_multi(fit).pass == false, gllvmTMB_diagnose(fit).pass == false when the boundary is reached"
+  },
+  "fixture_design": {
+    "family_r": "student(link = \"identity\")  (R/families.R:367-381; estimates degrees of freedom unless df is supplied)",
+    "family_julia": "StudentTFamily()  (src/families/studentt.jl; identity link, nu estimated by default)",
+    "p": 5,
+    "K": 1,
+    "n": 250,
+    "seed": 20260901,
+    "generator": "tools/core070_a6_studentt_fixture.jl generate_fixture(rng): y_tj = beta_t + Lambda_t * z_j + sigma_true * eps_tj, z_j ~ N(0,1) iid across sites, eps_tj ~ standard t(nu_true) (Distributions.TDist)",
+    "beta_true": [0.5, -0.3, 0.2, 0.8, -0.6],
+    "loading_true": [0.9, -0.7, 0.5, 0.6, -0.4],
+    "sigma_true": 0.7,
+    "nu_true": 6.0,
+    "design_note": "nu_true = 6 is deliberately, genuinely heavy-tailed (not the pure-Gaussian construction used to exercise the boundary in test_studentt_boundary.jl / test_studentt_boundary_honesty.jl) -- both engines are expected to converge to an INTERIOR nu on this fixture. A local plumbing check (no real R; a synthetic 'R' file built from Julia's own fitted coordinates) reproduced converged=true, nu_boundary=false, nu_hat approx 5.89, sigma_hat approx 0.699 -- close to nu_true=6.0, sigma_true=0.7, confirming the fixture is well-conditioned and estimable at this size before any live R run."
+  },
+  "paired_tolerance": 1e-4,
+  "quantities_compared": ["loglik", "beta (per-species intercept)", "sigma_student (scale)", "df_student (degrees of freedom, nu)", "loading (per-species Lambda, sign-aligned for the K=1 indeterminacy)"],
+  "both_engine_health_required": {
+    "julia": "fit.converged == true AND fit.nu_boundary == false",
+    "r": "healthy == 1 (inline health check: optimizer convergence code 0, finite objective/parameters/gradient, scaled gradient <= 1e-3, sigma_student finite and > 0, df_student not at the nu_boundary_max = 1e6 Gaussian-limit boundary) AND nu_at_boundary == 0",
+    "if_either_fails_on_this_interior_fixture": "recorded as a finding in a-6-studentt-notes.md / the Totoro run's own output, never silently fudged, tolerance-widened, or dropped from the comparison (round2-3 #11's explicit instruction)"
+  },
+  "argv_convention": {
+    "r_stage": "Rscript --vanilla tools/core070_a6_studentt_fixture.R <data_path> <r_output_path>  (argv 2; K fixed at 1 in-script, not a runtime argument)",
+    "julia_stage": "julia --project=. tools/core070_a6_studentt_fixture.jl <data_path> <r_output_path>  (argv 2; run once to generate <data_path> if missing, again after the R stage to verify) OR julia --project=. tools/core070_a6_studentt_fixture.jl --self-test (synthetic pair, no data/R required)"
+  },
+  "coverage_guard": "the Julia stage refuses to report a pass while r_output_path is missing (exit 1, CORE070_A6_STUDENTT_AWAITING_R) -- a missing oracle side is never silently treated as agreement.",
+  "soft_fail": "read_r_output raises on any line it cannot parse as a scalar or indexed-vector key/value row rather than skipping it silently; _a6_compare treats any missing required key on either side as a hard failure before any numeric comparison runs.",
+  "self_test": {
+    "invocation": "julia --project=. tools/core070_a6_studentt_fixture.jl --self-test",
+    "mutations_asserted_rejected": 9,
+    "minimum_required": 4
+  },
+  "totoro_command": [
+    "julia --project=. tools/core070_a6_studentt_fixture.jl /path/to/a6-data.tsv /path/to/a6-r-out.tsv",
+    "Rscript --vanilla tools/core070_a6_studentt_fixture.R /path/to/a6-data.tsv /path/to/a6-r-out.tsv",
+    "julia --project=. tools/core070_a6_studentt_fixture.jl /path/to/a6-data.tsv /path/to/a6-r-out.tsv"
+  ],
+  "not_run_locally": "The R stage has NOT been executed in this session (maintainer instruction: 'I will run the batch on Totoro after you deliver -- do NOT try to run R locally.'). Local verification covered: (1) the Julia health-wiring unit + red-first fixture tests (test/test_studentt_boundary.jl, all green), (2) the full test/test_studentt*.jl suite green after the converged-forcing change, (3) julia tools/core070_a6_studentt_fixture.jl --self-test (9/9 rejected mutations, minimum 4), (4) end-to-end plumbing of the generate -> soft-fail -> compare states using a hand-built stand-in 'R' TSV (not a real R fit) to exercise file parsing, sign-alignment, and both the pass and fail comparison paths."
+}
