@@ -17024,3 +17024,15 @@ fits, 0 error rows (`core070/zi-ademp-recovery-findings.md`, receipts in
 `core070/zi-ademp-out/`). zib converges 100 % in all four cells; zip/zinb 100 % at
 p=5; at p=25, n=50 zip converges 35.0 % (βz bias median −0.80, RMSE median 3.86) and
 zinb 70.0 %; at p=25, n=200 zip 96.2 %, zinb 98.6 %. Recorded as a small-n limitation.
+
+## 2026-09-02 — post-fix CI run 33643764358 (f2223ac3): Julia 1.10 GREEN, Julia 1 red on one known test
+
+`Julia 1.10 - ubuntu-latest` (1.10.12): **success** — "Testing GLLVM tests passed" (135 min);
+the first green Julia job on this branch. `Julia 1 - ubuntu-latest` (1.12.7): failure —
+**13369 passed, 1 failed, 0 errored, 6 broken**; the single failure is
+`test/test_bridge_x.jl:350` (`negbinomial Wald (grouped_cov)`: `NaN < 1e-8`), the open NB2
+second-order finding (map ticket T14; also seen as the singular FD Hessian in the se=TRUE
+pre-run). Not touched: diagnosis first, no tolerance or test edit. Advisory frozen-R smoke
+failed as documented. Both fix classes from the df7009b3 verdict are confirmed closed by
+this run (7 → 1 failures on 1.12.7, 7 → 0 on 1.10.12). Local docs commits pushed after the
+run concluded (f2223ac3..d4c6b44a).

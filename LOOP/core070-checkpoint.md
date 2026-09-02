@@ -2122,3 +2122,10 @@ Vault D-204 confirms capability parity both ways for user-facing surfaces. Ledge
 11 leaves ALL MET (2 gates ABANDONED with reasons). Rose audit: 3 wording blockers,
 repaired. Next arc: sign the second-order tolerances (T3), realistic-size grid (T4),
 NB2 second-order health (T14), acceptance runs after #1236 merges (T7).
+
+## Post-fix verdict — 2026-09-02 17:30Z
+
+Run 33643764358: Julia 1.10 GREEN (first ever on the branch); Julia 1.12.7 red on exactly one
+test, the NB2 grouped-cov Wald NaN (T14). 13369/1/0/6. Branch level with origin at d4c6b44a.
+Next: diagnose T14 (NB2 second-order health at boundary dispersion) before PR #277 can go
+green on Julia 1; sign T3 tolerances; T4 grid; T7 acceptance runs after #1236.
