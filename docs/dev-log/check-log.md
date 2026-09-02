@@ -17084,3 +17084,73 @@ already PD.
 Left out (reported, not silently dropped): the F2(a) well-conditioned cross-Julia-version
 seed (see above); the full suite (`Pkg.test()`) was not re-run in this slice — the
 orchestrator runs it separately.
+
+## 2026-09-02 — docs cascade (A7): Fisher-retained list, "what parity does NOT mean", ZI-trio note, mi() row
+
+- **Fisher-retained list** (`docs/src/gllvmtmb-parity.md` §Honest gaps): the
+  "Still using the Fisher weight" bullet named GP-1, `Binomial`/cloglog, and
+  Tweedie-grouped. Source no longer matches that: `src/families/binomial.jl:95`
+  (`_default_hessian(::Binomial, ::CLogLogLink) = :observed`, CONFIRMED
+  2026-09-01, maintainer decisions round 1, item 2 — quadrature check matches
+  R to 7.4e-12) and `src/families/grouped_dispersion.jl:1630-1633` (Tweedie
+  grouped `hessian::Symbol = :observed` default, fixed 2026-08-28, reduces
+  exactly to the shared Tweedie route under its own default at `G=1`) both
+  read `:observed`. `docs/dev-log/core070/second-order-parity-contract.md`
+  §2 corroborates: "only GP-1 is confirmed current-HEAD Fisher-retained;
+  cloglog and Tweedie-grouped read as already flipped." Rewrote the bullet to
+  name only GP-1 as Fisher-retained, added a "Resolved since the last pass"
+  bullet for cloglog/Tweedie-grouped with source-line citations, and kept the
+  `hessian = :fisher` reachability sentence (still true — both fitters keep
+  `hessian::Symbol` as a caller-settable kwarg with `_default_hessian` only as
+  the default value).
+- **"What parity does NOT mean"** (`docs/src/gllvmtmb-parity.md`, new section
+  after the intro, 25 lines): harness parity (toy fixtures p≤5, n≤150) vs true
+  parity (real-workflow acceptance cases), sourced from
+  `docs/dev-log/core070/true-parity-decision-map.md` §Destination/§Out of
+  scope; first-order receipts for the five families entering second-order
+  work (Gaussian, Poisson-log, Binomial-logit, Beta-logit, NB2-log,
+  `second-order-parity-contract.md` §6); second-order receipts are a 5-cell
+  toy pre-run only, explicitly not a claim
+  (`docs/dev-log/core070/second-order-prerun-2026-09-02.md`); realistic sizes
+  (p≥20, n≥500) unreceipted; interval coverage is not part of parity; the
+  qualification claim is one-directional (R→Julia) while capabilities are
+  tracked both ways; `tools/parity_ledger.py` gives the written reverse-gap
+  list — re-ran it: `FORWARD=77 REVERSE=82` at the frozen oracle, matching
+  the brief.
+- **ZI-trio Julia-beyond note** (`docs/src/response-families.md`, new
+  subsection under "Two-part and mixture families"): `zip`/`zinb`/`zib` have
+  no R twin at the frozen 0.7.0 oracle (R will gain them, planned on the R
+  side, no date), so the evidence is ADEMP simulation-based recovery, not
+  parity — pasted the full 12-cell convergence table from
+  `docs/dev-log/core070/zi-ademp-recovery-findings.md` (500 seeds/cell) and
+  stated the small-n limitation plainly: zip p=25,n=50 converges 35.0% (βz
+  bias median −0.80, RMSE median 3.86 among converged fits); zinb p=25,n=50
+  converges 70.0%. Noted the campaign's scope limits verbatim: intercept-only
+  zero-inflation (`Λ_z = 0` by construction), K=1 only, no coverage/SE
+  evaluated.
+- **mi() row flip** (`docs/design/capability-status.md`): grepped the row
+  (`| Missing predictor `mi()` | planned |`, line 264) against the exports
+  (`fit_gaussian_mi_fiml`, `fit_gaussian_mi_phylo`, `fit_gllvm_mi`,
+  `fit_gllvm_mi_multi`, `src/GLLVM.jl:33-34,170`) and ran the test receipt
+  before flipping anything, Julia 1.12.6, `JULIA_NUM_THREADS=1`:
+
+  ```
+  Test Summary:     | Pass  Total   Time
+  test_mi_fitter.jl |    5      5  14.1s
+  Test Summary:                        | Pass  Total   Time
+  test_missing_predictor_dispersion.jl |   15     15  42.8s
+  Test Summary:                  | Pass  Total   Time
+  test_missing_predictor_fiml.jl |    9      9  16.0s
+  Test Summary:                   | Pass  Total   Time
+  test_missing_predictor_multi.jl |    7      7  18.0s
+  Test Summary:                   | Pass  Total   Time
+  test_missing_predictor_phylo.jl |    9      9  11.6s
+  Test Summary:                     | Pass  Total  Time
+  test_missing_predictor_poisson.jl |    6      6  8.8s
+  Test Summary:               | Pass  Total  Time
+  test_missing_predictor_z.jl |    6      6  3.4s
+  ```
+
+  All 7 files, 57/57 pass. Flipped the row to `implemented`
+  (`docs/design/capability-status.md:264`); no summary-count table to update
+  in that file (line 10: "counts derived at render time — never hand-typed").

@@ -261,7 +261,7 @@ slice. No twin light Δ.
 | Keyworded random slopes (≥1) | planned |
 | Uncorrelated slope (R double-bar / uncorrelated RE) | planned |
 | Missing responses (NA / mask) | implemented |
-| Missing predictor `mi()` | planned |
+| Missing predictor `mi()` | implemented |
 | Latent scores on covariates `latent(..., lv = ~ x)` ordinary | implemented |
 | Concurrent / constrained / RRR ordination (`num.lv.c` / `num.RR`) | implemented |
 | Quadratic response | implemented |
