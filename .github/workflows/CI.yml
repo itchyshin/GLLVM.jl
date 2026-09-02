@@ -64,6 +64,15 @@ jobs:
           repository: itchyshin/gllvmTMB
           ref: b4d5fee64def88bc768dda1f1f77c29b295edd86
           path: .unlazy/r-source
+      - name: System libraries for the spatial R stack (units/sf/fmesher)
+        run: |
+          # The dated CRAN snapshot serves sources for these, so the geo stack
+          # must be present to compile them; the floating binary repo used to
+          # hide this. Cheap and deterministic.
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+
       - name: Build an isolated, source-pinned R oracle
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -71,7 +80,7 @@ jobs:
           # Date-locked snapshot so TMB/Matrix/RcppEigen resolve to the same
           # versions the retained oracle build used (floating CRAN is what let
           # the CI oracle drift from the pinned one).
-          Rscript -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/2026-08-31")); install.packages("remotes"); remotes::install_deps(".unlazy/r-source", dependencies=c("Depends", "Imports", "LinkingTo"), upgrade="never")'
+          Rscript -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-08-31"), HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os))); install.packages("remotes"); remotes::install_deps(".unlazy/r-source", dependencies=c("Depends", "Imports", "LinkingTo"), upgrade="never")'
           python3 tools/core070_build_oracle.py prepare --repo .unlazy/r-source --destination .unlazy/r-archive
           python3 tools/core070_build_oracle.py build --archive .unlazy/r-archive/gllvmTMB-core070.tar --source-receipt .unlazy/r-archive/source.json --destination .unlazy/r-build --r-binary "$(command -v R)" --timeout 1200
           python3 tools/core070_build_oracle.py verify --destination .unlazy/r-build
