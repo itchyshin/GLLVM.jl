@@ -88,3 +88,16 @@ the wrong end of the cost distribution, then discover the true cost only after c
 A second, softer pattern: **a plan's own sequencing (K9 before K10) getting reordered under context pressure**
 without a recorded decision — worth a generic checklist line ("closeout reconciliation runs after, not
 instead of, mechanical re-verify") rather than a one-off fix here.
+
+## Close addendum (Ada, after Melissa's reconcile)
+
+Pending-at-reconcile items resolved: CI 33622687447 concluded red on both Julia jobs
+(test-side; diagnosed in `core070/ci-verdict-df7009b3.md`; two fixes applied under the
+maintainer's answer and pushed once, df7009b3..f2223ac3 — the "no push" DEFER was lifted
+by that answer, recorded as adaptive; gates RPT-G2 / CL-G1 ABANDONED with reasons); ZI
+campaign ended 14:06:54Z (240/240, 0 errors; findings committed); K9 MECHANICAL-VERIFY ran
+last (Haiku): `K9: ALL OK` on 9 checks (files, no placeholders, literal CI strings,
+closeout.py PASS, git state, 11 ledger leaves ALL MET, recount, tool self-test, post-fix
+CI in progress). The K10-before-K9 inversion Melissa tagged as drift is now recorded in
+the after-task report §3a with its reason (checkpoint-to-disk under the pacing request).
+Rose judgment audit: 3 wording blockers, repaired before the final commit.
