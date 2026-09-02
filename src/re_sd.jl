@@ -331,7 +331,7 @@ end
 
 function getREsd(args...; kwargs...)
     Base.depwarn(
-        "getREsd is renamed to latent_score_sd; the name getREsd is reserved " *
+        "getREsd is deprecated: renamed to latent_score_sd; the name getREsd is reserved " *
         "for a future R-mirroring surface", :getREsd)
     return latent_score_sd(args...; kwargs...)
 end

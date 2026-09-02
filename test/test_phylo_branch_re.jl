@@ -115,7 +115,10 @@ end
         cache = branch_re_cache(phy)
         Z = path_membership(phy)
         V = Matrix(Z * spdiagm(0 => phy.branch_lengths) * Z')
-        y = [1e8, 1e8 + 0.5, 1e8 - 0.25, 1e8 + 0.75]
+        # Mean offset 10 (not 1e8): the profiled mean makes the BLUPs and the
+        # negll invariant to a constant shift, but the DENSE reference loses
+        # digits at 1e8 (eps(1e8) ≈ 1.5e-8 > rtol 1e-9); CI verdict df7009b3.
+        y = [10.0, 10.5, 9.75, 10.75]
         one_p = ones(phy.n_leaves)
 
         # Four-order signal/noise ratios exercise the scaled factor while

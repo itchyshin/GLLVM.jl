@@ -739,7 +739,7 @@ end
 
 function diagnostic_table(args...; kwargs...)
     Base.depwarn(
-        "diagnostic_table is renamed to fit_diagnostic_table; the name " *
+        "diagnostic_table is deprecated: renamed to fit_diagnostic_table; the name " *
         "diagnostic_table is reserved for a future R-mirroring surface",
         :diagnostic_table)
     return fit_diagnostic_table(args...; kwargs...)
@@ -747,7 +747,7 @@ end
 
 function compare_Sigma_table(args...; kwargs...)
     Base.depwarn(
-        "compare_Sigma_table is renamed to compare_fits_Sigma_table; the " *
+        "compare_Sigma_table is deprecated: renamed to compare_fits_Sigma_table; the " *
         "name compare_Sigma_table is reserved for a future R-mirroring " *
         "surface", :compare_Sigma_table)
     return compare_fits_Sigma_table(args...; kwargs...)
@@ -755,7 +755,7 @@ end
 
 function compare_dep_vs_two_psi(args...; kwargs...)
     Base.depwarn(
-        "compare_dep_vs_two_psi is renamed to compare_fits_dep_vs_two_psi; " *
+        "compare_dep_vs_two_psi is deprecated: renamed to compare_fits_dep_vs_two_psi; " *
         "the name compare_dep_vs_two_psi is reserved for a future " *
         "R-mirroring surface", :compare_dep_vs_two_psi)
     return compare_fits_dep_vs_two_psi(args...; kwargs...)
@@ -763,7 +763,7 @@ end
 
 function compare_indep_vs_two_psi(args...; kwargs...)
     Base.depwarn(
-        "compare_indep_vs_two_psi is renamed to compare_fits_indep_vs_two_psi; " *
+        "compare_indep_vs_two_psi is deprecated: renamed to compare_fits_indep_vs_two_psi; " *
         "the name compare_indep_vs_two_psi is reserved for a future " *
         "R-mirroring surface", :compare_indep_vs_two_psi)
     return compare_fits_indep_vs_two_psi(args...; kwargs...)

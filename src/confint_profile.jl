@@ -774,6 +774,6 @@ maintainer decision round2-3 #5 (the name `profile_targets` is reserved for a
 future mirror of R's readiness-registry surface, a different function).
 """
 function profile_targets(args...; kwargs...)
-    Base.depwarn("profile_targets is renamed to profile_curve_targets; the name profile_targets is reserved for a future R-mirroring readiness-registry surface", :profile_targets)
+    Base.depwarn("profile_targets is deprecated: renamed to profile_curve_targets; the name profile_targets is reserved for a future R-mirroring readiness-registry surface", :profile_targets)
     return profile_curve_targets(args...; kwargs...)
 end
