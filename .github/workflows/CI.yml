@@ -67,6 +67,16 @@ jobs:
       - name: Instantiate parity environment
         run: |
           julia --project=test/parity -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate(); Pkg.build("RCall"); Pkg.precompile()'
+      - name: Stage oracle receipts where the parity helper reads them
+        run: |
+          # test/parity/parity_helpers.jl pins the retained-receipt layout
+          # (.unlazy/core070-aghq/...); the CI build writes to .unlazy/r-build
+          # and .unlazy/r-archive. Copy, never move: the upload-artifact step
+          # still retains the build-side originals.
+          mkdir -p .unlazy/core070-aghq/oracle-receipts .unlazy/core070-aghq/oracle-source
+          cp .unlazy/r-build/build.json .unlazy/core070-aghq/oracle-receipts/build.json
+          cp .unlazy/r-archive/source.json .unlazy/core070-aghq/oracle-source/source.json
+
       - name: Run parity suite with LD_PRELOAD libunwind
         run: |
           export LD_PRELOAD="$(julia -e 'print(abspath(joinpath(Sys.BINDIR, "..", "lib", "julia", "libunwind.so.8")))')"

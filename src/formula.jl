@@ -704,7 +704,7 @@ takes no `family` argument at all). Any other `family` value throws a named
 # Example
 
 ```jldoctest
-julia> using GLLVM, Random
+julia> using GLLVM, Random, LinearAlgebra
 
 julia> rng = MersenneTwister(70100); p, n = 3, 24;
 
@@ -712,7 +712,9 @@ julia> g = repeat(1:6; inner = 4); data = (g = g,);
 
 julia> Y = randn(rng, p, n) .+ [1.0, -0.5, 0.2];
 
-julia> L = randn(rng, 6, 6); K = L * L' + 6I; kernel_env = (K = K,);
+julia> L = randn(rng, 6, 6); K = L * L' + 6.0 * Matrix(I, 6, 6);
+
+julia> kernel_env = (K = K,);
 
 julia> fit = fit_gaussian_structured(Y, data;
            structure = [:(indep(0 + trait | g)), :(kernel_latent(g, K = K, d = 1, name = "k1"))],
