@@ -17000,3 +17000,27 @@ lane (cloglog item removed: it was ours). Gate results: leaf-recount 2/2, leaf-m
 leaf-rebind 2/2, leaf-rdefects 2/2 (manual gates with recorded evidence). In flight: second-order
 contract draft, se=TRUE pre-run on Totoro (5 toy-fixture cells — a pre-run, not a parity claim),
 both-direction parity-ledger tool port from DRM.jl.
+
+## 2026-09-02 — CI verdict for df7009b3 (first uncancelled run) + ZI-trio ADEMP campaign done
+
+Run 33622687447: `Julia 1.10 - ubuntu-latest` (1.10.12) **failure** — 13360 passed,
+7 failed, 0 errored, 6 broken; `Julia 1 - ubuntu-latest` (1.12.7) **failure** — 13362
+passed, 8 failed, 0 errored, 6 broken. Diagnosis (`core070/ci-verdict-df7009b3.md`):
+six `@test_deprecated` misses because the rename shims say "renamed", never
+"deprecated" — and the local green suite never ran with `--depwarn=yes`, so those six
+were silently skipped locally, not passed; one sparse-vs-dense phylo BLUP comparison on
+a fixture offset by 1e8 at rtol 1e-9 (eps(1e8) ≈ 1.5e-8) — environment drift, not the
+engine; plus, on 1.12.7 only, `test_bridge_x.jl:350` NB2 grouped-covariate Wald
+interval NaN — an open numeric finding (map ticket T14), not touched. Maintainer chose
+(2026-09-02): apply the two test-side fixes (six message strings gain "is deprecated:";
+fixture mean 10 instead of 1e8, no tolerance change), verify locally with
+`--depwarn=yes`, push once. Local verification, Julia 1.12.6 `--depwarn=yes`,
+test_diagnostics + test_se_machinery + test_phylo_branch_re: 1211 pass, 0 fail
+(2m24s); Julia 1.10.12 `--depwarn=yes`, same three files: 1211 pass, 0 fail (2m01s).
+
+ZI-trio ADEMP recovery campaign (decision #12, Julia-beyond) ran on Totoro
+11:57:07Z → 14:06:54Z under `parallel -j 120`: 240/240 chunks, 0 non-zero exits, 6000
+fits, 0 error rows (`core070/zi-ademp-recovery-findings.md`, receipts in
+`core070/zi-ademp-out/`). zib converges 100 % in all four cells; zip/zinb 100 % at
+p=5; at p=25, n=50 zip converges 35.0 % (βz bias median −0.80, RMSE median 3.86) and
+zinb 70.0 %; at p=25, n=200 zip 96.2 %, zinb 98.6 %. Recorded as a small-n limitation.

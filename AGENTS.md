@@ -231,6 +231,14 @@ Full responsibility detail lives in §2 of the reference plan.
   cross-engine defects). Rose audit round-1 blockers fixed. Unpushed; see
   docs/dev-log/after-task/2026-09-01-m2-ledger-complete.md.
 
+- **Core 0.7.0 + AGHQ lane (2026-09-02, Claude).** First uncancelled CI run on
+  `codex/core070-aghq-20260830` (33622687447): both Julia jobs red for test-side
+  reasons (deprecation-shim wording vs `@test_deprecated`; a 1e8-offset fixture at
+  rtol 1e-9) plus one open NB2 Wald NaN on 1.12.7 — fixes applied, one push approved.
+  ZI-trio ADEMP campaign done on Totoro (6000 fits). True-parity decision map at
+  `docs/dev-log/core070/true-parity-decision-map.md`; maintainer: one-directional
+  claim, oracle stays 0.7.0, second-order scope SE + vcov block + Wald endpoints.
+
 Update this snapshot after every after-task report.
 
 ## Pre-publish gate
