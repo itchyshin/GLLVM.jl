@@ -16978,3 +16978,25 @@ accepts a boundary refit that satisfies the domain criterion, mirroring the
 Tweedie :power_at_boundary and Student-t nu_boundary conventions, and
 records endpoint_boundary so acceptance is observable. A red-first test with
 an unreachable constraint_tol proves the gate still reports :failed.
+
+## 2026-09-02 — true-parity replan (Claude): decision map, recount, re-bind check, R-side list
+
+Ultra-plan with the wayfinder decision map and an unlazy acceptance ledger
+(`.unlazy/core070-true-parity/`, 8 leaves, gates written before dispatch). Maintainer
+answers (recorded in `decisions/2026-09-02-maintainer-decisions-true-parity.md`):
+qualification claim one-directional R→Julia against frozen 0.7.0 `b4d5fee6`; oracle stays
+0.7.0; second-order scope = SE + fixed-effect vcov block + Wald CI endpoints. Landed so far:
+`core070/true-parity-decision-map.md` (Destination / Decisions so far / Not yet specified /
+Out of scope; grouping levels unit/unit_obs/cluster/cluster2 and the ZI-trio-to-R decision
+recorded as RELAYED pending direct confirmation); `tools/core070_ledger_counts.py` +
+`core070/ledger-recount-2026-09-02.md` — "required" = classification ∈ {required_core,
+compatibility_adapter}; TOTAL=769 REQUIRED=505 BOUND=285 DISPOSITIONED=220 FREE=0, the
+handover's numbers reproduced exactly; `core070/parity-defect-rebind-2026-09-02.md` — the 8
+PARTIAL_PARITY_DEFECT rows: 4 extract_* rows LIKELY-FIXED by decision #3 (Julia tests 92/92,
+paired re-run on the frozen oracle still required before any re-bind), 3 nobs rows + loading_profile
+LIKELY-FIXED-UNVERIFIED (needs postfit-policy paired batch / an estimand-scope decision);
+`core070/r-side-defects-2026-09-02.md` — 34 R-side leads in six groups handed to the gllvmTMB
+lane (cloglog item removed: it was ours). Gate results: leaf-recount 2/2, leaf-map 2/2,
+leaf-rebind 2/2, leaf-rdefects 2/2 (manual gates with recorded evidence). In flight: second-order
+contract draft, se=TRUE pre-run on Totoro (5 toy-fixture cells — a pre-run, not a parity claim),
+both-direction parity-ledger tool port from DRM.jl.

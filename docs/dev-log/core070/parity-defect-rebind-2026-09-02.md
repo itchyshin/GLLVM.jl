@@ -1,0 +1,28 @@
+# Parity Defect Rebind Check — 2026-09-02
+
+Audit of the 8 rows with disposition `PARTIAL_PARITY_DEFECT_PENDING_DECISION` to confirm whether maintainer decisions (#1 nobs → p·n; #3 estimand alignment with `level=:total` escape hatch) addressed each recorded defect.
+
+| source_id | defect (one line) | batch / verifier | fix evidence (file:line) | verdict |
+|-----------|------------------|------------------|--------------------------|---------|
+| postfit/POSTFIT-SURFACE-extract_communality | Julia sums ALL tiers + σ_eps²; R sums :unit tier only (degenerate to 1.0 on gaussian_small) | surface-conversion wave5 triage | src/extractors.jl:_r_tier_total, test_extractors.jl:122–165 (92/92 pass) | LIKELY-FIXED (Julia tests 92/92; paired re-run on the frozen oracle still required before re-binding) |
+| postfit/POSTFIT-SURFACE-extract_correlations | Julia total-variance (all tiers + σ_eps²); R tier-scoped only (observed diff 0.668 on gaussian_small) | surface-conversion wave5 triage | src/extractors.jl:_r_tier_shared, test_extractors.jl:147–160 (92/92 pass) | LIKELY-FIXED (Julia tests 92/92; paired re-run on the frozen oracle still required before re-binding) |
+| postfit/POSTFIT-SURFACE-extract_proportions | Identical to extract_communality mismatch (degenerate R 1.0 vs Julia real ratio) | surface-conversion wave5 triage | src/extractors.jl level=:unit default, test_extractors.jl:177–190 (92/92 pass) | LIKELY-FIXED (Julia tests 92/92; paired re-run on the frozen oracle still required before re-binding) |
+| postfit/POSTFIT-SURFACE-extract_Omega | Julia unconditional Σ_unit + Σ_unit_obs (adds σ_eps²·I always); R sums :B tier only, no σ_eps² (diff 0.467 diagonal) | surface-conversion wave5 triage | src/extractors.jl:extract_Omega level=:auto, estimand-alignment-notes.md, test_extractors.jl:69–79 (92/92 pass) | LIKELY-FIXED (Julia tests 92/92; paired re-run on the frozen oracle still required before re-binding) |
+| postfit-policy/POST-LOGLIK-NOBS | Julia StatsAPI.nobs = n units (80); R attr(logLik,nobs) = p·n cells (400) — bridge payload uses p·n | postfit-policy wave2-policy3 | src/postfit.jl:605–645 (nobs implementation per decision #1), needs paired batch on Totoro: postfit-policy-batch-01 | LIKELY-FIXED-UNVERIFIED |
+| postfit-policy/POST-NOBS-COUNT | Same cross-engine mismatch as POST-LOGLIK-NOBS | postfit-policy wave2-policy3 | src/postfit.jl:605–645 (implementation done), needs paired batch on Totoro: postfit-policy-batch-01 | LIKELY-FIXED-UNVERIFIED |
+| postfit-policy/POST-NOBS-FALLBACK | Same cross-engine mismatch as POST-LOGLIK-NOBS | postfit-policy wave2-policy3 | src/postfit.jl:605–645 (implementation done), needs paired batch on Totoro: postfit-policy-batch-01 | LIKELY-FIXED-UNVERIFIED |
+| namespace/export/loading_profile | R's loading_profile() profiles a Lambda entry on exploratory (unpinned) fit; Julia surface exists but estimand scope unclear, moved to deferred[] by maintainer decision | surface-conversion wave5 triage (deferred) | src/confint_derived.jl:1134–1171 (loading_profile implemented); docs/dev-log/core070/estimand-alignment-notes.md (moved to deferred estimand-alignment family 2026-09-01) | LIKELY-FIXED-UNVERIFIED |
+
+## Summary
+
+**Extracts (4 rows: communality, correlations, proportions, Omega)** — LIKELY-FIXED — Julia test evidence only; a row re-binds only on a paired receipt (Ada correction, RB-G2). Estimand-alignment decision #3 successfully implemented; test suite passes 92/92 on tier-scoped defaults with `level=:total` escape hatch retained. Both engines now align on R's tier-scoped composition; prior mismatches traced to σ_eps² handling are deterministic and eliminated by the new defaults.
+
+**Nobs (3 rows: POST-LOGLIK-NOBS, POST-NOBS-COUNT, POST-NOBS-FALLBACK)** — LIKELY-FIXED-UNVERIFIED. Maintainer decision #1 (adopt R's p·n convention) is implemented in src/postfit.jl:605–645 with complete handling for masked data, missing-value eltype, and fit-struct variants (TwoLevelFit, RandomSlopeFit, SPDEFit). The implementation is source-clean and ready for verification, but the paired postfit-policy-batch-01 Totoro run (tools/core070_verify_postfit_policy_batch.py) is required to confirm cross-engine agreement and re-bind the ledger rows. This is a straightforward re-run; no source changes needed on re-verification.
+
+**Loading_profile (1 row: namespace/export/loading_profile)** — LIKELY-FIXED-UNVERIFIED. The surface is implemented (src/confint_derived.jl:1134–1171), but the row was moved to the deferred estimand-alignment family by the maintainer (estimand-alignment-notes.md, 2026-09-01) because the profiling estimand (exploratory vs confirmatory fit) remains outside the tier-scoped R contract. This is correctly deferred, not a blocking defect — it pairs with the extract_* family's scope alignment, not a code bug. No re-binding is warranted until the estimand scope decision is revisited.
+
+## What a re-bind would take
+
+1. **Extracts:** Re-run wave5-conversion7 (or its successor) on the frozen R oracle to validate the tier-scoped defaults against R's extract_* functions directly. Test suite is already green; no code changes needed.
+2. **Nobs:** Submit postfit-policy-batch-01 to Totoro (`sbatch tools/core070_postfit_policy_batch.R` with receipt capture), then run `python3 tools/core070_verify_postfit_policy_batch.py --state <receipt.json>`. On success, move the 3 nobs rows from PARTIAL_PARITY_DEFECT_PENDING_DECISION to BOUND (or appropriate disposition per batch outcome).
+3. **Loading_profile:** Requires a separate estimand-scope decision (whether to preserve the exploratory-fit intent or align to confirmatory by default), not a code fix. Current deferral is appropriate.

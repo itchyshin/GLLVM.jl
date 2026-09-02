@@ -2090,3 +2090,21 @@ campaign queued next. Both lanes PUSHED as draft PRs (GLLVM.jl#277,
 gllvmTMB#1236). LEDGER: 505 required = 285 bound + 220 dispositioned.
 Closing suite4 running. NEW alignment-family members found: R per-trait nu
 (student) and the wave-6/A6 dispersion-structure class.
+
+## Handover rehydrated + true-parity replan — 2026-09-02 (Claude Fable 5.1)
+
+Owed steps: CI run 33622687447 on df7009b3 is the first Julia-job run with no push
+behind it (monitored; advisory R smoke failed as documented; Julia jobs pending at
+12:16Z). Merge state: #277 draft UNSTABLE (checks pending), gllvmTMB #1236 draft
+CLEAN. ZI-trio ADEMP campaign relocated from Narval (no socket) / Nibi (maintenance
+09-02→09-03) to Totoro: D-139 pre-run 3 chunks (max wall 1:21, RSS 434 MB), full 240
+chunks launched 11:57Z at -j 120. Phylo Q1–Q4 brought with recommendations
+(core070/phylo-transport-questions-2026-09-02.md). Replan (ultra-plan + wayfinder +
+unlazy): decision map committed (core070/true-parity-decision-map.md); maintainer
+answered T1 one-directional claim, T2 oracle stays 0.7.0, T3 second-order = SE +
+vcov block + Wald endpoints (decisions/2026-09-02-maintainer-decisions-true-parity.md).
+Recount reproduced 505/285/220/0 ("required" = required_core + compatibility_adapter).
+Re-bind check: 4 extract_* rows likely fixed (Julia tests only), 4 need a paired batch
+or a decision. 34 R-side leads handed to the gllvmTMB lane. Cross-lane page from
+drmTMB2 acknowledged: no contradictions. In flight: second-order contract, se=TRUE
+pre-run (Totoro, 5 toy cells), parity_ledger.py port.
