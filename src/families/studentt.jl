@@ -431,6 +431,16 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     estimated = nu === nothing
     boundary = _studentt_nu_boundary(estimated, ν̂)
     boundary && @warn "Student-t estimated ν reached the flat Gaussian-limit boundary (ν > 1e6); the Student model is not distinguishable from Gaussian on this data, and optimizer convergence flags are unreliable at this boundary. Consider a fixed ν or the Gaussian family." maxlog=1
-    return StudentTFit(β̂, Λ̂, ν̂, σ̂, link, _fit_verdict(res)..., hessian,
+    loglik, conv, iters = _fit_verdict(res)
+    # Boundary honesty wiring (mirrors `_tweedie_verdict`'s `:power_at_boundary` rule,
+    # families/tweedie.jl: a family parameter that has run to the edge of its domain
+    # forces `converged = false` regardless of what Optim itself reported — Optim
+    # cannot tell a stationary point from a flat plateau by gradient alone). Forcing
+    # `converged` here — rather than leaving it `true` alongside `nu_boundary` — is
+    # what makes the fit fail the GENERIC `sanity_multi`/`gllvmTMB_diagnose` gate
+    # (diagnostics.jl), which reads `fit.converged` and nothing family-specific: no
+    # diagnostics.jl edit needed, and no existing gate is weakened, only tightened.
+    conv = conv && !boundary
+    return StudentTFit(β̂, Λ̂, ν̂, σ̂, link, loglik, conv, iters, hessian,
                        disp_group, estimated, boundary)
 end
