@@ -16,7 +16,10 @@ on:
         default: false
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel a run on main: a superseded main run reports no status at all,
+  # and "green by absence" is indistinguishable from green. PR runs are the only
+  # ones a later push makes genuinely redundant. (Carried over from PR #278.)
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   test:
     # Shard suffix only on the routine ubuntu combos (matrix.shard is set there);

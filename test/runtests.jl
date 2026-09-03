@@ -28,8 +28,11 @@ _RUN_QUALITY = _SHARD === nothing || _SHARD[1] == 1
 # File count for the header below: every `_shard_include("` call literally
 # present in this file's own source — the same ordered list `_shard_include`
 # walks at runtime — so the count can never drift from the include list as
-# files are added or removed.
-_n_test_files = count("_shard_include(\"", read(@__FILE__, String))
+# files are added or removed. Count only the INDENTED call sites: the bare
+# literal also matches this very expression, a silent off-by-one in the header
+# (harmless to selection, which uses the runtime `_shard_pos` counter, but
+# wrong in the log). Carried over from PR #278.
+_n_test_files = count("\n    _shard_include(\"", read(@__FILE__, String))
 _n_selected = _SHARD === nothing ? _n_test_files :
     length(_shard_indices(_n_test_files, _SHARD[1], _SHARD[2]))
 _n_reported = _n_selected + (_RUN_QUALITY ? 1 : 0)
@@ -85,12 +88,12 @@ println(_SHARD === nothing ?
     _shard_include("test_aghq_multistart.jl")
     _shard_include("test_aghq_poisson.jl")
     _shard_include("test_aghq_public_poisson.jl")
-_shard_include("test_aghq_gaussian.jl")
-_shard_include("test_aghq_public_gaussian.jl")
-_shard_include("test_gaussian_empty_design.jl")
-_shard_include("test_profile_failure_bounds.jl")
-_shard_include("test_aghq_binomial.jl")
-_shard_include("test_aghq_public_binomial.jl")
+    _shard_include("test_aghq_gaussian.jl")
+    _shard_include("test_aghq_public_gaussian.jl")
+    _shard_include("test_gaussian_empty_design.jl")
+    _shard_include("test_profile_failure_bounds.jl")
+    _shard_include("test_aghq_binomial.jl")
+    _shard_include("test_aghq_public_binomial.jl")
     _shard_include("test_aghq_gate.jl")
     _shard_include("test_aghq_kd_bound.jl")
     _shard_include("test_poisson_laplace.jl")
