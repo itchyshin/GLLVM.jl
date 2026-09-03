@@ -28,8 +28,8 @@ fail = the sentinel test's "healthy" NB2 grouped-cov fixture sits at a dispersio
 `dispersion_boundary` + `converged=false`; assertion aligned to the sentinel's actual intent
 (25 pass / 1 broken on 1.12.6 and 1.10.12). Push #1 = d4c6b44a..bba953df. GitHub delivered **no
 pull_request event** for that push (0 runs across all workflows; status all operational), so CI was
-started by `workflow_dispatch` (run 33699239628, sharded). suite-run-03 (full suite at bba953df):
-**SUITE3_PLACEHOLDER**. CI dispatch run: **CI2_PLACEHOLDER**. Also recorded: run 33661544679 at
+started by `workflow_dispatch` (run 33699239628, sharded). suite-run-03 (full suite at bba953df, Julia 1.12.6, `--depwarn=yes`, 68m06s):
+**13327 passed, 0 failed, 0 errored, 8 broken — exit 0, fully green**. CI dispatch run: **CI2_PLACEHOLDER**. Also recorded: run 33661544679 at
 d4c6b44a (17:30–20:37Z) was **fully green on both Julia jobs**, the NB2 Wald cell included,
 consistent with the T14 knife-edge diagnosis.
 
@@ -105,14 +105,14 @@ this report; `docs/dev-log/handover/2026-09-03-claude-handover.md`;
 
 ## 5. Checks Run
 
-- Totoro suite-run-02 (85918fe9): 13271/1/1/8 (both non-green diagnosed above). suite-run-03 (bba953df): **SUITE3_PLACEHOLDER**.
+- Totoro suite-run-02 (85918fe9): 13271/1/1/8 (both non-green diagnosed above). suite-run-03 (bba953df): 13327 pass / 0 fail / 0 error / 8 broken, exit 0 (68m06s).
 - CI dispatch run 33699239628 (sharded): **CI2_PLACEHOLDER**.
 - Aqua + JET (test env, Julia 1.12.6): 14/14 at 85918fe9.
 - Per-arc test files on Julia 1.12.6 and 1.10.12: sentinel 25/1 broken; shard logic 43/43; phylo
   bundle 78/1 broken; mi() 57/57; bridge_x 183/183 earlier.
 - Ledger counts: `TOTAL=769 REQUIRED=505 BOUND=292 DISPOSITIONED=213 FREE=0`.
 - Gates (`gate-check.mjs --reverify`): leaf-A2 2/2, A3 2/2, A4 2/2, A5 2/2, A6 2/2, A7 2/2, A8 1/1;
-  leaf-A1 **A1_GATES_PLACEHOLDER**; leaf-A10 at close.
+  leaf-A1 G1 met (suite-run-03 green), G2 pending the CI verdict; leaf-A10 at close.
 
 ## 6. Tests of the Tests
 
@@ -128,7 +128,7 @@ footnote marks after visually confirming the 20 rows; the measurement was not lo
 | 1 | GitHub delivered no pull_request event for push #1 (bba953df) | worked around by workflow_dispatch; watch on push #2 |
 | 2 | Nibi array cancelled mid-run by Ada while resizing `--time` | 8 tasks resubmitted (21053691); no data lost; lesson in A5 addendum |
 | 3 | Julia fresh-process wall time 10–12× R at p=20, n=500 (compile included) | M3 performance track; not a parity item |
-| 4 | Child saw `test_phylo_nb_xlv.jl` and `test_sparse_phy_grad.jl` failing locally on aarch64 before A6 | not seen on Totoro x64 suite-run-02; reconcile with suite-run-03 (**A1_GATES_PLACEHOLDER**) |
+| 4 | Child saw `test_phylo_nb_xlv.jl` and `test_sparse_phy_grad.jl` failing locally on aarch64 before A6 | not seen on Totoro x64 suite-run-02; suite-run-03 on Totoro x64 is fully green (13327/0/0/8), so those two are aarch64-local only; recorded as such |
 | 5 | `loading_profile` estimand scope (confirmatory vs exploratory) | maintainer decision |
 | 6 | T8: 8 AGHQ policy rows to reclassify | maintainer yes needed |
 | 7 | R+gllvmTMB not on Nibi → Julia/R grid split | pairing by cell id in the follow-up |

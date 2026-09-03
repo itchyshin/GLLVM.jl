@@ -17382,3 +17382,9 @@ the seed) — flagged for a corrected R re-run, not a fitting defect. 8 large ce
 could not be written from measurement (extrapolation only, flagged as such). Full report:
 `docs/dev-log/core070/realistic-size-grid-2026-09-03.md`; receipts copied to
 `docs/dev-log/core070/realistic-size-out/{nibi,totoro}/` (nothing >2 MB).
+
+## 2026-09-03 — suite-run-03 (Totoro, Julia 1.12.6, --depwarn=yes) at bba953df: FULLY GREEN
+
+13327 passed, 0 failed, 0 errored, 8 broken, exit 0, 68m06s. Confirms the sentinel alignment and
+that the two aarch64-local failures seen by the A6 child (test_phylo_nb_xlv.jl, test_sparse_phy_grad.jl
+p=120) do not reproduce on x64.
