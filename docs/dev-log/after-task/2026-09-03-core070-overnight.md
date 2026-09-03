@@ -74,7 +74,7 @@ log-det checksum diff 7.1e-15. `correlation=true` unit-height mode (opt-in, Q1) 
 GP-1); "what parity does NOT mean" section on the scoreboard; ZI-trio Julia-beyond note with the
 12-cell recovery table and the 35 % cell; `mi()` row → implemented on a 57/57 test receipt (7 files).
 
-**F1 follow-up (this loop).** `src/confint_family.jl`: a parameter the fit flags as `dispersion_boundary` is conditioned out even when the joint Hessian is barely PD (previously only on Cholesky failure), so the outcome no longer flips with the optimizer's stopping point; `pd_hessian=false` whenever a term is conditioned out. Deterministic forced-boundary test (r[2] set to 1e12 on a well-conditioned fit) added; docs page updated. Local verification: **F1B_PLACEHOLDER**.
+**F1 follow-up (this loop).** `src/confint_family.jl`: a parameter the fit flags as `dispersion_boundary` is conditioned out even when the joint Hessian is barely PD (previously only on Cholesky failure), so the outcome no longer flips with the optimizer's stopping point; `pd_hessian=false` whenever a term is conditioned out. Deterministic forced-boundary test (r[2] set to 1e12 on a well-conditioned fit) added; docs page updated. Local verification: `test_confint_family.jl` 326/326 on Julia 1.12.6 and 1.10.12 (first attempts of the deterministic test failed on 1.12 only, on a precondition — a per-trait fixture at the boundary — and then on a fixed finite set; both were the test's assumptions, not the engine; the final form asserts the contract).
 
 **A8 — design notes (622f4001).** T12 grouping levels: unit partial, unit_obs partial, cluster
 missing, cluster2 missing, with required-row proposals; T8 AGHQ policy rows: 14 bindable with a

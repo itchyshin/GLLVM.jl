@@ -17388,3 +17388,18 @@ could not be written from measurement (extrapolation only, flagged as such). Ful
 13327 passed, 0 failed, 0 errored, 8 broken, exit 0, 68m06s. Confirms the sentinel alignment and
 that the two aarch64-local failures seen by the A6 child (test_phylo_nb_xlv.jl, test_sparse_phy_grad.jl
 p=120) do not reproduce on x64.
+
+## 2026-09-03 — T14 F1 follow-up: flagged boundary conditioned out unconditionally
+
+CI dispatch run 33699239628 (bba953df): 7/8 shards green; `Julia 1 shard 1/4` red on F1's own
+seed-523 test (`ci.pd_hessian == false` evaluated true) — on 1.12.7 x64 the fixture lands in the
+barely-PD regime and the degradation branch only fired on a Cholesky failure. Fix
+(`src/confint_family.jl`): a parameter the fit flags as `dispersion_boundary` is conditioned out
+regardless of the Cholesky outcome; `pd_hessian=false` whenever a term is conditioned out. A
+deterministic forced-boundary test (shared-dispersion fixture, r forced to 1e12) asserts the
+contract: every term finite or named in `boundary_terms`, never Inf. Local:
+`test_confint_family.jl` 326/326 on Julia 1.12.6 and 1.10.12; `test_bridge_x.jl` 200/200 and
+`test_grouped_dispersion.jl` 20/20 on 1.10.12 (1.12 run of those two was in the earlier pass).
+Also seen twice tonight: per-trait NB2 dispersion is weakly identified against a free latent factor
+at small p — a "healthy" per-trait fixture can sit at the Poisson limit; test fixtures must use the
+shared-dispersion route or assert the flag, not assume its absence.

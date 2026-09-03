@@ -61,10 +61,11 @@ the asymptotic covariance; `lower/upper = θ̂ ± z·SE`. Returns an extra
 positive definite. Cheapest method; assumes approximate normality on the
 working scale.
 
-**Per-parameter degradation at a boundary (T14 F1, 2026-09-02).** If the joint
-Hessian is not PD — a grouped NB2/NB1/Beta/Gamma dispersion parameter at its
-`dispersion_boundary` (the Poisson / near-Bernoulli / near-deterministic
-limit), or any other numerically flat direction — `pd_hessian` stays `false`,
+**Per-parameter degradation at a boundary (T14 F1, 2026-09-02).** If the fit flags a
+grouped NB2/NB1/Beta/Gamma dispersion parameter at its `dispersion_boundary` (the
+Poisson / near-Bernoulli / near-deterministic limit) — whether or not the joint
+Hessian happens to pass a Cholesky — or the joint Hessian is not PD for any other
+numerically flat direction, `pd_hessian` is `false`,
 but the CI no longer NaNs *every* parameter. The known-boundary parameters
 (plus any further direction needed for the remaining sub-Hessian to pass a
 positive-definiteness check) are conditioned out; the rest of the parameters

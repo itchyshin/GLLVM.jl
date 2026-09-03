@@ -695,6 +695,45 @@ end
             end
         end
 
+        @testset "forced boundary (deterministic): flagged r is conditioned out even when the joint Hessian is barely PD" begin
+            # Independent of where the optimizer stops: start from the SHARED-
+            # dispersion fixture (group = ones(p); one r, well-conditioned by
+            # construction — per-trait NB dispersion is only weakly identified
+            # against a free latent factor, which is why the seed-523 case is a
+            # knife edge), then REPLACE that r by a Poisson-limit value. The
+            # positional constructor derives the `dispersion_boundary` flag, and
+            # confint must condition the flagged term out regardless of the
+            # Cholesky outcome (T14 F1, 2026-09-03).
+            rng = Random.MersenneTwister(9001)
+            p, n, K = 3, 120, 1
+            μ = exp.(1.2 .+ 0.3 .* randn(rng, p))
+            Yi = [rand(rng, NegativeBinomial(2.0, 2.0 / (2.0 + μ[t]))) for t in 1:p, s in 1:n]
+            X = reshape(randn(rng, p * n), p, n, 1)
+            f0 = fit_nb_gllvm_grouped_cov(Yi; X = X, K = K, group = ones(Int, p))
+            @test length(f0.r_group) == 1
+            r2 = [1.0e12]
+            f1 = GLLVM.NBGroupedCovFit(f0.β, f0.γ, f0.γ_fixed, f0.Λ, r2, f0.group, f0.link,
+                                       f0.loglik, f0.converged, f0.iterations)
+            @test f1.dispersion_boundary == [true]
+            ci = confint(f1, Yi; method = :wald, X = X)
+            @test ci.pd_hessian == false
+            @test "r[1]" in ci.boundary_terms
+            i1 = findfirst(==("r[1]"), ci.term)
+            @test isnan(ci.se[i1]) && isnan(ci.lower[i1]) && isnan(ci.upper[i1])
+            # The contract, not a fixed finite set: the point is a forced
+            # non-optimum, so the reduced Hessian may need one more direction
+            # conditioned out (platform-dependent). Every term is therefore
+            # either finite or NAMED in `boundary_terms` — never a huge
+            # "finite" SE or an `Inf` bound (the F3-class defect).
+            for (i, name) in enumerate(ci.term)
+                conditioned = name in ci.boundary_terms
+                @test conditioned || (isfinite(ci.se[i]) && isfinite(ci.lower[i]) && isfinite(ci.upper[i]))
+                @test !conditioned || (isnan(ci.se[i]) && isnan(ci.lower[i]) && isnan(ci.upper[i]))
+                @test !isinf(ci.lower[i]) && !isinf(ci.upper[i])
+            end
+            @test count(isfinite, ci.se) ≥ 1   # the degradation kept something, not all-NaN
+        end
+
         @testset "PD fixture: bounds unaffected by the degradation branch" begin
             # group = ones(p): a single SHARED dispersion, matching the DGP —
             # well-conditioned by construction (mirrors the existing

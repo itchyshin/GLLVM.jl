@@ -2035,6 +2035,17 @@ function _family_wald(ad::_FamilyCI, sel::Vector{Int}, level::Real; hessian=noth
             pd=all(v->isfinite(v) && v>0,variances)
             pd && (se .= sqrt.(variances))
         end
+        # T14 F1 (2026-09-03): a parameter the FIT flags as at a boundary
+        # (`dispersion_boundary`) is conditioned out even when the joint
+        # Hessian happens to be barely positive definite — otherwise a
+        # Poisson-limit dispersion gets a meaningless huge "finite" SE and an
+        # `Inf` bound, and the outcome flips with the optimizer's stopping
+        # point (the seed-523 regime A/B knife edge). `pd_hessian` is `false`
+        # whenever any term is conditioned out; R's sdreport NaNs that block.
+        if pd && any(ad.boundary)
+            pd = false
+            se .= NaN
+        end
         if !pd
             # `pd_hessian` keeps its existing meaning below (true only when the
             # FULL joint Hessian's Cholesky succeeded with all-positive
