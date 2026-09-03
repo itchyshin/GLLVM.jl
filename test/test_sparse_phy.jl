@@ -294,7 +294,10 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays
             y = randn(p, n)
             ll = gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
                 σ_phy = σ_phy, phy = phy, σ²_phy = 0.9)
-            @test ll == -208.89116988490582
+            # Literal captured on aarch64 before S2; x64 OpenBLAS differs in the last ulp
+        # (CI 2026-09-03: -208.89116988490585), so "unchanged" is asserted at 1e-12
+        # relative, which still fails on any real change to the correlation=false path.
+        @test ll ≈ -208.89116988490582 rtol = 1e-12
             @test phy.Q_topology[1, 1] == 10.0
         end
     end
