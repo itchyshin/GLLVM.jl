@@ -29,7 +29,7 @@ fail = the sentinel test's "healthy" NB2 grouped-cov fixture sits at a dispersio
 (25 pass / 1 broken on 1.12.6 and 1.10.12). Push #1 = d4c6b44a..bba953df. GitHub delivered **no
 pull_request event** for that push (0 runs across all workflows; status all operational), so CI was
 started by `workflow_dispatch` (run 33699239628, sharded). suite-run-03 (full suite at bba953df, Julia 1.12.6, `--depwarn=yes`, 68m06s):
-**13327 passed, 0 failed, 0 errored, 8 broken — exit 0, fully green**. CI dispatch run: **CI2_PLACEHOLDER**. Also recorded: run 33661544679 at
+**13327 passed, 0 failed, 0 errored, 8 broken — exit 0, fully green**. CI dispatch run 33699239628 (sharded, bba953df, 00:22–01:2xZ): **7 of 8 Julia shards green** (all four on 1.10.12, three on 1.12.7); the one red shard, `Julia 1 shard 1/4`, failed only F1's own red-first test `test_confint_family.jl:644-694` (`ci.pd_hessian == false` evaluated true): on CI's 1.12.7 x64 the seed-523 fixture landed in the barely-positive-definite regime the T14 diagnosis describes, and F1's degradation branch only fired on a Cholesky failure. Fixed in the follow-up commit (flagged boundary parameters are now conditioned out unconditionally; deterministic forced-boundary test added) — see §2 F1 follow-up. Advisory R smoke failed as documented. Also recorded: run 33661544679 at
 d4c6b44a (17:30–20:37Z) was **fully green on both Julia jobs**, the NB2 Wald cell included,
 consistent with the T14 knife-edge diagnosis.
 
@@ -74,6 +74,8 @@ log-det checksum diff 7.1e-15. `correlation=true` unit-height mode (opt-in, Q1) 
 GP-1); "what parity does NOT mean" section on the scoreboard; ZI-trio Julia-beyond note with the
 12-cell recovery table and the 35 % cell; `mi()` row → implemented on a 57/57 test receipt (7 files).
 
+**F1 follow-up (this loop).** `src/confint_family.jl`: a parameter the fit flags as `dispersion_boundary` is conditioned out even when the joint Hessian is barely PD (previously only on Cholesky failure), so the outcome no longer flips with the optimizer's stopping point; `pd_hessian=false` whenever a term is conditioned out. Deterministic forced-boundary test (r[2] set to 1e12 on a well-conditioned fit) added; docs page updated. Local verification: **F1B_PLACEHOLDER**.
+
 **A8 — design notes (622f4001).** T12 grouping levels: unit partial, unit_obs partial, cluster
 missing, cluster2 missing, with required-row proposals; T8 AGHQ policy rows: 14 bindable with a
 named public R call, 8 to reclassify (needs the maintainer's yes).
@@ -106,7 +108,7 @@ this report; `docs/dev-log/handover/2026-09-03-claude-handover.md`;
 ## 5. Checks Run
 
 - Totoro suite-run-02 (85918fe9): 13271/1/1/8 (both non-green diagnosed above). suite-run-03 (bba953df): 13327 pass / 0 fail / 0 error / 8 broken, exit 0 (68m06s).
-- CI dispatch run 33699239628 (sharded): **CI2_PLACEHOLDER**.
+- CI dispatch run 33699239628 (sharded): 7/8 shards success; Julia 1 shard 1/4 failure = 3469 pass / 8 fail (all in F1's seed-523 test), fixed by the follow-up; shard wall times ~30–55 min instead of 135–170 min per job.
 - Aqua + JET (test env, Julia 1.12.6): 14/14 at 85918fe9.
 - Per-arc test files on Julia 1.12.6 and 1.10.12: sentinel 25/1 broken; shard logic 43/43; phylo
   bundle 78/1 broken; mi() 57/57; bridge_x 183/183 earlier.
