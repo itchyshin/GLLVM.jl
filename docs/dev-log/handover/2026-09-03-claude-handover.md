@@ -26,9 +26,9 @@ Final state (close, ~03:10Z): pushes used **3 of 3** (bba953df 00:09Z; 789bd97e 
 
 ## Owed next (in order)
 
-1. **CI is green**: the close push's run 33710504809 passed all 8 shards. PR #277 was then merged with
-   `origin/main` (#275 action bumps; conflict in CI.yml resolved keeping the sharding) — read the run for
-   that merge commit; Totoro `suite-run-03/suite.end`. Reconcile the two aarch64-only
+1. **CI is green on the current head**: run 33746827144 (e76ee018, the lane merged with `origin/main`)
+   passed all 8 Julia shards; the close push's run 33710504809 did too. PR #277 is mergeable with only
+   the advisory frozen-R smoke red — **merging it is yours**; Totoro `suite-run-03/suite.end`. Reconcile the two aarch64-only
    local failures the A6 child saw (`test_phylo_nb_xlv.jl`, `test_sparse_phy_grad.jl` p=120) against
    the x64 suite; if they are platform-only, record them as such in the check-log.
 2. **Realistic-size grid: 22/24 paired** (`docs/dev-log/core070/realistic-size-grid-2026-09-03.md`);

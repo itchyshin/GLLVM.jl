@@ -17432,3 +17432,10 @@ Julia 2h36m vs R 498 s. Grid: 22/24 valid, 2 invalid (seed mismatch), 0 pending.
 PR #277 went DIRTY overnight: main merged #275 (actions off the Node 20 runtime) touching CI.yml;
 merged origin/main into the lane (9a282f36), keeping the shard/coverage gating and taking
 `codecov-action@v6` / `checkout@v6` / `setup-julia@v3` from main; YAML parses.
+
+## 2026-09-03 — CI GREEN on the main-merged lane head (run 33746827144, e76ee018)
+
+All 8 Julia shards success (1.10.12 and 1.12.7 × shards 1–4); run conclusion **success**; the PR
+event was delivered this time (no manual dispatch needed). Advisory frozen-R smoke failed as
+documented. This is the first green CI run on the lane that also contains `origin/main` (PR #275's
+action bumps) — PR #277's checks are green apart from the advisory job.
