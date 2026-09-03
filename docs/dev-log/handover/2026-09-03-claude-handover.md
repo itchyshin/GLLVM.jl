@@ -30,11 +30,11 @@ Final state lines (filled at close): **CLOSE_PLACEHOLDER**.
    and any run for the final push; Totoro `suite-run-03/suite.end`. Reconcile the two aarch64-only
    local failures the A6 child saw (`test_phylo_nb_xlv.jl`, `test_sparse_phy_grad.jl` p=120) against
    the x64 suite; if they are platform-only, record them as such in the check-log.
-2. **Collect the realistic-size grid.** Nibi `~/projects/def-snakagaw/snakagaw/gllvm-realsize-01/repo/out/`
-   (Julia side; `seff 21053691_<k>` for the 8 large cells, then the D-201 resize note) + Totoro
-   `core070-aghq-20260830/realsize-01/` (R side). Pair by cell id; write
-   `docs/dev-log/core070/realistic-size-grid-2026-09-03.md` with cond(H), SE/vcov/Wald deltas, timings.
-   Collection stub: `tools/core070_realistic_size_collect.py` (if present) — verify, don't trust.
+2. **Finish the realistic-size grid.** 21 of 24 cells are paired in
+   `docs/dev-log/core070/realistic-size-grid-2026-09-03.md` (2 invalid pairs need the R driver re-run
+   with the seed in the filename; see the doc). The last cell `nb2_p50_n2000_K2` is Nibi job
+   **21059449** (5 h limit, queued ~03:05Z): collect its `out/` files when it finishes
+   (`sacct -j 21059449 -X`; `seff 21059449_24`), pair it, and append to the grid doc.
 3. **Bring the maintainer**: (a) T3 tolerances to sign (`second-order-parity-contract.md` §4; the
    receipts now show what "the same" looks like at toy and realistic scale); (b) `loading_profile`
    estimand scope; (c) T8: reclassify 8 AGHQ policy rows?; (d) T12: are the four level names the
