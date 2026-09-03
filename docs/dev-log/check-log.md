@@ -17403,3 +17403,13 @@ contract: every term finite or named in `boundary_terms`, never Inf. Local:
 Also seen twice tonight: per-trait NB2 dispersion is weakly identified against a free latent factor
 at small p — a "healthy" per-trait fixture can sit at the Poisson limit; test fixtures must use the
 shared-dispersion route or assert the flag, not assume its absence.
+
+## 2026-09-03 — A5c: realistic-size grid, 7 large cells paired (21/24 valid)
+
+Nibi array 21053691's 7 new completions (idx14-16,20-23) rsynced and paired
+against Totoro's R outputs via `tools/core070_realistic_size_collect.py`
+(unchanged script) — appended to `realistic-size-grid-2026-09-03.md`. Max
+rel ΔSE (β) 2.19e-05-1.32e-04, cond(H) up to 2103.16 (R, idx14) — first
+cell over 1e3, unscaled/scaled tolerance both hold (266x/559x margin).
+idx24 (`nb2_p50_n2000_K2`) timed out at 2h, resubmitted (21059449, 5h/4G,
+pending). idx9/idx17 stay excluded (R seed-mismatch, owed re-run).
