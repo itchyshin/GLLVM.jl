@@ -17439,3 +17439,17 @@ All 8 Julia shards success (1.10.12 and 1.12.7 × shards 1–4); run conclusion 
 event was delivered this time (no manual dispatch needed). Advisory frozen-R smoke failed as
 documented. This is the first green CI run on the lane that also contains `origin/main` (PR #275's
 action bumps) — PR #277's checks are green apart from the advisory job.
+
+## 2026-09-03 — Documenter red on 34eae4a6: four internal helpers carried docstrings
+
+`makedocs` failed with `[:missing_docs] — 4 docstrings not included in the manual`:
+`_phylo_root_to_tip_heights`, `_phy_cond_and_leafpos`, `_apply_phy_correlation`,
+`_phylo_check_ultrametric_height` — all internal (underscore-prefixed) helpers added by the phylo
+transport S1/S2 slice. The repo's convention is zero docstringed internals (sampled: 0 of 81 in
+`confint_family.jl`, 0 of 10 in `studentt.jl`, 0 of 48 in `grouped_dispersion.jl`), so the four
+`"""` blocks became `#` comment blocks with every word preserved; the public `PrecisionPhy` and
+`precision_logdet_check` docstrings stay in `docs/src/api.md`. Local `julia --project=docs
+docs/make.jl`: **build complete, exit 0**. (Two scripted attempts at the conversion used a regex
+that matched across block boundaries and commented out the public `AugmentedPhy` struct; caught by
+the load check, files restored from HEAD, redone against verified line ranges. Nothing broken was
+committed.)

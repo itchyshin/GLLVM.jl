@@ -77,15 +77,13 @@
 using SparseArrays
 using LinearAlgebra
 
-"""
-    _phy_cond_and_leafpos(phy) :: (Q_cond, leaf_pos)
-
-Root-dropped topology precision plus each leaf's row/col position in it.
-Dispatches on the phylo representation: `AugmentedPhy` (root INCLUDED in
-`Q_topology`; dropped here) vs. `PrecisionPhy` (root already dropped at
-construction, `src/phylo_precision.jl`). Both feed the same downstream
-sparse-phylo likelihood kernel below.
-"""
+#     _phy_cond_and_leafpos(phy) :: (Q_cond, leaf_pos)
+#
+# Root-dropped topology precision plus each leaf's row/col position in it.
+# Dispatches on the phylo representation: `AugmentedPhy` (root INCLUDED in
+# `Q_topology`; dropped here) vs. `PrecisionPhy` (root already dropped at
+# construction, `src/phylo_precision.jl`). Both feed the same downstream
+# sparse-phylo likelihood kernel below.
 function _phy_cond_and_leafpos(phy::AugmentedPhy)
     keep = filter(i -> i != phy.root_index, 1:phy.n_total)
     Q_cond = phy.Q_topology[keep, keep]            # SparseMatrixCSC{Float64,Int}

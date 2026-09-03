@@ -58,13 +58,11 @@ struct PrecisionPhy{T}
     node_labels::Vector{String}
 end
 
-"""
-    _phylo_root_to_tip_heights(phy::AugmentedPhy) :: Vector{Float64}
-
-Root-to-every-node path length, by BFS over `phy.Q_topology`'s explicit
-off-diagonal entries (each stores `-1/branch_length` for both directions
-of an edge, so `-1/Q[i,j]` recovers the branch length). O(p).
-"""
+#     _phylo_root_to_tip_heights(phy::AugmentedPhy) :: Vector{Float64}
+#
+# Root-to-every-node path length, by BFS over `phy.Q_topology`'s explicit
+# off-diagonal entries (each stores `-1/branch_length` for both directions
+# of an edge, so `-1/Q[i,j]` recovers the branch length). O(p).
 function _phylo_root_to_tip_heights(phy::AugmentedPhy)
     n = phy.n_total
     Q = phy.Q_topology
@@ -91,13 +89,11 @@ function _phylo_root_to_tip_heights(phy::AugmentedPhy)
     return dist
 end
 
-"""
-    _phylo_check_ultrametric_height(phy::AugmentedPhy) :: Float64
-
-Root-to-tip height of `phy`, after checking every leaf agrees within
-`sqrt(eps()) * height` (mirrors `phylo-tree-precision.R:140-146`). Raises
-`GJL-GATE-PHYLO-NONULTRAMETRIC` otherwise.
-"""
+#     _phylo_check_ultrametric_height(phy::AugmentedPhy) :: Float64
+#
+# Root-to-tip height of `phy`, after checking every leaf agrees within
+# `sqrt(eps()) * height` (mirrors `phylo-tree-precision.R:140-146`). Raises
+# `GJL-GATE-PHYLO-NONULTRAMETRIC` otherwise.
 function _phylo_check_ultrametric_height(phy::AugmentedPhy)
     dist = _phylo_root_to_tip_heights(phy)
     leaf_heights = dist[phy.leaf_indices]

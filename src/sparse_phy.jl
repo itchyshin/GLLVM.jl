@@ -88,19 +88,17 @@ AugmentedPhy{T}(n_leaves::Int, n_total::Int, Q_topology::SparseMatrixCSC{T,Int},
     AugmentedPhy{T}(n_leaves, n_total, Q_topology, leaf_indices, leaf_names,
                     branch_lengths, root_index, 1.0)
 
-"""
-    _apply_phy_correlation(raw::AugmentedPhy; correlation::Bool) :: AugmentedPhy
-
-Shared `correlation = true` gate + unit-height rescale used by both
-`augmented_phy` and `make_phy` (phylo transport S2). `correlation = false`
-returns `raw` unchanged (`scale = 1.0`, the existing behaviour — bit-
-identical to every pre-S2 caller). `correlation = true` checks
-ultrametricity via `_phylo_check_ultrametric_height`
-(`src/phylo_precision.jl`, mirrors `phylo-tree-precision.R:140-146`; raises
-`GJL-GATE-PHYLO-NONULTRAMETRIC` otherwise) and multiplies `Q_topology` by
-the root-to-tip height, matching R's `values <- scale * values`
-(`phylo-tree-precision.R:216`) — `branch_lengths` itself is left raw.
-"""
+#     _apply_phy_correlation(raw::AugmentedPhy; correlation::Bool) :: AugmentedPhy
+#
+# Shared `correlation = true` gate + unit-height rescale used by both
+# `augmented_phy` and `make_phy` (phylo transport S2). `correlation = false`
+# returns `raw` unchanged (`scale = 1.0`, the existing behaviour — bit-
+# identical to every pre-S2 caller). `correlation = true` checks
+# ultrametricity via `_phylo_check_ultrametric_height`
+# (`src/phylo_precision.jl`, mirrors `phylo-tree-precision.R:140-146`; raises
+# `GJL-GATE-PHYLO-NONULTRAMETRIC` otherwise) and multiplies `Q_topology` by
+# the root-to-tip height, matching R's `values <- scale * values`
+# (`phylo-tree-precision.R:216`) — `branch_lengths` itself is left raw.
 function _apply_phy_correlation(raw::AugmentedPhy{T}; correlation::Bool) where {T}
     correlation || return raw
     h = _phylo_check_ultrametric_height(raw)
