@@ -17254,3 +17254,16 @@ orchestrator runs it separately.
   unrelated to this task (added `GLLVM` as a direct test-env dependency) and
   outside this task's edit scope. Reverted to match `HEAD` (backed up first)
   since the shard mechanism needs zero new dependencies.
+
+## 2026-09-03 — overnight A1: Totoro suite at 85918fe9, then the sentinel test aligned with T14 F1
+
+suite-run-02 (Totoro, Julia 1.12.6, `--depwarn=yes`, 67m50s): **13271 passed, 1 failed, 1 errored,
+8 broken**. The error was environmental (`test_core070_interface_registry.jl` reads
+`docs/dev-log/core070/frozen-r070-contract.toml`, which the rsync had excluded; passes locally
+4/4 testsets). The failure was `test_known_sentinel_defects.jl:65`: its "healthy" NB2 grouped-cov
+fixture drives one group's dispersion to the Poisson limit (r ≈ 2.9e9; the free latent factor
+absorbs that trait's overdispersion), which T14 F1 now reports as `dispersion_boundary` with
+`converged = false`. The test's intent — the sentinel screen must not fire on a real answer —
+still holds; its proxy assertion `fh.converged` is replaced by `fh.loglik != -Inf` and
+`fh.converged == !any(fh.dispersion_boundary)`. Re-run: 25 pass / 1 broken on Julia 1.12.6 and
+1.10.12. Full suite re-run queued on Totoro (suite-run-03) at the fixed HEAD for the record.

@@ -1,5 +1,5 @@
 GOAL: see LOOP/GOAL.md.   STATE: A1 IN PROGRESS — Totoro suite-run-02 at 85918fe9 running (started 22:56:50Z).
-ARCS DONE (verified): none yet this run.
+ARCS DONE (verified): A7 docs cascade — commits 0fe1c622, ffce3f3c, 82bc1760; leaf-A7 2/2 (mi() flip on a 57/57 test receipt). A8 design notes — 622f4001 (T12: unit partial, unit_obs partial, cluster missing, cluster2 missing; T8: 14 bindable, 8 reclassify); leaf-A8 1/1. A2 CI sharding — afd66551 (shard 4/4 locally: 3156 pass / 2 broken in 29m44s; pure-logic shard test 43/43; YAML parses); leaf-A2 gates below.
 ARC IN PROGRESS: A1 — lands when `suite-run-02/suite.end` shows exit=0 and the root Test Summary line has Fail = 0 (read the LOG).
 NEXT: A2/A7/A8 in parallel via children while A1's suite runs; then push #1.
 OPEN GATES (need human): none (envelope in GOAL.md).

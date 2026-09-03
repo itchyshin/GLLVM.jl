@@ -62,8 +62,15 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
         # A healthy fit on the same route is untouched — the screen must not fire on
         # real answers.
         fh = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4))
-        @test fh.converged
+        # T14 F1 (2026-09-02): this fixture happens to drive one group's dispersion to
+        # the Poisson limit (r ≈ 3e9 — the free latent factor absorbs that trait's
+        # overdispersion), which the grouped fits now report honestly as
+        # `dispersion_boundary` with `converged = false`. The sentinel screen must
+        # still NOT fire: the log-likelihood is a real, finite answer, and the only
+        # reason for non-convergence is the boundary flag itself.
         @test isfinite(fh.loglik) && fh.loglik < 0
+        @test fh.loglik != -Inf
+        @test fh.converged == !any(fh.dispersion_boundary)
 
         # The helper itself, at its boundaries.
         @test GLLVM._fit_verdict(1.0e12, true, 0) == (-Inf, false, 0)
