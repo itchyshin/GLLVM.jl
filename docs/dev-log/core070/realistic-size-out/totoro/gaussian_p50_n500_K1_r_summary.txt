@@ -1,0 +1,8 @@
+family=gaussian
+p=50 n=500 K=1 seed=1005
+logLik=-27102.8378104007
+converged=TRUE
+has_sd_report=TRUE
+wall_fit_sec=4.4277
+wall_confint_sec=0.0002
+cond_H=911.07

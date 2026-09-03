@@ -1,0 +1,8 @@
+family=gaussian
+p=20 n=2000 K=2 seed=1004
+logLik=-45863.1288578280
+converged=TRUE
+has_sd_report=TRUE
+wall_fit_sec=10.8074
+wall_confint_sec=0.0002
+cond_H=1599.73

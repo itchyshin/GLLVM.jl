@@ -1,0 +1,35 @@
+DONE nb2_p20_n500_K1
+family=nb2
+p=20 n=500 K=1 seed=1003
+converged=true
+logLik=-22813.508718009172
+hessian_selector=observed (grouped default)
+wall_fit_sec=46.96870303153992
+dispersion_boundary=Bool[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+pd_hessian=true
+wall_confint_sec=37.05729603767395
+boundary_terms=
+cond_H=81.48930466394468
+	Command being timed: "/home/snakagaw/.julia/juliaup/julia-1.10.10+0.x64.linux.gnu/bin/julia --project=. tools/core070_realistic_size_cell.jl nb2 20 500 1 1003"
+	User time (seconds): 121.67
+	System time (seconds): 0.91
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:01.96
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 482080
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 525499
+	Voluntary context switches: 34
+	Involuntary context switches: 214
+	Swaps: 0
+	File system inputs: 132861
+	File system outputs: 69
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

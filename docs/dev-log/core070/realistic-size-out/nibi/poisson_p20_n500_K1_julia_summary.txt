@@ -1,0 +1,10 @@
+family=poisson
+p=20 n=500 K=1 seed=1009
+converged=true
+logLik=-20407.465000323384
+wall_fit_sec=15.247822999954224
+pd_hessian=true
+wall_confint_sec=14.063452005386353
+dispersion_boundary=NA (Poisson has no dispersion parameter)
+boundary_terms=
+cond_H=23.187510933231025

@@ -17367,3 +17367,18 @@ insufficient for the largest cells (p=50, n=2000, K=2), with the `seff`-informed
 named for whoever collects the array's results. Full report:
 `docs/dev-log/core070/realistic-size-prerun-2026-09-03.md`. Receipts, not a parity claim — nothing
 here is gated against the second-order-parity-contract tolerances.
+
+## 2026-09-03 — T4 realistic-size grid paired by cell (14 valid / 2 invalid / 8 pending)
+
+14/24 cells validly paired: max rel ΔSE (β block) 6.95e-06–1.58e-05 (worst `nb2_p20_n500_K2`),
+vcov rel Frobenius ≤2.95e-05, max |ΔWald| ≤1.18e-05 — no degradation with p, n, K, or cond(H)
+visible in what has landed; all β-comparable cells have cond(H)<1e3, so the contract's §4
+conditioning-scaling multiplier stays untested (R's largest cell, `nb2_p50_n2000_K2`, cond(H)=
+14137.7, has no Julia pair yet — pending). Found and excluded 2 invalid pairs (idx9, idx17):
+Totoro's R-grid driver skipped re-fitting two tags because same-named STEP-1 spot-check outputs
+already existed, so R and Julia compared different seeded datasets under one tag (filename lacks
+the seed) — flagged for a corrected R re-run, not a fitting defect. 8 large cells (Nibi array
+21053691) still `RUNNING`, none `COMPLETED` — no `seff` data exists yet, so the D-201 resize note
+could not be written from measurement (extrapolation only, flagged as such). Full report:
+`docs/dev-log/core070/realistic-size-grid-2026-09-03.md`; receipts copied to
+`docs/dev-log/core070/realistic-size-out/{nibi,totoro}/` (nothing >2 MB).
