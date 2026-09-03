@@ -1,7 +1,7 @@
-GOAL: see LOOP/GOAL.md.   STATE: A1 IN PROGRESS — Totoro suite-run-02 at 85918fe9 running (started 22:56:50Z).
-ARCS DONE (verified): A7 docs cascade — commits 0fe1c622, ffce3f3c, 82bc1760; leaf-A7 2/2 (mi() flip on a 57/57 test receipt). A8 design notes — 622f4001 (T12: unit partial, unit_obs partial, cluster missing, cluster2 missing; T8: 14 bindable, 8 reclassify); leaf-A8 1/1. A2 CI sharding — afd66551 (shard 4/4 locally: 3156 pass / 2 broken in 29m44s; pure-logic shard test 43/43; YAML parses); leaf-A2 gates below.
-ARC IN PROGRESS: A1 — lands when `suite-run-02/suite.end` shows exit=0 and the root Test Summary line has Fail = 0 (read the LOG).
-NEXT: A2/A7/A8 in parallel via children while A1's suite runs; then push #1.
-OPEN GATES (need human): none (envelope in GOAL.md).
-TRUTH LIVES IN: branch codex/core070-aghq-20260830 (origin at d4c6b44a; local ahead: T14 commits 98b9f0bb..85918fe9 + LOOP kit); ledgers `.unlazy/core070-overnight/`; Totoro `/home/snakagaw/core070-aghq-20260830/{suite-run-02,se-prerun-01,zi-ademp-01}`.
+GOAL: see LOOP/GOAL.md.   STATE: push #1 done (bba953df, 00:10Z); A3 + A4 running on Totoro; suite-run-03 re-running the full suite at bba953df for the record.
+ARCS DONE (verified): A7 docs cascade (0fe1c622, ffce3f3c, 82bc1760; leaf-A7 2/2; mi() flipped on a 57/57 receipt) · A8 design notes (622f4001; leaf-A8 1/1; T12 unit/unit_obs partial, cluster/cluster2 missing; T8 14 bindable / 8 reclassify) · A2 CI sharding (afd66551; leaf-A2 2/2; shard 4/4 = 3156 pass / 2 broken in 29m44s locally) · A1 T14 land: suite-run-02 at 85918fe9 = 13271 pass / 1 fail / 1 error / 8 broken — error = rsync omitted frozen-r070-contract.toml (passes locally), fail = sentinel fixture at a dispersion boundary under F1 semantics → assertion aligned (bba953df; 25/1 broken on 1.12.6 and 1.10.12); PUSH #1 = d4c6b44a..bba953df; leaf-A1 G1 pending suite-run-03, G2 pending CI verdict (Monitor bxymb1qz1).
+ARC IN PROGRESS: A3 second-order receipts (child a3-second-order, Totoro second-order-01) · A4 T5 re-runs (child a4-t5-rebind, Totoro t5-rebind-01) · suite-run-03 waiter ba044ut4w.
+NEXT: on A3+A4 → verify leaves A3/A4 → A5 realistic-size pre-run + Nibi array → A6 phylo S1/S2 → push #2 (A9) → A10 close.
+OPEN GATES (need human): none. Pushes used: 1 of 3.
+TRUTH LIVES IN: origin/codex/core070-aghq-20260830 @ bba953df; ledgers .unlazy/core070-overnight/ (A2, A7, A8 met); Totoro /home/snakagaw/core070-aghq-20260830/{suite-run-03,second-order-01,t5-rebind-01}.
 RESUME: You are the core070 overnight lane in /private/tmp/GLLVM.jl-core070-aghq-20260830. READ LOOP/GOAL.md -> LOOP/checkpoint.md -> LOOP/ultra-plan.md -> AGENTS.md. Continue from NEXT; verify by LOG not exit code; pause only at GOAL.md "Must stop for".
