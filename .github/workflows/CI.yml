@@ -43,8 +43,8 @@ jobs:
         shard: [1, 2, 3, 4]
         include: ${{ (github.event_name == 'workflow_dispatch' && inputs.full_matrix) && fromJSON('[{"version":"1","os":"macOS-latest"},{"version":"1","os":"windows-latest"}]') || fromJSON('[]') }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v2
@@ -62,7 +62,7 @@ jobs:
           coverage: ${{ github.event_name == 'workflow_dispatch' && inputs.coverage }}
       - uses: julia-actions/julia-processcoverage@v1
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.coverage }}
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v6
         if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.coverage }}
         with:
           files: lcov.info
