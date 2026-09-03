@@ -1,0 +1,169 @@
+# After-task — core070 overnight loop (2026-09-02 23:15Z → 2026-09-03)
+
+Session: Claude Fable 5.1 (Claude Code), lane `codex/core070-aghq-20260830`, worktree
+`/private/tmp/GLLVM.jl-core070-aghq-20260830`, arc-loop with the LOOP/ kit (`LOOP/GOAL.md`
+immutable; `LOOP/arcs.md`; `LOOP/checkpoint.md` overwritten per arc). Pre-authorisation: Shinichi's
+four answers of 2026-09-02 ~23:05Z (up to 3 pushes + CI sharding; phylo Q1–Q4 defaults; re-binds on
+passing receipts + mi() flip on a test receipt; arcs A3/A4/A5 + docs; "consider using DRAC
+cleverly"). Acceptance ledger `.unlazy/core070-overnight/` (9 leaves).
+
+**Honesty line, first:** nothing in this report is a parity claim. Second-order receipts now exist on
+20 paired toy-scale cells and three realistic-size pre-run cells; that is evidence collected under a
+draft contract whose tolerances the maintainer has not signed. The qualification claim stays
+first-order harness parity plus these receipts.
+
+## 1. Goal
+
+Run the lane autonomously until 05:00 MDT: land T14 (suite green, pushed, CI read); shard CI; collect
+second-order receipts on every paired cell; T5 paired re-runs with re-binds; realistic-size pre-run and
+grid (Totoro pre-run, Nibi array); phylo transport S1–S2 red-first; docs cascade; T12/T8 design notes;
+close with report, audit, reconcile, handover. Three pushes maximum.
+
+## 2. Implemented
+
+**A1 — T14 landed.** Totoro suite-run-02 at 85918fe9: 13271 pass / 1 fail / 1 error / 8 broken —
+error environmental (rsync omitted `frozen-r070-contract.toml`; registry test passes locally 4/4),
+fail = the sentinel test's "healthy" NB2 grouped-cov fixture sits at a dispersion boundary
+(r ≈ 2.9e9, the free latent factor absorbs the trait's overdispersion), which F1 now reports as
+`dispersion_boundary` + `converged=false`; assertion aligned to the sentinel's actual intent
+(25 pass / 1 broken on 1.12.6 and 1.10.12). Push #1 = d4c6b44a..bba953df. GitHub delivered **no
+pull_request event** for that push (0 runs across all workflows; status all operational), so CI was
+started by `workflow_dispatch` (run 33699239628, sharded). suite-run-03 (full suite at bba953df):
+**SUITE3_PLACEHOLDER**. CI dispatch run: **CI2_PLACEHOLDER**. Also recorded: run 33661544679 at
+d4c6b44a (17:30–20:37Z) was **fully green on both Julia jobs**, the NB2 Wald cell included,
+consistent with the T14 knife-edge diagnosis.
+
+**A2 — CI sharded (afd66551).** `GLLVM_TEST_SHARD=k/N` in `test/runtests.jl` with a pure-logic
+partition test (43/43); CI matrix `shard: [1,2,3,4]` → 8 Julia jobs; coverage only on
+`workflow_dispatch`. Shard 4/4 locally: 3156 pass / 2 broken in 29m44s (was 135–170 min per job).
+The dispatched run shows the 8 sharded jobs by name.
+
+**A3 — second-order receipts (06f4b97a).** 20/20 paired harness cells (10 families/links × no-X and
++X, plus two species-X cells), both engines on Totoro, observed Hessian both sides: max rel ΔSE
+median 6.4e-6, max 1.01e-4 (nb1_log); vcov-block relative Frobenius median 1.09e-5, max 1.84e-4
+(n=15; nb2_log null at a shared Poisson-limit boundary, reported not hidden); max |ΔWald endpoint|
+median 6.7e-6, max 3.27e-5; |ΔlogLik| max 3.41e-6 (nb2 boundary cell). No cell above the draft
+each-own-optimum tolerances; tolerances measured, not gated. 49 s per 20-cell pass. Receipts:
+`core070/second-order-batch-out/`, tooling `tools/core070_second_order/`.
+
+**A4 — T5 re-runs (76b8b28f).** Seven of eight PARTIAL_PARITY_DEFECT rows re-bound on frozen-oracle
+receipts: extract_communality / correlations / proportions / Omega (PASS vs the real R accessors,
+max abs diff ≤ 6.12e-6 at tol 1e-4) and POST-LOGLIK-NOBS / POST-NOBS-COUNT / POST-NOBS-FALLBACK
+(exact). `loading_profile` held: an estimand-scope decision (confirmatory vs exploratory profile), not
+a re-run. Ledger: REQUIRED=505 unchanged, BOUND 285→292, DISPOSITIONED 220→213. New standalone batch
+`tools/core070_estimand_rebind_batch.{R,jl}` + verifier (self-tests passed) because the frozen wave5
+batch cannot exercise those quantities.
+
+**A5 — realistic-size (fbfb7a44 + addendum 317a0569).** Totoro pre-run p=20, n=500, K=1: R
+1.25/1.74/12.99 s vs Julia 15.51/41.01/121.96 s (gaussian/poisson/nb2; Julia wall includes
+fresh-process compile), cond(H) 40–100 both engines, max rel ΔSE ≤ 1.95e-5, no boundary flags. Nibi
+(DRAC, "cleverly"): the array ran immediately despite the maintenance reservation; 16/24 tasks
+completed at the original 10-min limit; Ada cancelled the array mid-run to resize it — an incident
+recorded in the A5 addendum — and resubmitted the 8 largest cells as 21053691 (2 h, 6 GB):
+**NIBI_PLACEHOLDER**. R side of the grid on Totoro: 23/24 at report time. R+gllvmTMB is not installed
+on Nibi, hence the Julia/R split; pairing happens by cell id in the follow-up.
+
+**A6 — phylo transport S1/S2 (e18eeb59, ef95ef6f, 0d732bd6).** `PrecisionPhy` consumer (R
+convention: root dropped, internal-first/tips-last, n_aug = 2p−2, log-det checksum) feeds the same
+sparse-phylo kernel: max |ΔlogLik| vs AugmentedPhy = 0.0 on the 8-tip fixture at three σ²_phy,
+log-det checksum diff 7.1e-15. `correlation=true` unit-height mode (opt-in, Q1) with
+`GJL-GATE-PHYLO-NONULTRAMETRIC` (Q4): σ²_phy scales by exactly h = 0.3 at invariant logLik. Bundle
+78 pass / 1 broken (pre-existing skip) on both Julia versions. S3/S4 not started (design order).
+
+**A7 — docs cascade (0fe1c622, ffce3f3c, 82bc1760).** Fisher-retained list now matches source (only
+GP-1); "what parity does NOT mean" section on the scoreboard; ZI-trio Julia-beyond note with the
+12-cell recovery table and the 35 % cell; `mi()` row → implemented on a 57/57 test receipt (7 files).
+
+**A8 — design notes (622f4001).** T12 grouping levels: unit partial, unit_obs partial, cluster
+missing, cluster2 missing, with required-row proposals; T8 AGHQ policy rows: 14 bindable with a
+named public R call, 8 to reclassify (needs the maintainer's yes).
+
+## 3a. Decisions and Rejected Alternatives
+
+- Nibi over Vulcan/tamia for the grid: tamia in maintenance to October, Vulcan two CPU nodes and no
+  depot, Nibi has the depot + outbound network. Rejected: Totoro-only for the grid (Totoro kept for
+  pre-runs, the suite and the second-order batch).
+- Push #2 was deferred behind the dispatched CI run so as not to cancel it; pushes used: **PUSHES_PLACEHOLDER** of 3.
+- Sentinel test: aligned to F1 semantics rather than changing the fixture (the fixture is documented
+  as the sentinel's own).
+- A5's `--time` mistake corrected by resubmission, not by editing the record.
+
+## 4. Files Touched
+
+`LOOP/{GOAL,arcs,checkpoint,ultra-plan}.md`; `.github/workflows/CI.yml`; `test/runtests.jl`,
+`test/shard_util.jl`, `test/test_shard_selection.jl`, `test/test_known_sentinel_defects.jl`,
+`test/test_phylo_precision.jl`, `test/test_sparse_phy.jl`; `src/phylo_precision.jl` (new),
+`src/sparse_phy.jl`, `src/likelihood_sparse_phy.jl`, `src/GLLVM.jl`; `tools/core070_second_order/**`,
+`tools/core070_estimand_rebind_batch.{R,jl}`, `tools/core070_verify_estimand_rebind_batch.py`,
+`tools/core070_realistic_size*.{sbatch,jl,R,tsv}`; `docs/dev-log/core070/{second-order-batch-2026-09-03.md,second-order-batch-out/**,t5-rebind-2026-09-03.md,t5-rebind-out/**,realistic-size-prerun-2026-09-03.md,t12-grouping-levels-design.md,t8-aghq-policy-rows-proposal.md,required-source-case-map.json}`;
+`docs/src/{gllvmtmb-parity,response-families,tutorial,api}.md`, `docs/design/capability-status.md`;
+`docs/dev-log/check-log.md`; `docs/dev-log/decisions/2026-09-02-maintainer-decisions-true-parity.md`;
+this report; `docs/dev-log/handover/2026-09-03-claude-handover.md`;
+`docs/dev-log/plan-actual/2026-09-03-core070-overnight.md`. Remote: Totoro
+`core070-aghq-20260830/{suite-run-03,second-order-01,t5-rebind-01,realsize-01}`; Nibi
+`projects/def-snakagaw/snakagaw/gllvm-realsize-01/`.
+
+## 5. Checks Run
+
+- Totoro suite-run-02 (85918fe9): 13271/1/1/8 (both non-green diagnosed above). suite-run-03 (bba953df): **SUITE3_PLACEHOLDER**.
+- CI dispatch run 33699239628 (sharded): **CI2_PLACEHOLDER**.
+- Aqua + JET (test env, Julia 1.12.6): 14/14 at 85918fe9.
+- Per-arc test files on Julia 1.12.6 and 1.10.12: sentinel 25/1 broken; shard logic 43/43; phylo
+  bundle 78/1 broken; mi() 57/57; bridge_x 183/183 earlier.
+- Ledger counts: `TOTAL=769 REQUIRED=505 BOUND=292 DISPOSITIONED=213 FREE=0`.
+- Gates (`gate-check.mjs --reverify`): leaf-A2 2/2, A3 2/2, A4 2/2, A5 2/2, A6 2/2, A7 2/2, A8 1/1;
+  leaf-A1 **A1_GATES_PLACEHOLDER**; leaf-A10 at close.
+
+## 6. Tests of the Tests
+
+Every engine change was red-first with the failure observed (S1: UndefVarError; S2: MethodError; T14
+F1–F3 earlier). The shard partition test asserts disjoint-and-complete for four N. Verifiers ran
+`--self-test` with mutation negatives before every re-bind. The A3 gate regex was corrected for
+footnote marks after visually confirming the 20 rows; the measurement was not loosened.
+
+## 7a. Issue Ledger
+
+| # | Issue | State |
+|---|---|---|
+| 1 | GitHub delivered no pull_request event for push #1 (bba953df) | worked around by workflow_dispatch; watch on push #2 |
+| 2 | Nibi array cancelled mid-run by Ada while resizing `--time` | 8 tasks resubmitted (21053691); no data lost; lesson in A5 addendum |
+| 3 | Julia fresh-process wall time 10–12× R at p=20, n=500 (compile included) | M3 performance track; not a parity item |
+| 4 | Child saw `test_phylo_nb_xlv.jl` and `test_sparse_phy_grad.jl` failing locally on aarch64 before A6 | not seen on Totoro x64 suite-run-02; reconcile with suite-run-03 (**A1_GATES_PLACEHOLDER**) |
+| 5 | `loading_profile` estimand scope (confirmatory vs exploratory) | maintainer decision |
+| 6 | T8: 8 AGHQ policy rows to reclassify | maintainer yes needed |
+| 7 | R+gllvmTMB not on Nibi → Julia/R grid split | pairing by cell id in the follow-up |
+
+## 8. Consistency Audit
+
+Neighbours walked: the scoreboard's Fisher paragraph against source; the T12 note against R's
+`gllvmTMB()` signature on both frozen and main; the ledger counts after re-binds; the sentinel
+test's other assertions unchanged; the LOOP kit's invariants against every action (≤120 Totoro
+cores at all times: suite 3 + batch 40 + pre-run ≤ 9).
+
+## 9. What Did Not Go Smoothly
+
+Two children paused themselves waiting on their own background runs and had to be resumed; the
+missing PR event cost 25 minutes of diagnosis; the Nibi cancel was avoidable (read `squeue` first).
+
+## 10. Known Residuals
+
+Second-order tolerances unsigned (T3); the realistic-size grid's R/Julia pairing not yet written up;
+S3/S4 phylo bridge slices not started; `loading_profile` and the AGHQ reclassification await the
+maintainer; the two aarch64-only local failures need one reconciliation read.
+
+## 11. Team Learning
+
+**Memory receipt:** loaded the repo LOAD-FIRST manifest, `lane_preflight.sh`, D-64/D-139/D-143/D-201
+via greps, the `compute-routing`, `arc-loop`, `unlazy` and `ultra-plan` skills, and the day's own
+WHAT-WORKS entry — which the A5 child then violated (smallest-cell sizing) and Ada compounded (cancel
+before `squeue`); both recorded. Recalled first via `/ask-brain` before scouting DRAC; nothing
+re-scouted. **Golden Set:** in scope was FAILURE-TAXONOMY #11 (compute) — the guard fired (Totoro +
+Nibi used, estimates written); `tools/memory_regression.py` is a transcript judge and was not run on
+a transcript export. Rose verdict (S9): **ROSE_PLACEHOLDER**.
+
+## 12. Cross-Product Coverage
+
+This run **does NOT cover**: signed second-order tolerances; realistic-size receipts beyond the three
+pre-run cells until the Nibi/Totoro pairing is written; phylo S3/S4 (bridge payload, R gate lift,
+paired leaf); the 76 required_core rows needing a Julia surface; real-data acceptance runs; any
+merge. Melissa plan-vs-actual: `plan-actual/2026-09-03-core070-overnight.md`.
