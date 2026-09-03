@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "scope": "CORE070_ESTIMAND_REBIND_BATCH",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "source_unchanged": true,
+  "target_source_ids": ["postfit/POSTFIT-SURFACE-extract_communality", "postfit/POSTFIT-SURFACE-extract_correlations", "postfit/POSTFIT-SURFACE-extract_proportions", "postfit/POSTFIT-SURFACE-extract_Omega"],
+  "case_count": 4,
+  "expected_case_ids": ["CORE070-ESTIMAND-REBIND-EXTRACT-COMMUNALITY", "CORE070-ESTIMAND-REBIND-EXTRACT-CORRELATIONS", "CORE070-ESTIMAND-REBIND-EXTRACT-PROPORTIONS", "CORE070-ESTIMAND-REBIND-EXTRACT-OMEGA"],
+  "oracle_error_count": 0,
+  "julia_exit_code": 0,
+  "julia_elapsed_seconds": 13.2558,
+  "julia_results_sha256": "8a11396a1071f9c16f5cdf8d8e452eb692031e8524a84d5a31bed6ccc981881e",
+  "raw_sha256": "f8822e59ef3baa5ad2a53d6391bee7e9644eefb0c3e3cbb73d47984f8b51ccc2",
+  "diagnostics_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "r_version": "R version 4.5.3 (2026-03-11)",
+  "gllvmTMB_version": "0.7.0",
+  "frozen_library": "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library"
+}

@@ -9560,16 +9560,24 @@
   {
    "source_id": "postfit-policy/POST-LOGLIK-NOBS",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-LOGLIK-NOBS-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-LOGLIK-NOBS-NATIVE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
-   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "postfit-policy wave2-policy3",
-    "note": "CONFIRMED cross-engine mismatch: Julia StatsAPI.nobs = n units (80) vs R attr(logLik,nobs) = p*n cells (400); bridge payload already uses p*n. Aligning is a public behavior change -> maintainer decision; recommendation: adopt p*n (matches R twin and bridge)."
+    "batch": "postfit-policy-batch-01",
+    "prior_note": "CONFIRMED cross-engine mismatch: Julia StatsAPI.nobs = n units (80) vs R attr(logLik,nobs) = p*n cells (400); bridge payload already uses p*n. Aligning is a public behavior change -> maintainer decision; recommendation: adopt p*n (matches R twin and bridge).",
+    "fix": "src/postfit.jl:605-645 StatsAPI.nobs p*n cell-count convention (maintainer decision round 1 item 1)",
+    "runner": "tools/core070_postfit_policy_batch.R + tools/core070_postfit_policy_batch.jl (unchanged, re-run)",
+    "verifier": "tools/core070_verify_postfit_policy_batch.py --self-test --state (CORE070_POSTFIT_POLICY_BATCH_VERIFIED 15 negative_controls 2)",
+    "receipt": ".unlazy/core070-aghq/t5-rebind-01/postfit-policy-batch-02",
+    "receipt_sha256": "09cb944853d9f8884de622067ec077835fddbd697b974316dfb0425037e04dca",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/t5-rebind-01/repo/.unlazy-out/postfit-policy-batch-02",
+    "result": "PASS: StatsAPI.nobs(fit, Y) == r_loglik_nobs_attr / r_nobs, exact integer equality"
    }
   },
   {
@@ -9634,31 +9642,47 @@
   {
    "source_id": "postfit-policy/POST-NOBS-COUNT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-NOBS-COUNT-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-NOBS-COUNT-NATIVE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
-   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "postfit-policy wave2-policy3",
-    "note": "CONFIRMED cross-engine mismatch: Julia StatsAPI.nobs = n units (80) vs R attr(logLik,nobs) = p*n cells (400); bridge payload already uses p*n. Aligning is a public behavior change -> maintainer decision; recommendation: adopt p*n (matches R twin and bridge)."
+    "batch": "postfit-policy-batch-01",
+    "prior_note": "CONFIRMED cross-engine mismatch: Julia StatsAPI.nobs = n units (80) vs R attr(logLik,nobs) = p*n cells (400); bridge payload already uses p*n. Aligning is a public behavior change -> maintainer decision; recommendation: adopt p*n (matches R twin and bridge).",
+    "fix": "src/postfit.jl:605-645 StatsAPI.nobs p*n cell-count convention (maintainer decision round 1 item 1)",
+    "runner": "tools/core070_postfit_policy_batch.R + tools/core070_postfit_policy_batch.jl (unchanged, re-run)",
+    "verifier": "tools/core070_verify_postfit_policy_batch.py --self-test --state (CORE070_POSTFIT_POLICY_BATCH_VERIFIED 15 negative_controls 2)",
+    "receipt": ".unlazy/core070-aghq/t5-rebind-01/postfit-policy-batch-02",
+    "receipt_sha256": "09cb944853d9f8884de622067ec077835fddbd697b974316dfb0425037e04dca",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/t5-rebind-01/repo/.unlazy-out/postfit-policy-batch-02",
+    "result": "PASS: StatsAPI.nobs(fit, Y) == r_loglik_nobs_attr / r_nobs, exact integer equality"
    }
   },
   {
    "source_id": "postfit-policy/POST-NOBS-FALLBACK",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-POSTFIT-NOBS-FALLBACK-NATIVE"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-NOBS-FALLBACK-NATIVE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-policy-required-case-plan.json",
-   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "postfit-policy wave2-policy3",
-    "note": "CONFIRMED cross-engine mismatch: Julia StatsAPI.nobs = n units (80) vs R attr(logLik,nobs) = p*n cells (400); bridge payload already uses p*n. Aligning is a public behavior change -> maintainer decision; recommendation: adopt p*n (matches R twin and bridge)."
+    "batch": "postfit-policy-batch-01",
+    "prior_note": "CONFIRMED cross-engine mismatch: Julia StatsAPI.nobs = n units (80) vs R attr(logLik,nobs) = p*n cells (400); bridge payload already uses p*n. Aligning is a public behavior change -> maintainer decision; recommendation: adopt p*n (matches R twin and bridge).",
+    "fix": "src/postfit.jl:605-645 StatsAPI.nobs p*n cell-count convention (maintainer decision round 1 item 1)",
+    "runner": "tools/core070_postfit_policy_batch.R + tools/core070_postfit_policy_batch.jl (unchanged, re-run)",
+    "verifier": "tools/core070_verify_postfit_policy_batch.py --self-test --state (CORE070_POSTFIT_POLICY_BATCH_VERIFIED 15 negative_controls 2)",
+    "receipt": ".unlazy/core070-aghq/t5-rebind-01/postfit-policy-batch-02",
+    "receipt_sha256": "09cb944853d9f8884de622067ec077835fddbd697b974316dfb0425037e04dca",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/t5-rebind-01/repo/.unlazy-out/postfit-policy-batch-02",
+    "result": "PASS: StatsAPI.nobs(fit, Y) == r_loglik_nobs_attr / r_nobs, exact integer equality"
    }
   },
   {
@@ -10209,18 +10233,24 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_Omega",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ESTIMAND-REBIND-EXTRACT-OMEGA"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-OMEGA-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (extract_Omega(fit::GllvmFit), src/extractors.jl), but traced both compositions to source (wave5-conversion6). R's extract_Omega() sums ONLY the covariance tiers the fit actually carries -- gaussian_small has no W-tier (fit$use$rr_W and diag_W both FALSE), so R's tiers = 'B' only and Omega = Lambda_B Lambda_B^T exactly, with sigma_eps^2 never entering (it is not one of the B/W/phy component tiers R's tier system tracks; the Gaussian family's link_residual_per_trait() contributes 0 separately). GLLVM.jl's extract_Omega(fit::GllvmFit) UNCONDITIONALLY sums extract_Sigma(level=:unit,...).Sigma .+ extract_Sigma(level=:unit_obs,...).Sigma, and extract_Sigma(level=:unit_obs, part=:total) ALWAYS adds sigma_eps^2*I as a baseline term regardless of whether a genuine W-tier exists (src/extractors.jl's _sigma_unit_obs). So on gaussian_small, Julia's Omega = Lambda_B Lambda_B^T + sigma_eps^2*I, differing from R's by exactly sigma_eps^2 on the diagonal -- confirmed: the observed max_abs_diff (0.467) is diagonal-scale and close to sigma_true^2=0.49, matching this trace exactly. extract_Omega(fit::GllvmFit) takes NO tiers/level/link_residual kwargs at all (unlike getResidualCov's alignable level= argument), so there is no call-argument fix available. Also tried sourcing the R comparand as extract_Sigma(level='unit_obs',...)$Sigma directly (mirroring the extract_correlations substitution): R's own tier-existence gate returns NULL for level='unit_obs' on this single-tier fixture (the same gate behind wave5-conversion4's residual_cov r_len=0), so R's tier system has no way to express the Gaussian residual variance independent of a genuine W-tier at all -- the same structural gap already deferred for extract_communality/extract_correlations/extract_proportions. REPAIR (2026-09-01): moved from cases[] to deferred[], joining the estimand-alignment family (4th member: communality, correlations, proportions, Omega).",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
+    "batch": "estimand-rebind wave9 (T5 re-bind, 2026-09-03)",
+    "prior_defect": "Julia surface exists (extract_Omega(fit::GllvmFit), src/extractors.jl), but traced both compositions to source (wave5-conversion6). R's extract_Omega() sums ONLY the covariance tiers the fit actually carries -- gaussian_small has no W-tier (fit$use$rr_W and diag_W both FALSE), so R's tiers = 'B' only and Omega = Lambda_B Lambda_B^T exactly, with sigma_eps^2 never entering (it is not one of the B/W/phy component tiers R's tier system tracks; the Gaussian family's link_residual_per_trait() contributes 0 separately). GLLVM.jl's extract_Omega(fit::GllvmFit) UNCONDITIONALLY sums extract_Sigma(level=:unit,...).Sigma .+ extract_Sigma(level=:unit_obs,...).Sigma, and extract_Sigma(level=:unit_obs, part=:total) ALWAYS adds sigma_eps^2*I as a baseline term regardless of whether a genuine W-tier exists (src/extractors.jl's _sigma_unit_obs). So on gaussian_small, Julia's Omega = Lambda_B Lambda_B^T + sigma_eps^2*I, differing from R's by exactly sigma_eps^2 on the diagonal -- confirmed: the observed max_abs_diff (0.467) is diagonal-scale and close to sigma_true^2=0.49, matching this trace exactly. extract_Omega(fit::GllvmFit) takes NO tiers/level/link_residual kwargs at all (unlike getResidualCov's alignable level= argument), so there is no call-argument fix available. Also tried sourcing the R comparand as extract_Sigma(level='unit_obs',...)$Sigma directly (mirroring the extract_correlations substitution): R's own tier-existence gate returns NULL for level='unit_obs' on this single-tier fixture (the same gate behind wave5-conversion4's residual_cov r_len=0), so R's tier system has no way to express the Gaussian residual variance independent of a genuine W-tier at all -- the same structural gap already deferred for extract_communality/extract_correlations/extract_proportions. REPAIR (2026-09-01): moved from cases[] to deferred[], joining the estimand-alignment family (4th member: communality, correlations, proportions, Omega).",
+    "fix": "src/extractors.jl estimand-alignment defaults (maintainer decision round 1 item 3; docs/dev-log/core070/estimand-alignment-notes.md) -- extract_communality/extract_correlations/extract_proportions/extract_Omega now default to R's tier-scoped composition (level=:unit / :auto)",
+    "runner": "tools/core070_estimand_rebind_batch.R + tools/core070_estimand_rebind_batch.jl (new standalone batch; the frozen tools/core070_surface_conversion_batch.R / surface-conversion-batch-contract.json, which defers these 4 quantities, is unchanged)",
+    "verifier": "tools/core070_verify_estimand_rebind_batch.py --self-test --state (CORE070_ESTIMAND_REBIND_VERIFY_SELF_TEST_OK rejected_mutations=5; CORE070_ESTIMAND_REBIND_STATE_OK)",
+    "receipt": ".unlazy/core070-aghq/t5-rebind-01/estimand-rebind-02",
+    "receipt_sha256": "c4a3bf5d4b9853484d46a7f5aae9743d81db377a7808b1dce78a09eb150ba472",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/t5-rebind-01/repo/.unlazy-out/estimand-rebind-02",
+    "result": "PASS on gaussian_small (paired-independent-fit, tolerance 1e-4): communality max_abs_diff=0.0, correlations max_abs_diff=6.12e-06, proportions max_abs_diff=0.0, Omega max_abs_diff=2.42e-06 -- vs REAL R accessors extract_communality/extract_correlations/extract_proportions/extract_Omega (not a Sigma proxy)"
    }
   },
   {
@@ -10322,37 +10352,49 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_communality",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ESTIMAND-REBIND-EXTRACT-COMMUNALITY"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-COMMUNALITY-READBACK",
     "CORE070-POSTFIT-EXTRACT-COMMUNALITY-CI-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (extract_communality(fit::GllvmFit) = communality(fit), src/confint_derived.jl), but the two engines compute a DIFFERENT ESTIMAND, not just a different call shape -- traced both to source. GLLVM.jl's communality(fit) denominator is sigma_y_site(fit), the FULL model-implied total variance across ALL tiers PLUS sigma_eps^2 (the Gaussian observation residual). R's extract_communality(fit, level) denominator is extract_Sigma(fit, level, part='total')$Sigma -- a SINGLE TIER's total only; sigma_eps^2 never enters any R extract_communality/extract_Sigma tier computation for a Gaussian fit at all (it is not one of the 'B'/'W'/'phy' component tiers the R tier system tracks). On gaussian_small (unique=FALSE, no W tier): level='unit' degenerates to an uninformative constant 1.0 for every trait (shared_B == total_B exactly, since there is no diag_B term to make them differ) -- confirmed the observed wave5-conversion4 diff (0.871) is exactly this: R's degenerate ~1.0 vs Julia's real shared/(shared+sigma_eps^2) ratio. level='unit_obs' returns NULL outright (fit$use$rr_W is FALSE, no W-tier loadings). No R call on this fixture targets the same 'shared vs grand total including the Gaussian residual' estimand Julia computes; this is a genuine cross-engine definition mismatch, not a fixable call bug. REPAIR (2026-09-01, wave5-conversion4): moved from cases[] to deferred[].",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
+    "batch": "estimand-rebind wave9 (T5 re-bind, 2026-09-03)",
+    "prior_defect": "Julia surface exists (extract_communality(fit::GllvmFit) = communality(fit), src/confint_derived.jl), but the two engines compute a DIFFERENT ESTIMAND, not just a different call shape -- traced both to source. GLLVM.jl's communality(fit) denominator is sigma_y_site(fit), the FULL model-implied total variance across ALL tiers PLUS sigma_eps^2 (the Gaussian observation residual). R's extract_communality(fit, level) denominator is extract_Sigma(fit, level, part='total')$Sigma -- a SINGLE TIER's total only; sigma_eps^2 never enters any R extract_communality/extract_Sigma tier computation for a Gaussian fit at all (it is not one of the 'B'/'W'/'phy' component tiers the R tier system tracks). On gaussian_small (unique=FALSE, no W tier): level='unit' degenerates to an uninformative constant 1.0 for every trait (shared_B == total_B exactly, since there is no diag_B term to make them differ) -- confirmed the observed wave5-conversion4 diff (0.871) is exactly this: R's degenerate ~1.0 vs Julia's real shared/(shared+sigma_eps^2) ratio. level='unit_obs' returns NULL outright (fit$use$rr_W is FALSE, no W-tier loadings). No R call on this fixture targets the same 'shared vs grand total including the Gaussian residual' estimand Julia computes; this is a genuine cross-engine definition mismatch, not a fixable call bug. REPAIR (2026-09-01, wave5-conversion4): moved from cases[] to deferred[].",
+    "fix": "src/extractors.jl estimand-alignment defaults (maintainer decision round 1 item 3; docs/dev-log/core070/estimand-alignment-notes.md) -- extract_communality/extract_correlations/extract_proportions/extract_Omega now default to R's tier-scoped composition (level=:unit / :auto)",
+    "runner": "tools/core070_estimand_rebind_batch.R + tools/core070_estimand_rebind_batch.jl (new standalone batch; the frozen tools/core070_surface_conversion_batch.R / surface-conversion-batch-contract.json, which defers these 4 quantities, is unchanged)",
+    "verifier": "tools/core070_verify_estimand_rebind_batch.py --self-test --state (CORE070_ESTIMAND_REBIND_VERIFY_SELF_TEST_OK rejected_mutations=5; CORE070_ESTIMAND_REBIND_STATE_OK)",
+    "receipt": ".unlazy/core070-aghq/t5-rebind-01/estimand-rebind-02",
+    "receipt_sha256": "c4a3bf5d4b9853484d46a7f5aae9743d81db377a7808b1dce78a09eb150ba472",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/t5-rebind-01/repo/.unlazy-out/estimand-rebind-02",
+    "result": "PASS on gaussian_small (paired-independent-fit, tolerance 1e-4): communality max_abs_diff=0.0, correlations max_abs_diff=6.12e-06, proportions max_abs_diff=0.0, Omega max_abs_diff=2.42e-06 -- vs REAL R accessors extract_communality/extract_correlations/extract_proportions/extract_Omega (not a Sigma proxy)"
    }
   },
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_correlations",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ESTIMAND-REBIND-EXTRACT-CORRELATIONS"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-CORRELATIONS-POINT-READBACK",
     "CORE070-POSTFIT-EXTRACT-CORRELATIONS-CI-BRIDGE"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (extract_correlations(fit::GllvmFit) = correlation(fit), src/confint_derived.jl), but traced both definitions to source (same class of mismatch as extract_communality). GLLVM.jl's correlation(fit) standardises by sigma_y_site(fit), the FULL model-implied total variance INCLUDING sigma_eps^2. R's route for this quantity (extract_Sigma(fit, level='unit', part='total')$R -- used because extract_correlations() itself returns an un-coercible long-format table, not a matrix) standardises by the 'unit' (B) tier total only, which never includes sigma_eps^2 for a Gaussian fit. On gaussian_small this produces a materially different correlation matrix (observed max_abs_diff 0.668, wave5-conversion5) -- a genuine cross-engine estimand mismatch, not a fixable call bug. REPAIR (2026-09-01): moved from cases[] to deferred[], joining extract_communality in the maintainer's estimand-alignment decision.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
+    "batch": "estimand-rebind wave9 (T5 re-bind, 2026-09-03)",
+    "prior_defect": "Julia surface exists (extract_correlations(fit::GllvmFit) = correlation(fit), src/confint_derived.jl), but traced both definitions to source (same class of mismatch as extract_communality). GLLVM.jl's correlation(fit) standardises by sigma_y_site(fit), the FULL model-implied total variance INCLUDING sigma_eps^2. R's route for this quantity (extract_Sigma(fit, level='unit', part='total')$R -- used because extract_correlations() itself returns an un-coercible long-format table, not a matrix) standardises by the 'unit' (B) tier total only, which never includes sigma_eps^2 for a Gaussian fit. On gaussian_small this produces a materially different correlation matrix (observed max_abs_diff 0.668, wave5-conversion5) -- a genuine cross-engine estimand mismatch, not a fixable call bug. REPAIR (2026-09-01): moved from cases[] to deferred[], joining extract_communality in the maintainer's estimand-alignment decision.",
+    "fix": "src/extractors.jl estimand-alignment defaults (maintainer decision round 1 item 3; docs/dev-log/core070/estimand-alignment-notes.md) -- extract_communality/extract_correlations/extract_proportions/extract_Omega now default to R's tier-scoped composition (level=:unit / :auto)",
+    "runner": "tools/core070_estimand_rebind_batch.R + tools/core070_estimand_rebind_batch.jl (new standalone batch; the frozen tools/core070_surface_conversion_batch.R / surface-conversion-batch-contract.json, which defers these 4 quantities, is unchanged)",
+    "verifier": "tools/core070_verify_estimand_rebind_batch.py --self-test --state (CORE070_ESTIMAND_REBIND_VERIFY_SELF_TEST_OK rejected_mutations=5; CORE070_ESTIMAND_REBIND_STATE_OK)",
+    "receipt": ".unlazy/core070-aghq/t5-rebind-01/estimand-rebind-02",
+    "receipt_sha256": "c4a3bf5d4b9853484d46a7f5aae9743d81db377a7808b1dce78a09eb150ba472",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/t5-rebind-01/repo/.unlazy-out/estimand-rebind-02",
+    "result": "PASS on gaussian_small (paired-independent-fit, tolerance 1e-4): communality max_abs_diff=0.0, correlations max_abs_diff=6.12e-06, proportions max_abs_diff=0.0, Omega max_abs_diff=2.42e-06 -- vs REAL R accessors extract_communality/extract_correlations/extract_proportions/extract_Omega (not a Sigma proxy)"
    }
   },
   {
@@ -10473,18 +10515,24 @@
   {
    "source_id": "postfit/POSTFIT-SURFACE-extract_proportions",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-ESTIMAND-REBIND-EXTRACT-PROPORTIONS"
+   ],
    "rationale": "Executable model/interface or rejection case mapping remains required.",
    "planned_case_ids": [
     "CORE070-POSTFIT-EXTRACT-PROPORTIONS-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/postfit-1-required-case-plan.json",
-   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (extract_proportions(fit::GllvmFit; component) forwards to proportions(fit; component), src/confint_derived.jl), but traced to source: this is the SAME estimand mismatch as extract_communality, exactly -- extract_proportions(fit; component=:shared) IS communality(fit) mathematically (both \u039b\u039b^T[t,t] / sigma_y_site(fit)[t,t], the FULL total-variance denominator incl. sigma_eps^2). R's extract_proportions()'s 'shared_unit' component's proportion column denominator (total <- rowSums(M)) only ever sums the tier-scoped components R's system tracks; sigma_eps^2 is not one of them, so on gaussian_small (only the shared_unit component present) proportion degenerates to shared_unit/shared_unit == 1.0 for every trait -- the exact reason the observed max_abs_diff (0.8713, wave5-conversion5) matched extract_communality's own failure value precisely. REPAIR (2026-09-01): moved from cases[] to deferred[], joining extract_communality and extract_correlations in the maintainer's estimand-alignment decision.",
-    "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
+    "batch": "estimand-rebind wave9 (T5 re-bind, 2026-09-03)",
+    "prior_defect": "Julia surface exists (extract_proportions(fit::GllvmFit; component) forwards to proportions(fit; component), src/confint_derived.jl), but traced to source: this is the SAME estimand mismatch as extract_communality, exactly -- extract_proportions(fit; component=:shared) IS communality(fit) mathematically (both \u039b\u039b^T[t,t] / sigma_y_site(fit)[t,t], the FULL total-variance denominator incl. sigma_eps^2). R's extract_proportions()'s 'shared_unit' component's proportion column denominator (total <- rowSums(M)) only ever sums the tier-scoped components R's system tracks; sigma_eps^2 is not one of them, so on gaussian_small (only the shared_unit component present) proportion degenerates to shared_unit/shared_unit == 1.0 for every trait -- the exact reason the observed max_abs_diff (0.8713, wave5-conversion5) matched extract_communality's own failure value precisely. REPAIR (2026-09-01): moved from cases[] to deferred[], joining extract_communality and extract_correlations in the maintainer's estimand-alignment decision.",
+    "fix": "src/extractors.jl estimand-alignment defaults (maintainer decision round 1 item 3; docs/dev-log/core070/estimand-alignment-notes.md) -- extract_communality/extract_correlations/extract_proportions/extract_Omega now default to R's tier-scoped composition (level=:unit / :auto)",
+    "runner": "tools/core070_estimand_rebind_batch.R + tools/core070_estimand_rebind_batch.jl (new standalone batch; the frozen tools/core070_surface_conversion_batch.R / surface-conversion-batch-contract.json, which defers these 4 quantities, is unchanged)",
+    "verifier": "tools/core070_verify_estimand_rebind_batch.py --self-test --state (CORE070_ESTIMAND_REBIND_VERIFY_SELF_TEST_OK rejected_mutations=5; CORE070_ESTIMAND_REBIND_STATE_OK)",
+    "receipt": ".unlazy/core070-aghq/t5-rebind-01/estimand-rebind-02",
+    "receipt_sha256": "c4a3bf5d4b9853484d46a7f5aae9743d81db377a7808b1dce78a09eb150ba472",
+    "host": "totoro:/home/snakagaw/core070-aghq-20260830/t5-rebind-01/repo/.unlazy-out/estimand-rebind-02",
+    "result": "PASS on gaussian_small (paired-independent-fit, tolerance 1e-4): communality max_abs_diff=0.0, correlations max_abs_diff=6.12e-06, proportions max_abs_diff=0.0, Omega max_abs_diff=2.42e-06 -- vs REAL R accessors extract_communality/extract_correlations/extract_proportions/extract_Omega (not a Sigma proxy)"
    }
   },
   {

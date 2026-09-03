@@ -17279,3 +17279,19 @@ Push #1 (bba953df, 00:09Z) produced **no workflow run for any workflow** (CI or 
 simply not delivered. A manual `gh workflow run CI.yml --ref codex/core070-aghq-20260830`
 (workflow_dispatch, not a push) started run 33699239628 at 00:22Z, which also proves the
 sharded workflow file parses; its verdict is recorded below when it lands.
+
+## 2026-09-03 — T5: 7/8 PARTIAL_PARITY_DEFECT_PENDING_DECISION rows re-bound on paired Totoro receipts
+
+New standalone batch `tools/core070_estimand_rebind_batch.{R,jl}` +
+`tools/core070_verify_estimand_rebind_batch.py` (the frozen wave5
+`tools/core070_surface_conversion_batch.{R,jl}` / `surface-conversion-batch-contract.json` defer
+`extract_communality`/`extract_correlations`/`extract_proportions`/`extract_Omega` and were left
+unedited) exercises the real gllvmTMB accessors directly against GLLVM.jl's new tier-scoped
+defaults (`src/extractors.jl`, maintainer decision round 1 item 3): PASS on `gaussian_small`,
+max_abs_diff 0.0 / 6.12e-06 / 0.0 / 2.42e-06 (tol 1e-4). `postfit-policy-batch-01` re-run confirms
+the 3 nobs rows PASS (`StatsAPI.nobs` p·n convention, `src/postfit.jl:605-645`). 7 of the 8
+`PARTIAL_PARITY_DEFECT_PENDING_DECISION` rows in `required-source-case-map.json` moved to bound
+(disposition key removed); `namespace/export/loading_profile` stays disposed (needs an
+estimand-scope decision, not a re-run). `tools/core070_ledger_counts.py` still prints
+`REQUIRED=505` (BOUND 285→292). Full report:
+`docs/dev-log/core070/t5-rebind-2026-09-03.md`.
