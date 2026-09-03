@@ -17326,3 +17326,21 @@ both files confirmed to fail before their respective implementation landed. Regr
 Julia 1.12.6 and 1.10.12 (78 pass / 1 pre-existing broken, unrelated). No bridge work (S3/S4 stay
 deferred, per the arc scope); `docs/src/tutorial.md` (§ Phylogenetic GLLVM) and `docs/src/api.md`
 gained the `PrecisionPhy`/`correlation`/gate documentation.
+
+## 2026-09-03 — second-order (SE/vcov/Wald-CI) receipts on 20 paired cells, both engines
+
+New `tools/core070_second_order/{run_cell.jl,cells.jl}` extends the 5-cell D-139 se=TRUE pre-run
+(`second-order-prerun-2026-09-02.md`) to 20 paired harness cells (Gaussian, Poisson-log,
+Binomial-logit/probit/cloglog, Beta-logit, NB2-log, Gamma-log, NB1-log, BetaBinomial-logit — no-X
+and, mostly, +shared-X; Poisson/Binomial also species-XB), Totoro, frozen `gllvmTMB` 0.7.0,
+observed-Hessian convention. All 20 paired; every finite SE/vcov/CI relative delta is ≥2 orders of
+magnitude inside the contract's each-own-optimum tolerance (max relative ΔSE 1.0e-4, vcov Frobenius
+1.8e-4, both at `nb1_log`). One boundary finding: the NB2 cell's `pd_hessian=false` on both sides
+(same Poisson-limit boundary as the pre-run) no longer NaNs the whole SE vector on the Julia side —
+T14 F1's boundary-aware degradation returns finite SE for every well-identified β/Λ term
+(`boundary_terms=["r[1]","r[3]"]`), matching R's own block-tolerant NA. Six families/dispositions
+not attempted, with reasons (API gaps: Lognormal/Truncated-Poisson/Truncated-NB2/Ordinal have no
+`confint` dispatch for the structs the paired fixtures actually use; Tweedie/GP-1/Student-t excluded
+per the contract). Full report + per-cell table: `docs/dev-log/core070/second-order-batch-2026-09-03.md`;
+receipts: `docs/dev-log/core070/second-order-batch-out/*.json` (20 files, sha256 in the report).
+Tolerances measured and reported against, never gated — this is receipts, not a parity claim.
