@@ -60,8 +60,9 @@ fresh-process compile), cond(H) 40–100 both engines, max rel ΔSE ≤ 1.95e-5,
 (DRAC, "cleverly"): the array ran immediately despite the maintenance reservation; 16/24 tasks
 completed at the original 10-min limit; Ada cancelled the array mid-run to resize it — an incident
 recorded in the A5 addendum — and resubmitted the 8 largest cells as 21053691 (2 h, 6 GB):
-**NIBI_PLACEHOLDER**. R side of the grid on Totoro: 23/24 at report time. R+gllvmTMB is not installed
-on Nibi, hence the Julia/R split; pairing happens by cell id in the follow-up.
+**NIBI_PLACEHOLDER**. R side of the grid on Totoro: **24/24 complete** (19 min wall; largest cell 498 s, cond(H) 14137.7). R+gllvmTMB is not installed on Nibi, hence the Julia/R split.
+
+**A5b — realistic-size pairing (bc96f540).** 14/24 cells validly paired by cell id (gaussian 8, poisson 4, nb2 2): max rel ΔSE over the β block 6.95e-6–1.58e-5 (worst `nb2_p20_n500_K2`); cond(H) Julia 19.3–2646.8, R 50.0–14137.7 — every cell with cond(H) > 1e3 is Gaussian (no β block), so the contract's conditioning scaling is untested by a β-comparable pair yet. Two pairs excluded as invalid: `poisson_p20_n500_K1` and `nb2_p20_n500_K1`, where the Totoro R driver reused spot-check outputs fitted on a different seed (filenames lack the seed) — recorded, not silently dropped. 8 cells pending on Nibi array 21053691; no `seff` data yet, so the D-201 resize note is deferred to the collection step. `docs/dev-log/core070/realistic-size-grid-2026-09-03.md`, receipts under `realistic-size-out/{nibi,totoro}/`.
 
 **A6 — phylo transport S1/S2 (e18eeb59, ef95ef6f, 0d732bd6).** `PrecisionPhy` consumer (R
 convention: root dropped, internal-first/tips-last, n_aug = 2p−2, log-det checksum) feeds the same
@@ -97,7 +98,7 @@ named public R call, 8 to reclassify (needs the maintainer's yes).
 `test/test_phylo_precision.jl`, `test/test_sparse_phy.jl`; `src/phylo_precision.jl` (new),
 `src/sparse_phy.jl`, `src/likelihood_sparse_phy.jl`, `src/GLLVM.jl`; `tools/core070_second_order/**`,
 `tools/core070_estimand_rebind_batch.{R,jl}`, `tools/core070_verify_estimand_rebind_batch.py`,
-`tools/core070_realistic_size*.{sbatch,jl,R,tsv}`; `docs/dev-log/core070/{second-order-batch-2026-09-03.md,second-order-batch-out/**,t5-rebind-2026-09-03.md,t5-rebind-out/**,realistic-size-prerun-2026-09-03.md,t12-grouping-levels-design.md,t8-aghq-policy-rows-proposal.md,required-source-case-map.json}`;
+`tools/core070_realistic_size*.{sbatch,jl,R,tsv}`; `docs/dev-log/core070/{second-order-batch-2026-09-03.md,second-order-batch-out/**,t5-rebind-2026-09-03.md,t5-rebind-out/**,realistic-size-prerun-2026-09-03.md,realistic-size-grid-2026-09-03.md,realistic-size-out/**,t12-grouping-levels-design.md,t8-aghq-policy-rows-proposal.md,required-source-case-map.json}`, `src/confint_family.jl`, `test/test_confint_family.jl`;
 `docs/src/{gllvmtmb-parity,response-families,tutorial,api}.md`, `docs/design/capability-status.md`;
 `docs/dev-log/check-log.md`; `docs/dev-log/decisions/2026-09-02-maintainer-decisions-true-parity.md`;
 this report; `docs/dev-log/handover/2026-09-03-claude-handover.md`;
@@ -129,6 +130,7 @@ footnote marks after visually confirming the 20 rows; the measurement was not lo
 |---|---|---|
 | 1 | GitHub delivered no pull_request event for push #1 (bba953df) | worked around by workflow_dispatch; watch on push #2 |
 | 2 | Nibi array cancelled mid-run by Ada while resizing `--time` | 8 tasks resubmitted (21053691); no data lost; lesson in A5 addendum |
+| 2b | The A5 child ran `git commit --amend` on the wrong commit (Ada's after-task draft), then restored it byte-identical under a new hash (f3c6140f → 1d5a9cd5, verified by empty diff; origin untouched) and put its own change in d02fd2cd | recorded; child stopped; history rewrite forbidden in every later brief |
 | 3 | Julia fresh-process wall time 10–12× R at p=20, n=500 (compile included) | M3 performance track; not a parity item |
 | 4 | Child saw `test_phylo_nb_xlv.jl` and `test_sparse_phy_grad.jl` failing locally on aarch64 before A6 | not seen on Totoro x64 suite-run-02; suite-run-03 on Totoro x64 is fully green (13327/0/0/8), so those two are aarch64-local only; recorded as such |
 | 5 | `loading_profile` estimand scope (confirmatory vs exploratory) | maintainer decision |
@@ -145,7 +147,12 @@ cores at all times: suite 3 + batch 40 + pre-run ≤ 9).
 ## 9. What Did Not Go Smoothly
 
 Two children paused themselves waiting on their own background runs and had to be resumed; the
-missing PR event cost 25 minutes of diagnosis; the Nibi cancel was avoidable (read `squeue` first).
+missing PR event cost 25 minutes of diagnosis (twice — push #2 needed a manual dispatch too); the
+Nibi cancel was avoidable (read `squeue` first); the A5 child amended Ada's draft-report commit by
+mistake and had to reconstruct it (content verified identical, hash changed); F1's first
+red-first test assumed the seed-523 fixture's regime and failed on CI, and my first deterministic
+replacement assumed a per-trait fixture stays off the boundary — both were test assumptions,
+fixed by asserting the contract.
 
 ## 10. Known Residuals
 
@@ -161,11 +168,11 @@ WHAT-WORKS entry — which the A5 child then violated (smallest-cell sizing) and
 before `squeue`); both recorded. Recalled first via `/ask-brain` before scouting DRAC; nothing
 re-scouted. **Golden Set:** in scope was FAILURE-TAXONOMY #11 (compute) — the guard fired (Totoro +
 Nibi used, estimates written); `tools/memory_regression.py` is a transcript judge and was not run on
-a transcript export. Rose verdict (S9): **ROSE_PLACEHOLDER**.
+a transcript export. Rose verdict (S9, claim-vs-evidence audit): **BLOCKERS — 3, all repaired before the final commit**: (1) A5 said the R-side grid was 23/24 when the artifact shows 24/24; (2) the A5b pairing write-up (bc96f540) was missing from the report; (3) the A5-child amend incident was absent — now in §7a (2b) and §9. Audit file: session scratchpad `rose-overnight-audit.md`.
 
 ## 12. Cross-Product Coverage
 
-This run **does NOT cover**: signed second-order tolerances; realistic-size receipts beyond the three
-pre-run cells until the Nibi/Totoro pairing is written; phylo S3/S4 (bridge payload, R gate lift,
+This run **does NOT cover**: signed second-order tolerances; the 8 largest realistic-size cells (Nibi
+21053691) and the two invalid pairs' re-run; a β-comparable pair at cond(H) > 1e3; phylo S3/S4 (bridge payload, R gate lift,
 paired leaf); the 76 required_core rows needing a Julia surface; real-data acceptance runs; any
 merge. Melissa plan-vs-actual: `plan-actual/2026-09-03-core070-overnight.md`.
