@@ -194,4 +194,108 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays
         @test phy_edges.n_total == phy_newick.n_total
         @test Matrix(phy_edges.Q_topology) ≈ Matrix(phy_newick.Q_topology)
     end
+
+    # --- Phylo transport S2: correlation::Bool + ultrametric gate --------
+    # Same 8-tip balanced ultrametric fixture as test_phylo_precision.jl
+    # (three levels of 0.1 branches ⇒ root-to-tip height 0.3).
+    @testset "correlation=true unit-height mode + ultrametric gate" begin
+        newick_ultra = "(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,((E:0.1,F:0.1):0.1,(G:0.1,H:0.1):0.1):0.1);"
+        h = 0.3
+
+        @testset "scale field records the applied height" begin
+            phy_false = augmented_phy(newick_ultra)
+            phy_true  = augmented_phy(newick_ultra; correlation = true)
+            @test phy_false.scale == 1.0
+            @test phy_true.scale ≈ h atol = 1e-12
+            @test Matrix(phy_true.Q_topology) ≈ h .* Matrix(phy_false.Q_topology) atol = 1e-12
+            # branch_lengths stay raw (unscaled) on both — matches R keeping
+            # edge_length untouched (phylo-tree-precision.R:216 scales the
+            # precision *values*, not the lengths).
+            @test phy_true.branch_lengths == phy_false.branch_lengths
+        end
+
+        @testset "σ²_phy differs by exactly the factor h; logLik matched" begin
+            # Direction: σ²_phy fitted under correlation=true is h TIMES
+            # LARGER than under correlation=false, for the same actual
+            # model (Σ = σ²_phy_raw · C_raw = σ²_phy_corr · C_raw/h ⇒
+            # σ²_phy_corr = h · σ²_phy_raw). Evaluate the closed-form
+            # marginal at the transformed parameter rather than
+            # re-optimising (simpler and exact here).
+            Random.seed!(5)
+            phy_false = augmented_phy(newick_ultra)
+            phy_true  = augmented_phy(newick_ultra; correlation = true)
+            p = phy_false.n_leaves
+            K_B, n = 1, 9
+            Λ_B   = reshape(randn(p, K_B), p, K_B)
+            σ_phy = abs.(randn(p)) .+ 0.1
+            σ_eps = 0.45
+            y     = randn(p, n)
+
+            σ²_phy_raw = 0.7
+            σ²_phy_corr = h * σ²_phy_raw
+
+            ll_raw = gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
+                σ_phy = σ_phy, phy = phy_false, σ²_phy = σ²_phy_raw)
+            ll_corr = gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
+                σ_phy = σ_phy, phy = phy_true, σ²_phy = σ²_phy_corr)
+            @test abs(ll_corr - ll_raw) <= 1e-8
+
+            # The naive (un-transformed) σ²_phy on the correlation=true tree
+            # gives a DIFFERENT logLik — confirms the factor is not a no-op.
+            ll_corr_untransformed = gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
+                σ_phy = σ_phy, phy = phy_true, σ²_phy = σ²_phy_raw)
+            @test abs(ll_corr_untransformed - ll_raw) > 1e-4
+        end
+
+        @testset "non-ultrametric tree raises the named gate" begin
+            # One tip (E) lengthened to 0.2: its root-to-tip depth becomes
+            # 0.4 against every other tip's 0.3 — not ultrametric.
+            newick_nonultra = "(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,((E:0.2,F:0.1):0.1,(G:0.1,H:0.1):0.1):0.1);"
+            # correlation=false still accepts it (existing, unchanged behaviour).
+            phy_ok = augmented_phy(newick_nonultra)
+            @test phy_ok.scale == 1.0
+            err = try
+                augmented_phy(newick_nonultra; correlation = true)
+                nothing
+            catch e
+                e
+            end
+            @test err isa ArgumentError
+            @test occursin("GJL-GATE-PHYLO-NONULTRAMETRIC", err.msg)
+
+            # Same gate on make_phy's edge-list constructor.
+            edges = [(9, 1, 0.1), (9, 2, 0.1), (10, 3, 0.1), (10, 4, 0.1),
+                     (11, 9, 0.1), (11, 10, 0.1),
+                     (12, 5, 0.2), (12, 6, 0.1), (13, 7, 0.1), (13, 8, 0.1),
+                     (14, 12, 0.1), (14, 13, 0.1),
+                     (15, 11, 0.1), (15, 14, 0.1)]
+            err2 = try
+                make_phy(edges, 8; root_index = 15, correlation = true)
+                nothing
+            catch e
+                e
+            end
+            @test err2 isa ArgumentError
+            @test occursin("GJL-GATE-PHYLO-NONULTRAMETRIC", err2.msg)
+        end
+
+        @testset "correlation=false is bit-identical to pre-S2 behaviour" begin
+            # Value computed BEFORE the S2 change (commit e18eeb59, S1-only
+            # tree, no `correlation` kwarg existed): σ_phy path, K_B=1, n=8,
+            # seed 20260904, σ²_phy=0.9, σ_eps=0.35 on this same 8-tip
+            # fixture. Regenerated post-S2 below must match exactly.
+            Random.seed!(20260904)
+            phy = augmented_phy(newick_ultra)   # correlation defaults to false
+            p = phy.n_leaves
+            K_B, n = 1, 8
+            Λ_B = reshape(randn(p, K_B), p, K_B)
+            σ_phy = abs.(randn(p)) .+ 0.1
+            σ_eps = 0.35
+            y = randn(p, n)
+            ll = gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
+                σ_phy = σ_phy, phy = phy, σ²_phy = 0.9)
+            @test ll == -208.89116988490582
+            @test phy.Q_topology[1, 1] == 10.0
+        end
+    end
 end

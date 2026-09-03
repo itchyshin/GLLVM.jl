@@ -53,8 +53,14 @@ Fields
   the Newick string (left-to-right).
 * `leaf_names::Vector{String}`  – species names parsed from the Newick.
 * `branch_lengths::Vector{T}`   – the 2p − 2 branch lengths in the order
-  the parser walked the tree.
+  the parser walked the tree, always the RAW (unscaled) lengths — matches
+  `phylo-tree-precision.R` keeping `edge_length` untouched even under
+  `correlation = TRUE` (only the precision *values* are scaled, not the
+  lengths).
 * `root_index::Int`             – which augmented row is the root.
+* `scale::Float64`              – the root-to-tip height actually baked
+  into `Q_topology` (`correlation = true`, `augmented_phy`/`make_phy`);
+  `1.0` when unscaled (the default, `correlation = false`).
 
 `Q_topology` is positive **semi**-definite (rank 2p − 2). The all-ones
 vector is its sole zero eigenvector — fixing the root removes the
@@ -70,6 +76,37 @@ struct AugmentedPhy{T}
     leaf_names::Vector{String}
     branch_lengths::Vector{T}
     root_index::Int
+    scale::Float64
+end
+
+# Positional-compat constructor: the pre-`scale`-field 7-argument call
+# (every caller before phylo transport S2) still works, defaulting to the
+# unscaled convention (`scale = 1.0`).
+AugmentedPhy{T}(n_leaves::Int, n_total::Int, Q_topology::SparseMatrixCSC{T,Int},
+                leaf_indices::Vector{Int}, leaf_names::Vector{String},
+                branch_lengths::Vector{T}, root_index::Int) where {T} =
+    AugmentedPhy{T}(n_leaves, n_total, Q_topology, leaf_indices, leaf_names,
+                    branch_lengths, root_index, 1.0)
+
+"""
+    _apply_phy_correlation(raw::AugmentedPhy; correlation::Bool) :: AugmentedPhy
+
+Shared `correlation = true` gate + unit-height rescale used by both
+`augmented_phy` and `make_phy` (phylo transport S2). `correlation = false`
+returns `raw` unchanged (`scale = 1.0`, the existing behaviour — bit-
+identical to every pre-S2 caller). `correlation = true` checks
+ultrametricity via `_phylo_check_ultrametric_height`
+(`src/phylo_precision.jl`, mirrors `phylo-tree-precision.R:140-146`; raises
+`GJL-GATE-PHYLO-NONULTRAMETRIC` otherwise) and multiplies `Q_topology` by
+the root-to-tip height, matching R's `values <- scale * values`
+(`phylo-tree-precision.R:216`) — `branch_lengths` itself is left raw.
+"""
+function _apply_phy_correlation(raw::AugmentedPhy{T}; correlation::Bool) where {T}
+    correlation || return raw
+    h = _phylo_check_ultrametric_height(raw)
+    return AugmentedPhy{T}(raw.n_leaves, raw.n_total, h .* raw.Q_topology,
+                           raw.leaf_indices, raw.leaf_names, raw.branch_lengths,
+                           raw.root_index, h)
 end
 
 # ---------------------------------------------------------------------------
@@ -194,7 +231,7 @@ function _parse_node!(c::_NewickCursor,
 end
 
 """
-    augmented_phy(newick::AbstractString) :: AugmentedPhy{Float64}
+    augmented_phy(newick::AbstractString; correlation::Bool = false) :: AugmentedPhy{Float64}
 
 Parse a minimal Newick string and return the augmented-state sparse
 precision representation.
@@ -209,6 +246,19 @@ Restrictions
 * The root has no parent branch; the optional root length in
   `(…):0.0;` is read but does not enter Q.
 
+Keyword arguments
+-----------------
+* `correlation::Bool = false` (phylo transport S2, opt-in — see
+  `docs/dev-log/core070/phylo-transport-questions-2026-09-02.md` Q1) — when
+  `true`, requires the tree to be ultrametric (within `sqrt(eps())` of a
+  common root-to-tip height, mirroring `phylo-tree-precision.R:140-146`;
+  raises `GJL-GATE-PHYLO-NONULTRAMETRIC` otherwise) and rescales
+  `Q_topology` to the unit-height correlation form R's fit path always
+  uses. σ²_phy fitted under `correlation = true` is `height` times the
+  σ²_phy fitted under `correlation = false` for the same actual model —
+  the estimand differs, not the log-likelihood. Default `false` keeps
+  every existing native caller's behaviour bit-identical.
+
 Example
 -------
 ```julia
@@ -219,7 +269,7 @@ length(phy.branch_lengths)   # 4
 nnz(phy.Q_topology)          # 16  (4 per edge × 4 edges)
 ```
 """
-function augmented_phy(newick::AbstractString)
+function augmented_phy(newick::AbstractString; correlation::Bool = false)
     s = filter(!isspace, String(newick))
     !endswith(s, ";") &&
         error("Newick string must end with ';'")
@@ -295,13 +345,14 @@ function augmented_phy(newick::AbstractString)
 
     leaf_idx_new = collect(1:p)           # by construction
     leaf_names_new = leaf_names           # already in encounter order
-    return AugmentedPhy{Float64}(p, n_total, Q, leaf_idx_new, leaf_names_new,
-                                 branch_lengths, new_root_idx)
+    raw = AugmentedPhy{Float64}(p, n_total, Q, leaf_idx_new, leaf_names_new,
+                                branch_lengths, new_root_idx)
+    return _apply_phy_correlation(raw; correlation = correlation)
 end
 
 """
     make_phy(edges::AbstractVector{<:Tuple}, n_leaves::Integer;
-             root_index::Integer = -1) :: AugmentedPhy{Float64}
+             root_index::Integer = -1, correlation::Bool = false) :: AugmentedPhy{Float64}
 
 Convenience constructor: build an `AugmentedPhy` from a list of edges
 `(parent_id, child_id, branch_length)` with integer node ids 1..n_total
@@ -311,12 +362,16 @@ required).
 If `root_index < 0` it is auto-detected as the unique node that is not a
 child in any edge.
 
+`correlation::Bool = false` — same opt-in unit-height rescale + ultrametric
+gate as `augmented_phy` (see its docstring; phylo transport S2).
+
 This bypasses the Newick parser — useful for tests and for trees that
 arrive from another tool already as edge lists.
 """
 function make_phy(edges::AbstractVector, n_leaves::Integer;
                   root_index::Integer = -1,
-                  leaf_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing)
+                  leaf_names::Union{Nothing,AbstractVector{<:AbstractString}} = nothing,
+                  correlation::Bool = false)
     n_total = 0
     for (p_i, c_i, _) in edges
         n_total = max(n_total, p_i, c_i)
@@ -351,8 +406,9 @@ function make_phy(edges::AbstractVector, n_leaves::Integer;
     leaf_idx = collect(1:n_leaves)        # convention: leaves are 1:p
     names = leaf_names === nothing ?
         ["L$(t)" for t in 1:n_leaves] : collect(String.(leaf_names))
-    return AugmentedPhy{Float64}(n_leaves, n_total, Q, leaf_idx, names,
-                                 branch_lengths, Int(root_index))
+    raw = AugmentedPhy{Float64}(n_leaves, n_total, Q, leaf_idx, names,
+                                branch_lengths, Int(root_index))
+    return _apply_phy_correlation(raw; correlation = correlation)
 end
 
 """

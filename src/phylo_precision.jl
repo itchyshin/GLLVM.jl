@@ -101,8 +101,11 @@ Root-to-tip height of `phy`, after checking every leaf agrees within
 function _phylo_check_ultrametric_height(phy::AugmentedPhy)
     dist = _phylo_root_to_tip_heights(phy)
     leaf_heights = dist[phy.leaf_indices]
-    h = maximum(leaf_heights)
-    tol = sqrt(eps()) * h
+    h = leaf_heights[1]
+    # Matches R's tolerance scale exactly (phylo-tree-precision.R:137-141):
+    # `scale <- max(1, abs(height), abs(tip_depths))`.
+    tol_scale = max(1.0, abs(h), maximum(abs.(leaf_heights)))
+    tol = sqrt(eps()) * tol_scale
     maximum(abs.(leaf_heights .- h)) <= tol ||
         throw(ArgumentError("GJL-GATE-PHYLO-NONULTRAMETRIC: tree is not " *
             "ultrametric within sqrt(eps())*height (root-to-tip heights " *
@@ -125,6 +128,12 @@ This feeds the same sparse-phylo Gaussian marginal likelihood kernel
 (`gaussian_marginal_loglik_sparse_phy`) as `AugmentedPhy` itself, after its
 own root-row deletion — the two paths must agree to machine precision
 (Workflow Q check 2; see `test/test_phylo_precision.jl`).
+
+If `phy` was itself already built with `correlation = true`
+(`augmented_phy`/`make_phy`, phylo transport S2 — `phy.scale != 1.0`), the
+height scaling is already baked into `phy.Q_topology`: passing
+`correlation = true` here is then a no-op re-use of `phy.scale` (no double
+scaling), and `correlation = false` is rejected as contradictory.
 """
 function PrecisionPhy(phy::AugmentedPhy{T}; correlation::Bool = false) where {T}
     p = phy.n_leaves
@@ -135,10 +144,19 @@ function PrecisionPhy(phy::AugmentedPhy{T}; correlation::Bool = false) where {T}
     n_aug == 2p - 2 ||
         error("internal indexing error: expected n_aug = 2p - 2 = $(2p - 2), got $n_aug")
 
-    scale = 1.0
-    if correlation
-        scale = _phylo_check_ultrametric_height(phy)
-        Q_cond = scale .* Q_cond
+    scale = phy.scale
+    if phy.scale == 1.0
+        if correlation
+            scale = _phylo_check_ultrametric_height(phy)
+            Q_cond = scale .* Q_cond
+        end
+    else
+        correlation ||
+            throw(ArgumentError("phy already carries scale=$(phy.scale) " *
+                "(built with correlation=true); cannot build a PrecisionPhy " *
+                "with correlation=false from an already unit-height-scaled " *
+                "AugmentedPhy"))
+        # phy.Q_topology already has phy.scale baked in — nothing to do.
     end
 
     # Reorder Julia's leaves-first Q_cond to R's internal-first/tips-last.
