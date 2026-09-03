@@ -26,15 +26,14 @@ Final state (close, ~03:10Z): pushes used **3 of 3** (bba953df 00:09Z; 789bd97e 
 
 ## Owed next (in order)
 
-1. **Read the two verdicts** if they landed after this file: CI run 33699239628 (sharded, bba953df)
-   and any run for the final push; Totoro `suite-run-03/suite.end`. Reconcile the two aarch64-only
+1. **CI is green**: the close push's run 33710504809 passed all 8 shards. PR #277 was then merged with
+   `origin/main` (#275 action bumps; conflict in CI.yml resolved keeping the sharding) — read the run for
+   that merge commit; Totoro `suite-run-03/suite.end`. Reconcile the two aarch64-only
    local failures the A6 child saw (`test_phylo_nb_xlv.jl`, `test_sparse_phy_grad.jl` p=120) against
    the x64 suite; if they are platform-only, record them as such in the check-log.
-2. **Finish the realistic-size grid.** 21 of 24 cells are paired in
-   `docs/dev-log/core070/realistic-size-grid-2026-09-03.md` (2 invalid pairs need the R driver re-run
-   with the seed in the filename; see the doc). The last cell `nb2_p50_n2000_K2` is Nibi job
-   **21059449** (5 h limit, queued ~03:05Z): collect its `out/` files when it finishes
-   (`sacct -j 21059449 -X`; `seff 21059449_24`), pair it, and append to the grid doc.
+2. **Realistic-size grid: 22/24 paired** (`docs/dev-log/core070/realistic-size-grid-2026-09-03.md`);
+   owed: re-run the 2 invalid cells (idx 9, 17) with the seed in the R driver's filenames; decide which
+   engine's cond(H) the contract's scaling uses (they differ 858 vs 14 138 on the largest cell).
 3. **Bring the maintainer**: (a) T3 tolerances to sign (`second-order-parity-contract.md` §4; the
    receipts now show what "the same" looks like at toy and realistic scale); (b) `loading_profile`
    estimand scope; (c) T8: reclassify 8 AGHQ policy rows?; (d) T12: are the four level names the

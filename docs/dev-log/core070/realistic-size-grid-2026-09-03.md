@@ -355,3 +355,26 @@ data supports needing.
   disambiguated from the STEP-1 spot-check outputs it silently reused —
   until then these two stay excluded from every statistic in this
   document.
+
+## Update 10:55Z — the last cell (`nb2_p50_n2000_K2`, idx 24) paired: 22/24 valid
+
+Nibi job 21059449 (resubmitted with `--time=05:00:00`) COMPLETED in **4h07m44s**, 99.05 % CPU
+efficiency, 753 MB memory. Paired against Totoro's R fit (collector row, seed 1024):
+
+| cell | logLik R | logLik Julia | Δ | max rel ΔSE (β) | vcov rel Frob | max \|ΔWald\| | cond(H) Julia / R | pd / boundary | R fit wall | Julia fit / confint wall |
+|---|---:|---:|---:|---:|---:|---:|---:|:---:|---:|---:|
+| nb2_p50_n2000_K2 | −224682.83238591 | −224682.83238430 | 1.61e-06 | 6.32e-05 | n/a (collector pairs β only for NB2 K=2) | 4.67e-06 | 858.5 / 14137.7 | T / none | 498 s | 3886 s / 5494 s |
+
+**Findings.** (1) Agreement holds at the largest cell: the SE delta (6.3e-5 relative) sits inside the
+draft each-own-optimum tolerance by two orders and inside the cond(H)-scaled bound (×14.1) by three.
+(2) The two engines report **very different condition numbers on the same problem** (Julia 858 vs
+R 14 138): they are Hessians of different parameterisations (Julia's packed θ with log r per trait;
+TMB's joint parameter block), so the contract's cond(H) is not one number — the write-up should say
+which engine's cond(H) the scaling uses (recommend: max of the two, recorded per cell). (3) Timing:
+Julia 2h36m (fit 3886 s + Wald confint 5494 s, single thread, compile included) vs R 498 s — a
+**~19× gap at p=50, n=2000, K=2**; the confint Hessian (finite-difference on the family route) is
+the larger half. This is the M3 performance track's headline case, not a parity item.
+
+**Grid status: 22/24 valid pairs; 2 invalid (idx 9, 17 — R-driver seed mismatch, re-run owed); 0 pending.**
+Receipts: `realistic-size-out/nibi/nb2_p50_n2000_K2_julia_*`, `realistic-size-out/totoro/nb2_p50_n2000_K2_r_*`.
+D-201 resize confirmation: the 5 h limit was right (used 4h08m); for a re-run of this class ask 5 h, 1 GB.

@@ -17422,3 +17422,13 @@ fail — `test_sparse_phy.jl:297` "correlation=false is bit-identical to pre-S2 
 `==` against an aarch64 literal; x64 differs in the last ulp (-208.89116988490585 vs …82). Fixed in
 df109411 (asserted at rtol 1e-12; 43/1 broken on both versions locally). Advisory R smoke failed as
 documented. Push #3 carries df109411 and the close-out docs.
+
+## 2026-09-03 — close-push CI fully green; last realistic-size cell paired; main merged into the lane
+
+Run 33710504809 (3d5718e7, sharded, dispatched): **all 8 Julia shards success, run conclusion success**
+(advisory R smoke failed as documented). Nibi 21059449 (`nb2_p50_n2000_K2`) COMPLETED in 4h07m44s;
+paired: logLik Δ 1.61e-6, max rel ΔSE 6.32e-5, Wald endpoints 4.67e-6, cond(H) Julia 858 / R 14138,
+Julia 2h36m vs R 498 s. Grid: 22/24 valid, 2 invalid (seed mismatch), 0 pending.
+PR #277 went DIRTY overnight: main merged #275 (actions off the Node 20 runtime) touching CI.yml;
+merged origin/main into the lane (9a282f36), keeping the shard/coverage gating and taking
+`codecov-action@v6` / `checkout@v6` / `setup-julia@v3` from main; YAML parses.
