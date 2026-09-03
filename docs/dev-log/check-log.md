@@ -17344,3 +17344,24 @@ not attempted, with reasons (API gaps: Lognormal/Truncated-Poisson/Truncated-NB2
 per the contract). Full report + per-cell table: `docs/dev-log/core070/second-order-batch-2026-09-03.md`;
 receipts: `docs/dev-log/core070/second-order-batch-out/*.json` (20 files, sha256 in the report).
 Tolerances measured and reported against, never gated — this is receipts, not a parity claim.
+
+## 2026-09-03 — T4 realistic-size pre-run + Nibi grid queued (Gaussian, Poisson-log, NB2-log)
+
+D-139 pre-run at the smallest realistic cell (p=20, n=500, K=1, both engines, Totoro, ≤3
+cores/process): all three families converge with logLik agreeing to ~1e-6–1e-8, max relative ΔSE
+(β block) ≤2.0e-5, vcov Frobenius (β block) ≤1.3e-5, max |ΔWald endpoint| ≤1.3e-5 (poisson, nb2;
+Gaussian has no β block for this centred-Y DGP, same caveat as the toy pre-run). NB2's T14 F1
+`dispersion_boundary` fields show no boundary at this size (unlike the p=5 toy fixture). Worst
+wall: NB2 Julia 122 s, R 13 s — no cell exceeded 30 min, no STOP triggered. R + gllvmTMB 0.7.0 is
+NOT installed on Nibi (`~/projects/def-snakagaw/snakagaw/R` library tree is empty; R itself IS
+available as a module) — grid split: Julia side (fits + SEs + cond(H)) queued as a Nibi SLURM array
+(jobs 21053139 instantiate → 21053142 array, `--dependency=afterok`, both queued for Nibi's
+maintenance lift at 08:00 EDT 2026-09-03); R side (se=TRUE) runs on Totoro in the background, ≤3
+cores/task, sequential, reading byte-identical CSVs the Julia data-only mode wrote. New
+`tools/core070_realistic_size_cell.{jl,R}`, `tools/core070_realistic_size_cells.tsv` (24-cell
+table), `tools/core070_realistic_size.sbatch`, `tools/core070_realistic_size_collect.py` (pairing
+stub, no gating). `--time`/`--mem` sized from the pre-run measurement (D-201) — flagged as likely
+insufficient for the largest cells (p=50, n=2000, K=2), with the `seff`-informed resubmission step
+named for whoever collects the array's results. Full report:
+`docs/dev-log/core070/realistic-size-prerun-2026-09-03.md`. Receipts, not a parity claim — nothing
+here is gated against the second-order-parity-contract tolerances.
