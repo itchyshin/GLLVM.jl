@@ -467,6 +467,41 @@ fph.σ²_phy                                            # estimated phylogenetic
 `Binomial()`, …); supply `N` for Binomial. As `σ²_phy → 0` the fit reduces to the
 independent-family marginal.
 
+#### R-convention precision (`PrecisionPhy`) and the `correlation` estimand
+
+`AugmentedPhy` (from `augmented_phy`/`make_phy`) is the native-Julia
+representation: leaves-first, root included, raw branch lengths — the
+convention `σ²_phy` fits under by default. R's `gllvmTMB` twin instead ships a
+**precision** already reduced to one canonical form (root dropped,
+internal-first/tips-last, unit root-to-tip height baked in) — the shape
+`animal_*`/pedigree/kernel inputs arrive in on the R side, and what a future
+bridge slice will hand across for phylo/animal parity fits.
+`PrecisionPhy(phy::AugmentedPhy)` builds that R-convention bundle from a
+native tree without any inversion (only a row/col drop and a permutation),
+and feeds the identical `gaussian_marginal_loglik_sparse_phy` kernel as
+`AugmentedPhy` itself:
+
+```julia
+phy = augmented_phy("((A:0.1,B:0.2):0.3,C:0.5);")
+pp  = PrecisionPhy(phy)                 # correlation = false: same estimand as phy
+recomputed, shipped, abs_diff = precision_logdet_check(pp)   # per-fit log-det checksum
+```
+
+Passing `correlation = true` — to `augmented_phy`, `make_phy`, or
+`PrecisionPhy` — rescales the precision to **unit root-to-tip height** (R's
+fit-path convention: `σ²_phy` then absorbs the raw tree scale). It requires
+an ultrametric tree (root-to-tip heights equal within `sqrt(eps())`); a
+non-ultrametric tree raises `GJL-GATE-PHYLO-NONULTRAMETRIC` rather than
+silently fitting an estimand that has no R fit to pair against. `σ²_phy`
+fitted with `correlation = true` is exactly `height` times the `σ²_phy`
+fitted with `correlation = false`, for the same actual model — the two give
+**identical log-likelihoods**, only the variance parameterisation differs.
+Native Julia fits default to `correlation = false` (opt-in — a default flip
+would silently change every existing user's `σ²_phy` by a tree-dependent
+factor); see `docs/dev-log/core070/phylo-transport-design.md` and
+`docs/dev-log/core070/phylo-transport-questions-2026-09-02.md` for the full
+rationale.
+
 ## 7. Choosing a family
 
 Match the family to the response support and its mean–variance behaviour:

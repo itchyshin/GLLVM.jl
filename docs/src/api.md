@@ -236,6 +236,8 @@ fit_coevolution_blockna
 fit_coevolution_glm
 make_cross_kernel
 augmented_phy
+PrecisionPhy
+precision_logdet_check
 random_balanced_tree
 sigma_phy_dense
 node_grad

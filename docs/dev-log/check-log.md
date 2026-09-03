@@ -17295,3 +17295,34 @@ the 3 nobs rows PASS (`StatsAPI.nobs` p·n convention, `src/postfit.jl:605-645`)
 estimand-scope decision, not a re-run). `tools/core070_ledger_counts.py` still prints
 `REQUIRED=505` (BOUND 285→292). Full report:
 `docs/dev-log/core070/t5-rebind-2026-09-03.md`.
+
+## 2026-09-03 — phylo transport S1/S2: PrecisionPhy consumer + correlation=true/ultrametric gate
+
+New `src/phylo_precision.jl`: `PrecisionPhy{T}` — labeled sparse phylogenetic precision in R
+(`gllvmTMB`)'s convention (root dropped, internal-first/tips-last, `n_aug = 2p - 2`), matching the
+`Ainv_phy_rr`/`log_det_A_phy_rr`/`species_aug_id` bundle every R phylo/animal/kernel input
+canonicalises to (`docs/dev-log/core070/phylo-transport-design.md`, accepted Q1-Q4 defaults
+2026-09-02). Two constructors (from an `AugmentedPhy`; from raw triplets + labels — the bridge
+shape, S3, not built here) plus `precision_logdet_check` (recompute-vs-shipped log-det checksum).
+`gaussian_marginal_loglik_sparse_phy` now dispatches on `Union{AugmentedPhy,PrecisionPhy}` via an
+extracted `_phy_cond_and_leafpos` helper — `AugmentedPhy`'s own path is unchanged code, just moved.
+Cross-check on an 8-tip ultrametric fixture (height 0.3): max |Δ logLik| = 0.0 across σ²_phy ∈
+{0.3, 1.0, 2.5}; log-det checksum abs diff = 7.1e-15.
+
+S2: `correlation::Bool = false` added to `augmented_phy`/`make_phy` (opt-in, Q1's accepted
+default) — `true` requires ultrametricity within `sqrt(eps())·max(1,|height|,|tip_depths|)`
+(mirrors `phylo-tree-precision.R:137-146`), else raises `GJL-GATE-PHYLO-NONULTRAMETRIC` (Q4's
+accepted default); on success rescales `Q_topology` by the root-to-tip height and records it in a
+new `AugmentedPhy.scale` field (positional-compat constructor keeps every pre-S2 7-arg call
+working, default `scale = 1.0`). σ²_phy fitted under `correlation = true` is exactly `height`
+times the σ²_phy fitted under `correlation = false` for the same model (same logLik, verified on
+the 8-tip fixture, |Δ logLik| ≤ 1e-8); `correlation = false` reproduces a pre-change logLik literal
+bit-identically. `PrecisionPhy(phy::AugmentedPhy)` guards against double-scaling when `phy` was
+already built `correlation = true`.
+
+Red-first throughout (`test/test_phylo_precision.jl` new; `test/test_sparse_phy.jl` extended) —
+both files confirmed to fail before their respective implementation landed. Regression:
+`test_phylo_precision.jl`, `test_sparse_phy.jl`, `test_phy.jl`, `test_likelihood.jl` green on
+Julia 1.12.6 and 1.10.12 (78 pass / 1 pre-existing broken, unrelated). No bridge work (S3/S4 stay
+deferred, per the arc scope); `docs/src/tutorial.md` (§ Phylogenetic GLLVM) and `docs/src/api.md`
+gained the `PrecisionPhy`/`correlation`/gate documentation.
