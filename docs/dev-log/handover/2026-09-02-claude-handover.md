@@ -1,5 +1,13 @@
 # Handover → Claude (Fable 5.1), 2026-09-02
 
+> **CLOSED 2026-09-03.** This lane merged to `main` as `2524b787` (PR #277, merge
+> commit) and the branch `codex/core070-aghq-20260830` was deleted. Every resume
+> command below names that branch and will no longer resolve — the work it points
+> at is all in `main`. Kept verbatim as the record of what was true at handover;
+> do not follow it as instructions. Current state: `AGENTS.md` §Phase state
+> snapshot; what needs a decision:
+> `docs/dev-log/core070/maintainer-decision-set-2026-09-03.md`.
+
 You are Claude, picking up the **Core 0.7.0 + AGHQ programme** on lane
 `codex/core070-aghq-20260830` (worktree `/private/tmp/GLLVM.jl-core070-aghq-20260830`).
 You inherit **no chat context**. This document plus the repo are authoritative.

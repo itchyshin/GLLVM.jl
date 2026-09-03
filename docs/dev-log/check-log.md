@@ -1,3 +1,56 @@
+## 2026-09-03 — Core 0.7.0 + AGHQ parity programme merged to main
+
+PR #277 merged as `2524b787` with a **merge commit**, not a squash: the dev-log
+cites dozens of individual commit hashes that a squash would have orphaned.
+Lane branch `codex/core070-aghq-20260830` deleted after verifying 0 commits not
+reachable from `main` and 0 open PRs against it.
+
+**Gate.** CI green on the exact commit merged (`84b7fef2`): 8/8 Julia shards
+across 1.10 and 1.x, Documenter green. Re-verified on `main` after the merge
+(run 33804003312): 8/8 shards + Documenter green. The frozen-R family smoke is
+red on both, as on every run since the rebuilt-oracle finding — it carries
+`continue-on-error: true` and does not gate
+(`core070/ci-oracle-reproducibility-finding.md`).
+
+**Conflict resolution.** PR #278 was closed at 12:33Z and then merged at 12:48Z,
+so `main` and the lane sharded the Julia suite independently; `.github/workflows/CI.yml`
+and `test/runtests.jl` conflicted. Neither side was taken wholesale:
+
+- CI.yml — lane version kept (it carries the advisory `test-parity` job), plus
+  #278's concurrency refinement adopted verbatim,
+  `cancel-in-progress: ${{ github.event_name == 'pull_request' }}`. A superseded
+  run on `main` reports no status at all, and "green by absence" is
+  indistinguishable from green; only PR runs are genuinely redundant.
+- This also **restored PR #275's action bumps, which main's #278 merge had
+  silently reverted** — that branch predated #275, so merging it took
+  `checkout` v6 -> v4, `setup-julia` v3 -> v2, `codecov` v6 -> v4 on the test job.
+- runtests.jl — lane include list kept; `main`'s was 130 files shorter and
+  taking it would have dropped every test file this lane added. #278's header
+  self-count fix adopted: the bare `count("_shard_include(\"", ...)` also matches
+  its own expression. Six call sites were un-indented, so they were normalised
+  first, otherwise the stricter indented-only count would have under-reported by
+  six. Verified 238 == 238; `test_shard_selection.jl` 43/43 (partition still
+  disjoint and complete).
+
+**State at the merge.** Ledger 505 required = 292 bound + 213 dispositioned, 0
+free. Suite 13327 pass / 0 fail / 0 error. Second-order receipts on 20 paired
+toy cells (SE rel delta median 6e-6, max 1e-4; Wald endpoints max 3e-5) and 22
+realistic-size cells (p >= 20, n >= 500), none above the draft tolerances.
+
+**What this does NOT claim.** The qualification is one-directional (R workflows
+through `engine = "julia"` against frozen gllvmTMB 0.7.0 `b4d5fee6`).
+fitted/predict/residuals and paired recovery-to-truth are measured but out of
+claim. No real-data acceptance run has been executed. The T3 tolerances are
+still drafted, not signed — see
+`core070/maintainer-decision-set-2026-09-03.md`, which carries six decisions;
+only D3 (`loading_profile` estimand scope) blocks a ledger row from binding.
+
+Stale-reference sweep: `AGENTS.md` §Phase state snapshot updated to the merged
+state; the 2026-09-02 and 2026-09-03 handovers carry a CLOSED banner so their
+resume blocks read as record rather than instruction. Provenance lines in slice
+notes and plan-actual files that name the lane branch were left untouched —
+they record what was true when written.
+
 ## 2026-08-30 — independent panel correction, branch-RE
 
 Rose exposed a valid marginal model incorrectly rejected by the A4 auxiliary
