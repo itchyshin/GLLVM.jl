@@ -85,7 +85,7 @@ named public R call, 8 to reclassify (needs the maintainer's yes).
 - Nibi over Vulcan/tamia for the grid: tamia in maintenance to October, Vulcan two CPU nodes and no
   depot, Nibi has the depot + outbound network. Rejected: Totoro-only for the grid (Totoro kept for
   pre-runs, the suite and the second-order batch).
-- Push #2 was deferred behind the dispatched CI run so as not to cancel it; pushes used: **PUSHES_PLACEHOLDER** of 3.
+- Push #2 was deferred behind the dispatched CI run so as not to cancel it; pushes used: **2** of 3 (push #1 bba953df 00:09Z; push #2 789bd97e ~01:45Z carrying A3/A4/A5/A5b/A6 + the F1 follow-up); the third is reserved for the close.
 - Sentinel test: aligned to F1 semantics rather than changing the fixture (the fixture is documented
   as the sentinel's own).
 - A5's `--time` mistake corrected by resubmission, not by editing the record.
