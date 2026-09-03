@@ -44,6 +44,7 @@ include("spde_fit.jl")                    # Gaussian SPDE spatial-field model + 
 
 # Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
 include("sparse_phy.jl")
+include("phylo_precision.jl")        # PrecisionPhy: R-convention sparse precision consumer (phylo transport S1)
 include("likelihood_sparse_phy.jl")
 include("sparse_phy_grad.jl")            # analytic gradient + SparsePhyState (self-includes takahashi_selinv.jl)
 include("node_gradient.jl")              # O(p) node-frame gradient + per-species BLUPs (Phase 1.1)
@@ -206,6 +207,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        extract_repeatability, extract_ICC_site, extract_Omega,
        chibar2_pvalue, variance_lrt, profile_ci_variance,
        augmented_phy, AugmentedPhy, random_balanced_tree, sigma_phy_dense, make_phy,
+       PrecisionPhy, precision_logdet_check,
        gaussian_marginal_loglik_sparse_phy,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,

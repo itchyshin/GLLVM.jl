@@ -59,6 +59,7 @@ println(_SHARD === nothing ?
     _shard_include("test_phy.jl")
     _shard_include("test_signed_sigma_phy.jl")
     _shard_include("test_sparse_phy.jl")
+    _shard_include("test_phylo_precision.jl")
     _shard_include("test_ppca_init.jl")
     _shard_include("test_em_fa.jl")
     _shard_include("test_lowrank_cholesky.jl")
