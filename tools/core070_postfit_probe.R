@@ -1,0 +1,18 @@
+a<-commandArgs(TRUE);stopifnot(length(a)==3L)
+lib<-a[[1]];fixture<-a[[2]];out<-a[[3]]
+stopifnot(!dir.exists(out));dir.create(out,recursive=TRUE)
+.libPaths(c(lib,.libPaths()));suppressPackageStartupMessages(library(gllvmTMB))
+stopifnot(normalizePath(find.package('gllvmTMB'))==normalizePath(file.path(lib,'gllvmTMB')))
+ns<-asNamespace('gllvmTMB');source(fixture,local=TRUE)
+stopifnot(length(probes)==29L,!anyDuplicated(vapply(probes,`[[`,character(1),'id')))
+results<-lapply(probes,function(p){
+ observed<-tryCatch(eval(p$expr),error=function(e)e)
+ expected<-eval(p$expected)
+ ok<-identical(observed,expected)
+ data.frame(id=p$id,pass=ok,observed=paste(deparse(observed,width.cutoff=500L),collapse=' '),expected=paste(deparse(expected,width.cutoff=500L),collapse=' '))
+})
+results<-do.call(rbind,results)
+write.table(results,file.path(out,'results.tsv'),sep='\t',row.names=FALSE,quote=TRUE)
+print(results[,c('id','pass')],row.names=FALSE)
+if(!all(results$pass))quit(status=1)
+cat('FROZEN_POSTFIT_POLICY_PROBES_PASS_29_NOT_FITTED_PARITY\n')

@@ -1,10 +1,7 @@
 using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Statistics
 
-# Relaxed-clock per-branch rate prototype. New src files are NOT wired into
-# the GLLVM module on this branch (matching the hard constraint not to modify
-# existing src/test/Project.toml). Pull them in directly.
-include(joinpath(@__DIR__, "..", "src", "edge_incidence.jl"))
-include(joinpath(@__DIR__, "..", "src", "relaxed_clock.jl"))
+# Relaxed-clock per-branch rate prototype.
+# edge_incidence.jl and relaxed_clock.jl are included in GLLVM.jl.
 
 # Balanced EdgePhy via Newick (same helper pattern as test_edge_incidence.jl).
 function _balanced_edge_phy(p::Integer; branch_length::Real = 0.1)

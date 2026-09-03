@@ -1,0 +1,545 @@
+{
+ "area": "namespace-1",
+ "rows": [
+  {
+   "source_id": "namespace/S3method/coef,gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/coef,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/confint,gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/confint,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/deviance,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/fitted,gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/fitted,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/imputed,gllvmTMB",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/logLik,gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/logLik,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/ordiplot,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/plot,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/plot,gllvmTMBmesh",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/plot,profile_derived",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/plot,profile_loadings",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/plot,sdmTMBmesh",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/predict,gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/predict,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,gllvmTMB_Sigma_phy_slope",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,gllvmTMB_check_consistency",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,gllvmTMB_confint_inspect",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,gllvmTMB_coverage_study",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,gllvmTMB_identifiability",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,gllvmTMB_reportable_table",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,gllvmTMB_slope_ci",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,summary.gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/print,summary.gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/residuals,gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/residuals,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/simulate,gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/simulate,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/stats::nobs,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/summary,gllvmTMB_julia",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/summary,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/tidy,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/S3method/vcov,gllvmTMB_multi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/.proportions_bootstrap_ci",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/.proportions_wald_ci",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/Beta",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/add_utm_columns",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/animal_dep",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/animal_indep",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/animal_latent",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/animal_scalar",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/animal_slope",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/animal_unique",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/betabinomial",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/block_V",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/bootstrap_Sigma",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/categorical",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/check_auto_residual",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/check_gllvmTMB",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/compare_Sigma_table",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/compare_dep_vs_two_psi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/compare_indep_vs_two_psi",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/compare_loadings",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/confint_inspect",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/confirmatory_lambda",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/cumulative_logit",
+   "classification": "compatibility_adapter",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/delta_gamma",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/delta_lognormal",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/dep",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/diagnose_kernel_separability",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/diagnostic_table",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_Gamma",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_ICC_site",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_Omega",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_Sigma",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_Sigma_B",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_Sigma_W",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_Sigma_table",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_coevolution_modules",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_communality",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_correlations",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_cross_correlations",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_cutpoints",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_loadings",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_lv_effects",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_ordination",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_phylo_signal",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_proportions",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_repeatability",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_residual_cor",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_residual_cov",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_residual_split",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/extract_rotated_loadings_table",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/flag_unreliable_loadings",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  },
+  {
+   "source_id": "namespace/export/getLV",
+   "classification": "required_core",
+   "executable_case_ids": [],
+   "rationale": "Executable model/interface or rejection case mapping remains required."
+  }
+ ]
+}

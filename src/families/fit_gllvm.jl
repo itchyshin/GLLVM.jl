@@ -50,7 +50,7 @@ distribution used as a marker (the GLM.jl convention):
 - `COMPoisson()` → [`fit_compoisson_gllvm`](@ref) — Laplace marginal (CMP counts;
   under- or over-dispersion). The marker's `ν` field is a tag payload — it is
   never read here; `ν` is always estimated. This is the opposite of
-  `StudentTFamily(ν)`, whose degrees of freedom are structural and held fixed.
+  `StudentTFamily(ν)`, where numeric degrees of freedom are fixed and `nothing` requests estimation.
 - `OrderedBeta()` → [`fit_ordered_beta_gllvm`](@ref) — Laplace marginal
   (proportions / cover with point masses at 0 and 1). The marker's `c0`, `c1`,
   and `φ` fields are tag payloads — they are never read here; all three are
@@ -90,6 +90,9 @@ the plain-call behaviour when they are at their defaults (regression safe):
   - `BetaBinom`        → [`fit_beta_binomial_gllvm_grouped`](@ref) (per-group Beta
     precision `φ`; the p×n `N` keyword is required)
   - `GLLVM.TweedieED`  → [`fit_tweedie_gllvm_grouped`](@ref) (per-species `φ`, shared power)
+  - `TruncatedNegBin2` → [`fit_truncated_nbinom2_gllvm_pertrait`](@ref) with explicit
+    `:species` or distinct positive group IDs; partial grouping is unsupported.
+    Omitting `disp_group` preserves the shared-`r` default for this family.
   Families without a grouped fitter throw a clear `ArgumentError`. Shared
   dispersion for NB/Beta/NB1/BetaBinom remains available via the named fitters
   [`fit_nb_gllvm`](@ref) / [`fit_beta_gllvm`](@ref) / [`fit_nb1_gllvm`](@ref) /
@@ -141,7 +144,7 @@ function fit_gllvm(Y::AbstractMatrix; family = Normal(), K = nothing,
     # read: φ is always estimated. Gamma unchanged.
     if disp_group === nothing &&
        (family isa NegativeBinomial || family isa Beta || family isa NB1 ||
-        family isa BetaBinom)
+        family isa BetaBinom || (family isa StudentTFamily && family.ν === nothing))
         disp_group = :species
     end
 
@@ -230,8 +233,8 @@ _fit_gllvm(::Beta,     Y::AbstractMatrix; kwargs...) = fit_beta_gllvm(Y; kwargs.
 _fit_gllvm(::Ordinal,  Y::AbstractMatrix; kwargs...) = fit_ordinal_gllvm_pertrait(Y; kwargs...)
 _fit_gllvm(::Gamma,    Y::AbstractMatrix; kwargs...) = fit_gamma_gllvm(Y; kwargs...)
 _fit_gllvm(::Exponential, Y::AbstractMatrix; kwargs...) = fit_exponential_gllvm(Y; kwargs...)
-# `StudentTFamily` is not a zero-payload marker. The FIXED degrees of freedom `ν`
-# is STRUCTURAL — it defines the likelihood and is not estimated — so it travels on
+# `StudentTFamily` carries the degrees-of-freedom policy: numeric ν is fixed;
+# nothing requests estimation. This model control travels on
 # the family instance (as `ZIB`'s trials count does) and is forwarded as `nu`. A
 # separate `nu` keyword would silently win over the marker (Julia resolves a
 # duplicated keyword in favour of the splatted one), so it is rejected rather than
@@ -295,6 +298,18 @@ _fit_gllvm(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "(available: Normal, Binomial, Poisson, TruncatedPoisson, CensoredPoisson, TruncatedNegBin2, Lognormal, Multinomial, NegativeBinomial, NB1, Beta, BetaBinom, Ordinal, Gamma, Exponential, StudentTFamily, DeltaLogNormal, DeltaGamma, HurdlePoisson, HurdleNB, BetaHurdle, COMPoisson, OrderedBeta, GeneralizedPoisson1, ZIPoisson, ZINegBin, ZIB)"))
 
 # --- grouped-dispersion routing keyed on the family marker. ------------------
+function _fit_gllvm_grouped(::TruncatedNegBin2, Y::AbstractMatrix; group, kwargs...)
+    p = size(Y, 1)
+    length(group) == p || throw(ArgumentError(
+        "fit_gllvm: TruncatedNegBin2 needs one dispersion group ID per trait (length $p)"))
+    all(>(0), group) || throw(ArgumentError(
+        "fit_gllvm: TruncatedNegBin2 dispersion group IDs must be positive"))
+    length(unique(group)) == p || throw(ArgumentError(
+        "fit_gllvm: TruncatedNegBin2 supports only distinct per-trait dispersion groups; " *
+        "use disp_group = :species, or omit disp_group for shared dispersion"))
+    return fit_truncated_nbinom2_gllvm_pertrait(Y; kwargs...)
+end
+
 _fit_gllvm_grouped(::NegativeBinomial, Y::AbstractMatrix; kwargs...) =
     fit_nb_gllvm_grouped(Y; kwargs...)
 _fit_gllvm_grouped(::Beta,  Y::AbstractMatrix; kwargs...) = fit_beta_gllvm_grouped(Y; kwargs...)
@@ -302,6 +317,8 @@ _fit_gllvm_grouped(::Gamma, Y::AbstractMatrix; kwargs...) = fit_gamma_gllvm_grou
 _fit_gllvm_grouped(::NB1,   Y::AbstractMatrix; kwargs...) = fit_nb1_gllvm_grouped(Y; kwargs...)
 _fit_gllvm_grouped(::TweedieED, Y::AbstractMatrix; kwargs...) =
     fit_tweedie_gllvm_grouped(Y; kwargs...)
+_fit_gllvm_grouped(family::StudentTFamily, Y::AbstractMatrix; group = nothing, kwargs...) =
+    fit_studentt_gllvm(Y; nu = family.ν, disp_group = :species, kwargs...)
 
 # Beta-binomial: the trial counts are required here, unlike in the named fitter.
 # `fit_beta_binomial_gllvm_grouped` defaults `N === nothing` to all-ones, but at
@@ -326,4 +343,4 @@ end
 # Families without a grouped-dispersion fitter.
 _fit_gllvm_grouped(family, Y::AbstractMatrix; kwargs...) = throw(ArgumentError(
     "fit_gllvm: disp_group (grouped dispersion) is not supported for family " *
-    "$(nameof(typeof(family))) — available: NegativeBinomial, Beta, Gamma, NB1, BetaBinom, Tweedie (TweedieED)"))
+    "$(nameof(typeof(family))) — available: NegativeBinomial, Beta, Gamma, NB1, BetaBinom, Tweedie (TweedieED), StudentTFamily, TruncatedNegBin2 (per-trait only)"))

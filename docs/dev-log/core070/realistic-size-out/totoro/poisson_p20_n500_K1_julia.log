@@ -1,0 +1,34 @@
+DONE poisson_p20_n500_K1
+family=poisson
+p=20 n=500 K=1 seed=1002
+converged=true
+logLik=-20119.827847775163
+wall_fit_sec=9.959650993347168
+pd_hessian=true
+wall_confint_sec=15.303851842880249
+dispersion_boundary=NA (Poisson has no dispersion parameter)
+boundary_terms=
+cond_H=40.2672889506792
+	Command being timed: "/home/snakagaw/.julia/juliaup/julia-1.10.10+0.x64.linux.gnu/bin/julia --project=. tools/core070_realistic_size_cell.jl poisson 20 500 1 1002"
+	User time (seconds): 40.67
+	System time (seconds): 0.94
+	Percent of CPU this job got: 101%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:41.01
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 641004
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 3
+	Minor (reclaiming a frame) page faults: 708348
+	Voluntary context switches: 30
+	Involuntary context switches: 92
+	Swaps: 0
+	File system inputs: 132861
+	File system outputs: 65
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

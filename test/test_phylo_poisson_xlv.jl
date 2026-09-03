@@ -194,4 +194,23 @@ end
         fit, Y, phy, X_lv, [1], eta_target; profile_iterations = 0)
     @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target; endpoint_step = -0.1)
+
+    # Red-first: the boundary-tolerant ok-gate (added to accept a
+    # constrained refit that satisfies the constraint at a genuine
+    # sigma2_phy = 0 boundary despite Optim's own converged flag flickering
+    # false there) must not turn into a blanket pass. With a constraint
+    # tolerance far tighter than double-precision NelderMead can ever hit
+    # (1e-14) and iterations capped so low the continuation cannot even
+    # approach it, the refit's constraint_error stays orders of magnitude
+    # above tolerance -- a genuinely failed endpoint search, unrelated to
+    # any variance boundary. This must still report :failed.
+    prof_fail = GLLVM._phylo_poisson_xlv_profile_eta_realized(
+        fit, Y, phy, X_lv, [1], eta_target;
+        level = 0.95, profile_iterations = 3, constraint_tol = 1e-14,
+        newton_maxiter = 120, newton_tol = 1e-10)
+    @test prof_fail.endpoint_status == [:failed]
+    @test all(isnan, prof_fail.lower)
+    @test all(isnan, prof_fail.upper)
+    @test prof_fail.constrained_error[1] > 1e-14
+    @test prof_fail.endpoint_boundary == [false]
 end

@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "status": "FROZEN_THREE_CASE_BRIDGE_SUBCONTRACT_NOT_FULL_PROGRAMME",
+  "required_case_ids": [
+    "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
+    "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
+    "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE"
+  ],
+  "runner": "Rscript --vanilla tools/core070_bridge_models.R",
+  "cases": [
+    {
+      "id": "CORE070-FAMILY-02-LOG-PUBLIC-R-BRIDGE",
+      "family": "poisson",
+      "model_contract_id": "MODEL-FAMILY-02-LOG",
+      "source_fact_ids": [
+        "family/FAMILY-02-LOG"
+      ],
+      "prerequisite_native_id": "NATIVE-03-POISSON",
+      "data_sha256": "44e647ac7ff29672efa12ca03b7b628dd37a02ac0f8d2421a19d3969743e26da",
+      "p": 5,
+      "n": 60,
+      "K": 2,
+      "df": 14,
+      "reference_control_policy": "public_start_from_refinement_v1",
+      "r_call": "gllvm_julia_fit(Y,family=poisson(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=poisson(),engine=\"julia\")",
+      "julia_call": "fit_gllvm(Y;family=original_family,K=2)",
+      "fixture": "tools/core070_bridge_models.R",
+      "native_health_fixture": "tools/core070_bridge_models.jl",
+      "coverage_role": "public_r_bridge",
+      "acceptance_level": "paired_fit_interface",
+      "acceptance_rule": "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified.",
+      "scope_boundary": "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion."
+    },
+    {
+      "id": "CORE070-FAMILY-07-LOGIT-PUBLIC-R-BRIDGE",
+      "family": "beta",
+      "model_contract_id": "MODEL-FAMILY-07-LOGIT",
+      "source_fact_ids": [
+        "family/FAMILY-07-LOGIT"
+      ],
+      "prerequisite_native_id": "NATIVE-08-BETA",
+      "data_sha256": "3ddd9a90ae2e933af8c9f45f72fc7edda96dc0fda2a4389d3708a003d07ce099",
+      "p": 5,
+      "n": 60,
+      "K": 1,
+      "df": 15,
+      "reference_control_policy": "public_start_from_refinement_v1",
+      "r_call": "gllvm_julia_fit(Y,family=gllvmTMB::Beta(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),engine=\"julia\")",
+      "julia_call": "fit_gllvm(Y;family=original_family,K=1)",
+      "fixture": "tools/core070_bridge_models.R",
+      "native_health_fixture": "tools/core070_bridge_models.jl",
+      "coverage_role": "public_r_bridge",
+      "acceptance_level": "paired_fit_interface",
+      "acceptance_rule": "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified.",
+      "scope_boundary": "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion."
+    },
+    {
+      "id": "CORE070-FAMILY-05-LOG-PUBLIC-R-BRIDGE",
+      "family": "nb2",
+      "model_contract_id": "MODEL-FAMILY-05-LOG",
+      "source_fact_ids": [
+        "family/FAMILY-05-LOG"
+      ],
+      "prerequisite_native_id": "NATIVE-06-NB2",
+      "data_sha256": "7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9",
+      "p": 5,
+      "n": 80,
+      "K": 2,
+      "df": 19,
+      "reference_control_policy": "nb2_original_default_v1",
+      "r_call": "gllvm_julia_fit(Y,family=gllvmTMB::nbinom2(),num.lv=2); gllvmTMB(value~0+trait+latent(0+trait|site,d=2,unique=FALSE),data=original_reversed_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::nbinom2(),engine=\"julia\")",
+      "julia_call": "fit_gllvm(Y;family=original_family,K=2)",
+      "fixture": "tools/core070_bridge_models.R",
+      "native_health_fixture": "tools/core070_bridge_models.jl",
+      "coverage_role": "public_r_bridge",
+      "acceptance_level": "paired_fit_interface",
+      "acceptance_rule": "Both public routes: df/shape/link/convergence valid; loglik/intercept/loading covariance absolute difference<=1e-8 from fresh default native; dispersion relative difference<=1e-8; native absolute gradient and FD stability<=1e-4, objective reconstruction<=1e-8; retained source-bound R loglik rtol<=1e-6 and original health reverified.",
+      "scope_boundary": "Original complete-data ordinary loadings-only unique=false model. Historical R oracle is reverified, not refitted in this public bridge batch. No broader models, recovery or full family promotion."
+    }
+  ]
+}

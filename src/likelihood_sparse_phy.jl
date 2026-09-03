@@ -77,6 +77,28 @@
 using SparseArrays
 using LinearAlgebra
 
+#     _phy_cond_and_leafpos(phy) :: (Q_cond, leaf_pos)
+#
+# Root-dropped topology precision plus each leaf's row/col position in it.
+# Dispatches on the phylo representation: `AugmentedPhy` (root INCLUDED in
+# `Q_topology`; dropped here) vs. `PrecisionPhy` (root already dropped at
+# construction, `src/phylo_precision.jl`). Both feed the same downstream
+# sparse-phylo likelihood kernel below.
+function _phy_cond_and_leafpos(phy::AugmentedPhy)
+    keep = filter(i -> i != phy.root_index, 1:phy.n_total)
+    Q_cond = phy.Q_topology[keep, keep]            # SparseMatrixCSC{Float64,Int}
+    # Position of each leaf in the (2p − 2)-vector of non-root nodes.
+    leaf_pos = Vector{Int}(undef, phy.n_leaves)
+    @inbounds for t in 1:phy.n_leaves
+        lp = phy.leaf_indices[t]
+        if phy.root_index < lp
+            lp -= 1
+        end
+        leaf_pos[t] = lp
+    end
+    return Q_cond, leaf_pos
+end
+
 """
     gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
         X=nothing, β=nothing,
@@ -113,7 +135,7 @@ function gaussian_marginal_loglik_sparse_phy(y::AbstractMatrix,
                                              σ²_W::Union{Nothing,AbstractVector} = nothing,
                                              Λ_phy::Union{Nothing,AbstractMatrix} = nothing,
                                              σ_phy::Union{Nothing,AbstractVector} = nothing,
-                                             phy::AugmentedPhy,
+                                             phy::Union{AugmentedPhy,PrecisionPhy},
                                              σ²_phy::Real = 1.0)
     p, n = size(y)
     K_B  = size(Λ_B, 2)
@@ -193,19 +215,12 @@ function gaussian_marginal_loglik_sparse_phy(y::AbstractMatrix,
     Ainv_m   = _woodbury_apply(d_inv, Λ_B64, DinvΛB, chol_cap, m)
     Ainv_Yc  = _woodbury_apply_matrix(d_inv, Λ_B64, DinvΛB, chol_cap, Y_c)
 
-    # ----- 6. Build Q_cond = phy.Q_topology with root row/col removed ----
-    keep = filter(i -> i != phy.root_index, 1:phy.n_total)
-    Q_cond = phy.Q_topology[keep, keep]            # SparseMatrixCSC{Float64,Int}
+    # ----- 6. Build Q_cond (root row/col already removed) + leaf_pos ------
+    # `phy` is either an AugmentedPhy (root INCLUDED; dropped here) or a
+    # PrecisionPhy (root already dropped at construction — see
+    # src/phylo_precision.jl). `_phy_cond_and_leafpos` dispatches on which.
+    Q_cond, leaf_pos = _phy_cond_and_leafpos(phy)
     n_block = size(Q_cond, 1)                      # = 2p − 2
-    # Position of each leaf in the (2p − 2)-vector of non-root nodes.
-    leaf_pos = Vector{Int}(undef, p)
-    @inbounds for t in 1:p
-        lp = phy.leaf_indices[t]
-        if phy.root_index < lp
-            lp -= 1
-        end
-        leaf_pos[t] = lp
-    end
 
     chol_Qcond   = cholesky(Symmetric(Q_cond))
     logdet_Qcond = logdet(chol_Qcond)

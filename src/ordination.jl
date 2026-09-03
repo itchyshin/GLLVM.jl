@@ -13,9 +13,7 @@
 # canonical PRINCIPAL orientation: R = V from the SVD of the centered site scores,
 # so the rotated site axes are ordered by decreasing spread (principal axes first).
 
-# Loadings accessor — Λ for the single-part families, Λc for the two-part
-# (Delta-/Hurdle-/zero-inflated) families that store loadings on the positive part.
-_loadings(fit) = hasproperty(fit, :Λ) ? fit.Λ : fit.Λc
+# Loadings accessor is defined in src/postfit.jl
 
 """
     ordination(fit, Y; rotate=true) -> (sites, species, rotation)

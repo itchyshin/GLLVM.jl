@@ -1,0 +1,43 @@
+{
+  "scope": "LOCAL_FULL_MODULE_SCALAR_NOT_FITTED_PARITY",
+  "runtime": ".unlazy/core070-aghq/package-qualification",
+  "package_loaded": true,
+  "full_suite": false,
+  "fitted_replay": false,
+  "scalar_assertions": 352,
+  "curvature_assertions": 66,
+  "manifest_sha256": "d1e4768e5d70a622df46d27a71d6ac3fadd96c9507772bb59ca3637a2bdc0765",
+  "julia_binary": "/Users/z3437171/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/bin/julia",
+  "julia_binary_sha256": "fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30",
+  "dependencies": {
+    "Optim": "1.13.3",
+    "ForwardDiff": "0.10.39",
+    "Distributions": "0.25.131",
+    "SpecialFunctions": "2.9.0",
+    "StatsModels": "0.7.10",
+    "Tables": "1.14.0"
+  },
+  "artifacts": {
+    ".unlazy/core070-aghq/package-qualification/plan2.json": "6abc616bad5e2eeaeb7cd739f149a505054b07d81e5b6026dccee4a6761701b9",
+    ".unlazy/core070-aghq/package-qualification/plan3.json": "e4d9a21dc0a69c3b212c1e450cf5a73781bfd74a6bc00d0a5002b5808a459fe5",
+    ".unlazy/core070-aghq/package-qualification/plan4.json": "7a3e91bbf303a9a150ce0575e5be5c9336b664bc8bbce599137a8ca27c2c8f11",
+    ".unlazy/core070-aghq/package-qualification/plan1.json": "9fca5f9acd4232053c953af53b4f49a05e2bb22e7c53d72185ce6f439265930e",
+    ".unlazy/core070-aghq/package-qualification/process1/00.log": "611be1d79ea5c3ec273eb12d379aa085fb36d8d7476500e32787afcc841b9385",
+    ".unlazy/core070-aghq/package-qualification/process1/execution-plan.json": "9fca5f9acd4232053c953af53b4f49a05e2bb22e7c53d72185ce6f439265930e",
+    ".unlazy/core070-aghq/package-qualification/process1/process-receipt.json": "670e0f2c504310e3c0d57e6e3451e9e93bdf83a9b4eb6f64acb24b20e877dcf6",
+    ".unlazy/core070-aghq/package-qualification/process1/progress.json": "93354fe9632dc177570d563c103d030ade8ca538ac68052202b7358549beda61",
+    ".unlazy/core070-aghq/package-qualification/process4/00.log": "0b00a4b02283083d8111fd5bf4e77147d2f958fa406e0fce46afe3d2ccbbdf94",
+    ".unlazy/core070-aghq/package-qualification/process4/execution-plan.json": "7a3e91bbf303a9a150ce0575e5be5c9336b664bc8bbce599137a8ca27c2c8f11",
+    ".unlazy/core070-aghq/package-qualification/process4/process-receipt.json": "5e53a6aa3fcdb4ac4e922c4691a0cae775824a7c1dcb0bd14f858dded5db3b95",
+    ".unlazy/core070-aghq/package-qualification/process4/progress.json": "6bdecc44631c3a8665bd9a470d7963449db8fed8092e702603cbb42d8b017133",
+    ".unlazy/core070-aghq/package-qualification/process3/00.log": "7a6d45924ec3887798866d39cb2f637900d04202c85e80a46eddcba5dab31f3e",
+    ".unlazy/core070-aghq/package-qualification/process3/execution-plan.json": "e4d9a21dc0a69c3b212c1e450cf5a73781bfd74a6bc00d0a5002b5808a459fe5",
+    ".unlazy/core070-aghq/package-qualification/process3/process-receipt.json": "d954fab00969c9dd0709f5f231a6c5be954abfbd8bcdbc0ab2237375fc8ede15",
+    ".unlazy/core070-aghq/package-qualification/process3/progress.json": "e084e3ae0c7b91ec4e546bfafca2ad1c6a36c5acaf304fa9f1509bf76eb45b02",
+    ".unlazy/core070-aghq/package-qualification/process2/00.log": "563e9654b9153e7b2751f4f2e9e9f14b40c34ed8c6b7cf15b05cc97228bb6730",
+    ".unlazy/core070-aghq/package-qualification/process2/execution-plan.json": "6abc616bad5e2eeaeb7cd739f149a505054b07d81e5b6026dccee4a6761701b9",
+    ".unlazy/core070-aghq/package-qualification/process2/process-receipt.json": "89ed82d1791f0d68967ae0a1e39072abd4681607ffe9bc82973a0314397a825b",
+    ".unlazy/core070-aghq/package-qualification/process2/progress.json": "59c9a4b61d94fd16a79792f9479cae9770fd9c8bf290084ea8bdf88bdf874fce",
+    ".unlazy/core070-aghq/package-qualification/attempt2/Manifest.toml": "d1e4768e5d70a622df46d27a71d6ac3fadd96c9507772bb59ca3637a2bdc0765"
+  }
+}

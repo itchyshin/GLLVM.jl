@@ -32,11 +32,14 @@ poisson_marginal_loglik_laplace(Y::AbstractMatrix,
     PoissonFit
 
 Result of [`fit_poisson_gllvm`](@ref): intercepts `β` (length p), loadings `Λ`
-(p×K), the `link`, the maximised Laplace `loglik`, the optimiser `converged`
+(p×K), the `link`, the fitted marginal `loglik`, the optimiser `converged`
 flag, and `iterations`. Fits using `X_lv` additionally retain `alpha_lv`, the
 raw latent-axis coefficients for the predictor-informed score mean; use
 [`extract_lv_effects`](@ref) for the rotation-stable trait-scale product
-`Λ * alpha_lv'`.
+`Λ * alpha_lv'`. Optional `integration` records requested/actual AGHQ, node
+counts, controls, final caches and retained start diagnostics. It is `nothing`
+for default Laplace and legacy constructors. AGHQ convergence is with respect
+to the frozen-node surrogate, not derivatives through changing adaptation.
 """
 struct PoissonFit
     β::Vector{Float64}
@@ -47,8 +50,12 @@ struct PoissonFit
     iterations::Int
     alpha_lv::Union{Nothing, Matrix{Float64}}
     theta_packed::Vector{Float64}
-    hessian::Symbol   # the Laplace log-det curvature this fit's objective used
+    hessian::Symbol   # Laplace log-det curvature; AGHQ is recorded separately
+    integration::Union{Nothing,AGHQFitInfo}
 end
+
+PoissonFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed, hessian) =
+    PoissonFit(β, Λ, link, loglik, converged, iterations, alpha_lv, theta_packed, hessian, nothing)
 
 # Positional compatibility constructor (2026-08-28): every pre-existing
 # construction site builds a default-curvature fit; the `hessian` field
@@ -66,6 +73,7 @@ function Base.show(io::IO, f::PoissonFit)
     print(io, "PoissonFit(p=", p, ", K=", K, ", link=", nameof(typeof(f.link)),
           f.alpha_lv === nothing ? "" : ", X_lv=true",
           ", loglik=", round(f.loglik; sigdigits = 7),
+          f.integration===nothing ? "" : ", "*string(f.integration.actual)*"(k="*string(f.integration.k)*")",
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
@@ -144,7 +152,7 @@ estimates the offset-free intercept.
 Fisher-scored. Default: canonical log link — the two coincide. Omitting it is exactly the pre-kwarg
 behaviour.
 """
-function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
+function _fit_poisson_gllvm_laplace(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), mask = nothing, offset = nothing,
         gradient::Symbol = :analytic,
         hessian::Symbol = _default_hessian(Poisson(), link),
@@ -238,13 +246,21 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
 
     θ0 = vcat(β0, pack_lambda(Λ0))
     N1 = ones(Int, size(Yc))                     # unit trials, hoisted out of the per-eval closure
+    # R3 (workspace reuse, core070): one Float64 LaplaceModeWorkspace shared across
+    # every site of every `negll` evaluation, instead of `_laplace_mode` allocating
+    # its nine buffers fresh per site (543MB churn measured at p=50 — see
+    # docs/dev-log/core070/poisson-perf-diagnosis.md). Concrete-only: `negll` is
+    # always evaluated at a plain Float64 θ (the analytic gradient below never
+    # differentiates through this closure), so this workspace's element type never
+    # needs to be a dual.
+    ws_negll = LaplaceModeWorkspace(Float64, p, K)
     function negll(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         v = try
             -marginal_loglik_laplace(Poisson(), Yc, N1, Λ, β, link; mask = msk, offset = offset,
                                      hessian = hessian,
-                                     maxiter = newton_maxiter, tol = newton_tol)
+                                     maxiter = newton_maxiter, tol = newton_tol, ws = ws_negll)
         catch
             return 1e12
         end
@@ -278,25 +294,35 @@ function fit_poisson_gllvm(Y::AbstractMatrix; K::Integer,
     elseif gradient === :analytic && offset === nothing &&
            (hessian === _default_hessian(Poisson(), link) ||
             _glm_weight_matches_observed(Poisson(), link))
-        function g!(G, θ)
-            β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-            gg = try
-                poisson_laplace_grad(Yc, Λ, β; mask = msk)
-            catch
-                nothing
-            end
-            if gg === nothing || !all(isfinite, gg)
-                hh = 1e-6
-                @inbounds for i in eachindex(θ)
-                    θp = copy(θ); θp[i] += hh; θm = copy(θ); θm[i] -= hh
-                    G[i] = (negll(θp) - negll(θm)) / (2hh)
+        # R4 (only_fg!, core070): a single combined closure so an accepted iterate
+        # that needs BOTH the value and the gradient pays for value+gradient in one
+        # `Optim.optimize` bookkeeping pass rather than two separate closures the
+        # optimizer must call at the same θ. See
+        # docs/dev-log/core070/poisson-perf-repair-notes.md for the measured effect.
+        function fg!(F, G, θ)
+            if G !== nothing
+                β = θ[1:p]; Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+                gg = try
+                    poisson_laplace_grad(Yc, Λ, β; mask = msk)
+                catch
+                    nothing
                 end
-            else
-                G .= .-gg                       # ∇(negll) = −∇(marginal)
+                if gg === nothing || !all(isfinite, gg)
+                    hh = 1e-6
+                    @inbounds for i in eachindex(θ)
+                        θp = copy(θ); θp[i] += hh; θm = copy(θ); θm[i] -= hh
+                        G[i] = (negll(θp) - negll(θm)) / (2hh)
+                    end
+                else
+                    G .= .-gg                   # ∇(negll) = −∇(marginal)
+                end
             end
-            return G
+            if F !== nothing
+                return negll(θ)
+            end
+            return nothing
         end
-        Optim.optimize(negll, g!, θ0, ls, opts)
+        Optim.optimize(Optim.only_fg!(fg!), θ0, ls, opts)
     else
         Optim.optimize(negll, θ0, ls, opts; autodiff = :finite)
     end

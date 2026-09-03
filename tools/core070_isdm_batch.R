@@ -1,0 +1,173 @@
+# Retained evidence runner for the isdm manifest-area admission batch (20 cases).
+# Replays pinned R admission-predicate functions against a frozen fixture; no
+# fitted model, no Julia call -- see docs/dev-log/core070/isdm-batch-contract.json
+# for why (GLLVM.jl has no public isdm_sources()/isdm_source() surface yet).
+#
+# Usage:
+#   Rscript --vanilla tools/core070_isdm_batch.R <source-root> <destination>
+#
+# <source-root> is a directory containing R/isdm-sources.R, R/fit-multi.R,
+# R/offset.R (the frozen gllvmTMB source readback, e.g.
+# .unlazy/core070-aghq/oracle-source/readback). <destination> must not exist.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+source_root <- normalizePath(args[[1]], mustWork = TRUE)
+destination <- args[[2]]
+stopifnot(!dir.exists(destination))
+
+root <- normalizePath(".")
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(requireNamespace("cli", quietly = TRUE))
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+contract_path <- file.path(root, "docs/dev-log/core070/isdm-batch-contract.json")
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"))
+cases <- contract$cases
+stopifnot(length(cases) == contract$expected_case_count,
+          length(unique(vapply(cases, `[[`, "", "manifest_case_id"))) == length(cases))
+
+# --- validate and load pinned source functions -----------------------------
+source_pins <- contract$source_pins
+loaded_functions <- contract$loaded_functions
+stopifnot(setequal(names(source_pins), names(loaded_functions)))
+
+env <- new.env(parent = globalenv())
+source_pins_seen <- list()
+for (rel in names(source_pins)) {
+  path <- file.path(source_root, rel)
+  stopifnot(file.exists(path))
+  digest <- sha256_file(path)
+  stopifnot(identical(digest, source_pins[[rel]]))
+  source_pins_seen[[rel]] <- digest
+  wanted <- unlist(loaded_functions[[rel]])
+  loaded <- character()
+  for (x in parse(path)) {
+    if (!is.call(x) || !identical(x[[1L]], as.name("<-"))) next
+    name <- as.character(x[[2L]])
+    if (length(name) != 1L || !name %in% wanted) next
+    stopifnot(is.call(x[[3L]]), identical(x[[3L]][[1L]], as.name("function")),
+              !name %in% loaded)
+    eval(x, env)
+    loaded <- c(loaded, name)
+  }
+  stopifnot(setequal(wanted, loaded))
+}
+
+# R/offset.R also defines a numeric constant that gll_prepare_offset() needs;
+# load it the same guarded way (no other top-level code from offset.R runs).
+offset_path <- file.path(source_root, "R/offset.R")
+constants <- Filter(function(x) is.call(x) && identical(x[[1L]], as.name("<-")) &&
+                       identical(x[[2L]], as.name(".gll_offset_count_family_ids")),
+                     parse(offset_path))
+stopifnot(length(constants) == 1L)
+rhs <- constants[[1L]][[3L]]
+stopifnot(is.call(rhs), identical(rhs[[1L]], as.name("c")),
+          all(vapply(as.list(rhs)[-1L], is.numeric, logical(1L))))
+eval(constants[[1L]], env)
+
+# --- validate and load the frozen fixture -----------------------------------
+fixture_path <- file.path(root, contract$fixture)
+fixture_sha256 <- sha256_file(fixture_path)
+stopifnot(identical(fixture_sha256, contract$fixture_sha256))
+sys.source(fixture_path, envir = env)
+
+# --- evaluate every case in an isolated environment -------------------------
+dir.create(destination, recursive = TRUE)
+raw_lines <- character(0)
+diag_lines <- character(0)
+result_cases <- vector("list", length(cases))
+all_ok <- TRUE
+
+for (i in seq_along(cases)) {
+  case <- cases[[i]]
+  t0 <- Sys.time()
+  result <- tryCatch(
+    eval(parse(text = case$expression), new.env(parent = env)),
+    error = identity
+  )
+  elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+  is_error <- inherits(result, "error")
+  if (identical(case$expected, "ERROR")) {
+    ok <- is_error && grepl(case$error_contains,
+                            gsub("[[:space:]]+", " ", conditionMessage(result)),
+                            fixed = TRUE)
+    actual_value <- if (is_error) conditionMessage(result) else NA_character_
+  } else {
+    ok <- !is_error && isTRUE(result)
+    actual_value <- if (is_error) conditionMessage(result) else isTRUE(result)
+  }
+  if (is_error) {
+    diag_lines <- c(diag_lines,
+                     paste0(case$manifest_case_id, ": ", conditionMessage(result)))
+  }
+  all_ok <- all_ok && ok
+  raw_lines <- c(raw_lines,
+                 paste(case$manifest_case_id, if (ok) "PASS" else "FAIL", sep = "\t"))
+  result_cases[[i]] <- list(
+    manifest_case_id = case$manifest_case_id,
+    admission_case_id = case$admission_case_id,
+    source_id = case$source_id,
+    expression = case$expression,
+    expected = case$expected,
+    error_contains = case$error_contains,
+    negative_control = case$negative_control,
+    actual = actual_value,
+    ok = ok,
+    elapsed_seconds = elapsed
+  )
+}
+
+raw_path <- file.path(destination, "raw.tsv")
+writeLines(raw_lines, raw_path)
+diag_path <- file.path(destination, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+results <- list(
+  status = if (all_ok) "PASS" else "FAIL",
+  area = "isdm",
+  scope = "CORE070_ISDM_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_pins = source_pins_seen,
+  fixture_sha256 = fixture_sha256,
+  case_count = length(cases),
+  generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+  r_version = R.version.string,
+  cases = result_cases,
+  all_checks = all_ok
+)
+results_path <- file.path(destination, "isdm-batch-results.json")
+jsonlite::write_json(results, results_path, auto_unbox = TRUE, pretty = TRUE,
+                      null = "null", na = "null")
+
+receipt <- list(
+  status = if (all_ok) "PASS" else "FAIL",
+  scope = "CORE070_ISDM_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_pins = source_pins_seen,
+  fixture_sha256 = fixture_sha256,
+  source_unchanged = TRUE,
+  case_count = length(cases),
+  expected_case_ids = vapply(cases, `[[`, "", "manifest_case_id"),
+  results_sha256 = sha256_file(results_path),
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_runtime = R.version.string
+)
+receipt_path <- file.path(destination, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE)
+
+cat("CORE070_ISDM_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (all_ok) 0L else 1L)

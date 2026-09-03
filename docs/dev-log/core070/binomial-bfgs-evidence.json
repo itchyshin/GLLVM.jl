@@ -1,0 +1,75 @@
+{
+  "status": "SIX_QUALIFIED_PUBLIC_CONTROL_FITS_NOT_DEFAULT_PROMOTION",
+  "cases": [
+    {
+      "id": "BINOMIAL-LOGIT-BERNOULLI",
+      "attempts": 2,
+      "code": 0,
+      "gradient": 1.449009218270833e-05,
+      "likelihood_delta": 3.12070369545836e-11,
+      "fd_delta": 2.561467010511759e-07,
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-LOGIT-VARYING",
+      "attempts": 3,
+      "code": 0,
+      "gradient": 2.9775109644386566e-06,
+      "likelihood_delta": -1.1368683772161603e-13,
+      "fd_delta": 1.0340233781713739e-07,
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-PROBIT-BERNOULLI",
+      "attempts": 1,
+      "code": 0,
+      "gradient": 7.539933155849277e-05,
+      "likelihood_delta": 6.832578947069123e-11,
+      "fd_delta": 4.1887936452766725e-07,
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-PROBIT-VARYING",
+      "attempts": 4,
+      "code": 0,
+      "gradient": 1.1163991326529343e-05,
+      "likelihood_delta": -1.9326762412674725e-12,
+      "fd_delta": 1.0030295881369167e-07,
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-CLOGLOG-BERNOULLI",
+      "attempts": 2,
+      "code": 0,
+      "gradient": 4.162577602517814e-05,
+      "likelihood_delta": 2.6261659513693303e-11,
+      "fd_delta": 2.5440901896267237e-07,
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-CLOGLOG-VARYING",
+      "attempts": 3,
+      "code": 0,
+      "gradient": 1.6468359732124682e-05,
+      "likelihood_delta": -2.9558577807620168e-12,
+      "fd_delta": 1.493569688482124e-07,
+      "failures": []
+    }
+  ],
+  "artifacts": {
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-plan.json": "139260af272e5177b6d186d697a450573efbe467579c8a82abf7371ca3119da1",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-launch.log": "1217d23674447d95a4566e921f0d0b83cdedaaf26b557556ae0cd8553e9906e7",
+    ".unlazy/core070-aghq/binomial-bfgs-01/launch.py": "349706a5d084e071b344d93736ddc808e3a31cde4faf1cdc7550c67fe0f9ed02",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-readback.tar": "1e13a700b151b0b3480f3f5a21f7c66fde57059e0273dfdcc9ba4573046566c8",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-process/01.log": "a4a848d73f0f044a120aef95e3c60b14fe8904b0c4b2f0e2acbadd980df6a33a",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-process/02.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-process/execution-plan.json": "139260af272e5177b6d186d697a450573efbe467579c8a82abf7371ca3119da1",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-process/events.log": "1217d23674447d95a4566e921f0d0b83cdedaaf26b557556ae0cd8553e9906e7",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-process/process-receipt.json": "ca94f0947e264260862a836231d639970903ddf6cde36a6a97ba1902785561a0",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs-process/progress.json": "e369a522ad4e0d3af6c08c8b55043a00760006f508016b9ff0cb1de487366021",
+    ".unlazy/core070-aghq/binomial-bfgs-01/bfgs/BINOMIAL-PROBIT-VARYING/result.toml": "e4eaf7c3a0ffd84eb600ca79b89b2ae881a9822e54d585e4e63c44bb54c1b836",
+    "tools/core070_binomial_bfgs.jl": "f68f35f7ca9efc536aa3edc9ed0aa1977d492941fc3db2a8fa4c8643d966565f",
+    "docs/dev-log/core070/binomial-bfgs-policy.toml": "99d653ec7d2c7f37ed563ef02182134f1b6c8285c552a85ac25aa5ae2f54b366"
+  }
+}

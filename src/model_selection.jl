@@ -42,8 +42,9 @@ Each fit is wrapped in a `try`/`catch` so one bad `K` (non-convergence,
 singular intermediate) is skipped rather than aborting the whole sweep; at
 least one `K` must succeed or an error is thrown. The information criteria are
 read straight off the fits via [`aic`](@ref) and [`bic`](@ref) (BIC uses
-`size(Y, 2)` as the number of sites), so the parameter counting matches the
-single-fit accessors exactly.
+`nobs(fit, Y)`, R's p·n observed-cell count —
+docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md #1), so the
+parameter counting matches the single-fit accessors exactly.
 
 `family` is a Distributions.jl marker (the [`fit_gllvm`](@ref) convention);
 `kwargs...` pass through to the underlying fitter.
@@ -59,7 +60,6 @@ function select_lv(Y::AbstractMatrix; family = Normal(), Kmax::Integer = 3,
     criterion in (:aic, :bic) ||
         throw(ArgumentError("criterion must be :aic or :bic; got :$criterion"))
     Kmax >= 1 || throw(ArgumentError("Kmax must be ≥ 1; got $Kmax"))
-    n = size(Y, 2)
 
     Ks       = Int[]
     nps      = Int[]
@@ -75,7 +75,7 @@ function select_lv(Y::AbstractMatrix; family = Normal(), Kmax::Integer = 3,
             push!(nps, _nparams(fit))
             push!(lls, _loglik(fit))
             push!(aics, aic(fit))
-            push!(bics, bic(fit, n))
+            push!(bics, bic(fit, Y))
             push!(fits, fit)
         catch
             # Skip this K — a single failing fit must not abort the sweep.

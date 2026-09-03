@@ -1,0 +1,20 @@
+# Execute frozen source helpers only. No installed package, fit or TMB object.
+args<-commandArgs(TRUE);stopifnot(length(args)==3L)
+e<-new.env(parent=globalenv())
+sys.source(file.path(args[1],'R','weights-shape.R'),envir=e)
+sys.source(file.path(args[1],'R','offset.R'),envir=e)
+parsed<-parse(file.path(args[1],'R','gllvmTMB.R'))
+for (expr in parsed) if (is.call(expr) && identical(expr[[1]],as.name('<-')) && identical(expr[[2]],as.name('miss_control'))) eval(expr,e)
+sys.source(args[2],envir=e)
+ids<-vapply(e$cases,`[[`,'','id');stopifnot(!anyDuplicated(ids))
+rows<-lapply(e$cases,function(case){
+ result<-tryCatch(eval(case$expr,e),error=identity)
+ failed<-inherits(result,'error')
+ ok<-if(is.null(case$error)) !failed && identical(result,case$expected) else failed && grepl(case$error,conditionMessage(result),fixed=TRUE)
+ data.frame(id=case$id,pass=ok,kind=if(failed)'error' else 'value',actual=gsub('[\r\n\t]+',' ',if(failed)conditionMessage(result) else paste(capture.output(dput(result)),collapse=' ')))
+})
+out<-do.call(rbind,rows);write.table(out,args[3],sep='\t',quote=TRUE,row.names=FALSE)
+cat('RUNTIME',R.version.string,'cli',as.character(packageVersion('cli')),'\n')
+cat('DATA_CONTROL_RESULT',sum(out$pass),'PASS',sum(!out$pass),'FAIL\n')
+if(!all(out$pass)){print(out[!out$pass,]);quit(status=1L)}
+cat('FROZEN_DATA_CONTROLS_PASS_NOT_FITTED_PARITY\n')

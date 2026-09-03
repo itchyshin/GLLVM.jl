@@ -1,3 +1,5 @@
+using SpecialFunctions: logbeta
+
 # Zero-truncated NB2 family for the generic Laplace core.
 #
 # Twin gllvmTMB family_id 11 (`truncated_nbinom2()`, log link; y ≥ 1 strictly):
@@ -32,11 +34,12 @@ _clamp_mu(::TruncatedNegBin2, μ) = max(μ, 1e-12)
 
 # Truncated mean / variance helpers (untruncated μ > 0, r > 0).
 function _truncnb2_mean_var(μ, r)
-    p0 = (r / (r + μ))^r
-    denom = 1 - p0
+    # Keep the mean information when r/(r+μ) would round to one.
+    logp0 = -r * log1p(μ / r)
+    p0 = exp(logp0)
+    denom = -expm1(logp0)
     μtr = μ / denom
-    V = μ + μ^2 / r
-    var_tr = (V + μ^2) / denom - μtr^2
+    var_tr = μtr * (1 + μ / r - μ * p0 / denom)
     return μtr, var_tr
 end
 
@@ -45,14 +48,14 @@ end
 function _glm_score(f::TruncatedNegBin2, μ, n, me, y)
     r = f.r
     μtr, _ = _truncnb2_mean_var(μ, r)
-    a = r / (r + μ)
+    a = inv(1 + μ / r)
     return a * (y - μtr) / μ * me
 end
 
 function _glm_weight(f::TruncatedNegBin2, μ, n, me)
     r = f.r
     _, var_tr = _truncnb2_mean_var(μ, r)
-    a = r / (r + μ)
+    a = inv(1 + μ / r)
     return (a * me / μ)^2 * var_tr
 end
 
@@ -80,14 +83,11 @@ function _truncnb2_observed_weight(f::TruncatedNegBin2, μ, y, link::Link)
     link isa LogLink || throw(ArgumentError(
         "hessian=:observed for truncated_nbinom2 is supported only with LogLink()"))
     r = f.r
-    s = μ + r
-    nb = μ * r * (y + r) / s^2
-    p0 = (r / s)^r
-    # p₀ → 1 as μ → 0; fall back to the Fisher weight rather than dividing by ~0.
-    p0 ≥ 1 - eps(typeof(float(μ))) && return _glm_weight(f, μ, 1, μ)
-    om = 1 - p0
-    A = -μ * r / s
-    return nb - p0 * A^2 / om^2 + (p0 / om) * μ * r^2 / s^2
+    μtr, var_tr = _truncnb2_mean_var(μ, r)
+    a = inv(1 + μ / r)
+    # Exact observed = Fisher + response-dependent score-factor derivative.
+    # Do not form 1-a, which loses the small correction at large r.
+    return a^2 * (var_tr + (μ / r) * (y - μtr))
 end
 
 # Dispatch helper, mirroring `_nb_grouped_laplace_weight` in grouped_dispersion.jl.
@@ -126,14 +126,39 @@ function _truncnb2_laplace_weight(hessian::Symbol, f::TruncatedNegBin2, μ, me, 
     return _truncnb2_observed_weight(f, μ, y, link)
 end
 
+# For large r, differentiating a beta normalizer can subtract nearly equal
+# digammas. Expand sum(k=0:y-1) log1p(k/r) with a bounded alternating remainder.
+# Five power sums are closed form, so work does not grow with the count y.
+function _truncnb2_logrise_series(r, y::Int)
+    y == 1 && return zero(r), true
+    n = oftype(r, y - 1)
+    x = n / r
+    first = y * x / 2
+    admissible = x <= 0.01 && y * x^6 / 6 <= eps(typeof(float(r))) * max(one(r), abs(first))
+    admissible || return zero(r), false
+    z = inv(n)
+    value = y * x * (1/2 - x * (2 + z) / 12 + x^2 * (1 + z) / 12 -
+                    x^3 * (2 + z) * (3 + 3z - z^2) / 120 +
+                    x^4 * (1 + z) * (2 + 2z - z^2) / 60)
+    return value, true
+end
+
 function _glm_logpdf(f::TruncatedNegBin2, μ, n, y)
     yi = Int(y)
     yi < 1 && return oftype(μ, -Inf)
     r = f.r
-    p0 = (r / (r + μ))^r
-    # log(1 − p0); p0 → 1 when μ → 0.
-    log_nz = p0 ≥ 1 - eps(typeof(μ)) ? oftype(μ, -Inf) : log1p(-p0)
-    return logpdf(NegativeBinomial(r, r / (r + μ)), yi) - log_nz
+    log1pmur = log1p(μ / r)
+    logp0 = -r * log1pmur
+    log_nz = log(-expm1(logp0))
+    rise, series = _truncnb2_logrise_series(r, yi)
+    if series
+        return rise + yi * log(μ) - loggamma(float(yi) + 1) +
+               logp0 - yi * log1pmur - log_nz
+    end
+    # Algebra of Distributions.NegativeBinomial's beta normalizer, with log
+    # probabilities computed from μ/r rather than a rounded success probability.
+    return logp0 + yi * (log(μ) - log(r) - log1pmur) -
+           log(r + yi) - logbeta(r, float(yi) + 1) - log_nz
 end
 
 _laplace_mode_should_backtrack(::TruncatedNegBin2) = true

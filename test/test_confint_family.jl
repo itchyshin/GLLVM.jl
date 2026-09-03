@@ -634,4 +634,145 @@ end
             end
         end
     end
+
+    # T14 F1 (docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md): when the joint
+    # Wald Hessian is not PD, `_family_wald` now degrades PER PARAMETER instead of
+    # NaN-ing every entry — conditioning out the KNOWN-boundary parameters (a
+    # fit's `dispersion_boundary`) plus any further direction needed for the
+    # remaining sub-Hessian to pass `isposdef`, and reporting `boundary_terms`.
+    @testset "NB2 grouped-cov Wald: per-parameter boundary degradation (T14 F1)" begin
+        @testset "seed-523 degenerate fixture: partial-NaN, not all-NaN" begin
+            # The exact `_bx_sim(NegativeBinomial(), 3, 70, 1, 1; seed=523)`
+            # fixture from test/test_bridge_x.jl.
+            rng = Random.MersenneTwister(523)
+            p, n, K, q = 3, 70, 1, 1
+            β = 0.3 .* randn(rng, p)
+            γ = 0.6 .* randn(rng, q)
+            Λ = 0.4 .* randn(rng, p, K)
+            x1 = randn(rng, n)
+            X = zeros(p, n, q)
+            for t in 1:p, s in 1:n
+                X[t, s, 1] = x1[s]
+            end
+            O = GLLVM._build_offset(X, γ)
+            Z = randn(rng, K, n)
+            η = β .+ O .+ Λ * Z
+            Y = Matrix{Float64}(undef, p, n)
+            for t in 1:p, s in 1:n
+                η_ts = clamp(η[t, s], -6, 4)
+                r = 8.0; μ = exp(η_ts)
+                Y[t, s] = float(rand(rng, NegativeBinomial(r, r / (r + μ))))
+            end
+            Yi = round.(Int, Y)
+            fit = fit_nb_gllvm_grouped_cov(Yi; X = X, K = K, group = collect(1:p))
+            @test any(fit.dispersion_boundary)
+            boundary_groups = findall(fit.dispersion_boundary)
+            nonboundary_groups = findall(!, fit.dispersion_boundary)
+            @test !isempty(nonboundary_groups)   # the fixture has a mix, not all-degenerate
+
+            ci = confint(fit, Yi; method = :wald, X = X)
+            @test ci.pd_hessian == false
+            @test Set(ci.boundary_terms) == Set("r[$g]" for g in boundary_groups)
+
+            # beta / gamma / Lambda / the non-boundary trait's r get FINITE bounds.
+            finite_expected = vcat(["beta[$t]" for t in 1:p], ["gamma[1]"],
+                                    GLLVM._confint_lambda_term_names("Lambda", p, K),
+                                    ["r[$g]" for g in nonboundary_groups])
+            for name in finite_expected
+                i = findfirst(==(name), ci.term)
+                @test i !== nothing
+                @test isfinite(ci.se[i])
+                @test isfinite(ci.lower[i])
+                @test isfinite(ci.upper[i])
+                @test ci.lower[i] ≤ ci.estimate[i] ≤ ci.upper[i]
+            end
+            # the boundary trait(s)' r are NaN (Fisher information ~0 there).
+            for g in boundary_groups
+                i = findfirst(==("r[$g]"), ci.term)
+                @test isnan(ci.se[i])
+                @test isnan(ci.lower[i])
+                @test isnan(ci.upper[i])
+            end
+        end
+
+        @testset "forced boundary (deterministic): flagged r is conditioned out even when the joint Hessian is barely PD" begin
+            # Independent of where the optimizer stops: start from the SHARED-
+            # dispersion fixture (group = ones(p); one r, well-conditioned by
+            # construction — per-trait NB dispersion is only weakly identified
+            # against a free latent factor, which is why the seed-523 case is a
+            # knife edge), then REPLACE that r by a Poisson-limit value. The
+            # positional constructor derives the `dispersion_boundary` flag, and
+            # confint must condition the flagged term out regardless of the
+            # Cholesky outcome (T14 F1, 2026-09-03).
+            rng = Random.MersenneTwister(9001)
+            p, n, K = 3, 120, 1
+            μ = exp.(1.2 .+ 0.3 .* randn(rng, p))
+            Yi = [rand(rng, NegativeBinomial(2.0, 2.0 / (2.0 + μ[t]))) for t in 1:p, s in 1:n]
+            X = reshape(randn(rng, p * n), p, n, 1)
+            f0 = fit_nb_gllvm_grouped_cov(Yi; X = X, K = K, group = ones(Int, p))
+            @test length(f0.r_group) == 1
+            r2 = [1.0e12]
+            f1 = GLLVM.NBGroupedCovFit(f0.β, f0.γ, f0.γ_fixed, f0.Λ, r2, f0.group, f0.link,
+                                       f0.loglik, f0.converged, f0.iterations)
+            @test f1.dispersion_boundary == [true]
+            ci = confint(f1, Yi; method = :wald, X = X)
+            @test ci.pd_hessian == false
+            @test "r[1]" in ci.boundary_terms
+            i1 = findfirst(==("r[1]"), ci.term)
+            @test isnan(ci.se[i1]) && isnan(ci.lower[i1]) && isnan(ci.upper[i1])
+            # The contract, not a fixed finite set: the point is a forced
+            # non-optimum, so the reduced Hessian may need one more direction
+            # conditioned out (platform-dependent). Every term is therefore
+            # either finite or NAMED in `boundary_terms` — never a huge
+            # "finite" SE or an `Inf` bound (the F3-class defect).
+            for (i, name) in enumerate(ci.term)
+                conditioned = name in ci.boundary_terms
+                @test conditioned || (isfinite(ci.se[i]) && isfinite(ci.lower[i]) && isfinite(ci.upper[i]))
+                @test !conditioned || (isnan(ci.se[i]) && isnan(ci.lower[i]) && isnan(ci.upper[i]))
+                @test !isinf(ci.lower[i]) && !isinf(ci.upper[i])
+            end
+            @test count(isfinite, ci.se) ≥ 1   # the degradation kept something, not all-NaN
+        end
+
+        @testset "PD fixture: bounds unaffected by the degradation branch" begin
+            # group = ones(p): a single SHARED dispersion, matching the DGP —
+            # well-conditioned by construction (mirrors the existing
+            # "one group ≈ fit_nb_gllvm" precedent in test_grouped_dispersion.jl).
+            Random.seed!(4901)
+            p, K, n, q, r_true = 5, 1, 200, 1, 6.0
+            β = 0.3 .* randn(p) .+ 1.0
+            γ = [0.4]
+            Λ = 0.35 .* randn(p, K)
+            X = randn(p, n, q)
+            O = GLLVM._build_offset(X, γ)
+            Y = Matrix{Int}(undef, p, n)
+            for s in 1:n
+                η = β .+ view(O, :, s) .+ Λ * randn(K)
+                for t in 1:p
+                    μ = exp(clamp(η[t], -6, 6))
+                    Y[t, s] = rand(NegativeBinomial(r_true, r_true / (r_true + μ)))
+                end
+            end
+            fit = fit_nb_gllvm_grouped_cov(Y; X = X, K = K, group = ones(Int, p))
+            @test fit isa NBGroupedCovFit
+            @test !any(fit.dispersion_boundary)
+            ci = confint(fit, Y; method = :wald, X = X)
+            @test ci.pd_hessian == true
+            @test isempty(ci.boundary_terms)
+            @test all(isfinite, ci.se)
+            @test all(ci.lower .<= ci.estimate .<= ci.upper)
+            # T14 F1 receipt: on a PD fixture the new `_family_wald` never enters
+            # the `!pd` degradation branch, so its output is bit-identical to the
+            # pre-fix code by construction — independently confirmed by running
+            # this exact fixture through both the pre-fix and post-fix
+            # `_family_wald` (via a temporary `git stash` of src/confint_family.jl
+            # + src/families/grouped_dispersion.jl) on BOTH Julia 1.12.6 and
+            # 1.10.12: identical `ci.lower`/`ci.upper` before vs after on each
+            # version (not asserted here as hardcoded literals, since Julia's
+            # `randn` stream for this seed legitimately differs between 1.10.12
+            # and 1.12.6 — a real cross-version RNG difference, not a bug — so a
+            # literal capture from one Julia version fails the other; verified in
+            # this task's after-task report instead of baked into the test).
+        end
+    end
 end

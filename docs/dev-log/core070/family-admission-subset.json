@@ -1,0 +1,701 @@
+{
+  "status": "FROZEN_R_FAMILY_ADMISSION_SUBSET_ONLY",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "expected_case_count": 69,
+  "source_pins": {
+    "R/families.R": "1d39b05e33ef60ffd11ded940e22f9fd3234fcea1cce0a91938d31dab61a5be6",
+    "R/fit-multi.R": "768db11bd09e6de872d4a27b60fd0a096f617434ac84c95db721fac8f8d77c02"
+  },
+  "cases": [
+    {
+      "id": "FAMILY-00-IDENTITY",
+      "reference_descriptor_call": "gaussian(link=\"identity\")",
+      "expected": [
+        0,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-00-REJECT-LINK",
+      "reference_descriptor_call": "gaussian(link=\"log\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-01-LOGIT",
+      "reference_descriptor_call": "binomial(link=\"logit\")",
+      "expected": [
+        1,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-01-REJECT-LINK",
+      "reference_descriptor_call": "binomial(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-02-LOG",
+      "reference_descriptor_call": "poisson(link=\"log\")",
+      "expected": [
+        2,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-02-REJECT-LINK",
+      "reference_descriptor_call": "poisson(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-03-LOG",
+      "reference_descriptor_call": "lognormal(link=\"log\")",
+      "expected": [
+        3,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-03-REJECT-LINK",
+      "reference_descriptor_call": "lognormal(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-04-LOG",
+      "reference_descriptor_call": "Gamma(link=\"log\")",
+      "expected": [
+        4,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-04-REJECT-LINK",
+      "reference_descriptor_call": "Gamma(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-05-LOG",
+      "reference_descriptor_call": "nbinom2(link=\"log\")",
+      "expected": [
+        5,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-05-REJECT-LINK",
+      "reference_descriptor_call": "nbinom2(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-06-LOG",
+      "reference_descriptor_call": "tweedie(link=\"log\")",
+      "expected": [
+        6,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-06-REJECT-LINK",
+      "reference_descriptor_call": "tweedie(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-07-LOGIT",
+      "reference_descriptor_call": "Beta(link=\"logit\")",
+      "expected": [
+        7,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-07-REJECT-LINK",
+      "reference_descriptor_call": "Beta(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-08-LOGIT",
+      "reference_descriptor_call": "betabinomial(link=\"logit\")",
+      "expected": [
+        8,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-08-REJECT-LINK",
+      "reference_descriptor_call": "betabinomial(link=\"identity\")",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-09-IDENTITY",
+      "reference_descriptor_call": "student(link=\"identity\")",
+      "expected": [
+        9,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-09-REJECT-LINK",
+      "reference_descriptor_call": "student(link=\"log\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-10-LOG",
+      "reference_descriptor_call": "truncated_poisson(link=\"log\")",
+      "expected": [
+        10,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-10-REJECT-LINK",
+      "reference_descriptor_call": "truncated_poisson(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-11-LOG",
+      "reference_descriptor_call": "truncated_nbinom2(link=\"log\")",
+      "expected": [
+        11,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-11-REJECT-LINK",
+      "reference_descriptor_call": "truncated_nbinom2(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-12-LOGIT-LOG",
+      "reference_descriptor_call": "delta_lognormal()",
+      "expected": [
+        12,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-12-REJECT-PRESENCE",
+      "reference_descriptor_call": "delta_lognormal(link1=\"probit\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-12-REJECT-POSITIVE",
+      "reference_descriptor_call": "delta_lognormal(link2=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-12-REJECT-POISSON-DELTA",
+      "reference_descriptor_call": "delta_lognormal(type=\"poisson-link\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-13-LOGIT-LOG",
+      "reference_descriptor_call": "delta_gamma()",
+      "expected": [
+        13,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-13-REJECT-PRESENCE",
+      "reference_descriptor_call": "delta_gamma(link1=\"probit\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-13-REJECT-POSITIVE",
+      "reference_descriptor_call": "delta_gamma(link2=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-13-REJECT-POISSON-DELTA",
+      "reference_descriptor_call": "delta_gamma(type=\"poisson-link\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-14-PROBIT",
+      "reference_descriptor_call": "ordinal_probit(link=\"probit\")",
+      "expected": [
+        14,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-14-REJECT-LINK",
+      "reference_descriptor_call": "ordinal_probit(link=\"identity\")",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-15-LOG",
+      "reference_descriptor_call": "nbinom1(link=\"log\")",
+      "expected": [
+        15,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-15-REJECT-LINK",
+      "reference_descriptor_call": "nbinom1(link=\"identity\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-16-LOGIT",
+      "reference_descriptor_call": "multinomial(link=\"logit\")",
+      "expected": [
+        16,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-16-REJECT-LINK",
+      "reference_descriptor_call": "multinomial(link=\"identity\")",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-01-PROBIT",
+      "reference_descriptor_call": "binomial(link=\"probit\")",
+      "expected": [
+        1,
+        1
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-01-CLOGLOG",
+      "reference_descriptor_call": "binomial(link=\"cloglog\")",
+      "expected": [
+        1,
+        2
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-BETA-ALIAS",
+      "reference_descriptor_call": "structure(list(family=\"beta\",link=\"logit\"),class=\"family\")",
+      "expected": [
+        7,
+        0
+      ],
+      "classification": "compatibility_adapter",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-GENGAMMA",
+      "reference_descriptor_call": "gengamma()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-GAMMA_MIX",
+      "reference_descriptor_call": "gamma_mix()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-LOGNORMAL_MIX",
+      "reference_descriptor_call": "lognormal_mix()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-NBINOM2_MIX",
+      "reference_descriptor_call": "nbinom2_mix()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-TRUNCATED_NBINOM1",
+      "reference_descriptor_call": "truncated_nbinom1()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-CENSORED_POISSON",
+      "reference_descriptor_call": "censored_poisson()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-DELTA_GAMMA_MIX",
+      "reference_descriptor_call": "delta_gamma_mix()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-DELTA_GENGAMMA",
+      "reference_descriptor_call": "delta_gengamma()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-DELTA_LOGNORMAL_MIX",
+      "reference_descriptor_call": "delta_lognormal_mix()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-DELTA_TRUNCATED_NBINOM2",
+      "reference_descriptor_call": "delta_truncated_nbinom2()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-DELTA_TRUNCATED_NBINOM1",
+      "reference_descriptor_call": "delta_truncated_nbinom1()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-DELTA_POISSON_LINK_GAMMA",
+      "reference_descriptor_call": "delta_poisson_link_gamma()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-DELTA_POISSON_LINK_LOGNORMAL",
+      "reference_descriptor_call": "delta_poisson_link_lognormal()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "CONSTRUCTOR-ONLY-DELTA_BETA",
+      "reference_descriptor_call": "delta_beta()",
+      "expected": "ERROR",
+      "classification": "intentionally_excluded_constructor_only",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-08-CLOGLOG-ENGINE-REJECT",
+      "reference_descriptor_call": "betabinomial(link=\"cloglog\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-14-MUTATED-DESCRIPTOR-REJECT",
+      "reference_descriptor_call": "structure(list(family=\"ordinal_probit\",link=\"identity\"),class=\"family\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-16-MUTATED-DESCRIPTOR-REJECT",
+      "reference_descriptor_call": "structure(list(family=\"multinomial\",link=\"identity\"),class=\"family\")",
+      "expected": "ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-06-FIXED-SHAPE",
+      "reference_descriptor_call": "tweedie(p=1.5)",
+      "expected": [
+        6,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-06-SHAPE-INVALID-LOW",
+      "reference_descriptor_call": "tweedie(p=1)",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-06-SHAPE-INVALID-INF",
+      "reference_descriptor_call": "tweedie(p=Inf)",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-06-SHAPE-INVALID-NA",
+      "reference_descriptor_call": "tweedie(p=NA_real_)",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-06-SHAPE-INVALID-VECTOR",
+      "reference_descriptor_call": "tweedie(p=c(2,3))",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-09-FIXED-SHAPE",
+      "reference_descriptor_call": "student(df=4)",
+      "expected": [
+        9,
+        0
+      ],
+      "classification": "required_core",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-09-SHAPE-INVALID-LOW",
+      "reference_descriptor_call": "student(df=1)",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-09-SHAPE-INVALID-INF",
+      "reference_descriptor_call": "student(df=Inf)",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-09-SHAPE-INVALID-NA",
+      "reference_descriptor_call": "student(df=NA_real_)",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-09-SHAPE-INVALID-VECTOR",
+      "reference_descriptor_call": "student(df=c(2,3))",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    },
+    {
+      "id": "FAMILY-06-SHAPE-INVALID-HIGH",
+      "reference_descriptor_call": "tweedie(p=2)",
+      "expected": "CONSTRUCTOR_ERROR",
+      "classification": "rejected",
+      "owner": "A3/Hopper",
+      "scope": "family_to_id admission only; not full fitted-model acceptance",
+      "julia_status": "exact native/formula/bridge fixture mapping still required"
+    }
+  ],
+  "revision": 2,
+  "supersedes_sha256": "155f51e63cf5dfe1fb879a10ba376e22acf110ffa3d0e92597581e1a7db6e47e",
+  "revision_reason": "Source-confirmed rejection stage for three constructors; retain failed v1 receipts and add independent engine rejection checks."
+}

@@ -1,0 +1,76 @@
+{
+  "scope": "EXECUTED_EXAMPLE_AND_STRICT_LOCAL_BUILD_NOT_DOCS_COMPLETE",
+  "process": {
+    "example": ".unlazy/core070-aghq/pervar-docs/example2/process/process-receipt.json",
+    "build": ".unlazy/core070-aghq/pervar-docs/build3/build3-process/process-receipt.json"
+  },
+  "example_result": ".unlazy/core070-aghq/pervar-docs/example2/example/result.toml",
+  "example_metrics": {
+    "nparams": 13,
+    "bic": 808.501898877733,
+    "loglik": -375.76777631348625,
+    "page_sha256": "b69b9ba4592c3ea82bc54230e59e48efca1d64f5a3bad05dfac2084a71451f9d",
+    "code_sha256": "8a4bfaecf1051b8b12aaa6d22ac005dc124c774db408a7d54de855a6fa8a1f77",
+    "aic": 777.5355526269725,
+    "n_sites": 80,
+    "converged": true,
+    "assertions": 6,
+    "coefficients": [
+      -0.22918276448275865,
+      0.003135030448082998,
+      -0.06175857549965803,
+      -0.0955953421970718,
+      1.1716620345717503
+    ]
+  },
+  "site_hashes": ".unlazy/core070-aghq/pervar-docs/site-hashes.json",
+  "artifacts": {
+    ".unlazy/core070-aghq/pervar-docs/example/process/00.log": "eeeb10ec63b9d677e6c329bae673fd3805db1318e27799f3bc731260904e5e88",
+    ".unlazy/core070-aghq/pervar-docs/example/process/01.log": "74d7b34ec84c8dcec37cc4276c1c869b10e80441196201525d86e29b0fa2a995",
+    ".unlazy/core070-aghq/pervar-docs/example/process/execution-plan.json": "deae550ad33e0a48a2be1aca1c2d410b3d71df012d94808c54b4c3ef7537d26b",
+    ".unlazy/core070-aghq/pervar-docs/example/process/process-receipt.json": "75be1696d9eaf1714db075d57b3cef789a6af4d2d5fdaef83a77efcc0c7d4a4a",
+    ".unlazy/core070-aghq/pervar-docs/example/process/progress.json": "debeb340ac353b7191d34ce2f23b67121f99d72c650e90a5ce7832e8ea071e2a",
+    ".unlazy/core070-aghq/pervar-docs/example2/example/result.toml": "0f4efd6e6b99a996b7d2703e4f2206392ed659eb12af13160dcb96c70b76cf12",
+    ".unlazy/core070-aghq/pervar-docs/example2/process/00.log": "b4d9844401d0aedae73fc24ae4e110f08a06de827da68478f575cf5f58ca63b8",
+    ".unlazy/core070-aghq/pervar-docs/example2/process/01.log": "5936d99438aa05ccb72c5151e4d5c80bdb7043627962609d1f9c3bee692fe849",
+    ".unlazy/core070-aghq/pervar-docs/example2/process/execution-plan.json": "795604a33db83c79f30ff6fc3ab277bda510618ecc1d5804b7b7f1cfb3814597",
+    ".unlazy/core070-aghq/pervar-docs/example2/process/process-receipt.json": "71c41c40be8042f4982e1e501e180f81bc43a4838d19bfe72509ff3a62a5979a",
+    ".unlazy/core070-aghq/pervar-docs/example2/process/progress.json": "012d4df22544ef4b601ddb3004320ead01d8b38e08b58531b35d9a52cec84ae0",
+    ".unlazy/core070-aghq/pervar-docs/setup/setup-process/00.log": "4b6d242a9eaefff981111b979b850f794fdd1f680b6a5243f3825e806846b929",
+    ".unlazy/core070-aghq/pervar-docs/setup/setup-process/execution-plan.json": "396d60b3cb622977c241c40b4fd30ec71c2e8813206ed3661a3732a3df528ced",
+    ".unlazy/core070-aghq/pervar-docs/setup/setup-process/process-receipt.json": "b884ae8ba2b21ee2c9598b6e01a3c1342854986ce1bc8921196637babe2805e4",
+    ".unlazy/core070-aghq/pervar-docs/setup/setup-process/progress.json": "6e62a2943cb97d4b5d089ab944865f0fbf8835a369d8adf8da99c3076ea1186c",
+    ".unlazy/core070-aghq/pervar-docs/setup/.docenv/Manifest.toml": "892b8683b625bba8cc396fa79f0bd1443198414b92f1dc542c2773948eaefb4f",
+    ".unlazy/core070-aghq/pervar-docs/setup/.docenv/Project.toml": "a5e32446bb5560a071b906026289735470088052b2d20b98dd0fc7075e6ffc75",
+    ".unlazy/core070-aghq/pervar-docs/build/build-process/00.log": "ff5c0af37de23f96d7d4c5f35da43f96bc74bd80bba26d5f78370a8029cac8f6",
+    ".unlazy/core070-aghq/pervar-docs/build/build-process/execution-plan.json": "10e8ddd9af6274618de846e9f027eb1b7fc2cc6850d424e5746798df65e03256",
+    ".unlazy/core070-aghq/pervar-docs/build/build-process/process-receipt.json": "92ffce417b4b3e9387fc6c16e91fbdca25bdeb8d78fef6da1cf545c08680df1a",
+    ".unlazy/core070-aghq/pervar-docs/build/build-process/progress.json": "d73e462f9a03b2d33033e6fafbfda1e6c549190e9dc8635b625e7ff8aeeea2e5",
+    ".unlazy/core070-aghq/pervar-docs/build2/build2-process/00.log": "4ba1bf177044f800f8c810747acdd8eb94ffdf8122b07922e5543c252c4707fb",
+    ".unlazy/core070-aghq/pervar-docs/build2/build2-process/execution-plan.json": "f11978be9b76bb77f443bdc5602c264979c156909fba26cfe26390869c7c5f3e",
+    ".unlazy/core070-aghq/pervar-docs/build2/build2-process/process-receipt.json": "68cda53f290d27b7f5951d2eb02e7f6a1e587c9242499594c08c00b849c30c81",
+    ".unlazy/core070-aghq/pervar-docs/build2/build2-process/progress.json": "bac27b746bba6bf1d6b36315145dcd1b5deee31a6da41cc1610d52c132ce2202",
+    ".unlazy/core070-aghq/pervar-docs/build3/build3-process/00.log": "509437789775a7a7c0619075072c6ff26e51a7b66077574e9be9fbede7859146",
+    ".unlazy/core070-aghq/pervar-docs/build3/build3-process/execution-plan.json": "b62ad47f72b685bc17358288efa5afe8b596871ddd839bf6e790d87e83e2f750",
+    ".unlazy/core070-aghq/pervar-docs/build3/build3-process/process-receipt.json": "d52db70053c423f41c1fa34901b67209844b69cce02cad3793d9da45a564d3bf",
+    ".unlazy/core070-aghq/pervar-docs/build3/build3-process/progress.json": "d85afb6dbdfac5652395a3a151c8051dfd05d0a01d161bbca837876339e3151a",
+    ".unlazy/core070-aghq/pervar-docs/site-hashes.json": "e1eeffbba728728a78522893637468470eb5631ccfadf1422f9b2d79c45e8655",
+    ".unlazy/core070-aghq/pervar-docs/desktop-example.png": "eec2e05911f8bbfaadd8f08ed5e9a16b552ec9245b3b7acded57ef01953416e3",
+    ".unlazy/core070-aghq/pervar-docs/mobile-section.png": "a9fe3a51ac10065579a826f65e717b41f3f2806f0ce831a6e77187734e08bb02"
+  },
+  "presentation_warnings_remaining": true,
+  "deployed": false,
+  "visual": {
+    "desktop_width": 1280,
+    "mobile_width": 390,
+    "mobile_scroll_width": 390,
+    "section_navigation": true,
+    "low_level_navigation": true,
+    "console_errors_observed": 0,
+    "limitations": [
+      "section screenshots, not a complete site audit",
+      "local versions.js returned404; version selector not qualified",
+      "search and complete mobile code-output inspection unpaid"
+    ]
+  }
+}

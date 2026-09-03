@@ -57,8 +57,26 @@ The Hessian of the negative Laplace log-likelihood is formed by **central finite
 differences** at the MLE (the Laplace inner mode-finder is not forward-AD-
 friendly, matching how the fitters themselves are optimised), then inverted for
 the asymptotic covariance; `lower/upper = θ̂ ± z·SE`. Returns an extra
-`pd_hessian::Bool` flagging whether the observed information was positive
-definite. Cheapest method; assumes approximate normality on the working scale.
+`pd_hessian::Bool` flagging whether the FULL joint observed information was
+positive definite. Cheapest method; assumes approximate normality on the
+working scale.
+
+**Per-parameter degradation at a boundary (T14 F1, 2026-09-02).** If the fit flags a
+grouped NB2/NB1/Beta/Gamma dispersion parameter at its `dispersion_boundary` (the
+Poisson / near-Bernoulli / near-deterministic limit) — whether or not the joint
+Hessian happens to pass a Cholesky — or the joint Hessian is not PD for any other
+numerically flat direction, `pd_hessian` is `false`,
+but the CI no longer NaNs *every* parameter. The known-boundary parameters
+(plus any further direction needed for the remaining sub-Hessian to pass a
+positive-definiteness check) are conditioned out; the rest of the parameters
+(β, γ, Λ, and any non-boundary dispersion) get finite bounds from that reduced
+Hessian's inverse. The extra `boundary_terms::Vector{String}` names exactly
+which terms were conditioned out (empty when `pd_hessian == true`). This
+mirrors R's `sdreport()`, which NaNs only the degenerate block rather than the
+whole covariance matrix. Note this per-parameter degradation applies to the
+family/grouped-dispersion route (`confint(fit::_CIFit, Y; ...)`,
+`src/confint_family.jl`); the Gaussian path (`confint(fit::GllvmFit; ...)`,
+`src/confint.jl`) is unchanged and still reports all-NaN on a non-PD Hessian.
 
 ### Profile likelihood — `method = :profile`
 
@@ -100,7 +118,7 @@ bootstrap_ci(fit; y = y, n_boot = 500)    # parametric bootstrap
 ```
 
 and derived-quantity CIs (Σ_y entries, communality, correlation, phylogenetic
-signal H²) via [`confint_derived`-family helpers](/covariance-correlation).
+signal H²) via [`confint_derived`-family helpers](covariance-correlation.md).
 
 ## Predictor-informed latent-score effects
 
@@ -125,4 +143,4 @@ returned names such as `B_lv[2,1]` and `B_lv[4,1]`. It is intentionally only
 accepted with `method = :profile`; Wald/bootstrap calls return their full
 supported surface.
 
-See also: [Response families](/response-families) · [Working with a fit](/working-with-a-fit) · [Reference](/api).
+See also: [Response families](response-families.md) · [Working with a fit](working-with-a-fit.md) · [Reference](api.md).

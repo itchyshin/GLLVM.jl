@@ -1,0 +1,279 @@
+# Retained evidence runner for the "postfit-policy" manifest-area batch (15
+# EXECUTABLE_NOW cases + 2 negative controls; see
+# docs/dev-log/core070/postfit-policy-batch-contract.json for the full case
+# list, the 8 NEEDS_NEW_JULIA_SURFACE deferrals, and the 1 zero-case
+# SPEC_DEFECT row).
+#
+# REPAIR NOTE (2026-09-01, Totoro incident): the prior version of this pair
+# had the Julia child (tools/core070_postfit_policy_batch.jl) `include()`
+# the ENTIRE test/parity/runparity.jl runner and embed a live R session via
+# RCall to obtain the R oracle numbers. On Totoro that first segfaulted
+# (exit 139 -- cured only by LD_PRELOAD=<julia>/lib/julia/libunwind.so.8 for
+# the *subprocess* julia, an unrelated libunwind/RCall interaction worth
+# keeping as a comment here in case a future runner hits it again), then
+# failed inside test/parity/test_negbin_parity.jl -- an out-of-scope RCall
+# fixture nothing in this 15-case policy batch needs. Rewritten so this R
+# process (the one that ALREADY has the frozen gllvmTMB library loaded) does
+# 100% of the R-side computation itself and hands the Julia child a plain
+# JSON file (Y + oracle numbers); the Julia child now runs zero R code and
+# carries no RCall dependency at all -- see its own header for the read side.
+#
+# argv (matches the contract's runner.outer_argv and the --self-test local
+# smoke, which never reaches this file):
+#   Rscript --vanilla tools/core070_postfit_policy_batch.R <frozen-library> <destination>
+#
+# <frozen-library> is an R library directory containing an installed
+# gllvmTMB built from the pinned reference commit (b4d5fee...); this is the
+# FROZEN, INSTALLED library, matching masks_known.R's arg 1 -- not a source
+# tree. <destination> must not already exist; it is created and holds
+# r-oracle.json, julia-results.json, julia-stdout.log, julia-stderr.log,
+# results.tsv, diagnostics.log, and receipt.json.
+#
+# NOTE on the contract's documented `inner_argv`/`inner_invocation` strings:
+# those describe the PRE-repair design (Julia takes one positional arg, and
+# reads R state via RCall/env-var-gated runparity.jl inclusion). Positional
+# argv to the Julia child is unchanged (still exactly one path, the results
+# destination); the new R-oracle JSON travels via the
+# CORE070_POSTFIT_POLICY_R_ORACLE env var instead of RCall, so the
+# documented single-positional-arg shape still holds. Recorded here, not
+# smoothed over, since the contract JSON itself is frozen and not edited by
+# this repair.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+frozen_library <- normalizePath(args[[1]], mustWork = TRUE)
+output_dir <- args[[2]]
+stopifnot(!dir.exists(output_dir))
+dir.create(output_dir, recursive = TRUE)
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+.libPaths(c(frozen_library, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(normalizePath(find.package("gllvmTMB")) ==
+          normalizePath(file.path(frozen_library, "gllvmTMB")))
+
+root <- normalizePath(".")
+contract_path <- file.path(root, "docs/dev-log/core070/postfit-policy-batch-contract.json")
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
+          identical(contract$status, "FROZEN_POSTFIT_POLICY_BATCH_CONTRACT"),
+          length(contract$cases) == contract$expected_case_count,
+          contract$expected_case_count == 15L,
+          length(contract$negative_controls) >= 2L)
+
+# --- validate pinned R source ------------------------------------------
+source_root <- file.path(root, ".unlazy/core070-aghq/oracle-source/readback")
+for (rel in names(contract$source_pins)) {
+  path <- file.path(source_root, rel)
+  stopifnot(file.exists(path))
+  digest <- sha256_file(path)
+  stopifnot(identical(digest, contract$source_pins[[rel]]))
+}
+
+# ---------------------------------------------------------------------------
+# 1. Fixture: p x n Gaussian data, same design formula the rest of the
+#    core070 postfit tools use (value ~ 0 + trait + latent(0 + trait | site,
+#    d = K, unique = FALSE)); matches the contract fixture note's p_times_n
+#    = 400 (p = 5, K = 2, n = 80). This IS the R side's own Y -- the Julia
+#    child reads it back verbatim from the oracle JSON below and refits it
+#    natively, so no cross-language RNG matching is required anywhere.
+# ---------------------------------------------------------------------------
+set.seed(42)
+p <- 5L; K <- 2L; n <- 80L
+Lambda_true <- matrix(c(
+  0.8,  0.0,
+  0.5,  0.6,
+  0.3, -0.4,
+ -0.2,  0.5,
+  0.1,  0.3
+), nrow = p, ncol = K, byrow = TRUE)
+sigma_true <- 0.7
+eta <- matrix(rnorm(K * n), nrow = K, ncol = n)
+Y <- Lambda_true %*% eta + sigma_true * matrix(rnorm(p * n), nrow = p, ncol = n)
+Y <- Y - rowMeans(Y)
+
+trait_names <- paste0("t", seq_len(p))
+df_long <- data.frame(
+  site  = factor(rep(seq_len(n), each = p)),
+  trait = factor(rep(trait_names, times = n), levels = trait_names),
+  value = as.vector(Y)
+)
+
+fit_r <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+  data = df_long, unit = "site", trait = "trait", family = gaussian(),
+  control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_r))
+
+# ---------------------------------------------------------------------------
+# 2. R-side accessor + reflection oracle (the exact set the 15 executable
+#    cases need; ported unchanged from the pre-repair Julia-embedded R block).
+# ---------------------------------------------------------------------------
+.pp_get3 <- function(generic, cls) {
+  m <- tryCatch(utils::getS3method(generic, cls, envir = asNamespace("gllvmTMB")),
+                error = function(e) NULL)
+  if (is.null(m)) m <- get(paste0(generic, ".", cls), envir = asNamespace("gllvmTMB"))
+  m
+}
+.pp_predict_fun   <- .pp_get3("predict", "gllvmTMB_multi")
+.pp_residuals_fun <- .pp_get3("residuals", "gllvmTMB_multi")
+.pp_simulate_fun  <- .pp_get3("simulate", "gllvmTMB_multi")
+
+oracle <- list(
+  coef      = as.numeric(coef(fit_r)),
+  nobs      = as.integer(nobs(fit_r)),
+  df        = as.integer(attr(logLik(fit_r), "df")),
+  loglik    = as.numeric(logLik(fit_r)),
+  loglik_nobs_attr = as.integer(attr(logLik(fit_r), "nobs")),
+  link      = as.numeric(predict(fit_r, type = "link")$est),
+  response  = as.numeric(fitted(fit_r)$est),
+  residual  = as.numeric(residuals(fit_r, type = "randomized_quantile", scale = "normal")$residual),
+  predict_type_default   = as.character(eval(formals(.pp_predict_fun)$type)[1]),
+  residual_type_default  = as.character(eval(formals(.pp_residuals_fun)$type)[1]),
+  residual_scale_default = as.character(eval(formals(.pp_residuals_fun)$scale)[1]),
+  simulate_condition_on_re_default = isFALSE(formals(.pp_simulate_fun)$condition_on_RE)
+)
+
+ci <- tryCatch({
+  cc <- confint(fit_r, parm = fit_r$X_fix_names, method = "wald")
+  list(ok = TRUE, lower = as.numeric(cc[, 1]), upper = as.numeric(cc[, 2]), error = "")
+}, error = function(e) list(ok = FALSE, lower = numeric(0), upper = numeric(0),
+                             error = conditionMessage(e)))
+
+# --- POST-COEF-EMPTY: parse-one-function-and-eval on a synthetic mock ------
+.pp_coef_defs <- Filter(
+  function(x) is.call(x) && identical(x[[1L]], as.name("<-")) &&
+    identical(x[[2L]], as.name("coef.gllvmTMB_multi")),
+  parse(file.path(source_root, "R/vcov-coef.R"))
+)
+stopifnot(length(.pp_coef_defs) == 1L)
+.pp_coef_env <- new.env(parent = asNamespace("gllvmTMB"))
+eval(.pp_coef_defs[[1L]], .pp_coef_env)
+empty_coef <- .pp_coef_env$coef.gllvmTMB_multi(list(X_fix_names = character(0)))
+
+# ---------------------------------------------------------------------------
+# 3. Write the oracle JSON (Y + all R-side values) for the Julia child.
+# ---------------------------------------------------------------------------
+oracle_path <- file.path(output_dir, "r-oracle.json")
+jsonlite::write_json(
+  list(
+    schema = "core070-postfit-policy-r-oracle/v1",
+    p = p, n = n, K = K,
+    y = as.numeric(Y),               # column-major flatten; Julia reshapes (p, n)
+    coef = oracle$coef,
+    nobs = oracle$nobs,
+    df = oracle$df,
+    loglik = oracle$loglik,
+    loglik_nobs_attr = oracle$loglik_nobs_attr,
+    link = oracle$link,              # column-major flatten of the (p, n) matrix
+    response = oracle$response,
+    residual = oracle$residual,
+    predict_type_default = oracle$predict_type_default,
+    residual_type_default = oracle$residual_type_default,
+    residual_scale_default = oracle$residual_scale_default,
+    simulate_condition_on_re_default = oracle$simulate_condition_on_re_default,
+    ci_ok = ci$ok, ci_lower = ci$lower, ci_upper = ci$upper, ci_error = ci$error,
+    empty_coef = as.numeric(empty_coef)
+  ),
+  oracle_path, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 17
+)
+
+# --- invoke the Julia child ---------------------------------------------
+julia_out <- file.path(output_dir, "julia-results.json")
+julia_env <- c(CORE070_POSTFIT_POLICY_R_ORACLE = oracle_path)
+julia_bin <- Sys.which("julia")
+stopifnot(nzchar(julia_bin))
+old_env <- Sys.getenv(names(julia_env), unset = NA, names = TRUE)
+do.call(Sys.setenv, as.list(julia_env))
+t0 <- Sys.time()
+julia_status <- tryCatch(
+  system2(julia_bin, c("--project=.", "tools/core070_postfit_policy_batch.jl", julia_out),
+          stdout = file.path(output_dir, "julia-stdout.log"),
+          stderr = file.path(output_dir, "julia-stderr.log")),
+  finally = {
+    unset <- names(old_env)[is.na(old_env)]
+    if (length(unset)) Sys.unsetenv(unset)
+    set <- old_env[!is.na(old_env)]
+    if (length(set)) do.call(Sys.setenv, as.list(set))
+  }
+)
+elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+
+# --- read back and evaluate ----------------------------------------------
+julia_report <- if (file.exists(julia_out)) {
+  jsonlite::read_json(julia_out, simplifyVector = FALSE)
+} else {
+  NULL
+}
+
+contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+contract_neg_ids <- vapply(contract$negative_controls, `[[`, "", "control_id")
+
+results_ok <- !is.null(julia_report) &&
+  identical(julia_status, 0L) &&
+  identical(julia_report$status, "PASS") &&
+  isTRUE(julia_report$all_positive_pass) &&
+  isTRUE(julia_report$negative_controls_behaved_as_expected) &&
+  isTRUE(julia_report$all_checks) &&
+  identical(sort(names(julia_report$cases)), sort(contract_case_ids)) &&
+  identical(sort(names(julia_report$negative_controls)), sort(contract_neg_ids)) &&
+  all(vapply(julia_report$cases, function(x) isTRUE(x$pass), logical(1))) &&
+  all(vapply(julia_report$negative_controls, function(x) isTRUE(x$behaved), logical(1)))
+
+raw_lines <- if (!is.null(julia_report)) {
+  vapply(contract_case_ids, function(id) {
+    pass <- isTRUE(julia_report$cases[[id]]$pass)
+    paste(id, if (pass) "PASS" else "FAIL", "positive", sep = "\t")
+  }, character(1))
+} else character(0)
+neg_lines <- if (!is.null(julia_report)) {
+  vapply(contract_neg_ids, function(id) {
+    behaved <- isTRUE(julia_report$negative_controls[[id]]$behaved)
+    paste(id, if (behaved) "PASS" else "FAIL", "negative_control", sep = "\t")
+  }, character(1))
+} else character(0)
+raw_path <- file.path(output_dir, "results.tsv")
+writeLines(c(raw_lines, neg_lines), raw_path)
+
+diag_lines <- character(0)
+if (!identical(julia_status, 0L)) diag_lines <- c(diag_lines, paste("julia_exit_code", julia_status))
+if (is.null(julia_report)) diag_lines <- c(diag_lines, "julia-results.json was not written")
+diag_path <- file.path(output_dir, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+receipt <- list(
+  status = if (isTRUE(results_ok)) "PASS" else "FAIL",
+  scope = "CORE070_POSTFIT_POLICY_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_pins = contract$source_pins,
+  source_unchanged = TRUE,
+  case_count = contract$expected_case_count,
+  negative_control_count = length(contract$negative_controls),
+  expected_case_ids = contract_case_ids,
+  negative_control_case_ids = contract_neg_ids,
+  julia_exit_code = julia_status,
+  julia_elapsed_seconds = elapsed,
+  julia_results_sha256 = if (file.exists(julia_out)) sha256_file(julia_out) else NA_character_,
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_version = R.version.string,
+  gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+  frozen_library = frozen_library
+)
+receipt_path <- file.path(output_dir, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+cat("CORE070_POSTFIT_POLICY_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (isTRUE(results_ok)) 0L else 1L)

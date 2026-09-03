@@ -88,4 +88,59 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         # group 2 (near-Poisson) should recover a larger dispersion than group 1.
         @test fg.r_group[2] > fg.r_group[1]
     end
+
+    # T14 F1 (docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md): a per-group
+    # `dispersion_boundary::Vector{Bool}` flags any group whose fitted r_group
+    # falls outside [1e-6, 1e6] (the Poisson limit / extreme-overdispersion
+    # limit), mirroring `StudentTFit.nu_boundary`. `converged` is forced false
+    # whenever any group is flagged.
+    @testset "dispersion_boundary flag (T14 F1)" begin
+        @testset "seed-523 degenerate fixture flags the boundary" begin
+            # The exact `_bx_sim(NegativeBinomial(), 3, 70, 1, 1; seed=523)`
+            # fixture from test/test_bridge_x.jl: two of three traits fit at
+            # the NB2->Poisson boundary (r_group ~ 1e9-1e20).
+            rng = Random.MersenneTwister(523)
+            p, n, K, q = 3, 70, 1, 1
+            β = 0.3 .* randn(rng, p)
+            γ = 0.6 .* randn(rng, q)
+            Λ = 0.4 .* randn(rng, p, K)
+            x1 = randn(rng, n)
+            X = zeros(p, n, q)
+            for t in 1:p, s in 1:n
+                X[t, s, 1] = x1[s]
+            end
+            O = GLLVM._build_offset(X, γ)
+            Z = randn(rng, K, n)
+            η = β .+ O .+ Λ * Z
+            Y = Matrix{Float64}(undef, p, n)
+            for t in 1:p, s in 1:n
+                η_ts = clamp(η[t, s], -6, 4)
+                r = 8.0; μ = exp(η_ts)
+                Y[t, s] = float(rand(rng, NegativeBinomial(r, r / (r + μ))))
+            end
+            Yi = round.(Int, Y)
+            fit = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = K, group = collect(1:p))
+            @test length(fit.dispersion_boundary) == 3
+            @test any(fit.dispersion_boundary)
+            @test fit.converged == false
+        end
+
+        @testset "well-conditioned fixture leaves dispersion_boundary all-false" begin
+            Random.seed!(503)
+            p, K, n, r_true = 6, 1, 250, 4.0
+            β_true = 0.3 .* randn(p) .+ 1.2
+            Λ_true = 0.4 .* randn(p, K)
+            Z = randn(K, n)
+            η = β_true .+ Λ_true * Z
+            Y = Matrix{Int}(undef, p, n)
+            for t in 1:p, s in 1:n
+                μ = exp(η[t, s])
+                Y[t, s] = rand(NegativeBinomial(r_true, r_true / (r_true + μ)))
+            end
+            fg = fit_nb_gllvm_grouped(Y; K = K, group = ones(Int, p), iterations = 150)
+            @test length(fg.dispersion_boundary) == 1
+            @test !any(fg.dispersion_boundary)
+            @test fg.converged
+        end
+    end
 end

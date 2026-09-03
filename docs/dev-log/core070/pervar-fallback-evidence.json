@@ -1,0 +1,281 @@
+{
+  "status": "GAUSSIAN_NATIVE_FORMULA_FALLBACK_PASS_NOT_ALL_SURFACES",
+  "reference": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "baseline": "afccd917f48f4a90c624f6179c0c0e27465da7c7",
+  "required_obligations": [
+    {
+      "id": "CORE070-AGHQ-PUBLIC-UNIQUE-DEFAULT",
+      "status": "PARTIAL",
+      "proved": "Original p4/n120/K1 Gaussian fixed-residual unique fixture: native and formula k1/numeric/auto fallback with same-model health/likelihood",
+      "remaining": "R bridge and other required family/interface cases"
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-K1-PRECEDENCE",
+      "status": "PARTIAL",
+      "proved": "Gaussian unique-effects ineligible structure still follows quiet k1 Laplace rule",
+      "remaining": "Remaining required models and R bridge"
+    }
+  ],
+  "attempts": [
+    {
+      "id": "pervar-fallback-red-01",
+      "plan_sha256": "fe395678f62c614bdcf9a1e4b3f447102f2e43ff0767ab1ec59a027f79ff1b80",
+      "receipt_sha256": "4b23565406d5225469328b29a5cf87231da98d28c3c0813949c6bf47b62e4a2f",
+      "archive_sha256": "b458fb4028c05daadfc6bc6dc8100711a1651d3fe8a2e5df96f7ef739f716e35",
+      "results": [
+        {
+          "id": "pervar-fallback-regression",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=.qualenv",
+            "run.jl"
+          ],
+          "exit_code": 1,
+          "elapsed_seconds": 37.4685143455863,
+          "log": "00.log",
+          "log_sha256": "10272e8f950a6c37c13688e4262e6cfc883ced41ea96059703a1c60f9eda0ce5",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    },
+    {
+      "id": "pervar-fallback-green-01",
+      "plan_sha256": "3ebefee6c2c9aeb5ded00f8aabe202ad35554d504421b79d91953957aa940823",
+      "receipt_sha256": "bfdf59dba88ca4563ead24d10c342c257e6c3cc969f7b93fc8890bc226c6b778",
+      "archive_sha256": "dddc900376fec042bf9987423f1ec9c249e06e56d73ab9734333ca876981d271",
+      "results": [
+        {
+          "id": "pervar-fallback-regression",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=.qualenv",
+            "run.jl"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 49.13599612377584,
+          "log": "00.log",
+          "log_sha256": "3a569071f8de51a74d053b368db7ac0e0f3659323110eb9bc8293ee5fc03f919",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    },
+    {
+      "id": "pervar-fallback-pair-01",
+      "plan_sha256": "0771b24a3f0c30aca4d1f7f32e039ed10f0dd025a1ded3d129d3606642dfe530",
+      "receipt_sha256": "30571d0c599305a4479653c174ef9b37fb2b5613c4afac11cc42c6e626232990",
+      "archive_sha256": "3de72bc7639a76f51470f77db29b550c4706e94e71f9c0ad7da52ff3e9c17cea",
+      "results": [
+        {
+          "id": "oracle-before",
+          "argv": [
+            "python3",
+            "tools/core070_build_oracle.py",
+            "verify",
+            "--destination",
+            "/home/snakagaw/core070-aghq-20260830/oracle-build-01"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.11485311016440392,
+          "log": "00.log",
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        },
+        {
+          "id": "pair",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=test/parity",
+            "run.jl"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 26.921423530206084,
+          "log": "01.log",
+          "log_sha256": "e96e784bf30e13d4a09a7541a13d94a48f40bef3ff82e51d3b70488b0b9b741b",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        },
+        {
+          "id": "oracle-after",
+          "argv": [
+            "python3",
+            "tools/core070_build_oracle.py",
+            "verify",
+            "--destination",
+            "/home/snakagaw/core070-aghq-20260830/oracle-build-01"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 0.11492254957556725,
+          "log": "02.log",
+          "log_sha256": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    },
+    {
+      "id": "pervar-fallback-docs-01",
+      "plan_sha256": "ff706e0204e44d9a3cda65f78f2e123ac580f42609cbdc16f43a48ffed61eb16",
+      "receipt_sha256": "451bc11c9a714b7d10600f0952c2d03e81592955a4274dae3f09268a12442423",
+      "archive_sha256": "ce2fe91393f646af4034ea3b2c5bb120d78843e42fdec357cf4e1f10b9e3b318",
+      "results": [
+        {
+          "id": "strict-local-docs",
+          "argv": [
+            "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+            "--startup-file=no",
+            "--project=.docenv",
+            "docs/make.jl",
+            "--local"
+          ],
+          "exit_code": 0,
+          "elapsed_seconds": 97.82673742435873,
+          "log": "00.log",
+          "log_sha256": "bbf17751f5aac3c1fd5a362e23db7c4b3814424ba496cf8d14f7b2daac2d005a",
+          "supervisor_error": null,
+          "parity": null,
+          "parity_error": null
+        }
+      ]
+    }
+  ],
+  "paired_result": {
+    "scope": "original fixed-residual unique Gaussian default/k1/numeric/auto native and formula; no R bridge",
+    "fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92",
+    "id": "CORE070-DEFAULT-UNIQUE-GAUSSIAN-AGHQ-FALLBACK",
+    "cases": [
+      {
+        "delta_loglik": 3.864101927320007e-09,
+        "native_converged": true,
+        "r_reason": "laplace: k = 1 is the Laplace rule; the Laplace path computes it exactly",
+        "native_k": 1,
+        "native_actual": "laplace",
+        "request": "k1",
+        "native_warnings": [],
+        "native_penalised": false,
+        "r_used": false,
+        "native_loglik": -576.2849371937114,
+        "r_converged": true,
+        "native_no_adaptation": true,
+        "r_loglik": -576.2849371898473,
+        "native_exact_baseline": true,
+        "native_requested_k": 1,
+        "native_reason": "laplace_rule",
+        "native_node_count": 1,
+        "r_exact_baseline": true,
+        "r_warnings": [],
+        "native_gradient_max": 1.5420198451465694e-10,
+        "r_gradient_max": 4.445323898038918e-05
+      },
+      {
+        "delta_loglik": 3.864101927320007e-09,
+        "native_converged": true,
+        "r_reason": "laplace: Stage 1a requires z_B as the only random block (random = z_B, s_B)",
+        "native_k": 1,
+        "native_actual": "laplace",
+        "request": "k3",
+        "native_warnings": [
+          "AGHQ request retained exact Gaussian/Laplace"
+        ],
+        "native_penalised": false,
+        "r_used": false,
+        "native_loglik": -576.2849371937114,
+        "r_converged": true,
+        "native_no_adaptation": true,
+        "r_loglik": -576.2849371898473,
+        "native_exact_baseline": true,
+        "native_requested_k": 3,
+        "native_reason": "other_random_blocks",
+        "native_node_count": 1,
+        "r_exact_baseline": true,
+        "r_warnings": [
+          "`aghq` was requested but AGHQ did not run; this is a plain Laplace fit.\n\u2139 Reason: Stage 1a requires z_B as the only random block (random = z_B, s_B).\n\u2192 Ordinary `latent()` carries a per-trait Psi by default, which puts `s_B` in\n  the random vector; AGHQ Stage 1a is loadings-only. Use `latent(..., unique =\n  FALSE)` to make the model eligible, or drop `aghq`.\nThis warning is displayed once per session."
+        ],
+        "native_gradient_max": 1.5420198451465694e-10,
+        "r_gradient_max": 4.445323898038918e-05
+      },
+      {
+        "delta_loglik": 3.864101927320007e-09,
+        "native_converged": true,
+        "r_reason": "laplace: Stage 1a requires z_B as the only random block (random = z_B, s_B)",
+        "native_k": 1,
+        "native_actual": "laplace",
+        "request": "auto",
+        "native_warnings": [
+          "AGHQ request retained exact Gaussian/Laplace"
+        ],
+        "native_penalised": false,
+        "r_used": false,
+        "native_loglik": -576.2849371937114,
+        "r_converged": true,
+        "native_no_adaptation": true,
+        "r_loglik": -576.2849371898473,
+        "native_exact_baseline": true,
+        "native_requested_k": 5,
+        "native_reason": "other_random_blocks",
+        "native_node_count": 1,
+        "r_exact_baseline": true,
+        "r_warnings": [],
+        "native_gradient_max": 1.5420198451465694e-10,
+        "r_gradient_max": 4.445323898038918e-05
+      }
+    ]
+  },
+  "source_pins": {
+    "src/families/gaussian_pervar.jl": "1a8cfd939fa4bff0a6e1721f4667237348ff805ee3402799f76a7ce88ffb31ac",
+    "src/formula.jl": "36be66dcb5cc4f16e32843ab95575c7eee33c3a46fdc9d69d872adbcefdcf3ec",
+    "test/test_gaussian_pervar_fallback.jl": "6d972a876d2ff4cdf3ff8c3355c0a0b9f9c9256eee2f0f1aa634a5eebd6ccd65",
+    "test/runtests.jl": "0fa5b4e7fb8d27071fccb526d68bd9063bcfd49a1bcc186736f15a751aed85cf",
+    "tools/core070_pervar_fallback_pair.jl": "03e1167c8f0f1d85e53794300ac3b2db7f617f3d165cdba1249084b748614053"
+  },
+  "assertions": {
+    "fallback": 59,
+    "fixed_residual": 23,
+    "formula": 35,
+    "native_pair": 10,
+    "formula_pair": 9,
+    "fallback_pair": 29
+  },
+  "negative_controls": 9,
+  "scope_exclusions": [
+    "R bridge",
+    "intervals",
+    "plain heteroscedastic AGHQ implementation",
+    "full suites",
+    "independent review",
+    "other families",
+    "recovery",
+    "coverage",
+    "full manifest freeze"
+  ],
+  "visual": {
+    "receipt_sha256": "72fb1464d8ea614c9eac9995bf02ab0c478856de2c9e44ce9045fb2bb71520b6",
+    "screenshots": {
+      "desktop-output.png": "606145162411b3c856015fda80ccbd8d7ea28800b1a5dcadad36fa54243fb043",
+      "mobile-output.png": "57e6ff9204206ca07dcb63547b1a10b8acd887a24e0b86accad149078f6ac26f",
+      "mobile-example.png": "57e6ff9204206ca07dcb63547b1a10b8acd887a24e0b86accad149078f6ac26f",
+      "desktop-example.png": "606145162411b3c856015fda80ccbd8d7ea28800b1a5dcadad36fa54243fb043"
+    },
+    "parent_inspected": [
+      "desktop-output.png",
+      "mobile-output.png"
+    ],
+    "notes": "Long warning/source lines use standard horizontal code-block scrolling; actual method and reason readable; no whole-page overflow."
+  },
+  "unlazy": {
+    "met": 4,
+    "unmet": [
+      "FALLBACK-FULL-REVIEW"
+    ]
+  }
+}

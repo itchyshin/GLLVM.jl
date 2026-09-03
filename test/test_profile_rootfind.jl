@@ -38,12 +38,12 @@ using GLLVM, Test
     @test isapprox(up2, target; atol = 1e-3)
 
     # ---- Singular outer region: a feasibility wall beyond which refits fail -
-    # The method must still return a finite bound inside the feasible region.
+    # This wall occurs BEFORE the likelihood crossing: no bound is identified.
     wall = θ̂ + 0.9
     Dwall = c -> c ≥ wall ? Inf : ((c - θ̂) / se)^2
     b = GLLVM._profile_bisect_side(Dwall, θ̂, 0.3, cutoff; max_expand = 20, max_bisect = 40)
-    @test isfinite(b)
-    @test θ̂ < b ≤ wall + 1e-9
+    @test isnan(b)
+    @test Dquad(prevfloat(wall)) < cutoff
 
     # ---- Located bound actually sits at the cutoff crossing ----------------
     @test isapprox(Dquad(up),  cutoff; atol = 1e-2)

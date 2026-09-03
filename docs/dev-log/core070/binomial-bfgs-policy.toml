@@ -1,0 +1,27 @@
+scope = "REFERENCE_FALSE_CONVERGENCE_CONTINUATION_NOT_DEFAULT_PROMOTION"
+reference_commit = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+hypothesis = "PORT initializes relative and singular tolerances in distinct slots; changing rel.tol alone leaves singular tolerance unchanged. Explicit sing.tol on the final public refinement may admit a healthy whole fit."
+selection = "First whole fit passing independent R health; never select on Julia agreement or borrow fields across attempts."
+prior_results = "Default and unconditional refinement failures remain immutable. No new default-health claim."
+optimizer = "nlminb"
+final_singular_tolerance = 1e-14
+expected_port_singular_default = 1e-10
+relative_tolerances = [1e-12, 1e-14]
+eval_max = 2000
+iter_max = 1500
+n_init = 1
+se = false
+gradient_max = 1e-4
+loglik_rtol = 1e-6
+objective_atol = 1e-10
+estimate_minutes = [0.25, 1]
+timeout_seconds = 60
+case_timeout_seconds = 60
+cases = ["BINOMIAL-LOGIT-BERNOULLI", "BINOMIAL-LOGIT-VARYING", "BINOMIAL-PROBIT-BERNOULLI", "BINOMIAL-PROBIT-VARYING", "BINOMIAL-CLOGLOG-BERNOULLI", "BINOMIAL-CLOGLOG-VARYING"]
+failure_action = "Retain all attempts; do not relax health gates or repeat a failed control unchanged."
+
+continuation_method = "BFGS"
+continuation_reltol = 1e-12
+continuation_maxit = 2000
+continuation_condition = "Only after the full PORT ladder, with finite gradient below1e-4 but nonzero convergence code. Execute a fresh public fit; never edit an optimizer code."
+executed_case = "BINOMIAL-PROBIT-VARYING"

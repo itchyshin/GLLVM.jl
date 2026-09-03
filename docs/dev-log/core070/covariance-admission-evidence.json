@@ -1,0 +1,35 @@
+{
+  "status": "PASS_FROZEN_SOURCE_SUBSET_ONLY",
+  "cases": 95,
+  "manifest_sha256": "291ad7707335d8c0e32017203334b2efde864b745a51ccefb2e36ace2d8583e1",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "oracle_source_hashes_verified": true,
+  "records": [
+    {
+      "host": "local",
+      "receipt": ".unlazy/core070-aghq/covariance-admission/local-attempt3/receipt.json",
+      "receipt_sha256": "96bcba0604d49d6626d93b1ce6b4725a908e8e1e2843cdefd14b761b192a45f6",
+      "runtime": "Rscript (R) version 4.6.0 (2026-04-24)",
+      "actual_exit": 0,
+      "raw_sha256": "b4a9ed6ea0be26dc59c1faea1d677399e910d2543f4f6ef20bb4945fdabe4ce1"
+    },
+    {
+      "host": "totoro",
+      "receipt": ".unlazy/core070-aghq/covariance-admission/totoro/result/receipt.json",
+      "receipt_sha256": "85d40d36acf5b71bb1bf4396194b4033ca7131c0a6494b8ddbd0dde4f0d4eb00",
+      "runtime": "Rscript (R) version 4.5.3 (2026-03-11)",
+      "actual_exit": 0,
+      "raw_sha256": "b4a9ed6ea0be26dc59c1faea1d677399e910d2543f4f6ef20bb4945fdabe4ce1"
+    }
+  ],
+  "failed_attempts_retained": [
+    "local-attempt1",
+    "local-attempt2"
+  ],
+  "unpaid": [
+    "Fit-stage admission and matrix alignment/definiteness",
+    "Full covariance/modifier cross-product and native/formula/bridge model fixtures",
+    "Loading masks, known V and postfit numerical evidence",
+    "Multi-kernel automatic unique pruning versus explicit companion rejection"
+  ]
+}

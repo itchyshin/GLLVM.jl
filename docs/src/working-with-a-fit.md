@@ -110,4 +110,4 @@ predict(fitb, Yb)               # fitted probabilities
 residuals(fitb, Yb)             # Dunn–Smyth (set rng to reproduce)
 ```
 
-See also: [Get started](/quickstart) · [Response families](/response-families) · [Reference](/api).
+See also: [Get started](quickstart.md) · [Response families](response-families.md) · [Reference](api.md).

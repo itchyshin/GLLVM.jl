@@ -52,14 +52,57 @@ function _laplace_mode_logpost(family, y::AbstractVector, n::AbstractVector,
     return q
 end
 
+# R3 workspace (core070 perf repair): the nine buffers `_laplace_mode` needs
+# (Λz, η, μ, me, s, W, WΛ, Amat, g) were allocated fresh on EVERY call — one call
+# per site per objective/gradient evaluation, measured at 543MB churn for a single
+# p=50 gradient (docs/dev-log/core070/poisson-perf-diagnosis.md). `LaplaceModeWorkspace`
+# lets a caller that loops over many sites at a FIXED (p, K, T) — e.g. the per-site
+# loop inside `marginal_loglik_laplace`/`laplace_loglik_site`, or the R2 mode-hoist
+# loop in `poisson_laplace_grad` — allocate the buffers ONCE and reuse them across
+# sites. `_laplace_mode` still allocates internally when `ws === nothing` (the
+# default) or when its element type/shape doesn't match, so every OTHER call site
+# (postfit.jl, cv.jl, the AGHQ/mixed/grouped-dispersion families, …) is unaffected —
+# this is purely opt-in. Only the CONCRETE (Float64-ish) solve is ever expected to
+# reuse a workspace; a `Dual`-typed call simply falls through to fresh allocation.
+"""
+    LaplaceModeWorkspace{T}
+
+Reusable buffers for [`_laplace_mode`](@ref) at a fixed `(p, K)` and element type
+`T`, avoiding the per-call allocation of its nine internal arrays when the SAME
+caller invokes it many times in a row (e.g. once per site in a marginal-likelihood
+or gradient loop). Construct with `LaplaceModeWorkspace(T, p, K)` and pass as the
+`ws` keyword; a size/type mismatch is ignored (falls back to fresh allocation), so
+passing the wrong workspace is safe, just non-optimal.
+"""
+struct LaplaceModeWorkspace{T}
+    Λz::Vector{T}
+    η::Vector{T}
+    μ::Vector{T}
+    me::Vector{T}
+    s::Vector{T}
+    W::Vector{T}
+    WΛ::Matrix{T}
+    Amat::Matrix{T}
+    g::Vector{T}
+end
+
+LaplaceModeWorkspace(::Type{T}, p::Integer, K::Integer) where {T} =
+    LaplaceModeWorkspace{T}(Vector{T}(undef, p), Vector{T}(undef, p), Vector{T}(undef, p),
+                            Vector{T}(undef, p), Vector{T}(undef, p), Vector{T}(undef, p),
+                            Matrix{T}(undef, p, K), Matrix{T}(undef, K, K), Vector{T}(undef, K))
+
 # Inner Laplace mode-finder (Fisher-scoring Newton). Returns the conditional mode
 # ẑ (length K) for one site. Shared across families and by getLV (src/postfit.jl).
 # `mask` (length-p Bool, or `nothing` = all observed) drops missing responses: a
 # masked entry contributes zero score and zero Fisher weight, so it neither pulls
 # the mode nor enters the Hessian — exactly the marginal over the observed cells.
+# `ws` (optional `LaplaceModeWorkspace`, R3 core070): reuse pre-allocated buffers
+# instead of allocating fresh ones; ignored (fresh allocation) on any type/size
+# mismatch, so it is always safe to pass.
 function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
-        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9)
+        mask = nothing, offset = nothing, maxiter::Integer = 100, tol::Real = 1e-9,
+        ws = nothing)
     p = size(Λ, 1)
     K = size(Λ, 2)
     off = offset === nothing ? false : offset    # additive identity ⇒ no-offset path unchanged
@@ -69,15 +112,14 @@ function _laplace_mode(family, y::AbstractVector, n::AbstractVector,
     # Per-call buffers, reused across Newton iterations. Each is written in place
     # with the SAME broadcast / BLAS expression as the allocating version, so the
     # computed values and FP-operation order are bit-identical.
-    Λz = Vector{T}(undef, p)       # Λ*z (linear-predictor contribution)
-    η  = Vector{T}(undef, p)       # clamped linear predictor
-    μ  = Vector{T}(undef, p)       # clamped mean
-    me = Vector{T}(undef, p)       # dμ/dη
-    s  = Vector{T}(undef, p)       # Fisher score wrt η
-    W  = Vector{T}(undef, p)       # Fisher weight wrt η
-    WΛ = Matrix{T}(undef, p, K)    # W .* Λ
-    Amat = Matrix{T}(undef, K, K)  # Λ'WΛ (then + I added in place)
-    g  = Vector{T}(undef, K)       # rhs Λ's − z
+    Λz, η, μ, me, s, W, WΛ, Amat, g =
+        if ws isa LaplaceModeWorkspace{T} && length(ws.Λz) == p && length(ws.g) == K
+            ws.Λz, ws.η, ws.μ, ws.me, ws.s, ws.W, ws.WΛ, ws.Amat, ws.g
+        else
+            Vector{T}(undef, p), Vector{T}(undef, p), Vector{T}(undef, p),
+            Vector{T}(undef, p), Vector{T}(undef, p), Vector{T}(undef, p),
+            Matrix{T}(undef, p, K), Matrix{T}(undef, K, K), Vector{T}(undef, K)
+        end
     restarted = false
     for _ in 1:maxiter
         mul!(Λz, Λ, z)
@@ -235,14 +277,14 @@ the score, the Hessian weight, and the log-density sum. Returns
 function laplace_loglik_site(family, y::AbstractVector, n::AbstractVector,
         Λ::AbstractMatrix, β::AbstractVector, link::Link;
         mask = nothing, offset = nothing, hessian::Symbol = _default_hessian(family, link),
-        maxiter::Integer = 100, tol::Real = 1e-9)
+        maxiter::Integer = 100, tol::Real = 1e-9, ws = nothing)
     (hessian === :fisher || hessian === :observed) || throw(ArgumentError(
         "hessian must be :fisher or :observed; got :$hessian"))
     p = size(Λ, 1)
     K = size(Λ, 2)
     off = offset === nothing ? false : offset
     z  = _laplace_mode(family, y, n, Λ, β, link;
-                       mask = mask, offset = offset, maxiter = maxiter, tol = tol)
+                       mask = mask, offset = offset, maxiter = maxiter, tol = tol, ws = ws)
     # Per-call buffers (written in place with the SAME broadcast / BLAS expressions
     # as before ⇒ bit-identical values and FP-operation order).
     Λz = Λ * z                                # Λ*z (one-shot; result reused below)

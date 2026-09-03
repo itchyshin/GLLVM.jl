@@ -1,0 +1,36 @@
+{
+  "scope": "TRUNCATED_POISSON_INPUT_REPAIR_NOT_FITTED_BRIDGE_PARITY",
+  "fits_run": false,
+  "embedding_qualified": false,
+  "full_suite": false,
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "bridge_assertions": 148,
+  "final_assertions": 1466,
+  "runtime": ".unlazy/core070-aghq/bridge-truncated-input",
+  "artifacts": {
+    ".unlazy/core070-aghq/bridge-truncated-input/final-plan.json": "0db696a9bc0e6385ec8e2362aa425a86e2ede65b8a22ffe9d3a20d14aebe4413",
+    ".unlazy/core070-aghq/bridge-truncated-input/red-plan.json": "b9aab93c210512c08647842b6655cb72112299342a0c12c773c22906d7c6f7f1",
+    ".unlazy/core070-aghq/bridge-truncated-input/green-plan.json": "3847212f39e2e98852633956a2de07baf327927716cba7cfa2ae7b7402879715",
+    ".unlazy/core070-aghq/bridge-truncated-input/expanded-plan.json": "013b46150eb7fe33919a9a357ac09266367fc48861ba65dba2dda9aeffbe39c4",
+    ".unlazy/core070-aghq/bridge-truncated-input/final-process/00.log": "4da9b90d803a5f026f6b727e2a4b54cae7032e0390cf5eef28ffd10d905ff062",
+    ".unlazy/core070-aghq/bridge-truncated-input/final-process/execution-plan.json": "0db696a9bc0e6385ec8e2362aa425a86e2ede65b8a22ffe9d3a20d14aebe4413",
+    ".unlazy/core070-aghq/bridge-truncated-input/final-process/process-receipt.json": "115bdae4f34b7f3c5f4024522620c89f7dffe08b79d5d88eaea30a827e0f8471",
+    ".unlazy/core070-aghq/bridge-truncated-input/final-process/progress.json": "e7655034c0313dfd3454338f32c498a26d12d16da5daad950975a112f4fea8f5",
+    ".unlazy/core070-aghq/bridge-truncated-input/green-process/00.log": "68d9a74a6559c838d47722f8b53875b0ebb6072e3fcc18da0e6c55605f85e925",
+    ".unlazy/core070-aghq/bridge-truncated-input/green-process/execution-plan.json": "3847212f39e2e98852633956a2de07baf327927716cba7cfa2ae7b7402879715",
+    ".unlazy/core070-aghq/bridge-truncated-input/green-process/process-receipt.json": "14c9ad4107d893d3333a394a63d803f1dd47e7ca8455a4711c6bbd498a1390f1",
+    ".unlazy/core070-aghq/bridge-truncated-input/green-process/progress.json": "5de650850e9c9a086043155ec1fc3a1f00a731592fd2342511d493a441b439cd",
+    ".unlazy/core070-aghq/bridge-truncated-input/expanded-process/00.log": "21cf2f88058d23e2848eeb7be80d52cfbf5423c3611968adf37b0de0b3d48fa1",
+    ".unlazy/core070-aghq/bridge-truncated-input/expanded-process/execution-plan.json": "013b46150eb7fe33919a9a357ac09266367fc48861ba65dba2dda9aeffbe39c4",
+    ".unlazy/core070-aghq/bridge-truncated-input/expanded-process/process-receipt.json": "2dbe4f75fab6173936c0145bac711bf4dbcc4ef999c23e284408d38563adb354",
+    ".unlazy/core070-aghq/bridge-truncated-input/expanded-process/progress.json": "1957e0d05510d7cf47a5f589891b164238a422faac974b46268854945bd895f2",
+    ".unlazy/core070-aghq/bridge-truncated-input/red-process/00.log": "4e8cc8661a563582fa95e2badf48de2516f53a3cf13293a8b4c85190b3058bbe",
+    ".unlazy/core070-aghq/bridge-truncated-input/red-process/execution-plan.json": "b9aab93c210512c08647842b6655cb72112299342a0c12c773c22906d7c6f7f1",
+    ".unlazy/core070-aghq/bridge-truncated-input/red-process/process-receipt.json": "14c39822dc436e3637cdb4788ed51a9ad93c7f9cc136e75eb214351fc9c0539c",
+    ".unlazy/core070-aghq/bridge-truncated-input/red-process/progress.json": "97e1e5eca664832b44907f57f2abdcf5f8da46675d2046d3043c17e5433109fe"
+  },
+  "documentation_pins": {
+    "README.md": "433700fbd02e6a245b2ff13ebc9b3ae186bec535d98fe6ec40802773e479b505",
+    "docs/src/response-families.md": "437e7d2ce76ac916338a6e3be144a485be0336c3b502f181f0c65c28ed2bf291"
+  }
+}

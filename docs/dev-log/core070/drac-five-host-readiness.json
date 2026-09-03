@@ -1,0 +1,49 @@
+{
+  "observed_at_utc": "2026-08-31T12:13:32.377876+00:00",
+  "brain_source": "shinichi-brain/tools/drac-setup",
+  "transport": "existing ControlMaster only; ProxyCommand=false; no fresh login",
+  "raw_receipt": ".unlazy/core070-aghq/compute-reachability-20260831/drac-readback.json",
+  "permission": "User authorized up to five DRAC computers, 2026-08-31",
+  "scope": "connection/scheduler/account readback only; no jobs submitted",
+  "hosts": [
+    {
+      "host": "fir",
+      "login_host": "login1",
+      "accounts": [
+        "def-snakagaw_cpu",
+        "def-snakagaw_gpu"
+      ]
+    },
+    {
+      "host": "nibi",
+      "login_host": "l4.nibi.sharcnet",
+      "accounts": [
+        "def-snakagaw_cpu",
+        "def-snakagaw_gpu"
+      ]
+    },
+    {
+      "host": "rorqual",
+      "login_host": "rorqual2",
+      "accounts": [
+        "def-snakagaw_cpu",
+        "def-snakagaw_gpu"
+      ]
+    },
+    {
+      "host": "trillium",
+      "login_host": "tri-login03",
+      "accounts": [
+        "def-snakagaw"
+      ]
+    },
+    {
+      "host": "narval",
+      "login_host": "narval1",
+      "accounts": [
+        "def-snakagaw_cpu",
+        "def-snakagaw_gpu"
+      ]
+    }
+  ]
+}

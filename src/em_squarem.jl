@@ -358,3 +358,5 @@ function em_fit_phylo_squarem(y::AbstractMatrix, K_B::Integer,
                       ll_final, cycles_run, converged, loglik_trace,
                       blup_phy, blup_phi, fallback_used)
 end
+
+const fit_phylo_squarem = em_fit_phylo_squarem

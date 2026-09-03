@@ -42,6 +42,8 @@ GllvmModel(p::Integer, K::Integer, K_W::Integer, has_diag::Bool,
            K_phy::Integer, has_phy_unique::Bool) =
     GllvmModel(Int(p), Int(K), Int(K_W), has_diag, Int(K_phy), has_phy_unique)
 
+abstract type AbstractIntegrationInfo end
+
 """
     GllvmFit
 
@@ -56,7 +58,10 @@ struct GllvmFit
     converged::Bool
     optim_result
     cputime::Float64
+    integration::Union{Nothing,AbstractIntegrationInfo}
 end
+GllvmFit(model,pars,logLik,n_iter,converged,optim_result,cputime)=
+    GllvmFit(model,pars,logLik,n_iter,converged,optim_result,cputime,nothing)
 
 """
     fit_gaussian_gllvm(y; K, K_W=0, has_diag=false, K_phy=0,
@@ -91,6 +96,8 @@ Optional extensions:
 
 Optional fixed effects:
 - `X::AbstractArray{<:Real, 3}` of shape `(p, n_sites, q)`.
+  A zero-column design, or fixing every coefficient to zero, gives the same
+  zero-mean model as `X=nothing`.
 - `β_init::AbstractVector` of length q (defaults to `zeros(q)`).
 - `β_fixed` optionally fixes selected coefficients to zero; pass a Bool vector
   of length q, an integer index vector, or a Dict index=>0.
@@ -117,7 +124,7 @@ with fixed entries set to zero, `alpha_lv` is a `q_lv × K` matrix or `nothing`,
 and `Λ_W`, `σ²_B`, `σ²_W`, `Λ_phy`, `σ_phy` are `nothing` when the
 corresponding flag is off.
 """
-function fit_gaussian_gllvm(y::AbstractMatrix;
+function _fit_gaussian_gllvm_exact(y::AbstractMatrix;
                             K::Integer,
                             K_W::Integer = 0,
                             has_diag::Bool = false,
@@ -264,7 +271,18 @@ function fit_gaussian_gllvm(y::AbstractMatrix;
             if isnothing(β_init)
                 β_init = β_ols
             end
-        elseif X === nothing
+        elseif q == 0
+            # X === nothing, or X has zero free columns after masking (an
+            # all-zero-column X, or every β entry fixed): there is no OLS
+            # β̂ to subtract, so PPCA on y directly is the same closed-form
+            # warm start as the X === nothing path. Gated on q == 0 rather
+            # than X === nothing so a degenerate-but-non-nothing X_fit (a
+            # p × n × 0 array from an empty or fully-fixed design) takes
+            # the identical warm start as omitting X, instead of silently
+            # falling through with no PPCA init at all (default init +
+            # σ_eps_init = 1.0), which was the root cause of a ~1e-7
+            # divergence in σ_eps / Λ / predict between the two routes
+            # despite matching logLik (2026-08-31, S4a).
             Λ_ppca, σ_ppca = ppca_init(y, K)
             σ_e₀ = σ_ppca
             λ_init = Λ_ppca

@@ -52,11 +52,13 @@ _family_of(m) = (p = Base.unwrap_unionall(m.sig).parameters;
 # decision batch (docs/dev-log/decisions/2026-08-28-arc-decision-batch.md):
 # flip to :observed for TMB/gllvmTMB structural parity. The set is now empty —
 # Binomial/probit joins it here too (flipped 2026-08-28, same decision batch);
-# Binomial/cloglog stays Fisher deliberately (the diagnosed Laplace saturation
-# pathology, docs/dev-log/check-log.md 2026-08-28 — a decision, not a pending
-# flip). Both are certified per (family, link) below, not by family name
-# (Binomial is already "declared safe" as a family via the LogitLink trait, so
-# neither probit nor cloglog was ever tracked in THIS set).
+# Binomial/cloglog ALSO flips to :observed (2026-09-01, maintainer decisions
+# round 1 item 2 — a confirmed Julia-side likelihood-value defect against R,
+# not a pending-flip modelling question; see
+# docs/dev-log/core070/cloglog-leaf-notes.md). All three are certified per
+# (family, link) below, not by family name (Binomial is already "declared
+# safe" as a family via the LogitLink trait, so probit and cloglog were never
+# tracked in THIS set).
 const KNOWN_OPEN = Set{Symbol}()
 
 # Families where Fisher == observed for STRUCTURAL reasons that are not expressed as a
@@ -197,7 +199,7 @@ const DEFERRED_BY_DECISION = Dict{Symbol,String}(
         (:TruncatedPoisson, :LogLink),    # trait: canonical log
         (:CensoredPoisson,  :LogLink),    # trait: hand-derived observed
         (:Poisson,          :LogLink),    # trait: canonical log
-        (:Binomial,         :LogitLink),  # trait: canonical logit — cloglog stays OPEN (Fisher, by decision)
+        (:Binomial,         :LogitLink),  # trait: canonical logit
         (:TruncatedNegBin2, :LogLink),    # _default_hessian = :observed
         (:Gamma,            :LogLink),    # _default_hessian = :observed
         (:NegativeBinomial, :LogLink),    # _default_hessian = :observed (2026-08-27 campaign)
@@ -207,6 +209,7 @@ const DEFERRED_BY_DECISION = Dict{Symbol,String}(
         (:Exponential,      :LogLink),      # _default_hessian = :observed (declared; audit fix)
         (:TweedieED,        :LogLink),      # _default_hessian = :observed (2026-08-28 maintainer decision)
         (:Binomial,         :ProbitLink),   # _default_hessian = :observed (2026-08-28 maintainer decision)
+        (:Binomial,         :CLogLogLink),  # _default_hessian = :observed (2026-09-01, confirmed defect fix — see docs/dev-log/core070/cloglog-leaf-notes.md)
     ])
 
     families = unique([_family_of(m) for m in weight_methods if _family_of(m) !== nothing])

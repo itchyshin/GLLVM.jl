@@ -1,0 +1,17 @@
+{
+  "scope": "17_FAMILY_SMOKE_NOT_CORE_COMPLETION",
+  "status": "RECOVERED_HISTORICAL_NOT_CURRENT",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "remote": "/home/snakagaw/core070-aghq-20260830/family-recheck-01",
+  "source_commit": "5be659b142fbce4e978b6ff5e1abdc947fbd6f68",
+  "observed_at_utc": "2026-08-30T19:27:38.473094+00:00",
+  "local_launcher": "TERMINAL_READBACK_FAILED",
+  "remote_tweedie": "TERMINAL_28_PASS_HISTORICAL",
+  "missing_dependency": null,
+  "observations": {
+    "sixteen_group": "Recovered raw terminal log:217 pass/3 fail. Student R health2 failures; truncated NB2 R health1. Shared fixture attribution inflates raw actual_assertions to273; not an independent assertion count.",
+    "tweedie": "Recovered28 pass in722.8s; supervisor BrokenPipeError afterward; original oracle-after not executed."
+  },
+  "artifacts": {},
+  "recovery_evidence": "docs/dev-log/core070/family-recovery-evidence.json"
+}

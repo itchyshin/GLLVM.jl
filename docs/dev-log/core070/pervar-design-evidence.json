@@ -1,0 +1,53 @@
+{
+  "scope": "NATIVE_PERVAR_DESIGN_REPAIR_NOT_R_PARITY",
+  "process": {
+    "red": ".unlazy/core070-aghq/pervar-design/red/process/process-receipt.json",
+    "green": ".unlazy/core070-aghq/pervar-design/green/process/process-receipt.json",
+    "repair": ".unlazy/core070-aghq/pervar-design/repair/process/process-receipt.json",
+    "stable": ".unlazy/core070-aghq/pervar-design/stable/process/process-receipt.json",
+    "final": ".unlazy/core070-aghq/pervar-design/final/process/process-receipt.json"
+  },
+  "artifacts": {
+    ".unlazy/core070-aghq/pervar-design/red/process/00.log": "a4ef8eb37569bc7547f15855ea6a1f2104300d372812014edfddbfd0046fb5ba",
+    ".unlazy/core070-aghq/pervar-design/red/process/execution-plan.json": "4261e11d0e92256368743b8b3f98012549deb9fbfe9d050572956b32e564ac6b",
+    ".unlazy/core070-aghq/pervar-design/red/process/process-receipt.json": "b4ad07b70351b5bd8eb196e6bdf542e2a549e6a2c58c0f34aed52c4145d61b94",
+    ".unlazy/core070-aghq/pervar-design/red/process/progress.json": "b3fca6f67dcf15ce24b09db2837966bf146616e9eafb8316af19fc163435d342",
+    ".unlazy/core070-aghq/pervar-design/green/process/00.log": "9ef6e180c750f16f4cf26588c8ff404d842369731f42e80d42e227d05bda4c23",
+    ".unlazy/core070-aghq/pervar-design/green/process/01.log": "785cd4e1137159c8e4360451ed7dfd7a38d91e11f4481978fdd20bc1796a4082",
+    ".unlazy/core070-aghq/pervar-design/green/process/execution-plan.json": "fb37bb91e1f129dab1e1f1b31e74ab93a443538db5c69d767b129770c791b586",
+    ".unlazy/core070-aghq/pervar-design/green/process/process-receipt.json": "c16a035d78f31bc881a6b8a1bcb1df4c3553f88320d03bfeaf8e7aa5a5a785c3",
+    ".unlazy/core070-aghq/pervar-design/green/process/progress.json": "6d799943d594107c8f2a72a97f3ad31082050afa0e97a0f90f8d7243bc5fc63a",
+    ".unlazy/core070-aghq/pervar-design/repair/process/00.log": "34c9f31779846a2ee3e7c2d8970dafa82c4a5a35f77e989fd3c90c40eb0214be",
+    ".unlazy/core070-aghq/pervar-design/repair/process/01.log": "9ba7f1050e0c4e0b514368b1a76c0d5ccd215c0d44474807f48aa48732ecf54e",
+    ".unlazy/core070-aghq/pervar-design/repair/process/execution-plan.json": "599d60798191aafd9723ee3d0bd4d53177239e061b246a53297d2b576613c6c0",
+    ".unlazy/core070-aghq/pervar-design/repair/process/process-receipt.json": "51aa11f3acc6c0f4785a39dec361f1b998663876a522ea786bfbf02d371e03c9",
+    ".unlazy/core070-aghq/pervar-design/repair/process/progress.json": "55e671974d93b8876dff246e238fecfdf4224491334e3a0d29e2e0e6476df33d",
+    ".unlazy/core070-aghq/pervar-design/stable/process/00.log": "eff03a3b5b89cdc097906f6f5bd52e28b6e19dc47398c29b1784aee26c40b3f2",
+    ".unlazy/core070-aghq/pervar-design/stable/process/01.log": "0b1681f9642b4615e282aee96ee2512232f70ac29312d44562a594c8a227b70b",
+    ".unlazy/core070-aghq/pervar-design/stable/process/execution-plan.json": "8a189a14491199b9db3afa2a28024921bc8c57cb6ee97f958da84f8d42d95804",
+    ".unlazy/core070-aghq/pervar-design/stable/process/process-receipt.json": "037d377e85a50624f058217ddb703213b388f859dc516014d35479fcb6c8659c",
+    ".unlazy/core070-aghq/pervar-design/stable/process/progress.json": "8f244afbf54b9dbd359b136d63813cb2742a315999c80f263009603fa6a3c4ff",
+    ".unlazy/core070-aghq/pervar-design/final/process/00.log": "bda983b508742fe470a4ed8cd79d4d7822ac60084de03b0934b14f4116545277",
+    ".unlazy/core070-aghq/pervar-design/final/process/01.log": "8b09d26c8777d6b07368eb8503efc1aa762863f43b799a6454428a7d490468be",
+    ".unlazy/core070-aghq/pervar-design/final/process/execution-plan.json": "725fc5a54ef67a102dc4140128bbf4fa334f1d07c5669d808f85d7f0553478ad",
+    ".unlazy/core070-aghq/pervar-design/final/process/process-receipt.json": "b8a0e3d03b3c3c57811b93ae4635624bb1d983d324970987574eaa6d2f038ac0",
+    ".unlazy/core070-aghq/pervar-design/final/process/progress.json": "0e9d057b9081e8c3504c922dd5ddaab563fdc2144219030d2da6445b55fc0f7f",
+    ".unlazy/core070-aghq/pervar-design/Manifest.toml": "225213ebd8b329f1d39890c954a561f7350469d90fd86d6c3bbde44b948fd1fe",
+    ".unlazy/core070-aghq/pervar-design/red-gaussian_pervar.jl": "024a263c3eb3e7cc1d32402eef69be4cb4c29d34ad229191b09c16fa3b70d9ec",
+    ".unlazy/core070-aghq/pervar-design/red-test.jl": "590da759cf24f1af35f3d2b009f944208f74aeba99f39ca40a47fd08bc88de30",
+    ".unlazy/core070-aghq/pervar-design/repair-gaussian_pervar.jl": "d5a87007ed160a98bbd09b4d75b3aacc1868283ea194a5f1d7fbd335d81af9c7",
+    ".unlazy/core070-aghq/pervar-design/stable-gaussian_pervar.jl": "2ad8333cca9fa1c446d5adcaf3ccb5c03ceea0f26294773adac58722d069b3f3"
+  },
+  "red_source": ".unlazy/core070-aghq/pervar-design/red-gaussian_pervar.jl",
+  "red_test": ".unlazy/core070-aghq/pervar-design/red-test.jl",
+  "independent_review": "PENDING_EXTERNAL_PAYLOAD_AUTHORIZATION",
+  "r_parity": "UNPAID",
+  "full_suite": "UNPAID",
+  "assertions": {
+    "design": 10,
+    "boundaries": 14,
+    "small_diagonal": 3,
+    "adjacent": 14
+  },
+  "performance": "O(p^3) direct factorization; speed not qualified"
+}

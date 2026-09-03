@@ -1,0 +1,621 @@
+{
+  "area": "data",
+  "rows": [
+    {
+      "source_id": "data/DATA-MISS-DEFAULT",
+      "planned_case_ids": [
+        "CORE070-DATA-MISS-DEFAULT-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-MISS-DEFAULT-CONTROL",
+          "r_call": "miss_control() from frozen R source (test/parity/fixtures/core070_data_controls.R#DATA-MISS-DEFAULT); expected list(response='drop', predictor='fail', engine='laplace').",
+          "julia_surface": "Julia missing-data control constructor (planned: e.g. MissingDataControl() or the fit()-level miss= keyword default) must expose the same three defaults: response drop, predictor fail, engine laplace.",
+          "comparands": [
+            "R miss_control() defaults",
+            "Julia missing-data control defaults"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "Pure default-value contract with no Julia counterpart yet; a public fit()-facing control object or keyword set must reproduce these three defaults before the family/data-handling manifest can close.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-MISS-INCLUDE",
+      "planned_case_ids": [
+        "CORE070-DATA-MISS-INCLUDE-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-MISS-INCLUDE-CONTROL",
+          "r_call": "miss_control(response='include') (test/parity/fixtures/core070_data_controls.R#DATA-MISS-INCLUDE); expected response='include' with predictor/engine defaults unchanged.",
+          "julia_surface": "Julia control constructor must accept an independent response=override (e.g. :include) leaving predictor/engine defaults untouched.",
+          "comparands": [
+            "R miss_control(response='include')",
+            "Julia control with response override"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "Single-argument override case for the same control object; verifies argument independence, not just the all-defaults case.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-MISS-MODEL",
+      "planned_case_ids": [
+        "CORE070-DATA-MISS-MODEL-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-MISS-MODEL-CONTROL",
+          "r_call": "miss_control(predictor='model') (test/parity/fixtures/core070_data_controls.R#DATA-MISS-MODEL); expected predictor='model' with response/engine defaults unchanged.",
+          "julia_surface": "Julia control constructor must accept an independent predictor=override (e.g. :model) leaving response/engine defaults untouched.",
+          "comparands": [
+            "R miss_control(predictor='model')",
+            "Julia control with predictor override"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "Single-argument override case complementary to DATA-MISS-INCLUDE; together they pin that the two axes are independently settable.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-MISS-BOTH",
+      "planned_case_ids": [
+        "CORE070-DATA-MISS-BOTH-CONTROL"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-MISS-BOTH-CONTROL",
+          "r_call": "miss_control('include','model') (test/parity/fixtures/core070_data_controls.R#DATA-MISS-BOTH); expected response='include', predictor='model', engine='laplace'.",
+          "julia_surface": "Julia control constructor must accept both response and predictor overrides simultaneously while leaving engine at its default.",
+          "comparands": [
+            "R miss_control('include','model')",
+            "Julia control with both overrides"
+          ],
+          "evidence_kind": "control"
+        }
+      ],
+      "rationale": "Joint-override case closing out the miss_control() default/override family alongside DATA-MISS-DEFAULT/INCLUDE/MODEL.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-NONE",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-NONE-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-NONE-NATIVE",
+          "r_call": "gll_prepare_offset(NULL, ...) via off(NULL) (test/parity/fixtures/core070_data_controls.R#DATA-OFF-NONE); expected rep(0,3) -- absent offset defaults to zero per row.",
+          "julia_surface": "Julia offset-preparation surface (planned: prepare_offset()/offset handling inside the family fit driver) must default an absent offset expression to a zero vector of length n_obs.",
+          "comparands": [
+            "R gll_prepare_offset(NULL,...)",
+            "Julia offset default (no offset given)"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Baseline no-offset case anchoring the offset-preparation contract; every other DATA-OFF-* row is a variant of this same helper.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-SCALAR",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-SCALAR-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-SCALAR-NATIVE",
+          "r_call": "gll_prepare_offset(quote(log(2)), ...) (test/parity/fixtures/core070_data_controls.R#DATA-OFF-SCALAR); expected rep(log(2),3) -- a constant expression broadcasts to all rows.",
+          "julia_surface": "Julia offset-preparation surface must broadcast a constant offset expression/value to a per-row vector of the training length.",
+          "comparands": [
+            "R constant offset broadcast",
+            "Julia constant offset broadcast"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Confirms scalar-expression broadcasting, distinct from the per-row exposure case (DATA-OFF-EXPOSURE).",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-EXPOSURE",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-EXPOSURE-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-EXPOSURE-NATIVE",
+          "r_call": "gll_prepare_offset(quote(log(e)), ...) (test/parity/fixtures/core070_data_controls.R#DATA-OFF-EXPOSURE); expected log(c(1,2,4)) -- log-exposure offset evaluated per row from data.",
+          "julia_surface": "Julia offset-preparation surface must evaluate a data-column offset expression (log-exposure) row-wise against the training data frame.",
+          "comparands": [
+            "R per-row log(e) offset",
+            "Julia per-row log-exposure offset"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "The canonical count-model exposure-offset case (formula `offset(log(e))`); required before any Poisson/NB exposure workflow can be claimed.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-ALL-COUNT",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-ALL-COUNT-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-ALL-COUNT-NATIVE",
+          "r_call": "gll_prepare_offset(quote(e), c(5L,10L,11L), ...) (test/parity/fixtures/core070_data_controls.R#DATA-OFF-ALL-COUNT); expected c(1,2,4) -- nonzero offset admitted for count family ids 5/10/11.",
+          "julia_surface": "Julia offset-preparation surface must admit a nonzero offset for every count-family id in its family registry (the ids paired to 5/10/11 in R's internal family table), rejecting others per DATA-OFF-NONCOUNT-REJECT.",
+          "comparands": [
+            "R count-family id admission set {5,10,11}",
+            "Julia count-family offset admission set"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Family-id admission-set case; the Julia family registry's numeric ids differ from R's, so the comparand is the *set of families admitted* (count families), not the literal integer ids -- flagged uncertain only insofar as the id-to-family mapping needs to be pinned once at case-authoring time, not deferred as a separate obligation.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-NB1",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-NB1-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-NB1-NATIVE",
+          "r_call": "gll_prepare_offset(quote(e), rep(15L,3), ...) (test/parity/fixtures/core070_data_controls.R#DATA-OFF-NB1); expected c(1,2,4) -- NB1 (family id 15) also admits a nonzero offset.",
+          "julia_surface": "Julia offset-preparation surface must admit a nonzero offset for the NB1 family specifically (a count family outside the {5,10,11} block tested in DATA-OFF-ALL-COUNT).",
+          "comparands": [
+            "R NB1 (id 15) offset admission",
+            "Julia NB1 offset admission"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Regression-style case isolating NB1 from the other count-family ids; keeps the admission set from silently narrowing to {5,10,11}.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-NONCOUNT-ZERO",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-NONCOUNT-ZERO-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-NONCOUNT-ZERO-NATIVE",
+          "r_call": "gll_prepare_offset(quote(0), rep(0L,3), ...) (test/parity/fixtures/core070_data_controls.R#DATA-OFF-NONCOUNT-ZERO); expected rep(0,3) -- an explicit all-zero offset is accepted for a non-count family (offset ids all 0).",
+          "julia_surface": "Julia offset-preparation surface must accept an explicit zero offset for non-count families rather than rejecting the offset() term outright.",
+          "comparands": [
+            "R zero offset on non-count family",
+            "Julia zero offset on non-count family"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Pairs with DATA-OFF-NONCOUNT-REJECT (non-zero offset on non-count family rejects); this row is the accepted boundary at zero.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-MIXED",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-MIXED-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-MIXED-NATIVE",
+          "r_call": "gll_prepare_offset(quote(c(1,0,4)), c(2L,0L,5L), ...) (test/parity/fixtures/core070_data_controls.R#DATA-OFF-MIXED); expected c(1,0,4) -- a multi-family fit with mixed family ids per row permits zero offset on non-count rows alongside nonzero on count rows.",
+          "julia_surface": "Julia offset-preparation surface must apply the per-row family-id admission rule row-wise within a single multi-family/multi-response fit, not just at the whole-model level.",
+          "comparands": [
+            "R row-wise mixed-family offset admission",
+            "Julia row-wise mixed-family offset admission"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Row-wise variant of the family-conditioned offset rule; required for any multi-response/multi-family model where offsets and family ids vary by column.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-TRAIN-LEGACY",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-TRAIN-LEGACY-POSTFIT-READBACK"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-TRAIN-LEGACY-POSTFIT-READBACK",
+          "r_call": ".gllvmTMB_offset_vec(fit) with no stored offset_vec (test/parity/fixtures/core070_data_controls.R#DATA-OFF-TRAIN-LEGACY); expected rep(0,3) -- fits from before offset_vec was cached fall back to zero.",
+          "julia_surface": "Julia's stored-fit offset accessor (planned: offset(fit) or an internal training-offset getter) must return an all-zero vector when the fit object predates offset caching, matching R's legacy fallback.",
+          "comparands": [
+            "R legacy-fit offset fallback (zero)",
+            "Julia legacy-fit offset fallback"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "rationale": "Back-compatibility fallback for fit objects saved before offset caching existed; a Julia serialization/versioning story must define the equivalent fallback before this can close.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-TRAIN-STORED",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-TRAIN-STORED-POSTFIT-READBACK"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-TRAIN-STORED-POSTFIT-READBACK",
+          "r_call": ".gllvmTMB_offset_vec(fit) with tmb_data$offset_vec set (test/parity/fixtures/core070_data_controls.R#DATA-OFF-TRAIN-STORED); expected the stored vector c(1,2,3) verbatim.",
+          "julia_surface": "Julia's stored-fit offset accessor must return the cached training offset vector unchanged when the fit object carries one.",
+          "comparands": [
+            "R stored offset_vec readback",
+            "Julia stored training-offset readback"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "rationale": "Positive counterpart to DATA-OFF-TRAIN-LEGACY; together they pin the stored-vs-fallback offset contract on a fitted model object.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-PREDICT",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-PREDICT-POSTFIT-READBACK"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-PREDICT-POSTFIT-READBACK",
+          "r_call": ".gllvmTMB_offset_newdata(fit, d) (test/parity/fixtures/core070_data_controls.R#DATA-OFF-PREDICT); expected log(c(1,2,4)) -- the stored offset expression (log(e)) is re-evaluated against new data at predict time.",
+          "julia_surface": "Julia predict()-time offset handling must re-evaluate the fit's stored offset expression against the supplied newdata rather than reusing the training offset vector.",
+          "comparands": [
+            "R newdata offset re-evaluation",
+            "Julia predict-time offset re-evaluation"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "rationale": "Core predict-time offset contract; required before any offset-bearing count-family predict() workflow can be claimed against R.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-OFF-PREDICT-NONFINITE-HELPER",
+      "planned_case_ids": [
+        "CORE070-DATA-OFF-PREDICT-NONFINITE-HELPER-POSTFIT-READBACK"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-OFF-PREDICT-NONFINITE-HELPER-POSTFIT-READBACK",
+          "r_call": ".gllvmTMB_offset_newdata(fit, data.frame(e=c(0,1,2))) (test/parity/fixtures/core070_data_controls.R#DATA-OFF-PREDICT-NONFINITE-HELPER); expected c(-Inf,0,log(2)) -- log(0) passes through as -Inf at this helper (no guard at newdata-offset level).",
+          "julia_surface": "Julia predict-time offset evaluator must reproduce the same unguarded arithmetic (log(0) = -Inf propagates rather than erroring) at this specific helper, matching R's documented non-guard here -- any stronger Julia diagnostic must be an explicit, separately tested design choice, not an accidental behavioral divergence.",
+          "comparands": [
+            "R newdata-offset -Inf passthrough for log(0)",
+            "Julia newdata-offset passthrough/guard behavior"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "rationale": "Deliberately documents a permissive R behavior (source comment: 'this differs from training validation'); Julia may choose to guard here, but the divergence must be an explicit tested decision, so this row is required to make that choice visible rather than silent.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-NULL",
+      "planned_case_ids": [
+        "CORE070-DATA-W-NULL-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-NULL-NATIVE",
+          "r_call": "normalise_weights(NULL, ...) via w(NULL) (test/parity/fixtures/core070_data_controls.R#DATA-W-NULL); expected NULL.",
+          "julia_surface": "Julia weight-normalisation surface (planned: normalise_weights()/the weights= handling inside fit()) must pass NULL/absent weights through unchanged (equivalent to `nothing` or unweighted fit).",
+          "comparands": [
+            "R normalise_weights(NULL)",
+            "Julia absent-weights passthrough"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Baseline no-weights case anchoring the weight-normalisation contract; every other DATA-W-* row is a variant of this same helper.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-LONG",
+      "planned_case_ids": [
+        "CORE070-DATA-W-LONG-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-LONG-NATIVE",
+          "r_call": "normalise_weights(1:6, shape='long') via w(1:6) (test/parity/fixtures/core070_data_controls.R#DATA-W-LONG); expected as.numeric(1:6) -- an exact-length long vector passes through unchanged.",
+          "julia_surface": "Julia weight-normalisation surface must accept an exact-length long weight vector and return it unchanged (no reordering).",
+          "comparands": [
+            "R long-format weight passthrough",
+            "Julia long-format weight passthrough"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Identity case for the long-vector input route.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-ZERO",
+      "planned_case_ids": [
+        "CORE070-DATA-W-ZERO-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-ZERO-NATIVE",
+          "r_call": "normalise_weights(rep(0,6), ...) via w(rep(0,6)) (test/parity/fixtures/core070_data_controls.R#DATA-W-ZERO); expected rep(0,6) -- all-zero weights are accepted at this helper (not validated as a degenerate fit here).",
+          "julia_surface": "Julia weight-normalisation surface must accept an all-zero weight vector without erroring; any degenerate-fit rejection belongs at a later fit-time validation stage, not this shape/policy helper.",
+          "comparands": [
+            "R zero-weight acceptance",
+            "Julia zero-weight acceptance"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Pins that weight-value validation (zero, fractional) is deliberately permissive at this layer, matching R's documented separation of concerns from family-specific validation.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-FRACTIONAL",
+      "planned_case_ids": [
+        "CORE070-DATA-W-FRACTIONAL-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-FRACTIONAL-NATIVE",
+          "r_call": "normalise_weights(rep(0.5,6), ...) via w(rep(0.5,6)) (test/parity/fixtures/core070_data_controls.R#DATA-W-FRACTIONAL); expected rep(0.5,6) -- fractional weights are accepted at this helper.",
+          "julia_surface": "Julia weight-normalisation surface must accept fractional weight values without erroring; family-specific trial-count validation (e.g. binomial N must be integer) happens elsewhere.",
+          "comparands": [
+            "R fractional-weight acceptance",
+            "Julia fractional-weight acceptance"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Companion to DATA-W-ZERO; both pin the same deliberate-permissiveness contract for weight values at this layer.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-SCALAR",
+      "planned_case_ids": [
+        "CORE070-DATA-W-MATRIX-SCALAR-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-MATRIX-SCALAR-NATIVE",
+          "r_call": "normalise_weights(2, shape='wide_matrix') via w(2,'wide_matrix') (test/parity/fixtures/core070_data_controls.R#DATA-W-MATRIX-SCALAR); expected rep(2,6) -- a scalar broadcasts to every units*traits cell.",
+          "julia_surface": "Julia wide-matrix weight-normalisation surface must broadcast a scalar weight to every cell of the units*traits response matrix, flattened in the same order as the unmasked case.",
+          "comparands": [
+            "R scalar-to-matrix weight broadcast",
+            "Julia scalar-to-matrix weight broadcast"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Scalar-broadcast case for the wide-matrix input route.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-UNIT",
+      "planned_case_ids": [
+        "CORE070-DATA-W-MATRIX-UNIT-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-MATRIX-UNIT-NATIVE",
+          "r_call": "normalise_weights(c(10,20), shape='wide_matrix') via w(c(10,20),'wide_matrix') (test/parity/fixtures/core070_data_controls.R#DATA-W-MATRIX-UNIT); expected c(10,20,10,20,10,20) -- R units x traits matrix order (site-major).",
+          "julia_surface": "Julia's wide-matrix weight adapter must reproduce R's units x traits (site-major) flattening order for a per-unit weight vector; per the data-controls contract, Julia's own native binomial N is traits x units (trait-major, matching DATA-W-DF-UNIT order), so a wide-matrix *adapter* into that native layout must transpose -- this case pins the R-side order the adapter must read from.",
+          "comparands": [
+            "R wide-matrix per-unit weight order (10,20,10,20,10,20)",
+            "Julia wide-matrix-adapter input order before transpose to native trait-major layout"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "rationale": "This is the ordering-contract row called out explicitly in data-controls-contract.md ('Julia native binomial N is traits x units ... A matrix adapter must transpose the R units x traits matrix'); evidence_kind is bridge because the comparand is an R->Julia adapter transform, not a same-order native reproduction.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-CELLS",
+      "planned_case_ids": [
+        "CORE070-DATA-W-MATRIX-CELLS-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-MATRIX-CELLS-NATIVE",
+          "r_call": "normalise_weights(matrix(1:6,2,3), shape='wide_matrix') via w(matrix(1:6,2,3),'wide_matrix') (test/parity/fixtures/core070_data_controls.R#DATA-W-MATRIX-CELLS); expected as.numeric(1:6) -- a full units x traits weight matrix flattens column-major (R's native matrix storage order).",
+          "julia_surface": "Julia wide-matrix weight adapter must accept a full per-cell weight matrix and flatten/transpose it to Julia's native trait-major storage, matching the general per-cell case of the DATA-W-MATRIX-UNIT ordering contract.",
+          "comparands": [
+            "R full per-cell weight matrix (column-major flatten)",
+            "Julia native per-cell weight layout after adapter transpose"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "rationale": "General per-cell case of the same ordering contract as DATA-W-MATRIX-UNIT; required so the adapter is verified beyond the constant-per-unit special case.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-MASK-DROP",
+      "planned_case_ids": [
+        "CORE070-DATA-W-MATRIX-MASK-DROP-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-MATRIX-MASK-DROP-NATIVE",
+          "r_call": "normalise_weights(wm,'wide_matrix',4L,mask) via w(wm,'wide_matrix',4L,mask) (test/parity/fixtures/core070_data_controls.R#DATA-W-MATRIX-MASK-DROP); expected c(1,2,4,5) -- masked (NA-response) cells are dropped, shrinking the returned vector to n_obs actually retained.",
+          "julia_surface": "Julia wide-matrix weight adapter must drop weights at cells masked out by a missing/NA response (drop_masked=true default), returning a vector of length equal to the retained-observation count, in the adapter's native flatten order.",
+          "comparands": [
+            "R masked-drop weight vector (length 4)",
+            "Julia masked-drop weight vector (native order)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "rationale": "Mask-drop variant of the wide-matrix ordering contract; required for any model with response missingness under the response='drop' default (DATA-MISS-DEFAULT).",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-MASK-INCLUDE",
+      "planned_case_ids": [
+        "CORE070-DATA-W-MATRIX-MASK-INCLUDE-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-MATRIX-MASK-INCLUDE-NATIVE",
+          "r_call": "normalise_weights(wm,'wide_matrix',6L,mask,FALSE) via w(wm,'wide_matrix',6L,mask,FALSE) (test/parity/fixtures/core070_data_controls.R#DATA-W-MATRIX-MASK-INCLUDE); expected c(1,2,0,4,5,0) -- with drop_masked=FALSE, masked cells are retained in place and zeroed rather than dropped.",
+          "julia_surface": "Julia wide-matrix weight adapter must support a masked-include mode (drop_masked=false, paired with miss_control(response='include') from DATA-MISS-INCLUDE) that zeros masked cells in place instead of shrinking the vector.",
+          "comparands": [
+            "R masked-include weight vector (zero-filled, full length 6)",
+            "Julia masked-include weight vector (native order)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "rationale": "Companion to DATA-W-MATRIX-MASK-DROP for the response='include' path; both modes must be supported since miss_control's response policy is user-selectable (DATA-MISS-INCLUDE/BOTH).",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-MATRIX-MASK-SCALAR",
+      "planned_case_ids": [
+        "CORE070-DATA-W-MATRIX-MASK-SCALAR-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-MATRIX-MASK-SCALAR-NATIVE",
+          "r_call": "normalise_weights(2,'wide_matrix',4L,mask) via w(2,'wide_matrix',4L,mask) (test/parity/fixtures/core070_data_controls.R#DATA-W-MATRIX-MASK-SCALAR); expected rep(2,4) -- a scalar weight broadcasts only to the retained (unmasked) cells under drop_masked=TRUE.",
+          "julia_surface": "Julia wide-matrix weight adapter must broadcast a scalar weight to exactly the retained-observation count when combined with masking, not to the full unmasked cell count.",
+          "comparands": [
+            "R scalar broadcast restricted to unmasked cells (length 4)",
+            "Julia scalar broadcast restricted to unmasked cells"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Interaction case between scalar broadcast (DATA-W-MATRIX-SCALAR) and masking (DATA-W-MATRIX-MASK-DROP); confirms the two rules compose correctly rather than being tested only in isolation.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-DF-UNIT",
+      "planned_case_ids": [
+        "CORE070-DATA-W-DF-UNIT-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-DF-UNIT-NATIVE",
+          "r_call": "normalise_weights(c(10,20), shape='wide_df') via w(c(10,20),'wide_df') (test/parity/fixtures/core070_data_controls.R#DATA-W-DF-UNIT); expected c(10,10,10,20,20,20) -- the traits()-route per-unit weight broadcasts in trait-major order.",
+          "julia_surface": "Julia's native traits()-style weight input (trait-major, matching Julia's own binomial-N storage order per the data-controls contract) must broadcast a per-unit weight vector to c(10,10,10,20,20,20) -- the SAME order as Julia's native layout, unlike the wide-matrix route.",
+          "comparands": [
+            "R traits() per-unit weight order (10,10,10,20,20,20)",
+            "Julia native trait-major weight/N order"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "This is the order that already matches Julia's native trait-major layout (per data-controls-contract.md); evidence_kind is native (direct reproduction), contrasting with the wide-matrix rows which are bridge/adapter cases.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-DF-MASK-DROP",
+      "planned_case_ids": [
+        "CORE070-DATA-W-DF-MASK-DROP-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-DF-MASK-DROP-NATIVE",
+          "r_call": "normalise_weights(c(10,20),'wide_df',4L,mask) via w(c(10,20),'wide_df',4L,mask) (test/parity/fixtures/core070_data_controls.R#DATA-W-DF-MASK-DROP); expected c(10,10,20,20) -- traits()-route masked cells dropped, trait-major retained order.",
+          "julia_surface": "Julia native trait-major weight input must drop masked cells under drop_masked=true, matching R's traits()-route retained order.",
+          "comparands": [
+            "R traits()-route masked-drop weight vector (length 4)",
+            "Julia native trait-major masked-drop weight vector"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Mask-drop variant of DATA-W-DF-UNIT; direct native reproduction, no adapter transpose needed since this route already matches Julia's trait-major storage.",
+      "reclassify": null,
+      "uncertain": false
+    },
+    {
+      "source_id": "data/DATA-W-DF-MASK-INCLUDE",
+      "planned_case_ids": [
+        "CORE070-DATA-W-DF-MASK-INCLUDE-NATIVE"
+      ],
+      "case_plan_annex": "docs/dev-log/core070/data-required-case-plan.json",
+      "case_specs": [
+        {
+          "case_id": "CORE070-DATA-W-DF-MASK-INCLUDE-NATIVE",
+          "r_call": "normalise_weights(c(10,20),'wide_df',6L,mask,FALSE) via w(c(10,20),'wide_df',6L,mask,FALSE) (test/parity/fixtures/core070_data_controls.R#DATA-W-DF-MASK-INCLUDE); expected c(10,10,10,20,20,20) -- with drop_masked=FALSE the traits()-route weight at a masked cell is RETAINED (not zeroed), unlike the wide-matrix masked-include case.",
+          "julia_surface": "Julia native trait-major weight input in masked-include mode must retain the per-unit weight value at masked cells rather than zeroing it -- this differs from the wide-matrix masked-include contract (DATA-W-MATRIX-MASK-INCLUDE zeros; this route does not) and both behaviors must be reproduced distinctly, not collapsed to one rule.",
+          "comparands": [
+            "R traits()-route masked-include weight vector (retained, not zeroed)",
+            "Julia native trait-major masked-include weight vector (retained)"
+          ],
+          "evidence_kind": "native"
+        }
+      ],
+      "rationale": "Contract explicitly distinguishes this from the wide-matrix masked-include row per data-controls-contract.md ('Site weights retained at masked entries' for traits() vs 'Masked entries zeroed' for the matrix route) -- a real behavioral asymmetry, not a documentation artifact, so both must be separately verified.",
+      "reclassify": null,
+      "uncertain": false
+    }
+  ]
+}

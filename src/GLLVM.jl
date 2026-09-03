@@ -1,7 +1,8 @@
 module GLLVM
 
-using LinearAlgebra, Optim, ForwardDiff, Random, SparseArrays, Statistics
+using LinearAlgebra, Optim, ForwardDiff, Random, SparseArrays, Statistics, SHA
 using SpecialFunctions: digamma, trigamma, besselk, gamma, loggamma
+import StatsModels: coef, vcov, nobs, dof, loglikelihood, aic, bic, coeftable, stderror, confint, predict, residuals, fitted, StatsAPI, deviance
 # Import Distributions without `Multinomial` so the Identity marker
 # `GLLVM.Multinomial` (unordered categorical, twin fid 16) can bind.
 # `Distributions.Multinomial` is the count-vector law — still available qualified.
@@ -16,6 +17,8 @@ include("fit_verdict.jl")            # _fit_verdict: never report a failure sent
 include("packing.jl")
 include("lowrank_cholesky.jl")          # used by likelihood
 include("likelihood.jl")
+include("source_covariance.jl")          # internal Gaussian additive source reference evaluator
+include("source_fit.jl")                 # local candidate: fixed Gaussian source covariances
 include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
@@ -41,28 +44,45 @@ include("spde_fit.jl")                    # Gaussian SPDE spatial-field model + 
 
 # Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
 include("sparse_phy.jl")
+include("phylo_precision.jl")        # PrecisionPhy: R-convention sparse precision consumer (phylo transport S1)
 include("likelihood_sparse_phy.jl")
 include("sparse_phy_grad.jl")            # analytic gradient + SparsePhyState (self-includes takahashi_selinv.jl)
 include("node_gradient.jl")              # O(p) node-frame gradient + per-species BLUPs (Phase 1.1)
 include("fit_phylo.jl")                  # O(p) single-trait phylogenetic Gaussian fitter (Phase 1.4)
+include("phylo_contrasts.jl")            # Felsenstein independent contrasts (AD-friendly)
+include("likelihood_contrasts.jl")       # Gaussian marginal log-lik on contrast scale
+include("edge_incidence.jl")             # Edge-node incidence sparse representation (Bolker phylog.rmd)
+include("likelihood_edge_incidence.jl")  # Gaussian marginal log-lik via edge-node incidence
+include("phylo_branch_re.jl")            # Single-variance branch random-effects model
+include("em_phylo.jl")                   # Gradient-free EM for Gaussian phylogenetic GLLVM
+include("em_squarem.jl")                 # SQUAREM acceleration for phylogenetic EM
+include("relaxed_clock.jl")              # Relaxed-clock per-branch evolution rates
 
 # Response families (Phase 3): Distributions types as markers + link functions
 include("families/links.jl")
 include("families/laplace.jl")           # generic family-dispatched Laplace marginal core
 include("families/aghq_grid.jl")         # Stage-1a/1b live-pin AGHQ grid + Liu–Pierce site (not a public knob)
+include("families/aghq_outer.jl")        # Internal unpenalized outer adaptation; public fit wiring pending
+include("families/aghq_fit_info.jl")
 include("families/binomial.jl")          # Binomial family pieces + fit (Phase 3)
+include("families/aghq_gaussian.jl")
+include("families/aghq_gaussian_fit.jl")
+include("families/aghq_binomial.jl")      # Checked normalized three-link binomial adapter
 include("families/poisson.jl")           # Poisson family pieces (Phase 3)
+include("families/aghq_poisson.jl")      # Internal checked-mode Poisson AGHQ adapter
+include("families/aghq_poisson_fit.jl")
+include("families/aghq_binomial_fit.jl")
 include("families/truncated_poisson.jl") # Zero-truncated Poisson (twin fid 10)
 include("families/censored_poisson.jl") # Right-censored Poisson (Julia-forward; twin constructor-only)
 include("families/truncated_nbinom2.jl") # Zero-truncated NB2 (twin fid 11; shared-r Arc1 + per-trait Arc1b)
 include("families/negbin.jl")            # Negative-binomial (NB2) family pieces (Phase 3)
 include("families/gp1.jl")               # Generalized-Poisson type-1 (GP-1, signed dispersion) — issue #104
 include("families/negbin1.jl")           # Negative-binomial type-1 (NB1, linear variance)
-include("families/grouped_dispersion.jl") # Grouped / species-specific NB dispersion (disp.group)
 include("families/beta.jl")              # Beta family pieces (Phase 3)
 include("families/ordinal.jl")           # Ordinal (cumulative-logit) family pieces (Phase 3)
 include("families/gamma.jl")             # Gamma (positive continuous) family pieces (Phase 3)
 include("families/tweedie.jl")           # Tweedie (compound Poisson–Gamma, 1<p<2) — biomass/abundance with zeros
+include("families/grouped_dispersion.jl") # Grouped / species-specific dispersion (disp.group)
 include("families/exponential.jl")       # Exponential (positive continuous, no dispersion) — Gamma(α=1)
 include("families/studentt.jl")          # Student-t (heavy-tailed continuous, fixed ν) family pieces
 include("families/lognormal.jl")         # one-part lognormal (twin fid 3)
@@ -113,6 +133,7 @@ include("postfit.jl")
 include("lv_targets.jl")                # internal eta-scale realised LV targets
 include("ordination.jl")                  # ordination output (site scores + species loadings, canonical rotation)
 include("model_selection.jl")             # select_lv: latent-dimension selection by AIC/BIC
+include("cv.jl")                          # cv_gllvm: K-fold cross-validation engine
 include("simulate_fit.jl")               # simulate(fit, …) for the non-Gaussian families
 include("ordination_uncertainty.jl")      # per-site latent-score uncertainty (conditional bootstrap of scores)
 
@@ -127,10 +148,15 @@ include("confint_derived_wald.jl")       # transformed-Wald CIs for bounded deri
 # family fit structs + predict) and confint_derived.jl (the Gaussian generics it
 # adds methods to). Additive: the ::GllvmFit methods are unchanged.
 include("link_residual.jl")
+include("extractors.jl")                # extract_*/get* post-fit extractor family (core070 Cluster 1)
+include("re_sd.jl")                      # latent_score_sd (renamed from getREsd): TMB-sdreport-style conditional-on-θ̂ random-effect SDs (core070 E-cluster)
 include("families/mixed.jl")             # mixed-family GLLVM (cross-family VCV): fit_mixed_gllvm + MixedFamilyFit. AFTER link_residual + the family fitters so all dispatch targets exist.
 include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware profile CI for variance components
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
+include("diagnostics.jl")                # check_gllvmTMB / gllvmTMB_diagnose / predictive_check / sanity_multi / compare_* / confint_inspect (core070 diagnostics/compare cluster)
 include("summary_table.jl")              # coef_table: tidy Wald inference table
+include("postfit_tables.jl")             # final missing-surface cluster (core070 §1): deviance, cross-rho profiles,
+                                          # predict_cross_covariance, predict_missing, rotate_loadings, tidy, summary, imputed
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
 include("bridge.jl")                      # R→Julia bridge_fit (JuliaCall flat contract); LAST
 
@@ -152,10 +178,14 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        confint_speciescov, confint_fourthcorner, confint_rrr, confint_constrained,
        confint_lv_effects,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
+       SourceCovariance, fit_gaussian_sources, GaussianSourcesFit,
+       fit_gaussian_structured,
        gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
        fit_gaussian_random_slope, GaussianRandomSlopeFit, gaussian_grouped_intercept_loglik,
        fit_twolevel_gaussian, TwoLevelFit, twolevel_marginal_loglik,
        repeatability, communality_B, communality_W, correlation_B, correlation_W,
+       repeatability_wald_ci, repeatability_bootstrap_ci, repeatability_ci,
+       TwoLevelRepeatabilityProfileWithdrawn,
        fit_poisson_random_slope, PoissonRandomSlopeFit, random_slope_marginal_loglik_laplace,
        fit_gaussian_pervar_gllvm, GaussianPerVarFit, gaussian_pervar_marginal_loglik,
        fit_compoisson_gllvm, COMPoisson, COMPoissonFit, compoisson_marginal_loglik_laplace,
@@ -163,16 +193,42 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        confint, profile_ci, bootstrap_ci,
        transformed_wald_ci_derived, correlation_wald_ci, communality_wald_ci,
        icc_wald_ci, phylo_signal_wald_ci,
+       standardized_loading_wald_ci, raw_loading_wald_ci, loading_ci, loading_profile,
+       profile_ci_total_variance, profile_ci_phylo_signal,
+       slope_sd_ci, standard_errors,
+       latent_score_sd, getREsd, bootstrap_Sigma, tmbprofile_wrapper, profile_targets, profile_curve_targets,
+       profile_phylo_signal,
        ppca_init, em_fa,
        sigma_y_site, communality, correlation, phylo_signal, link_residual,
+       extract_Sigma, extract_Sigma_table, extract_loadings, extract_rotated_loadings,
+       extract_communality, extract_correlations, extract_cross_correlations,
+       extract_residual_cov, extract_residual_cor, getResidualCov, getResidualCor,
+       extract_ordination, extract_cutpoints, extract_proportions, extract_phylo_signal,
+       extract_repeatability, extract_ICC_site, extract_Omega,
        chibar2_pvalue, variance_lrt, profile_ci_variance,
-       augmented_phy, gaussian_marginal_loglik_sparse_phy,
+       augmented_phy, AugmentedPhy, random_balanced_tree, sigma_phy_dense, make_phy,
+       PrecisionPhy, precision_logdet_check,
+       gaussian_marginal_loglik_sparse_phy,
        node_grad, node_dσ_phy_only, NodePerSpecies, build_node_perspecies,
        grad_node_perspecies, node_blups,
        fit_phylo_gaussian, PhyloGaussianFit,
        phylo_glm_marginal_loglik, fit_phylo_glm, PhyloGLMFit,
        coevolution_glm_marginal_loglik, fit_coevolution_glm, CoevolutionGLMFit,
        coevolution_gamma,
+       FelsensteinContrasts, felsenstein_contrast_matrix, felsenstein_contrasts,
+       contrast_transform, gaussian_marginal_loglik_contrasts,
+       EdgePhy, edge_phy, Q_times_x, sigma_phy_dense_edge, log_det_Q, solve_Q,
+       gaussian_marginal_loglik_edge_phy,
+       path_membership, simulate_branch_re, BranchRECache, branch_re_cache,
+       branch_re_profile_negll, branch_blups, BranchREFit, fit_branch_re,
+       fit_branch_re_dense, clade_edges, find_clade_root,
+       welch_t, rank_sum_z, excess_kurtosis, qq_max_dev,
+       AnBSparseSolver, build_AnB_sparse, solve_AnB, blup_phylo_sparse,
+       EMPhyloFit, em_fit_phylo, fit_em_phylo, em_observed_information,
+       em_fit_phylo_squarem, fit_phylo_squarem,
+       edge_W_diag, Q_perbranch, simulate_relaxed_bm, estep_edge_moments,
+       shrink_logrates, RelaxedClockFit, fit_relaxed_clock,
+       spearman, shrinkage_factor, clade_detection,
        LogitLink, ProbitLink, CLogLogLink, IdentityLink, LogLink,
        fit_mixed_gllvm, MixedFamilyFit, mixed_marginal_loglik_laplace,
        fit_binomial_gllvm, BinomialFit, fit_poisson_gllvm, PoissonFit,
@@ -196,8 +252,8 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_gamma_gllvm_grouped_cov, GammaGroupedCovFit,
        fit_nb1_gllvm_grouped, NB1GroupedFit, nb1_grouped_marginal_loglik_laplace,
        fit_nb1_gllvm_grouped_cov, NB1GroupedCovFit,
-       fit_tweedie_gllvm_grouped, TweedieGroupedFit, tweedie_grouped_marginal_loglik_laplace,
-       StudentTFamily, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
+       fit_tweedie_gllvm_grouped, TweedieGroupedFit, TweediePerTraitPowerFit, tweedie_grouped_marginal_loglik_laplace,
+       StudentTFamily, StudentT, fit_studentt_gllvm, StudentTFit, studentt_marginal_loglik_laplace,
        Lognormal, LognormalFit, fit_lognormal_gllvm,
        lognormal_marginal_loglik, lognormal_response_mean,
        Multinomial, MultinomialFit, fit_multinomial_gllvm,
@@ -248,7 +304,19 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        getLV, getLoadings, rotation, ordination, ordiplot, ordination_uncertainty,
        extract_lv_effects, lv_effects, predict_spatial,
        coef_table, GllvmCoefTable, select_lv, LVSelection,
+       cv_gllvm, CVResult,
+       StatsAPI, coef, vcov, nobs, dof, loglikelihood, stderror, coeftable,
        predict, fitted, residuals, aic, bic, simulate,
-       bridge_fit, bridge_capabilities
+       bridge_fit, bridge_capabilities,
+       gllvmTMB_check_consistency, gllvmTMB_diagnose, check_gllvmTMB,
+       check_auto_residual, sanity_multi, fit_diagnostic_table, diagnostic_table,
+       diagnose_kernel_separability, compare_fits_Sigma_table, compare_Sigma_table,
+       compare_fits_dep_vs_two_psi, compare_dep_vs_two_psi,
+       compare_fits_indep_vs_two_psi, compare_indep_vs_two_psi, compare_loadings,
+       predictive_check, confint_inspect,
+       deviance, profile_cross_rho_ci, predict_cross_covariance, predict_missing,
+       simulate_unit_trait, profile_cross_rho, rotate_loadings,
+       extract_rotated_loadings_table, extract_coevolution_modules, imputed,
+       tidy, GllvmSummary
 
 end # module GLLVM

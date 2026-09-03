@@ -59,12 +59,16 @@ end
 # nor enters the log-det Hessian A) and is skipped in the log-pmf sum — exactly the
 # masking semantics of the core (src/families/laplace.jl), so the analytic gradient
 # matches the masked marginal.
-function _poisson_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector;
-                                mask = nothing)
+function _poisson_site_diffable(y::AbstractVector, Λ::AbstractMatrix, β::AbstractVector,
+                                ẑ::AbstractVector; mask = nothing)
     p = size(Λ, 1)
-    # Concrete mode from the primal parameters (no dual leakage).
-    Λv = ForwardDiff.value.(Λ); βv = ForwardDiff.value.(β)
-    ẑ = _laplace_mode(Poisson(), y, ones(Int, p), Λv, βv, LogLink(); mask = mask)
+    # `ẑ` is the concrete mode at the primal (θ̂) parameters, precomputed ONCE by the
+    # caller outside the ForwardDiff chunk loop (R2: mode-solve hoist, core070). Every
+    # chunk pass of `ForwardDiff.gradient` below re-evaluates this function at duals
+    # whose PRIMAL part is the same θ̂, so re-solving the Newton mode here on every
+    # chunk (as the previous version did via `ForwardDiff.value.(Λ)`) was redundant
+    # work repeated ⌈nθ/chunksize⌉ times per gradient call — see
+    # docs/dev-log/core070/poisson-perf-diagnosis.md.
 
     # One differentiable Newton step from ẑ ⇒ z ≈ ẑ with the correct dz/dθ.
     η = _clamp_eta.(β .+ Λ * ẑ)
@@ -111,13 +115,36 @@ function poisson_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::Abstrac
     p, K = size(Λ)
     rr = rr_theta_len(p, K)
     θ̂ = vcat(float.(β), pack_lambda(Λ))
+    # R2 (mode-solve hoist, core070): solve the concrete per-site mode ONCE here, at
+    # the primal (θ̂) parameters, instead of inside `_poisson_site_diffable` — which
+    # `ForwardDiff.gradient` below would otherwise call once per CHUNK (chunk size 12
+    # ⇒ ⌈nθ/12⌉ redundant Newton solves per gradient call, all at the identical
+    # primal point). See docs/dev-log/core070/poisson-perf-diagnosis.md.
+    #
+    # Must use the ROUND-TRIPPED Λ/β (unpack_lambda(pack_lambda(Λ)), the θ̂ split),
+    # not the raw `Λ`/`β` arguments — `unpack_lambda` enforces the lower-triangular
+    # convention (packing.jl) and zeros any strict-upper entries, so a raw Λ with
+    # nonzero upper-triangle differs from what `marg` below actually reconstructs
+    # from θ̂ at the same point. Using the raw matrices here silently solved the
+    # mode for the WRONG Λ (caught by the FD gate in test_poisson_grad_perf.jl).
+    βv = θ̂[1:p]
+    Λv = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
+    # R3 (workspace reuse, core070): one Float64 workspace shared across all n site
+    # mode solves in this hoist loop (concrete solve only — see LaplaceModeWorkspace).
+    ws = LaplaceModeWorkspace(Float64, p, K)
+    ẑs = Vector{Vector{Float64}}(undef, size(Y, 2))
+    Nunit = ones(Int, p)
+    @inbounds for s in axes(Y, 2)
+        mi = mask === nothing ? nothing : view(mask, :, s)
+        ẑs[s] = _laplace_mode(Poisson(), view(Y, :, s), Nunit, Λv, βv, LogLink(); mask = mi, ws = ws)
+    end
     function marg(θ)
         b = θ[1:p]
         L = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         acc = zero(eltype(θ))
         @inbounds for s in axes(Y, 2)
             mi = mask === nothing ? nothing : view(mask, :, s)
-            acc += _poisson_site_diffable(view(Y, :, s), L, b; mask = mi)
+            acc += _poisson_site_diffable(view(Y, :, s), L, b, ẑs[s]; mask = mi)
         end
         return acc
     end

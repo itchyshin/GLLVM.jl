@@ -187,7 +187,10 @@ Current limits: `TruncatedPoissonFit` is not in the package's Wald
 confidence-interval union, so there is no CI route for this family, and the
 R-bridge arm (`family = "truncated_poisson"`) is no-X only — `X`, `X_lv`,
 missing-response masks, and CI are loud rejects there rather than silent
-no-ops.
+no-ops. The bridge requires finite positive integer responses exactly
+representable as `Int`. Fractional counts and values that would lose precision
+during conversion are rejected before fitting; the bridge never rounds this
+family’s response.
 
 ### Right-censored Poisson — `CensoredPoisson()`
 
@@ -242,6 +245,12 @@ With shared site covariates (`@formula` / bridge `X`), the default is
 negative binomial collapses to Poisson. For a single shared `r` across species,
 call [`fit_nb_gllvm`](@ref) (no-X) or [`fit_gllvm_cov`](@ref) (with X).
 
+The original NB2 parity fixture currently fails the stricter likelihood and
+fit-health checks: its Julia convergence flag accompanies an unstable numerical
+gradient. A scalar-density precision problem at large size has been identified
+and is awaiting a tested repair. Do not infer verified parity or parameter
+recovery from the convergence flag alone.
+
 ### Negative binomial type-1 — `NB1()`
 
 ```julia
@@ -290,12 +299,63 @@ automatically when `Yc` contains `missing`, and accept an `offset`. Only
 
 #### Dispersion: shared vs per-trait
 
-`fit_gllvm`'s only route for this family is [`fit_truncated_nbinom2_gllvm`](@ref),
-which estimates a single **shared** `r` across species, packing
-`[β; pack(Λ); log r]` (length `p+rr+1`). Per-trait dispersion `r_t` (twin
-`log_phi_truncnb2`) is [`fit_truncated_nbinom2_gllvm_pertrait`](@ref), packing
-`[β; pack(Λ); log r_1 … log r_p]` (length `p+rr+p`); it is **not** reachable
-through `fit_gllvm`, including via `disp_group`, which throws for this family.
+With `disp_group` omitted, `fit_gllvm` calls [`fit_truncated_nbinom2_gllvm`](@ref),
+which estimates a single **shared** `r` across species and packs
+`[β; pack(Λ); log r]` (length `p+rr+1`). Explicit `disp_group = :species` calls
+[`fit_truncated_nbinom2_gllvm_pertrait`](@ref), estimating per-trait `r_t`
+(twin `log_phi_truncnb2`) and packing `[β; pack(Λ); log r_1 … log r_p]`
+(length `p+rr+p`). A length-`p` vector of distinct positive integer group IDs
+also selects this per-trait model; repeated IDs and partial grouping are unsupported.
+
+```@setup truncated_nb2_dispatch
+using GLLVM, Random, Distributions
+_TNB2_SEED = 58
+function parity_loadings_p5k2()
+    return [
+        0.8   0.0
+        0.5   0.6
+        0.3  -0.4
+       -0.2   0.5
+        0.1   0.3
+    ]
+end
+Random.seed!(_TNB2_SEED)
+p, K, n = 5, 1, 120
+# Intercepts chosen so μ ≳ 3: keeps p₀ small (cheap rejection sampling), the
+# truncation correction well conditioned, and the Laplace modes stable.
+β = log.([4.0, 5.0, 3.5, 4.5, 4.0])
+r_true = 4.0
+Λ = 0.2 .* parity_loadings_p5k2()[:, 1:K]
+Z = randn(K, n)
+η = β .+ Λ * Z
+Y = Matrix{Int}(undef, p, n)
+for t in 1:p, s in 1:n
+    μ = exp(clamp(η[t, s], -3.0, 3.5))
+    while true                      # zero-truncated draw by rejection
+        v = rand(Distributions.NegativeBinomial(r_true, r_true / (r_true + μ)))
+        if v >= 1
+            Y[t, s] = v
+            break
+        end
+    end
+end
+
+Yc = Y
+```
+
+```@example truncated_nb2_dispatch
+fit = fit_gllvm(Yc; family = TruncatedNegBin2(), K = 1, disp_group = :species)
+wide = gllvm(@formula(y ~ 1), Yc, (site = 1:size(Yc, 2),);
+             family = TruncatedNegBin2(), K = 1, disp_group = :species)
+@assert fit.converged && wide.converged
+@assert isapprox(fit.loglik, wide.loglik; atol=1e-10, rtol=0)
+(length(wide.r), wide.converged)
+```
+
+A complete long table with `y`, `species` and `site` columns accepts the same keywords.
+
+This formula route admits intercept-only models. It does not add site covariates,
+new interval methods, or R-bridge qualification.
 
 The `TruncatedNegBin2` marker carries an `r` field (`TruncatedNegBin2()` fills in
 `10.0`), but **no fit path reads it** — `r` is always jointly estimated. To seed
@@ -307,6 +367,16 @@ Equal `r_t` reproduces the shared-`r` log-likelihood **by construction**, not by
 coincidence: `truncated_nbinom2_marginal_loglik_laplace` is implemented as the
 equal-`r_t` special case of `truncated_nbinom2_pertrait_marginal_loglik_laplace`,
 so the two routes cannot drift apart.
+
+#### Scope of the recorded R comparison
+
+The original seed-58 per-trait fixture has a verified comparison using a
+public R BFGS continuation from its default fit. Both engines pass the recorded
+fit-health checks, with absolute log-likelihood difference below `1e-7`.
+The default R fit still reports unsuccessful convergence. This result applies
+to that explicit continuation recipe; it does not establish default-R health,
+parameter-recovery performance, or complete family parity. The required parity case now records this policy explicitly and preserves
+the default R fit's unsuccessful convergence in its evidence.
 
 #### Laplace curvature: `hessian = :observed` (default) or `:fisher`
 
@@ -534,11 +604,9 @@ fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
       expected to fire for this family.
     - Binomial/**cloglog** is explicitly excluded and stays `:fisher` — the
       diagnosed Laplace saturation pathology above, not a pending flip.
-    - The Tweedie **grouped** route (`fit_tweedie_gllvm_grouped`, per-species
-      dispersion) has no `hessian` selector at all and stays unconditionally
-      Fisher — a recorded scope limit, not fixed by this change; with `G = 1`
-      it therefore no longer matches the shared route's *default* (it matches
-      `hessian = :fisher` on the shared route).
+    - The Tweedie **grouped** route accepts `hessian = :observed` (default)
+      or `:fisher`. This selects the Laplace curvature; the mode-search policy
+      stays separate. Comparisons must use the same curvature and power model.
 
 ### Lognormal — `Lognormal()`
 
@@ -600,13 +668,15 @@ unsupported.
 ### Tweedie — `fit_tweedie_gllvm`
 
 Compound Poisson–Gamma for biomass / abundance with true zeros: an exact point
-mass at 0 plus a positive continuous part, `Var = φ μ^p` with `1 < p < 2`. Both
-the dispersion `φ` and the power `p` are estimated; there is no way to pin the
-power at present (the R twin's `tweedie(p = )`).
+mass at 0 plus a positive continuous part, `Var = φ μ^p` with `1 < p < 2`. The shared
+`fit_tweedie_gllvm` estimates dispersion and power. The grouped fitter also
+supports fixed common power and per-species estimated power:
 
 ```julia
 fit = fit_tweedie_gllvm(Y; K = 2)                    # Y ≥ 0; φ and p estimated
 fit = fit_tweedie_gllvm_grouped(Y; K = 2)            # φ per species, shared p
+fit = fit_tweedie_gllvm_grouped(Y; K = 2, power = 1.5) # fixed common p
+fit = fit_tweedie_gllvm_grouped(Y; K = 2, power_group = :species) # p per species
 ```
 
 `φ` and the power sit on a nearly flat joint ridge, so the reported `converged`
@@ -620,11 +690,14 @@ The same contract applies to [`fit_tweedie_gllvm_grouped`](@ref) (and therefore
 to the already-shipped `fit_gllvm(...; disp_group = :species)` route). The
 bare-marker `fit_gllvm` admit is still closed.
 
+See [Tweedie power contracts](tweedie-power.md) for parameter counts and the
+distinction between a shared reference constraint and the R default model.
+
 ### Student-t — `StudentTFamily(ν)`
 
 ```julia
 fit = fit_gllvm(Y; family = StudentTFamily(4.0), K = 2)   # heavy-tailed continuous
-fit = fit_gllvm(Y; family = StudentTFamily(), K = 2)      # same, ν = 4 by default
+fit = fit_gllvm(Y; family = StudentTFamily(), K = 2)      # estimate ν (per-species default)
 ```
 
 An outlier-robust drop-in for `Normal()` on the identity link: the
@@ -633,18 +706,22 @@ bounds the influence of extreme cells — the score `(ν+1)r/(νσ² + r²)` *de
 in the residual `r`, so a handful of gross outliers barely move `β̂`, where a
 Gaussian fit would chase them. As `ν → ∞` the family tends to `Normal(η, σ²)`.
 
-The two marker fields play different roles. The degrees of freedom `ν` is
-**structural**: it is held FIXED rather than estimated (estimating it jointly
-needs a second auxiliary, which the scalar-auxiliary path does not support), so it
-travels on the marker and `fit_gllvm` forwards it to
-[`fit_studentt_gllvm`](@ref)'s `nu`. Passing `nu` as a separate keyword alongside
-the marker is an error rather than a silent override. The scale `σ` is a **tag
+The two marker fields play different roles. A numeric `ν` fixes the degrees
+of freedom; `StudentTFamily()` carries `ν = nothing` and estimates it.
+`fit_gllvm` selects per-species scales and degrees of freedom for that default.
+The named fitter also supports `disp_group = :shared`. Set degrees of freedom
+on the family marker when using `fit_gllvm`; use the `nu` keyword on
+[`fit_studentt_gllvm`](@ref). The scale `σ` is a **tag
 payload** — it is always estimated (returned as `fit.σ`), so `StudentTFamily(4.0)`
 and `StudentTFamily(4.0, 9.0)` give the same fit; seed it with `σ_init` on the
 named fitter instead.
 
 Student-t is a **no-X** surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` are
-admitted, but covariates, `disp_group`, and row effects are not.
+admitted. Shared and per-species dispersion are supported; this does not
+establish arbitrary dispersion-group, covariate or row-effect support. The fit
+records `estimated_nu`, so AIC counts free degrees-of-freedom parameters only
+when they were estimated. See [Student-t parity limits](studentt-parity.md):
+the original required R fixture still fails its optimizer-health gate.
 
 ### Conway–Maxwell–Poisson — `COMPoisson()`
 
@@ -658,8 +735,8 @@ over-dispersion via the exponent `ν` (`ν = 1` ⇒ Poisson, `ν > 1` ⇒
 underdispersion, `ν < 1` ⇒ overdispersion). The named fitter
 [`fit_compoisson_gllvm`](@ref) always estimates `ν` (seeded by `ν_init`,
 default 1). The marker's `ν` field is a **tag payload** — it is never read —
-the opposite of [`StudentTFamily`](@ref), whose `ν` is structural and held
-fixed. `COMPoisson()` is the usual call; `COMPoisson(9.0)` gives the same fit.
+unlike [`StudentTFamily`](@ref), where a numeric `ν` is a fixed model control
+and `nothing` requests estimation. `COMPoisson()` is the usual call; `COMPoisson(9.0)` gives the same fit.
 
 COM-Poisson is Julia-forward (the twin has no CMP family) and a **no-X**
 surface: `fit_gllvm` and `gllvm(@formula(y ~ 1), …)` are admitted, but
@@ -828,8 +905,97 @@ fit = fit_gaussian_pervar_gllvm(Y; K = 2)   # heteroscedastic Gaussian
 
 A heteroscedastic Gaussian GLLVM with a **separate residual variance per species**
 (gllvm's heteroscedastic default), in contrast to the single shared `σ_eps` of
-`fit_gaussian_gllvm`. The per-species intercepts are profiled out analytically
-(column means), so only the per-species variances and the loadings are optimised.
+`fit_gaussian_gllvm`. With `X=nothing`, trait intercepts are profiled as row means of the `p × n`
+response matrix. Supply `X` of shape `(p, n, q)` to fit a complete fixed-effect
+design; no intercept is added automatically. Its `q` coefficients are profiled
+by generalized least squares at each covariance trial and returned in `fit.β`.
+Explicit designs use L-BFGS with direct covariance Cholesky (O(p³) factorization)
+to avoid cancellation near a zero residual variance; the default intercept-only
+path can use EM. A
+zero-column design specifies zero mean; nonfinite or rank-deficient designs
+are rejected. This is maximum likelihood, not REML.
+
+The development option `fixed_residual_sd=c` fits
+`Λ*Λ′ + Diagonal(ψ² .+ c^2)` and retains `fit.ψ²` (unique variances),
+`fit.φ²` (total diagonal variances) and `fit.fixed_residual_sd`. The fixed scale
+is not an estimated parameter. Positive `c` uses L-BFGS even with `method=:em`;
+the default `c=0` leaves the existing model unchanged. It does not automatically
+choose R's data-dependent small scale. The formula route is available with
+`family=Normal(), pervar=true`; R bridge and intervals for this decomposition
+remain unverified.
+
+```@example pervar_design
+using GLLVM, Random
+rng = MersenneTwister(7093)
+p, n = 4, 80
+site_x = collect(range(-1, 1; length=n))
+Y = [0.7, -0.4, 0.5, 0.3] * randn(rng, 1, n) .+
+    [0.5, 0.7, 0.9, 0.6] .* randn(rng, p, n) .+
+    1.2 .* reshape(site_x, 1, n)
+X = zeros(p, n, p + 1)
+for j in 1:p
+    X[j, :, j] .= 1                # one intercept per trait
+end
+X[:, :, end] .= reshape(site_x, 1, n)
+fit_x = fit_gaussian_pervar_gllvm(Y; K=1, X=X)
+@assert fit_x.converged # hide
+coef(fit_x)                        # p intercepts, then one shared slope
+```
+
+For example, a known residual SD of `0.2` is kept fixed while the unique
+variances and requested fixed effects are estimated:
+
+```@example pervar_design
+fit_fixed = fit_gaussian_pervar_gllvm(Y; K=1, X=X, fixed_residual_sd=0.2)
+@assert fit_fixed.converged # hide
+@assert isapprox(fit_fixed.φ², fit_fixed.ψ² .+ 0.2^2; atol=1e-12) # hide
+println("Fixed residual SD: ", fit_fixed.fixed_residual_sd)
+for (trait, variance) in enumerate(fit_fixed.ψ²)
+    println("Unique variance ", trait, ": ", round(variance; digits=4))
+end
+```
+
+The formula interface can build the same complete design. `y ~ 1 + site_x`
+includes one intercept per trait and a shared slope. `y ~ 0 + site_x` removes
+the intercepts; `y ~ 0` is a zero-mean model. Omitting the intercept marker
+(`y ~ site_x`) includes trait intercepts. This applies to `pervar=true`; the
+existing shared-variance formula route is unchanged. Complete long tables and
+categorical contrast choices use the same per-variance route.
+
+```@example pervar_design
+fit_formula = gllvm(@formula(y ~ 1 + site_x), Y, (site_x=site_x,);
+    family=GLLVM.Normal(), K=1, pervar=true, fixed_residual_sd=0.2)
+@assert fit_formula.converged # hide
+@assert isapprox(fit_formula.loglik, fit_fixed.loglik; atol=1e-7) # hide
+@assert isapprox(fit_formula.β, fit_fixed.β; atol=1e-6) # hide
+println("Formula coefficients: ", length(fit_formula.β))
+println("Formula/matrix likelihood agreement: ",
+    isapprox(fit_formula.loglik, fit_fixed.loglik; atol=1e-7))
+```
+
+The model with a fixed residual and unique effects is outside AGHQ Stage 1a's
+loadings-only domain. `aghq=3` or `aghq=:auto` therefore warns and retains the
+exact Gaussian/Laplace fit. `aghq=1` follows the same path without an ignored-
+request warning. No ridge or quadrature approximation is introduced, and the
+fit reports which method actually ran:
+
+```@example pervar_design
+fallback = gllvm(@formula(y ~ 1 + site_x), Y, (site_x=site_x,);
+    family=GLLVM.Normal(), K=1, pervar=true, fixed_residual_sd=0.2, aghq=3)
+@assert fallback.loglik == fit_formula.loglik # hide
+@assert fallback.ψ² == fit_formula.ψ² # hide
+println("Requested nodes: ", fallback.integration.requested_k)
+println("Actual integration: ", fallback.integration.actual)
+println("Reason: ", fallback.integration.reason)
+```
+
+The warning is intentional: requesting AGHQ does not remove the unique effects.
+Without the fixed-residual decomposition (`fixed_residual_sd=0`), the plain
+heteroscedastic AGHQ adapter remains unimplemented and reports the distinct
+reason `pervar_aghq_unimplemented`; this is not a verified R structural rejection.
+The default `aghq=false` leaves `integration=nothing`. Invalid node requests and
+integration controls fail clearly. These examples check model equivalence and
+reporting, not recovery or interval calibration.
 
 ### Mixed-family response vector — `fit_mixed_gllvm`
 
@@ -933,6 +1099,49 @@ probability), `:positive` / `:mean` (the value-part mean), and `:response` (the
 unconditional mean). `residuals` gives randomized-quantile (Dunn–Smyth) residuals
 under the correct two-part CDF.
 
+### ZIP / ZINB / ZIB — Julia-beyond, evidenced by recovery not parity
+
+`fit_zip_gllvm`, `fit_zinb_gllvm`, and `fit_zib_gllvm` are **Julia-beyond**
+capabilities: no `gllvmTMB` twin exists for any of the three at the frozen
+0.7.0 oracle, so there is nothing to run a parity comparison against (the
+maintainer has since decided the R side will gain `zip`/`zinb`/`zib` as
+native families, planned on the R side, no date set). The evidence backing
+these three fitters is therefore an **ADEMP simulation-based recovery**
+campaign, not a parity receipt
+(`docs/dev-log/core070/zi-ademp-recovery-findings.md`; K = 1 latent factor,
+intercept-only zero-inflation, i.e. `Λ_z = 0` by construction; 500 seeds per
+cell):
+
+| family | p | n | conv (n) | conv rate (MCSE) | βz bias mean/med | βz RMSE mean/med | βc bias mean/med | βc RMSE mean/med | Cerr med/p90 | fit_s med/max |
+|---|---|---|---|---|---|---|---|---|---|---|
+| zip  | 5  | 50  | 500/500 | 100.0% (0.00pp) | −1.213 / −0.342 | 2.834 / 0.901 | −0.177 / −0.173 | 0.467 / 0.455 | 1.245 / 2.035 | 1.09 / 4.69 |
+| zip  | 5  | 200 | 500/500 | 100.0% (0.00pp) | 0.001 / 0.056  | 0.486 / 0.356 | −0.033 / −0.032 | 0.179 / 0.173 | 0.466 / 0.774 | 4.19 / 10.11 |
+| zip  | 25 | 50  | **175/500** | **35.0% (2.13pp)** | −2.463 / −0.797 | 7.155 / 3.857 | −0.059 / −0.061 | 0.367 / 0.365 | 1.034 / 1.358 | 68.3 / 173.2 |
+| zip  | 25 | 200 | 481/500 | 96.2% (0.86pp) | 0.009 / 0.014  | 0.568 / 0.365 | 0.147 / 0.000 | 0.307 / 0.167 | 0.313 / 0.935 | 172.2 / 932.5 |
+| zinb | 5  | 50  | 500/500 | 100.0% (0.00pp) | −0.681 / 0.015 | 2.229 / 0.908 | −0.142 / −0.119 | 0.605 / 0.580 | 1.889 / 3.022 | 3.26 / 12.76 |
+| zinb | 5  | 200 | 496/500 | 99.2% (0.40pp) | −0.349 / 0.003 | 1.238 / 0.515 | −0.079 / −0.076 | 0.305 / 0.298 | 0.833 / 1.302 | 9.17 / 43.18 |
+| zinb | 25 | 50  | **350/500** | **70.0% (2.05pp)** | −0.981 / −0.419 | 4.457 / 3.487 | 0.009 / 0.004 | 0.468 / 0.458 | 1.483 / 1.906 | 129.8 / 373.7 |
+| zinb | 25 | 200 | 493/500 | 98.6% (0.53pp) | 0.237 / 0.131 | 0.493 / 0.448 | 0.262 / 0.036 | 0.434 / 0.239 | 0.435 / 0.951 | 162.3 / 1515.2 |
+| zib  | 5  | 50  | 500/500 | 100.0% (0.00pp) | 0.024 / 0.049 | 0.373 / 0.318 | −0.032 / −0.017 | 0.269 / 0.220 | 0.911 / 2.319 | 0.63 / 4.97 |
+| zib  | 5  | 200 | 500/500 | 100.0% (0.00pp) | 0.079 / 0.082 | 0.177 / 0.177 | 0.002 / 0.003 | 0.102 / 0.099 | 0.408 / 0.611 | 2.27 / 6.41 |
+| zib  | 25 | 50  | 500/500 | 100.0% (0.00pp) | −0.014 / −0.010 | 0.357 / 0.338 | −0.025 / −0.024 | 0.231 / 0.227 | 1.009 / 1.425 | 12.4 / 58.2 |
+| zib  | 25 | 200 | 500/500 | 100.0% (0.00pp) | 0.028 / 0.030 | 0.172 / 0.170 | −0.009 / −0.006 | 0.116 / 0.105 | 0.297 / 0.444 | 55.4 / 686.8 |
+
+**Small-n limitation, stated plainly.** `zib` recovers cleanly across the
+whole grid (100.0% convergence in all four cells). `zip` and `zinb` recover
+well except at the smallest-n/largest-p corner tested: **zip at p=25, n=50
+converges only 35.0% of the time**, and among the fits that do converge the
+zero-inflation intercept `βz` is badly biased (median −0.80, RMSE median
+3.86); **zinb at the same corner converges 70.0% of the time**, with a
+similarly degraded `βz`. The count/conditional part (`βc`) and the
+rotation-invariant loading crossproduct stay reasonable at that corner — the
+difficulty is concentrated in the zero-inflation intercept, not a global fit
+collapse. Treat `zip`/`zinb` at `p ≈ 25, n ≈ 50` as a documented limitation,
+not a supported capability. This campaign used K = 1 and intercept-only
+zero-inflation only, evaluated point-estimate bias/RMSE and the fitter's own
+convergence gate — **no coverage or SE evaluation was done**, so it says
+nothing about interval calibration for any of the three families.
+
 ## Extractors
 
 The same post-fit extractors (`communality`, `correlation`, `sigma_y_site`, …)
@@ -944,6 +1153,6 @@ correlation(fit)   # cross-response correlation matrix
 getLV(fit)         # latent variable scores (sites × K)
 ```
 
-See [Working with a fit](/working-with-a-fit) for the full extractor reference.
+See [Working with a fit](working-with-a-fit.md) for the full extractor reference.
 
-See also: [Get started](/quickstart) · [Covariance and correlation](/covariance-correlation) · [Reference](/api).
+See also: [Get started](quickstart.md) · [Covariance and correlation](covariance-correlation.md) · [Reference](api.md).

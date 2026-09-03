@@ -1,0 +1,543 @@
+# Receipted batch that converts the 20 BLOCKED_NEEDS_JULIA_SURFACE ledger
+# rows in docs/dev-log/core070/required-source-case-map.json whose surfaces
+# were JUST implemented by the extractors slice (src/extractors.jl, Cluster
+# 1) and the derived-CI slice (src/confint_derived_wald.jl /
+# src/confint_derived.jl / src/twolevel.jl, Cluster 2) -- see
+# docs/dev-log/core070/extractors-slice-notes.md and
+# docs/dev-log/core070/derived-ci-slice-notes.md for what those two slices
+# shipped. The exact 41-row target list (20 executable here + 21 deferred with
+# reasons) is pinned VERBATIM in
+# docs/dev-log/core070/surface-conversion-batch-contract.json
+# (`target_source_ids`).
+#
+# Design mirrors tools/core070_inference_remainder_batch.R: THIS R process
+# (the one with the frozen gllvmTMB library loaded) does 100% of the live
+# R-side computation -- fits three canonical small fixtures
+# (gaussian_small, twolevel_small, ordinal_small; gaussian_small and
+# ordinal_small are reused VERBATIM from
+# tools/core070_inference_remainder_batch.R and
+# test/parity/test_ordinal_probit_parity.jl respectively, so the same seeds
+# and true parameters are shared across batches) -- and calls each case's R
+# accessor. It hands the Julia child a plain JSON oracle; the Julia child
+# (tools/core070_surface_conversion_batch.jl) fits the SAME three fixtures
+# NATIVELY (independent optimiser run on the same simulated Y, not a replay
+# of R's numbers) and calls the corresponding NEW Julia surface, comparing
+# at the contract's per-case tolerance. REPAIR (2026-09-01,
+# wave5-conversion4): every quantity here is a transform of parameters from
+# TWO INDEPENDENT model fits (R's TMB optimiser, Julia's LBFGS), never the
+# same fitted numbers passed through a single deterministic transform -- so
+# every point quantity uses the SAME 1e-4 paired-independent-fit tolerance
+# (an earlier, miscalibrated 1e-6 "same-process closed-form" tier was
+# removed after EXTRACT-SIGMA/EXTRACT-SIGMA-TABLE failed at max_abs_diff
+# 2.42e-6, exactly the drift scale two independent optimiser runs produce).
+# CI endpoint cases use 1e-3. The one Monte-Carlo bootstrap-CI case
+# (icc_ci_bootstrap / CI-ROUTE-011) carries NO numeric tolerance at all --
+# it is a `kind = "bootstrap_structural"` case instead (see below).
+#
+# argv:
+#   Rscript --vanilla tools/core070_surface_conversion_batch.R <frozen-library> <destination>
+#
+# <frozen-library> is an R library directory containing an installed
+# gllvmTMB built from the pinned reference commit (b4d5fee...).
+# <destination> must not already exist.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+frozen_library <- normalizePath(args[[1]], mustWork = TRUE)
+output_dir <- args[[2]]
+stopifnot(!dir.exists(output_dir))
+dir.create(output_dir, recursive = TRUE)
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+.libPaths(c(frozen_library, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(normalizePath(find.package("gllvmTMB")) ==
+          normalizePath(file.path(frozen_library, "gllvmTMB")))
+
+root <- normalizePath(".")
+contract_path <- file.path(root, "docs/dev-log/core070/surface-conversion-batch-contract.json")
+if (!file.exists(contract_path)) {
+  stop("FATAL: contract not found at ", contract_path, " -- refusing to run with no state.")
+}
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(
+  identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
+  identical(contract$status, "FROZEN_SURFACE_CONVERSION_BATCH_CONTRACT"),
+  length(contract$cases) == contract$expected_case_count,
+  contract$expected_case_count == 20L,
+  length(contract$deferred) == contract$expected_deferred_count,
+  contract$expected_deferred_count == 21L,
+  length(contract$negative_controls) >= 2L
+)
+
+# ---------------------------------------------------------------------------
+# Fixture 1: gaussian_small -- verbatim from
+# tools/core070_inference_remainder_batch.R.
+# ---------------------------------------------------------------------------
+set.seed(42)
+p <- 5L; K <- 2L; n <- 80L
+Lambda_true <- matrix(c(
+  0.8,  0.0,
+  0.5,  0.6,
+  0.3, -0.4,
+ -0.2,  0.5,
+  0.1,  0.3
+), nrow = p, ncol = K, byrow = TRUE)
+sigma_true <- 0.7
+eta_g <- matrix(rnorm(K * n), nrow = K, ncol = n)
+Y_g <- Lambda_true %*% eta_g + sigma_true * matrix(rnorm(p * n), nrow = p, ncol = n)
+Y_g <- Y_g - rowMeans(Y_g)
+
+trait_names <- paste0("t", seq_len(p))
+df_g <- data.frame(
+  site  = factor(rep(seq_len(n), each = p)),
+  trait = factor(rep(trait_names, times = n), levels = trait_names),
+  value = as.vector(Y_g)
+)
+fit_g <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+  data = df_g, unit = "site", trait = "trait", family = gaussian(),
+  control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_g))
+
+# ---------------------------------------------------------------------------
+# Fixture 2: twolevel_small -- genuine two-tier fit, copied verbatim (call
+# shape) from .unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R's
+# own @examples: value ~ 0+trait+latent(0+trait|site,d=1)+latent(0+trait|site_species,d=1),
+# unit="site", unit_obs="site_species". REPAIR (2026-09-01): a first attempt
+# in this file passed unit="site_species" alone (no unit_obs), which the
+# frozen engine rejected -- "Unsupported grouping 'site' and 'site' for
+# rr()/diag() ... if you meant the within-unit grouping, pass
+# unit_obs='site'" (Totoro wave5-conversion, no receipt). Both unit AND
+# unit_obs must be passed, exactly as the doc example shows.
+# ---------------------------------------------------------------------------
+set.seed(1)
+p_tl <- 4L; n_ind <- 30L; reps <- 4L
+n_tl <- n_ind * reps
+Lambda_B_true <- matrix(c(0.7, 0.4, -0.3, 0.5), ncol = 1L)
+Lambda_W_true <- matrix(c(0.3, 0.5, 0.4, -0.2), ncol = 1L)
+individual <- rep(seq_len(n_ind), each = reps)
+b_true <- matrix(rnorm(n_ind), nrow = 1L)                # 1 x n_ind between score
+w_true <- matrix(rnorm(n_tl), nrow = 1L)                 # 1 x n_tl within score
+Y_tl <- Lambda_B_true %*% b_true[, individual, drop = FALSE] +
+        Lambda_W_true %*% w_true +
+        0.3 * matrix(rnorm(p_tl * n_tl), nrow = p_tl)
+Y_tl <- Y_tl - rowMeans(Y_tl)
+
+tl_trait_names <- paste0("t", seq_len(p_tl))
+df_tl <- data.frame(
+  site         = factor(rep(individual, each = p_tl)),
+  site_species = factor(rep(seq_len(n_tl), each = p_tl)),
+  trait        = factor(rep(tl_trait_names, times = n_tl), levels = tl_trait_names),
+  value        = as.vector(Y_tl)
+)
+fit_tl <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = 1) +
+    latent(0 + trait | site_species, d = 1),
+  data = df_tl, unit = "site", unit_obs = "site_species", trait = "trait",
+  family = gaussian(),
+  control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_tl))
+
+# ---------------------------------------------------------------------------
+# Fixture 3: ordinal_small -- verbatim from
+# test/parity/test_ordinal_probit_parity.jl.
+# ---------------------------------------------------------------------------
+set.seed(46)
+p_o <- 5L; K_o <- 1L; n_o <- 60L; C_o <- 3L
+beta_o <- c(0.30, -0.20, 0.15, -0.10, 0.05)
+Lambda_o <- matrix(c(0.8, 0.5, 0.3, -0.2, 0.1), ncol = 1L)
+tau_o <- c(0.0, 0.75)
+Z_o <- matrix(rnorm(K_o * n_o), nrow = K_o)
+eta_o <- beta_o + Lambda_o %*% Z_o
+pnorm_thresh <- function(x) pnorm(x)
+Y_o <- matrix(NA_integer_, p_o, n_o)
+for (s in seq_len(n_o)) for (t in seq_len(p_o)) {
+  u <- runif(1)
+  f1 <- pnorm_thresh(tau_o[1] - eta_o[t, s])
+  f2 <- pnorm_thresh(tau_o[2] - eta_o[t, s])
+  Y_o[t, s] <- if (u < f1) 1L else if (u < f2) 2L else 3L
+}
+o_trait_names <- paste0("t", seq_len(p_o))
+df_o <- data.frame(
+  site  = factor(rep(seq_len(n_o), each = p_o)),
+  trait = factor(rep(o_trait_names, times = n_o), levels = o_trait_names),
+  value = as.vector(Y_o)
+)
+fit_o <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K_o, unique = FALSE),
+  data = df_o, unit = "site", trait = "trait", family = ordinal_probit(),
+  control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_o))
+
+# ---------------------------------------------------------------------------
+# Per-quantity R oracle computation. Each function returns a flat numeric
+# vector (or NULL for the refusal_pair case, which is checked separately).
+# Wrapped in tryCatch so a case that genuinely cannot be computed on the
+# frozen library shows up as an explicit oracle_error rather than a
+# fabricated pass.
+# ---------------------------------------------------------------------------
+# REPAIR (2026-09-01, wave5-conversion3 silent-coverage failure): every
+# branch below was re-derived by reading the cited R source function
+# directly (not the case-plan prose) -- see
+# docs/dev-log/core070/surface-conversion-notes.md's "Repair 2" section for
+# the per-quantity diff against the first (buggy) version. Ten quantities
+# whose R accessor turned out to gate on a fit shape this batch's fixtures
+# do not have (a confirmatory lambda_constraint pin, a multinomial trait, a
+# diagonal Psi_t component, or an R return shape this batch could not
+# safely re-derive without a live R session) were REMOVED from this
+# dispatcher and moved to the contract's `deferred` bucket instead of
+# guessed at.
+# ---------------------------------------------------------------------------
+r_quantity <- function(quantity) {
+  switch(quantity,
+    # tcrossprod(L) = L %*% t(L) = Lambda Lambda^T (p x p) is the
+    # rotation-invariant Gram matrix. crossprod(L) = t(L) %*% L (d x d) is
+    # NOT rotation-invariant in general ((Lambda R)^T(Lambda R) = R^T
+    # Lambda^T Lambda R != Lambda^T Lambda for an orthogonal R that doesn't
+    # commute with it) -- the first attempt used crossprod() here, which
+    # compared a basis-dependent quantity across two independently-rotated
+    # fits and violated the never-compare-signed-loadings rule just as
+    # badly as comparing raw Lambda would. REPAIR (2026-09-01,
+    # wave5-conversion4): tcrossprod(), matching the p x p invariant
+    # documented for every other Sigma-shaped quantity in this file.
+    loadings_crossprod = as.numeric(tcrossprod(getLoadings(fit_g))),
+    lv_predictor = as.numeric(as.matrix(fit_g$report$Lambda_B) %*%
+                               t(as.matrix(getLV(fit_g)))),
+    sigma_unit_total = as.numeric(extract_Sigma(fit_g, level = "unit", part = "total")$Sigma),
+    sigma_table = {
+      # extract_Sigma_table()'s numeric column is `estimate`, not `value`
+      # (confirmed by reading extract-sigma-table.R's data.frame() call).
+      t <- extract_Sigma_table(fit_g, level = "unit", part = "total")
+      t <- t[order(t$trait_i, t$trait_j), ]
+      as.numeric(t$estimate)
+    },
+    # correlations (postfit/POSTFIT-SURFACE-extract_correlations) is NOT
+    # computed here -- deferred (see contract.deferred, REPAIR
+    # 2026-09-01 wave5-conversion5): traced both definitions to source like
+    # extract_communality. GLLVM.jl's extract_correlations(fit) =
+    # correlation(fit) (src/confint_derived.jl) standardises by
+    # sigma_y_site(fit), the FULL total variance INCLUDING sigma_eps^2. R's
+    # extract_Sigma(fit, level="unit", part="total")$R (the route this
+    # quantity used, since extract_correlations() itself returns an
+    # un-coercible long-format table) standardises by the "unit" (B) TIER
+    # total only, which never includes sigma_eps^2 for a Gaussian fit --
+    # the same tier-scoped-vs-total-variance estimand mismatch as
+    # extract_communality (observed max_abs_diff 0.668, consistent with
+    # comparing a shared-only correlation structure against a
+    # residual-diluted one).
+    # REPAIR (2026-09-01, wave5-conversion4: r_len=0 on both residual_cov
+    # and residual_cor). getResidualCov/getResidualCor(fit, level="unit")
+    # is the R DEFAULT (output-methods.R: `level = "unit"`); the first
+    # attempt deliberately passed level="unit_obs" to avoid duplicating
+    # sigma_unit_total's content, but gaussian_small has NO unit_obs/W-tier
+    # block at all (K_W = 0, unique = FALSE) -- .extract_Sigma_legacy_payload()
+    # returns NULL/empty for a tier the fit does not carry, by design, not a
+    # bug. Switched to the R default level="unit": still a genuine,
+    # non-empty exercise of the getResidualCov/getResidualCor/
+    # extract_residual_cov/extract_residual_cor Julia surfaces (R's own
+    # default tier for this accessor family), even though its VALUE
+    # coincides with sigma_unit_total's on a single-tier fixture -- that
+    # coincidence is a property of this fixture's shape, not evidence the
+    # surface is untested.
+    residual_cov = as.numeric(extract_residual_cov(fit_g, level = "unit")),
+    residual_cor = as.numeric(extract_residual_cor(fit_g, level = "unit")),
+    ordination_sites = {
+      # extract_ordination(fit, level, component) takes NO data argument
+      # (confirmed by reading extractors.R's formal args) and returns
+      # $scores, not $sites.
+      ord <- extract_ordination(fit_g)
+      as.numeric(rowSums(as.matrix(ord$scores)^2))
+    },
+    # proportions (postfit/POSTFIT-SURFACE-extract_proportions) is NOT
+    # computed here -- deferred (see contract.deferred, REPAIR
+    # 2026-09-01 wave5-conversion5): SAME estimand mismatch as
+    # extract_communality, exactly (observed max_abs_diff 0.8713, the
+    # identical value communality failed at). extract_proportions()'s
+    # "shared_unit" component's `proportion` column has denominator
+    # total <- rowSums(M), where M only ever contains the tier-scoped
+    # components R's system tracks (shared_unit here, since
+    # gaussian_small has no diag_B/W/link_residual) -- sigma_eps^2 is not
+    # one of them, so on this fixture proportion == shared_unit/shared_unit
+    # == 1.0 for every trait, degenerate for the same reason
+    # extract_communality degenerates. GLLVM.jl's
+    # extract_proportions(fit; component=:shared) IS mathematically
+    # identical to communality(fit) (both ΛΛ^T[t,t] / sigma_y_site(fit)[t,t],
+    # the FULL total-variance denominator) -- confirming this is the exact
+    # same cross-engine estimand mismatch, not a second independent bug.
+    # omega (postfit/POSTFIT-SURFACE-extract_Omega) is NOT computed here --
+    # deferred (see contract.deferred, REPAIR 2026-09-01 wave5-conversion6):
+    # traced both compositions to source. R's extract_Omega() sums ONLY the
+    # tiers the fit actually carries (tiers <- character(0); "B" appended
+    # iff fit$use$rr_B||diag_B, "W" appended iff fit$use$rr_W||diag_W, "phy"
+    # iff phylo_rr||phylo_diag), each tier read via extract_Sigma(level=tier,
+    # part="total", link_residual="none"). gaussian_small has NO W-tier
+    # (rr_W=FALSE, diag_W=FALSE), so R's tiers = "B" only -> Omega =
+    # Lambda_B Lambda_B^T exactly, sigma_eps^2 never enters (it is not one
+    # of the B/W/phy tiers R's system tracks; the Gaussian family's
+    # link_residual_per_trait() contributes 0 to the diagonal separately).
+    # GLLVM.jl's extract_Omega(fit::GllvmFit) UNCONDITIONALLY sums
+    # extract_Sigma(level=:unit,...).Sigma .+ extract_Sigma(level=:unit_obs,...).Sigma
+    # (src/extractors.jl) -- and extract_Sigma(level=:unit_obs, part=:total)
+    # ALWAYS adds sigma_eps^2*I as a baseline term (src/extractors.jl's
+    # _sigma_unit_obs: "Sigma = Sigma + (fit.pars.sigma_eps^2) * I"),
+    # regardless of whether a genuine W-tier exists. So Julia's Omega on
+    # gaussian_small = Lambda_B Lambda_B^T + sigma_eps^2*I, differing from
+    # R's by exactly sigma_eps^2 on the diagonal -- confirmed: observed
+    # max_abs_diff (0.467, wave5-conversion6) is diagonal-scale and close to
+    # sigma_true^2=0.49, matching this trace exactly. No Julia-side argument
+    # selects a narrower composition (extract_Omega(fit::GllvmFit) takes NO
+    # tiers/level/link_residual kwargs at all, unlike getResidualCov's
+    # alignable level= argument) -- there is no call fix available. Tried
+    # sourcing the R comparand as extract_Sigma(level="unit_obs",...)$Sigma
+    # directly instead of extract_Omega() (mirroring the extract_correlations
+    # substitution in Repair 2): R's own tier-existence gate returns NULL for
+    # level="unit_obs" on this single-tier fixture (same gate that produced
+    # wave5-conversion4's residual_cov r_len=0), so R's tier system has no
+    # way to express "the Gaussian residual variance" independent of a
+    # genuine W-tier at all -- the same structural gap already deferred for
+    # extract_communality/extract_correlations/extract_proportions. REPAIR
+    # (2026-09-01): moved to deferred[], joining the estimand-alignment
+    # family.
+    # REPAIR (2026-09-01, wave5-conversion5: R returned empty on
+    # gaussian_small). extract_ICC_site()'s vB/vW ratio needs BOTH a
+    # "unit" (B) tier AND a "unit_obs" (W) tier to be non-degenerate;
+    # gaussian_small (K_W=0, single-tier) has no W tier at all, so the
+    # accessor is not properly defined there -- this is a FIXTURE
+    # reassignment, not a call bug (per the coordinator's directive):
+    # icc_site is now computed on fit_tl (twolevel_small), which has both
+    # tiers by construction. Julia's extract_ICC_site(fit::TwoLevelFit) is
+    # itself defined as `= extract_repeatability(fit)` (src/extractors.jl),
+    # so this case is now numerically the SAME quantity as
+    # repeatability_point on the SAME fixture -- an intentional
+    # consequence of R's and Julia's own within-engine equivalence, not
+    # redundant test design.
+    icc_site = as.numeric(extract_ICC_site(fit_tl)),
+    repeatability_point = {
+      # extract_repeatability()'s point-estimate column is `R`, not
+      # `estimate` (confirmed by reading extract-repeatability.R's
+      # data.frame() call in both the wald and bootstrap branches).
+      as.numeric(extract_repeatability(fit_tl)$R)
+    },
+    icc_ci_default = {
+      # confint(fit, parm="icc", ...) returns a 2-column MATRIX (columns
+      # named via .confint_colnames(), e.g. "2.5 %"/"97.5 %"), not a
+      # list/data.frame with $lower/$upper fields -- confirmed by reading
+      # .confint_icc()'s `out <- cbind(...)` in z-confint-gllvmTMB.R.
+      ci <- confint(fit_tl, parm = "icc", level = 0.95)
+      as.numeric(c(ci[, 1L], ci[, 2L]))
+    },
+    icc_ci_wald = {
+      ci <- confint(fit_tl, parm = "icc", method = "wald", level = 0.95)
+      as.numeric(c(ci[, 1L], ci[, 2L]))
+    },
+    # icc_ci_bootstrap (CI-ROUTE-011) is NOT computed here -- it is a
+    # `kind = "bootstrap_structural"` case, handled by its own code path
+    # below (not via r_quantity()/oracle_values at all): n_boot=200
+    # percentile-bootstrap endpoints from two INDEPENDENT stochastic
+    # simulate-refit procedures carry too much Monte Carlo error for a
+    # numeric endpoint-distance comparison to be meaningful (REPAIR
+    # 2026-09-01, wave5-conversion4: observed 0.52 vs the already-loose
+    # 0.05 bar). See "Structural bootstrap-CI cases" below.
+    cutpoints = as.numeric(extract_cutpoints(fit_o)$tau_estimate),
+    stop("BOGUS_QUANTITY: no dispatcher entry for '", quantity, "'")
+  )
+}
+
+oracle_values <- list()
+oracle_errors <- list()
+for (cs in contract$cases) {
+  if (identical(cs$kind, "refusal_pair")) {
+    res <- tryCatch({
+      confint(fit_tl, parm = "icc", method = "profile", level = 0.95)
+      list(raised = FALSE, message = "")
+    }, error = function(e) list(raised = TRUE, message = conditionMessage(e)))
+    oracle_values[[cs$case_id]] <- list(raised = res$raised, message = res$message)
+    next
+  }
+  if (identical(cs$kind, "bootstrap_structural")) {
+    # Structural (not numeric-distance) check: finite endpoints, ordered
+    # (lower <= upper), and the interval brackets THIS engine's own
+    # repeatability point estimate (from the numerically-stable wald
+    # route, extract_repeatability(method="wald")$R -- the same point
+    # estimate the repeatability_point / icc_ci_wald cases already use).
+    v <- tryCatch({
+      ci <- confint(fit_tl, parm = "icc", method = "bootstrap", level = 0.95, nsim = 200)
+      lower <- as.numeric(ci[, 1L]); upper <- as.numeric(ci[, 2L])
+      point <- as.numeric(extract_repeatability(fit_tl, method = "wald")$R)
+      list(
+        ok = TRUE,
+        lower = lower, upper = upper, point = point,
+        finite = all(is.finite(lower)) && all(is.finite(upper)),
+        ordered = all(lower <= upper),
+        brackets_point = all(lower <= point & point <= upper)
+      )
+    }, error = function(e) list(ok = FALSE, error = conditionMessage(e)))
+    if (isTRUE(v$ok)) {
+      oracle_values[[cs$case_id]] <- v[c("lower", "upper", "point", "finite", "ordered", "brackets_point")]
+    } else {
+      oracle_errors[[cs$case_id]] <- v$error
+    }
+    next
+  }
+  v <- tryCatch(list(ok = TRUE, value = r_quantity(cs$quantity), error = ""),
+                error = function(e) list(ok = FALSE, value = NULL, error = conditionMessage(e)))
+  if (isTRUE(v$ok)) {
+    oracle_values[[cs$case_id]] <- v$value
+  } else {
+    oracle_errors[[cs$case_id]] <- v$error
+  }
+}
+
+# ---------------------------------------------------------------------------
+# LOUD coverage check (REPAIR 2026-09-01, wave5-conversion3): every case in
+# contract$cases must have produced EITHER an oracle_values entry OR an
+# oracle_errors entry -- an accessor error caught by the tryCatch above is
+# recorded, never silently dropped. If any case_id is missing from BOTH,
+# stop() here and list every missing case_id, BEFORE invoking the Julia
+# child (which previously hard-erred instead on the first missing key,
+# hiding the other silent gaps behind a single opaque crash).
+# ---------------------------------------------------------------------------
+all_contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+accounted_for <- union(names(oracle_values), names(oracle_errors))
+missing_case_ids <- setdiff(all_contract_case_ids, accounted_for)
+if (length(missing_case_ids) > 0L) {
+  stop(
+    "FATAL: ", length(missing_case_ids), " contract case(s) produced NEITHER an ",
+    "oracle_values entry NOR an oracle_errors entry (a silent-coverage defect in ",
+    "r_quantity()'s switch() -- every case must compute or loudly fail, never both ",
+    "silently skip). Missing case_id(s):\n  ",
+    paste(missing_case_ids, collapse = "\n  ")
+  )
+}
+
+# --- negative controls: a bogus quantity key and a bogus fixture key must
+#     both be rejected before the tape (never silently skipped). ---
+neg_bogus_quantity <- tryCatch({ r_quantity("this_quantity_does_not_exist"); list(rejected = FALSE) },
+                                error = function(e) list(rejected = TRUE, message = conditionMessage(e)))
+neg_wrong_fixture <- list(
+  rejected = !("bogus_fixture_key" %in% names(contract$fixtures)),
+  message = "bogus_fixture_key absent from contract$fixtures"
+)
+
+# ---------------------------------------------------------------------------
+# Write the oracle JSON for the Julia child.
+# ---------------------------------------------------------------------------
+oracle_path <- file.path(output_dir, "r-oracle.json")
+jsonlite::write_json(
+  list(
+    schema = "core070-surface-conversion-r-oracle/v1",
+    gaussian_small = list(p = p, K = K, n = n, y = as.numeric(Y_g)),
+    twolevel_small = list(p = p_tl, n_individual = n_ind, reps_per_individual = reps,
+                          individual = individual, y = as.numeric(Y_tl)),
+    ordinal_small = list(p = p_o, K = K_o, n = n_o, C = C_o, y = as.integer(as.vector(Y_o))),
+    oracle_values = oracle_values,
+    oracle_errors = oracle_errors,
+    negative_controls = list(
+      bogus_quantity = neg_bogus_quantity,
+      wrong_fixture = neg_wrong_fixture
+    )
+  ),
+  oracle_path, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 17
+)
+
+# ---------------------------------------------------------------------------
+# Invoke the Julia child, env pass-through (matches
+# tools/core070_inference_remainder_batch.R's convention).
+# ---------------------------------------------------------------------------
+julia_out <- file.path(output_dir, "julia-results.json")
+julia_env <- c(CORE070_SURFACE_CONVERSION_R_ORACLE = oracle_path)
+julia_bin <- Sys.which("julia")
+stopifnot(nzchar(julia_bin))
+old_env <- Sys.getenv(names(julia_env), unset = NA, names = TRUE)
+do.call(Sys.setenv, as.list(julia_env))
+t0 <- Sys.time()
+julia_status <- tryCatch(
+  system2(julia_bin, c("--project=.", "tools/core070_surface_conversion_batch.jl", julia_out),
+          stdout = file.path(output_dir, "julia-stdout.log"),
+          stderr = file.path(output_dir, "julia-stderr.log")),
+  finally = {
+    unset <- names(old_env)[is.na(old_env)]
+    if (length(unset)) Sys.unsetenv(unset)
+    set <- old_env[!is.na(old_env)]
+    if (length(set)) do.call(Sys.setenv, as.list(set))
+  }
+)
+elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+
+julia_report <- if (file.exists(julia_out)) {
+  jsonlite::read_json(julia_out, simplifyVector = FALSE)
+} else NULL
+
+contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+
+results_ok <- !is.null(julia_report) &&
+  identical(julia_status, 0L) &&
+  identical(julia_report$status, "PASS") &&
+  isTRUE(julia_report$all_checks) &&
+  isTRUE(julia_report$negative_controls_behaved_as_expected)
+
+cases_seen <- if (!is.null(julia_report)) names(julia_report$cases) else character(0)
+missing_case_ids <- setdiff(contract_case_ids, cases_seen)
+extra_case_ids <- setdiff(cases_seen, contract_case_ids)
+results_ok <- results_ok && length(missing_case_ids) == 0 && length(extra_case_ids) == 0
+
+raw_lines <- vapply(contract_case_ids, function(id) {
+  pass <- !is.null(julia_report) && id %in% names(julia_report$cases) &&
+    isTRUE(julia_report$cases[[id]]$pass)
+  paste(id, if (pass) "PASS" else "FAIL", "surface_conversion", sep = "\t")
+}, character(1))
+raw_path <- file.path(output_dir, "results.tsv")
+writeLines(raw_lines, raw_path)
+
+diag_lines <- character(0)
+if (!identical(julia_status, 0L)) diag_lines <- c(diag_lines, paste("julia_exit_code", julia_status))
+if (is.null(julia_report)) diag_lines <- c(diag_lines, "julia-results.json was not written")
+if (length(oracle_errors)) {
+  for (id in names(oracle_errors)) {
+    diag_lines <- c(diag_lines, paste0("oracle_error[", id, "]: ", oracle_errors[[id]]))
+  }
+}
+if (length(missing_case_ids)) diag_lines <- c(diag_lines, paste("missing_case_ids:", paste(missing_case_ids, collapse = ", ")))
+if (length(extra_case_ids)) diag_lines <- c(diag_lines, paste("extra_case_ids:", paste(extra_case_ids, collapse = ", ")))
+diag_path <- file.path(output_dir, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+receipt <- list(
+  status = if (isTRUE(results_ok) && length(oracle_errors) == 0L) "PASS" else "FAIL",
+  scope = "CORE070_SURFACE_CONVERSION_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_unchanged = TRUE,
+  target_source_ids = contract$target_source_ids,
+  case_count = contract$expected_case_count,
+  deferred_count = contract$expected_deferred_count,
+  expected_case_ids = contract_case_ids,
+  oracle_error_count = length(oracle_errors),
+  julia_exit_code = julia_status,
+  julia_elapsed_seconds = elapsed,
+  julia_results_sha256 = if (file.exists(julia_out)) sha256_file(julia_out) else NA_character_,
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_version = R.version.string,
+  gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+  frozen_library = frozen_library
+)
+receipt_path <- file.path(output_dir, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+cat("CORE070_SURFACE_CONVERSION_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (identical(receipt$status, "PASS")) 0L else 1L)

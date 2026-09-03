@@ -52,6 +52,11 @@ const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, _GroupedDis
 #   kinds    — :linear (β, Λ) or :log (a log-scale dispersion: r / φ / α)
 #   simulate — rng -> Yᵇ (a fresh parametric draw from the fitted model)
 #   refit    — Yᵇ -> working vector θ̂ᵇ (or `nothing` on refit failure)
+#   boundary — per-parameter KNOWN-boundary flag (T14 F1, 2026-09-02): true at
+#              positions carried over from a fit's own `dispersion_boundary`
+#              (grouped NB2/NB1/Beta/Gamma). Defaults to all-`false` via the
+#              6-arg constructor below, so every pre-existing `_FamilyCI(...)`
+#              call site is unaffected.
 # ---------------------------------------------------------------------------
 struct _FamilyCI
     θ::Vector{Float64}
@@ -60,7 +65,11 @@ struct _FamilyCI
     kinds::Vector{Symbol}
     simulate::Function
     refit::Function
+    boundary::Vector{Bool}
 end
+
+_FamilyCI(θ, nll, names, kinds, simulate, refit) =
+    _FamilyCI(θ, nll, names, kinds, simulate, refit, falses(length(θ)))
 
 # Shared GLM term names: β[t] for t in 1:p, then Λ[i,k] in pack_lambda order.
 _glm_lin_names(p::Integer, K::Integer) =
@@ -79,8 +88,26 @@ end
 # --- Poisson ---------------------------------------------------------------
 function _family_ci(fit::PoissonFit, Y::AbstractMatrix;
                     mask = nothing,
-                    objective::Symbol = :laplace,
+                    objective::Symbol = :fit,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    if _is_poisson_aghq(fit)
+        objective in (:fit,:aghq) || throw(ArgumentError("AGHQ inference must use objective=:fit; Laplace/VA would change the estimator"))
+        q,_=_poisson_aghq_problem(fit,Y;mask=mask,require_identity=true)
+        i=fit.integration;p,K=size(fit.Λ);n=size(Y,2)
+        theta=copy(fit.theta_packed);nll=t->q.objective(t,i.caches)
+        draw=rng->_poisson_aghq_simulate(fit,n;rng=rng)
+        refit=function(Yb)
+            fb=try
+                fit_poisson_gllvm(Yb;_poisson_aghq_refit_kwargs(fit)...)
+            catch e
+                e isa InterruptException && rethrow()
+                return nothing
+            end
+            return _is_poisson_aghq(fb) && fb.converged ? copy(fb.theta_packed) : nothing
+        end
+        return _FamilyCI(theta,nll,_glm_lin_names(p,K),fill(:linear,length(theta)),draw,refit)
+    end
+    objective===:fit && (objective=:laplace)
     fit.alpha_lv === nothing || throw(ArgumentError(
         "confint for fit_poisson_gllvm(...; X_lv=...) is not carried by confint(fit, Y); " *
         "use confint_lv_effects(fit, Y, X_lv) for Wald intervals on B_lv, " *
@@ -113,8 +140,26 @@ end
 function _family_ci(fit::BinomialFit, Y::AbstractMatrix;
                     N::Union{Nothing, AbstractMatrix} = nothing,
                     mask = nothing,
-                    objective::Symbol = :laplace,
+                    objective::Symbol = :fit,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    if _is_binomial_aghq(fit)
+        objective in (:fit,:aghq) || throw(ArgumentError("AGHQ inference must use objective=:fit; Laplace/VA would change the estimator"))
+        q,_=_binomial_aghq_problem(fit,Y;N=N,mask=mask,require_identity=true)
+        i=fit.integration;p,K=size(fit.Λ);n=size(Y,2)
+        theta=copy(fit.theta_packed);nll=t->q.objective(t,i.caches)
+        draw=rng->_binomial_aghq_simulate(fit,n;rng=rng)
+        refit=function(Yb)
+            fb=try
+                fit_binomial_gllvm(Yb;_binomial_aghq_refit_kwargs(fit)...)
+            catch e
+                e isa InterruptException && rethrow()
+                return nothing
+            end
+            return _is_binomial_aghq(fb) && fb.converged ? copy(fb.theta_packed) : nothing
+        end
+        return _FamilyCI(theta,nll,_glm_lin_names(p,K),fill(:linear,length(theta)),draw,refit)
+    end
+    objective===:fit && (objective=:laplace)
     fit.alpha_lv === nothing || throw(ArgumentError(
         "confint for fit_binomial_gllvm(...; X_lv=...) is not carried by confint(fit, Y); " *
         "use confint_lv_effects(fit, Y, X_lv) for Wald intervals on B_lv, " *
@@ -386,7 +431,8 @@ function _family_ci(fit::NBGroupedFit, Y::AbstractMatrix;
     end
     names = _grouped_dispersion_names(p, K, "r", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + rr), fit.dispersion_boundary)   # T14 F1: trailing G entries are r[1..G]
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::NB1GroupedFit, Y::AbstractMatrix;
@@ -430,7 +476,8 @@ function _family_ci(fit::NB1GroupedFit, Y::AbstractMatrix;
     end
     names = _grouped_dispersion_names(p, K, "phi", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + rr), fit.dispersion_boundary)   # T14 F1: trailing G entries are phi[1..G]
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::BetaGroupedFit, Y::AbstractMatrix;
@@ -474,7 +521,8 @@ function _family_ci(fit::BetaGroupedFit, Y::AbstractMatrix;
     end
     names = _grouped_dispersion_names(p, K, "phi", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + rr), fit.dispersion_boundary)   # T14 F1: trailing G entries are phi[1..G]
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 # --- Grouped dispersion + shared site-X (NB2 / Beta API B under X) ---------
@@ -534,7 +582,8 @@ function _family_ci(fit::NBGroupedCovFit, Y::AbstractMatrix;
                  _confint_lambda_term_names("Lambda", p, K),
                  ["r[$g]" for g in 1:G])
     kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + q + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::NB1GroupedCovFit, Y::AbstractMatrix;
@@ -593,7 +642,8 @@ function _family_ci(fit::NB1GroupedCovFit, Y::AbstractMatrix;
                  _confint_lambda_term_names("Lambda", p, K),
                  ["phi[$g]" for g in 1:G])
     kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + q + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::BetaGroupedCovFit, Y::AbstractMatrix;
@@ -652,7 +702,8 @@ function _family_ci(fit::BetaGroupedCovFit, Y::AbstractMatrix;
                  _confint_lambda_term_names("Lambda", p, K),
                  ["phi[$g]" for g in 1:G])
     kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + q + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::BetaBinomialGroupedFit, Y::AbstractMatrix;
@@ -810,7 +861,8 @@ function _family_ci(fit::GammaGroupedFit, Y::AbstractMatrix;
     end
     names = _grouped_dispersion_names(p, K, "alpha", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 function _family_ci(fit::GammaGroupedCovFit, Y::AbstractMatrix;
@@ -869,7 +921,8 @@ function _family_ci(fit::GammaGroupedCovFit, Y::AbstractMatrix;
                  _confint_lambda_term_names("Lambda", p, K),
                  ["alpha[$g]" for g in 1:G])
     kinds = vcat(fill(:linear, p + q + rr), fill(:log, G))
-    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+    boundary = vcat(falses(p + q + rr), fit.dispersion_boundary)   # T14 F1
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 # Compound Poisson–Gamma draw from a Tweedie (1 < p < 2) with mean μ, dispersion
@@ -1927,23 +1980,91 @@ end
 # Natural-scale point estimate for entry i (exp() for log-scale dispersion).
 _family_estimate(ad::_FamilyCI, i::Integer) = ad.kinds[i] === :log ? exp(ad.θ[i]) : ad.θ[i]
 
+# T14 F1 (docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md), per-parameter Wald
+# degradation. When the FULL joint Hessian is not usable (Cholesky fails, or any
+# resulting variance is non-finite/non-positive), the previous behaviour NaN'd
+# EVERY parameter — including well-identified β/γ/Λ entries sharing a joint
+# Hessian with one degenerate direction (e.g. a grouped-dispersion trait at the
+# Poisson/near-Bernoulli/near-deterministic boundary, `dispersion_boundary`).
+# R's `sdreport` degrades per-block instead. This conditions the KNOWN-boundary
+# parameters (`known::Vector{Int}`, from a fit's own `dispersion_boundary` via
+# `ad.boundary`) out of the joint Hessian and, if the remaining sub-Hessian is
+# still not PD, greedily removes the remaining direction whose eigenvector has
+# the largest weight on the smallest eigenvalue — the same numerical PD test
+# (`isposdef`, a Cholesky attempt under the hood, i.e. the same machine-epsilon-
+# scale tolerance already used above) applied to a shrinking index set, rather
+# than a hand-rolled eigenvalue cutoff. Bounded to at most `m` iterations (can
+# drop at most every parameter, at which point the old all-NaN behaviour is
+# recovered exactly).
+function _wald_boundary_indices(Hsym::Symmetric, known::Vector{Int})
+    m = size(Hsym, 1)
+    idx = Set(known)
+    for _ in 1:m
+        rem = sort(setdiff(1:m, idx))
+        isempty(rem) && break
+        Hsub = Symmetric(Hsym[rem, rem])
+        isposdef(Hsub) && return sort(collect(idx))
+        vals, vecs = eigen(Hsub)
+        j = argmin(vals)
+        worst_local = argmax(abs.(view(vecs, :, j)))
+        push!(idx, rem[worst_local])
+    end
+    return sort(collect(idx))
+end
+
 # ---------------------------------------------------------------------------
 # Wald
 # ---------------------------------------------------------------------------
-function _family_wald(ad::_FamilyCI, sel::Vector{Int}, level::Real)
+function _family_wald(ad::_FamilyCI, sel::Vector{Int}, level::Real; hessian=nothing)
     m = length(ad.θ)
-    H = _fd_hessian(ad.nll, ad.θ)
-    pd = all(isfinite, H)
-    se = fill(NaN, m)
-    if pd
-        Σ = try inv(Symmetric((H .+ H') ./ 2)) catch; nothing end
-        if Σ === nothing
+    H = hessian===nothing ? _fd_hessian(ad.nll, ad.θ) : hessian
+    size(H)==(m,m) || throw(DimensionMismatch("Wald Hessian dimension mismatch"))
+    se=fill(NaN,m);pd=false
+    boundary_terms = String[]
+    if all(isfinite,H)
+        Hsym = Symmetric((H .+ H') ./ 2)
+        factor=try
+            cholesky(Hsym;check=true)
+        catch e
+            e isa InterruptException && rethrow()
+            nothing
+        end
+        if factor!==nothing
+            covariance=factor \ Matrix{Float64}(I,m,m)
+            variances=diag(covariance)
+            pd=all(v->isfinite(v) && v>0,variances)
+            pd && (se .= sqrt.(variances))
+        end
+        # T14 F1 (2026-09-03): a parameter the FIT flags as at a boundary
+        # (`dispersion_boundary`) is conditioned out even when the joint
+        # Hessian happens to be barely positive definite — otherwise a
+        # Poisson-limit dispersion gets a meaningless huge "finite" SE and an
+        # `Inf` bound, and the outcome flips with the optimizer's stopping
+        # point (the seed-523 regime A/B knife edge). `pd_hessian` is `false`
+        # whenever any term is conditioned out; R's sdreport NaNs that block.
+        if pd && any(ad.boundary)
             pd = false
-        else
-            for i in 1:m
-                v = Σ[i, i]
-                (isfinite(v) && v > 0) ? (se[i] = sqrt(v)) : (pd = false)
+            se .= NaN
+        end
+        if !pd
+            # `pd_hessian` keeps its existing meaning below (true only when the
+            # FULL joint Hessian's Cholesky succeeded with all-positive
+            # variances) — this branch only fills in what it can on top of the
+            # NaN default, it never flips `pd` back to true.
+            bidx = _wald_boundary_indices(Hsym, findall(ad.boundary))
+            rem = setdiff(1:m, bidx)
+            if !isempty(rem)
+                Hsub = Symmetric((H[rem, rem] .+ H[rem, rem]') ./ 2)
+                if isposdef(Hsub)
+                    Σsub = inv(Hsub)
+                    dΣ = diag(Σsub)
+                    for (k, i) in enumerate(rem)
+                        v = dΣ[k]
+                        (isfinite(v) && v > 0) && (se[i] = sqrt(v))
+                    end
+                end
             end
+            boundary_terms = ad.names[bidx]
         end
     end
     z = quantile(Normal(), 0.5 + level / 2)
@@ -1962,7 +2083,7 @@ function _family_wald(ad::_FamilyCI, sel::Vector{Int}, level::Real)
         end
     end
     return (term = term, estimate = est, lower = lo, upper = hi, se = ses,
-            method = :wald, pd_hessian = pd)
+            method = :wald, pd_hessian = pd, boundary_terms = boundary_terms)
 end
 
 # ---------------------------------------------------------------------------
@@ -2068,7 +2189,7 @@ end
 # Parametric bootstrap (optionally threaded)
 # ---------------------------------------------------------------------------
 function _family_bootstrap(ad::_FamilyCI, sel::Vector{Int}, level::Real,
-                           n_boot::Integer, seed::Integer, parallel::Bool)
+                           n_boot::Integer, seed::Integer, parallel::Bool; retain_replicates::Bool=false)
     m = length(ad.θ)
     reps = fill(NaN, n_boot, m)
     ok = fill(false, n_boot)   # Vector{Bool} (one byte/elt) — safe for concurrent distinct-index writes (a BitVector is not)
@@ -2109,8 +2230,9 @@ function _family_bootstrap(ad::_FamilyCI, sel::Vector{Int}, level::Real,
             push!(lo, NaN); push!(hi, NaN)
         end
     end
-    return (term = term, estimate = est, lower = lo, upper = hi,
+    result=(term = term, estimate = est, lower = lo, upper = hi,
             n_converged = count(ok), method = :bootstrap)
+    return retain_replicates ? merge(result,(replicates=reps,converged=ok,seed=seed,)) : result
 end
 
 # ---------------------------------------------------------------------------
@@ -2119,7 +2241,7 @@ end
 """
     confint(fit, Y; method = :wald, level = 0.95, parm = nothing, N = nothing,
             mask = nothing,
-            n_boot = 200, seed = 0, parallel = false, objective = :laplace,
+            n_boot = 200, seed = 0, parallel = false, objective = :fit,
             newton_maxiter = 100, newton_tol = 1e-9,
             profile_iterations = 200, profile_g_tol = 1e-4,
             profile_max_expand = 20, profile_max_bisect = 30) -> NamedTuple
@@ -2176,8 +2298,14 @@ natural (positive) scale.
 Binomial trial counts (default all-ones / Bernoulli).
 
 `objective` selects which marginal the Hessian is taken from. The default
-`:laplace` uses the negative Laplace marginal at the fit (the behaviour for all
-fit types). `:va` instead uses the negative variational (ELBO) marginal and is
+`:fit` uses the fitted AGHQ frozen-node objective for public Poisson AGHQ fits,
+and the existing Laplace objective otherwise. AGHQ Wald uses automatic
+second derivatives; profiles hold the final adaptation fixed, and bootstrap
+refits use the stored AGHQ controls. AGHQ results identify their objective;
+bootstrap additionally returns every packed replicate (NaN on failed refits)
+and convergence flag. These are functional inference routes, not a coverage
+validation. AGHQ rejects requests for Laplace or VA intervals to avoid changing
+the estimator silently. `:laplace` explicitly selects Laplace for other fits. `:va` instead uses the negative variational (ELBO) marginal and is
 available only for the scalar-μ GLM families (`PoissonFit`, `NBFit`,
 `BinomialFit`, `BetaFit`, `GammaFit`) with `method = :wald`; combine it with a VA
 fit (e.g. `fit_poisson_gllvm_va`) for VA-consistent standard errors. Masked
@@ -2200,7 +2328,7 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  n_boot::Integer = 200,
                  seed::Integer = 0,
                  parallel::Bool = false,
-                 objective::Symbol = :laplace,
+                 objective::Symbol = :fit,
                  newton_maxiter::Integer = 100,
                  newton_tol::Real = 1e-9,
                  profile_iterations::Integer = 200,
@@ -2208,8 +2336,11 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  profile_max_expand::Integer = 20,
                  profile_max_bisect::Integer = 30)
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
-    objective in (:laplace, :va) ||
-        throw(ArgumentError("objective must be :laplace or :va; got :$objective"))
+    is_aghq=_is_aghq_fit(fit)
+    objective===:fit && (objective=is_aghq ? :aghq : :laplace)
+    is_aghq && objective!==:aghq && throw(ArgumentError("AGHQ intervals require the fitted frozen objective; use objective=:fit"))
+    objective in (:laplace, :va, :aghq) && (objective!==:aghq || is_aghq) ||
+        throw(ArgumentError("objective must select :fit or an available estimator; got :$objective"))
     if objective === :va && !(fit isa Union{PoissonFit, NBFit, BinomialFit, BetaFit, GammaFit, DeltaGammaFit})
         throw(ArgumentError("objective=:va is only available for Poisson/NB/Binomial/Beta/Gamma/Delta-Gamma fits"))
     end
@@ -2225,15 +2356,18 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
     sel = _family_select(parm, ad.names)
     isempty(sel) && throw(ArgumentError("parm selector matched no parameters"))
     if method === :wald
-        return _family_wald(ad, sel, level)
+        result=_family_wald(ad,sel,level;hessian=is_aghq ? ForwardDiff.hessian(ad.nll,ad.θ) : nothing)
+        return is_aghq ? merge(result,(objective=:aghq,gradient_kind=:frozen_surrogate,)) : result
     elseif method === :profile
-        return _family_profile(ad, sel, level;
+        result = _family_profile(ad, sel, level;
                                profile_iterations = profile_iterations,
                                profile_g_tol = profile_g_tol,
                                profile_max_expand = profile_max_expand,
                                profile_max_bisect = profile_max_bisect)
+        return is_aghq ? merge(result,(objective=:aghq,gradient_kind=:frozen_surrogate,)) : result
     elseif method === :bootstrap
-        return _family_bootstrap(ad, sel, level, n_boot, seed, parallel)
+        result=_family_bootstrap(ad,sel,level,n_boot,seed,parallel;retain_replicates=is_aghq)
+        return is_aghq ? merge(result,(objective=:aghq,gradient_kind=:frozen_surrogate,)) : result
     else
         throw(ArgumentError("method must be :wald, :profile, or :bootstrap; got :$method"))
     end

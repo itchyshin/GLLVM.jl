@@ -1,0 +1,51 @@
+{
+  "status": "TWO_REQUIRED_NATIVE_CASES_REFRESHED_AFTER_FORMULA_REPAIR",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "source": {
+    "source_marker_sha256": "e14983b7d0bb423cecb4b5db3767bd5c664beb02f185ba61b3b2bd6bd5022dfe",
+    "julia_package_root": "/home/snakagaw/core070-aghq-20260830/nb2-required-02",
+    "tmb_version": "1.9.21",
+    "oracle_build_receipt_sha256": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4",
+    "matrix_version": "1.7.6",
+    "julia_machine": "x86_64-linux-gnu",
+    "julia_source_tree_sha256": "476a831b9b3c6cac461f22b244078ca28bb45cac3dd96aa4762ced47e643dca2",
+    "source_tree_sha256": "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7",
+    "julia_version": "1.12.6",
+    "oracle_source_receipt_sha256": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    "julia_project_sha256": "505afcac9fd3c52052f5e1043d655ef91c53223fb870084707468b04885327dc",
+    "blas_threads": 1,
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc",
+    "namespace_sha256": "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c",
+    "installed_tree_sha256": "b25f5b8838d1d476a95f4e79133a5c72fad2496d648ef97cd9422acd39bc5bb5",
+    "julia_project_path": "/home/snakagaw/core070-aghq-20260830/nb2-required-02/test/parity/Project.toml",
+    "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "rcall_version": "0.14.13",
+    "r_library_path": "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library/gllvmTMB",
+    "julia_threads": 1,
+    "julia_package_path": "/home/snakagaw/core070-aghq-20260830/nb2-required-02/src/GLLVM.jl",
+    "r_version": "R version 4.5.3 (2026-03-11)",
+    "r_home": "/usr/lib/R",
+    "julia_manifest_sha256": "28bcbc2c4317dfa2e49f1be44be2fb656bdfc89a47b51aeaf4e90548603a1451"
+  },
+  "execution_manifest_sha256": "66bba04d252ec63f41b4b3ee4a400435761a85e2814fe7a29ee4f98843af04fb",
+  "case_ids": [
+    "NATIVE-06-NB2",
+    "NATIVE-12-TRUNCATED-NB2"
+  ],
+  "assertions": 39,
+  "child_seconds": 43.823472460731864,
+  "files": {
+    ".unlazy/core070-aghq/nb2-required-02/plan.json": "ee539adc54cfc50097a43dc01034ea7d9cb9461a36faf704a8e0ef62f019b378",
+    ".unlazy/core070-aghq/nb2-required-02/source.tar": "87a270514be43a0c4457aa8f3d75293db8302711261df757910e91cb9887a385",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/process/process-receipt.json": "d97d17cc2ee3678ff97b7c3a9cce36d127aed274a3bd920b84f74eedf35f6cfb",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/receipts/cell-NATIVE-12-TRUNCATED-NB2.toml": "48ef22a84b1600eca149c3f814642d52aaa8530c32dd810a41c5b8e28032cbde",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/receipts/cell-NATIVE-06-NB2.toml": "f521db5a2ef62b2423fe972fcf814440866de0ae5ce69cf5123e2e0499e9eb6e",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/receipts/source.json": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/receipts/truncnb2-policy.toml": "99cc3efdacad1c4a9aaef956952643fe4d96ad141d67854fd08b527e8aa447dd",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/receipts/nb2-health.toml": "5c617ea6e0fd29b901933b18cf1e83850b2c47a7a8377face01acb4035943029",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/receipts/run.toml": "d0d15690e6baff5dc63d3fdba2cc48e6b746f57c217f2e3b2d210f007de4ad26",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/receipts/nb2-whole-fit.rds": "f06e3aa91fe16b49f0d50409501e1facbb8a0d0720159e78c2f83274a6f9275a",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/receipts/truncnb2-whole-fits.rds": "9f7740a2a6de0bbaa72e43290b242571c591e1d4360da5f47564bf0f03dc7da3",
+    ".unlazy/core070-aghq/nb2-required-02/attempt1/receipts/build.json": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "status": "COVARIANCE_NATIVE_REGISTRY_PASS_PROGRAMME_PARTIAL",
+  "created_utc": "2026-08-31T20:53:42.288532+00:00",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "cases": 9,
+  "assertions": 203,
+  "negative_controls": 70,
+  "elapsed_seconds": 50.9259602651,
+  "max_absolute_delta_loglik": 2.559374934207881e-11,
+  "manifest_status": "DRAFT_INCOMPLETE_NOT_FROZEN",
+  "draft_integrity": {
+    "source_facts": 769,
+    "nonexcluded_unmapped": 703,
+    "executable_bindings": 24,
+    "classification_counts": {
+      "compatibility_adapter": 86,
+      "intentionally_excluded": 54,
+      "rejected": 182,
+      "required_core": 447
+    },
+    "status": "CURRENT_DRAFT_INTEGRITY_VERIFIED_NOT_PARITY_COMPLETE",
+    "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "verified_at": "2026-08-31T20:52:24.889208+00:00",
+    "test_count": 85
+  },
+  "source_annex": {
+    "facts": 95,
+    "obligations": 190,
+    "helper_admission": 95,
+    "unresolved_models": 37,
+    "reference_boundaries": 56,
+    "adapter_policies": 2
+  },
+  "noether_review": {
+    "requested_model": "gpt-5.6-terra",
+    "requested_effort": "high",
+    "task": "noether_covariance_registry_review",
+    "verdict": "No actionable P0-P3 findings in scoped registry; not programme signoff"
+  },
+  "mission_control": {
+    "status": "PASS",
+    "http_status": 200,
+    "commit": "91d17a81e18de0f7006d3ab903b727e2f61736d2",
+    "before_sha256": "5355030ddf1fc80092885e40aa27688931c3deaad7cd8a38cb061bc4cddb109f",
+    "after_sha256": "fa60c4b9bd65799f3148c8b6e330527f164fbc51dbb2265f48699ddc2fdaa8e1",
+    "changed_fields": [
+      "now.next_safe_action"
+    ],
+    "r_fields_unchanged": true
+  },
+  "unlazy": {
+    "leafs_met": 2,
+    "total": 3,
+    "programme": "UNPAID",
+    "ledger": ".unlazy/core070-aghq/source-contract-reconciliation-01/GATES.md"
+  },
+  "drac": {
+    "reachable": [
+      "fir",
+      "rorqual",
+      "trillium",
+      "narval",
+      "killarney",
+      "tamia"
+    ],
+    "timed_out": [
+      "vulcan"
+    ],
+    "no_socket": [
+      "nibi"
+    ],
+    "jobs_submitted": 0,
+    "maximum_authorized_systems": 5
+  },
+  "artifacts": {
+    "tools/core070_verify_covariance_programme.py": "280c067f8c7ec1bc23c354a7c86c3f0c79f51c8e0e27fc656e7bda8e5b761af8",
+    "tools/core070_covariance_programme.py": "eda13006e11a3091181ce6da2827463dd37987c39f30ec06e0c712244888ad8e",
+    "docs/dev-log/core070/covariance-programme-contract.json": "58b7ab7e955bb7cb11e36e25b2b8ea4eba524cdc1a7e82567a81f38b955874d4",
+    "docs/dev-log/core070/covariance-required-case-plan.json": "a1b00cb0c518c7ef2e923f99bd0b9f77b9684c49433d919bd3533f76fff6c9fe",
+    "docs/dev-log/core070/frozen-r070-contract.toml": "cf9fb5df08002ae3a8f8fcdfff6c7e3176461500feb63d8b969b5526611f56ad",
+    ".unlazy/core070-aghq/source-contract-reconciliation-01/final-draft.json": "388810571a915caebe9053df607c42ee4995e43b6abca6324cfb14c03e8d0972",
+    ".unlazy/core070-aghq/source-contract-reconciliation-01/mission-update.json": "598993903997a77b78645d6056ce93698833f42ffb7a57114230388d295d47f9",
+    ".unlazy/core070-aghq/covariance-programme-02/attempt1/process/process-receipt.json": "dfc0d91e94db9a6f2d73dc8bedbd9cf4d01d62512aae398e115784e082d9f2ee"
+  }
+}

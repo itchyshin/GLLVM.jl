@@ -1,0 +1,281 @@
+# Retained evidence runner for the "family-links" micro-batch (2 executable
+# cases + 4 negative controls; see
+# docs/dev-log/core070/family-links-batch-contract.json for the full case
+# list, which binds exactly the 2 unbound rows family/FAMILY-01-PROBIT and
+# family/FAMILY-01-CLOGLOG in docs/dev-log/core070/required-source-case-map.json).
+#
+# docs/dev-log/core070/family-reconciliation-2026-09-01.json audited both
+# rows and returned verdict=NO_EVIDENCE / recommended_disposition=
+# needs_fresh_batch for each: no retained receipt anywhere in the repo
+# executes a binomial-probit or binomial-cloglog GLLVM fit. This runner
+# produces that fresh compute.
+#
+# Design follows tools/core070_namespace_2_batch.R's repair pattern: THIS R
+# process (the one with the frozen gllvmTMB library loaded) does 100% of the
+# live R-side computation itself and hands the Julia child a plain JSON
+# oracle file; the Julia child (tools/core070_family_links_batch.jl) runs
+# zero R code and carries no RCall dependency at all.
+#
+# APPROXIMATION NOTE: both engines integrate the random effects out by the
+# ORDINARY LAPLACE approximation for these cases (not AGHQ) -- the frozen R
+# adapter's `aghq` control defaults to FALSE, i.e. Laplace (see
+# .unlazy/core070-aghq/oracle-source/readback/R/gllvmTMB.R, "aghq = FALSE
+# uses the Laplace approximation (the current default)"), and the Julia side
+# calls fit_binomial_gllvm() directly, whose marginal is
+# binomial_marginal_loglik_laplace() -- the same dense-Laplace kernel used
+# throughout this engine. Because both sides use the identical integral
+# approximation, the comparison below is a same-approximation, paired
+# INDEPENDENT-optimization check (two separate L-BFGS runs from separate
+# warm starts) at the established 1e-4 paired-independent-fit tolerance
+# (tests/testthat/test-julia-bridge.R; tools/core070_namespace_2_batch.jl's
+# own tolerance-calibration comment), not the 1e-6..1e-8 used elsewhere for
+# same-point objective-identity checks.
+#
+# argv (matches the contract's outer_argv):
+#   Rscript --vanilla tools/core070_family_links_batch.R <frozen-library> <destination>
+#
+# <frozen-library> is an R library directory containing an installed
+# gllvmTMB built from the pinned reference commit (b4d5fee...) -- the FROZEN,
+# INSTALLED library, matching masks_known.R's arg 1, not a source tree.
+# <destination> must not already exist; it is created and holds
+# r-oracle.json, julia-results.json, julia-stdout.log, julia-stderr.log,
+# results.tsv, diagnostics.log, and receipt.json.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+frozen_library <- normalizePath(args[[1]], mustWork = TRUE)
+output_dir <- args[[2]]
+stopifnot(!dir.exists(output_dir))
+dir.create(output_dir, recursive = TRUE)
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+.libPaths(c(frozen_library, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(normalizePath(find.package("gllvmTMB")) ==
+          normalizePath(file.path(frozen_library, "gllvmTMB")))
+
+root <- normalizePath(".")
+contract_path <- file.path(root, "docs/dev-log/core070/family-links-batch-contract.json")
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
+          identical(contract$status, "FROZEN_FAMILY_LINKS_BATCH_CONTRACT"),
+          length(contract$cases) == contract$expected_case_count,
+          contract$expected_case_count == 2L,
+          length(contract$negative_controls) >= 2L)
+
+# --- validate pinned R source ------------------------------------------
+source_root <- file.path(root, ".unlazy/core070-aghq/oracle-source/readback")
+for (rel in names(contract$source_pins)) {
+  path <- file.path(source_root, rel)
+  stopifnot(file.exists(path))
+  digest <- sha256_file(path)
+  stopifnot(identical(digest, contract$source_pins[[rel]]))
+}
+
+# ---------------------------------------------------------------------------
+# 0. Pure-R admission-gate mapper, sourced directly from the pinned
+#    R/julia-bridge.R, used to confirm binomial(link=) resolves to the
+#    expected bridge dispatch key before any live fit is attempted.
+# ---------------------------------------------------------------------------
+.fl_bridge_env <- new.env()
+sys.source(file.path(source_root, "R/julia-bridge.R"), envir = .fl_bridge_env)
+`%||%` <- function(a, b) if (is.null(a)) b else a
+assign("%||%", get("%||%"), envir = .fl_bridge_env)
+
+.fl_family_key <- function(family_obj) {
+  tryCatch(list(ok = TRUE, key = .fl_bridge_env$.gllvm_julia_family_scalar(family_obj), error = ""),
+            error = function(e) list(ok = FALSE, key = NA_character_, error = conditionMessage(e)))
+}
+
+gate_probit  <- .fl_family_key(binomial(link = "probit"))
+gate_cloglog <- .fl_family_key(binomial(link = "cloglog"))
+stopifnot(isTRUE(gate_probit$ok),  identical(gate_probit$key,  "binomial_probit"))
+stopifnot(isTRUE(gate_cloglog$ok), identical(gate_cloglog$key, "binomial_cloglog"))
+
+# ---------------------------------------------------------------------------
+# 1. Bernoulli-probit fixture (p=4, n=120, K=1; scaled to keep |eta| <~ 1.5
+#    so the fit stays off the documented saturation boundary).
+# ---------------------------------------------------------------------------
+set.seed(81011)
+p <- 4L; K <- 1L; n <- 120L
+Lambda_true <- matrix(c(0.30, -0.25, 0.20, 0.28), nrow = p, ncol = K)
+intercepts  <- c(0.10, -0.10, 0.05, 0.15)
+eta_lv_probit <- matrix(rnorm(K * n), nrow = K, ncol = n)
+lin_probit <- as.vector(Lambda_true %*% eta_lv_probit) + rep(intercepts, times = n)
+stopifnot(max(abs(lin_probit)) <= 1.5)
+mu_probit <- pnorm(lin_probit)
+Y_probit <- matrix(rbinom(p * n, size = 1, prob = mu_probit), nrow = p, ncol = n)
+
+trait_names <- paste0("t", seq_len(p))
+df_long_probit <- data.frame(
+  site  = factor(rep(seq_len(n), each = p)),
+  trait = factor(rep(trait_names, times = n), levels = trait_names),
+  value = as.vector(Y_probit)
+)
+
+fit_probit <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+  data = df_long_probit, unit = "site", trait = "trait", family = binomial(link = "probit"),
+  control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_probit))
+# NOTE (2026-09-01 repair): coef.gllvmTMB_multi() (R/vcov-coef.R) returns ONLY
+# object$X_fix_names -- the p trait intercepts (b_fix) -- NOT the loadings.
+# The Julia side must compare against fit.beta alone, never against
+# vcat(fit.beta, vec(fit.Lambda)); a length mismatch there was the root cause
+# of the first defect (Inf coef_delta serialized as a silent JSON null).
+# getLoadings(..., rotate = "none") returns the raw, UNROTATED p x K loading
+# matrix in the engine's own column-major storage order -- matching Julia's
+# fit.Lambda convention -- needed for the cross-objective identity check
+# (tools/core070_cross_objective.jl) on any case whose loglik delta misses
+# tolerance.
+Lambda_probit <- getLoadings(fit_probit, level = "unit", rotate = "none")
+oracle_probit <- list(coef = as.numeric(coef(fit_probit)), loglik = as.numeric(logLik(fit_probit)),
+                       loadings = as.numeric(Lambda_probit))
+
+# ---------------------------------------------------------------------------
+# 2. Bernoulli-cloglog fixture (independent seed, same design; kept off the
+#    documented cloglog saturation pathology by the same |eta| <~ 1.5 bound).
+# ---------------------------------------------------------------------------
+set.seed(81012)
+eta_lv_cloglog <- matrix(rnorm(K * n), nrow = K, ncol = n)
+lin_cloglog <- as.vector(Lambda_true %*% eta_lv_cloglog) + rep(intercepts, times = n)
+stopifnot(max(abs(lin_cloglog)) <= 1.5)
+mu_cloglog <- 1 - exp(-exp(lin_cloglog))  # cloglog inverse link
+Y_cloglog <- matrix(rbinom(p * n, size = 1, prob = mu_cloglog), nrow = p, ncol = n)
+
+df_long_cloglog <- data.frame(
+  site  = factor(rep(seq_len(n), each = p)),
+  trait = factor(rep(trait_names, times = n), levels = trait_names),
+  value = as.vector(Y_cloglog)
+)
+
+fit_cloglog <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+  data = df_long_cloglog, unit = "site", trait = "trait", family = binomial(link = "cloglog"),
+  control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_cloglog))
+Lambda_cloglog <- getLoadings(fit_cloglog, level = "unit", rotate = "none")
+oracle_cloglog <- list(coef = as.numeric(coef(fit_cloglog)), loglik = as.numeric(logLik(fit_cloglog)),
+                        loadings = as.numeric(Lambda_cloglog))
+
+# ---------------------------------------------------------------------------
+# 3. Write the oracle JSON (all fixtures + R-side values) for the Julia child.
+# ---------------------------------------------------------------------------
+oracle_path <- file.path(output_dir, "r-oracle.json")
+jsonlite::write_json(
+  list(
+    schema = "core070-family-links-r-oracle/v1",
+    probit = list(p = p, n = n, K = K, y = as.numeric(Y_probit),
+                  coef = oracle_probit$coef, loglik = oracle_probit$loglik,
+                  loadings = oracle_probit$loadings),
+    cloglog = list(p = p, n = n, K = K, y = as.numeric(Y_cloglog),
+                   coef = oracle_cloglog$coef, loglik = oracle_cloglog$loglik,
+                   loadings = oracle_cloglog$loadings),
+    gate = list(probit = gate_probit, cloglog = gate_cloglog)
+  ),
+  oracle_path, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 17
+)
+
+# --- invoke the Julia child ---------------------------------------------
+julia_out <- file.path(output_dir, "julia-results.json")
+julia_env <- c(CORE070_FAMILY_LINKS_R_ORACLE = oracle_path)
+julia_bin <- Sys.which("julia")
+stopifnot(nzchar(julia_bin))
+old_env <- Sys.getenv(names(julia_env), unset = NA, names = TRUE)
+do.call(Sys.setenv, as.list(julia_env))
+t0 <- Sys.time()
+julia_status <- tryCatch(
+  system2(julia_bin, c("--project=.", "tools/core070_family_links_batch.jl", julia_out),
+          stdout = file.path(output_dir, "julia-stdout.log"),
+          stderr = file.path(output_dir, "julia-stderr.log")),
+  finally = {
+    unset <- names(old_env)[is.na(old_env)]
+    if (length(unset)) Sys.unsetenv(unset)
+    set <- old_env[!is.na(old_env)]
+    if (length(set)) do.call(Sys.setenv, as.list(set))
+  }
+)
+elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+
+# --- read back and evaluate ----------------------------------------------
+julia_report <- if (file.exists(julia_out)) {
+  jsonlite::read_json(julia_out, simplifyVector = FALSE)
+} else {
+  NULL
+}
+
+contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+contract_neg_ids <- vapply(contract$negative_controls, `[[`, "", "control_id")
+
+results_ok <- !is.null(julia_report) &&
+  identical(julia_status, 0L) &&
+  identical(julia_report$status, "PASS") &&
+  isTRUE(julia_report$all_positive_pass) &&
+  isTRUE(julia_report$negative_controls_behaved_as_expected) &&
+  isTRUE(julia_report$all_checks) &&
+  all(vapply(julia_report$cases, function(x) isTRUE(x$pass), logical(1)))
+
+all_case_ids_seen <- if (!is.null(julia_report)) names(julia_report$cases) else character(0)
+missing_case_ids <- setdiff(contract_case_ids, all_case_ids_seen)
+extra_case_ids <- setdiff(all_case_ids_seen, contract_case_ids)
+results_ok <- results_ok && length(missing_case_ids) == 0 && length(extra_case_ids) == 0
+
+raw_lines <- vapply(contract_case_ids, function(id) {
+  pass <- !is.null(julia_report) && id %in% names(julia_report$cases) &&
+    isTRUE(julia_report$cases[[id]]$pass)
+  paste(id, if (pass) "PASS" else "FAIL", "positive", sep = "\t")
+}, character(1))
+neg_lines <- if (!is.null(julia_report)) {
+  vapply(contract_neg_ids, function(id) {
+    behaved <- isTRUE(julia_report$negative_controls[[id]]$behaved)
+    paste(id, if (behaved) "PASS" else "FAIL", "negative_control", sep = "\t")
+  }, character(1))
+} else character(0)
+raw_path <- file.path(output_dir, "results.tsv")
+writeLines(c(raw_lines, neg_lines), raw_path)
+
+diag_lines <- character(0)
+if (!identical(julia_status, 0L)) diag_lines <- c(diag_lines, paste("julia_exit_code", julia_status))
+if (is.null(julia_report)) diag_lines <- c(diag_lines, "julia-results.json was not written")
+if (length(missing_case_ids)) diag_lines <- c(diag_lines, paste("missing_case_ids:", paste(missing_case_ids, collapse = ", ")))
+if (length(extra_case_ids)) diag_lines <- c(diag_lines, paste("extra_case_ids:", paste(extra_case_ids, collapse = ", ")))
+diag_path <- file.path(output_dir, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+receipt <- list(
+  status = if (isTRUE(results_ok)) "PASS" else "FAIL",
+  scope = "CORE070_FAMILY_LINKS_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_pins = contract$source_pins,
+  source_unchanged = TRUE,
+  case_count = contract$expected_case_count,
+  negative_control_count = length(contract$negative_controls),
+  expected_case_ids = contract_case_ids,
+  negative_control_case_ids = contract_neg_ids,
+  julia_exit_code = julia_status,
+  julia_elapsed_seconds = elapsed,
+  julia_results_sha256 = if (file.exists(julia_out)) sha256_file(julia_out) else NA_character_,
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_version = R.version.string,
+  gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+  frozen_library = frozen_library
+)
+receipt_path <- file.path(output_dir, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+cat("CORE070_FAMILY_LINKS_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (isTRUE(results_ok)) 0L else 1L)

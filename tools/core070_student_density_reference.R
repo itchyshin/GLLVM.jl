@@ -1,0 +1,15 @@
+cat("R_VERSION ",R.version.string,"\n",sep="")
+cat("TMB_VERSION ",as.character(packageVersion("TMB")),"\n",sep="")
+header <- file.path(system.file("include",package="TMB"),"distributions_R.hpp")
+cat("TMB_HEADER ",header,"\n",sep="")
+x <- readLines(header)
+i <- grep("Type dt(Type x, Type df, int give_log)",x,fixed=TRUE)
+stopifnot(length(i)==1L)
+cat(x[i:(i+6)],sep="\n")
+rows <- list()
+for(df in c(4,1e3,1e6,2.3174518756022614e10,3.034232245769893e31)) for(z in c(0,0.7,3)) {
+ literal <- lgamma((df+1)/2)-1/2*log(df*pi)-lgamma(df/2)-(df+1)/2*log(1+z*z/df)
+ stable <- stats::dt(z,df,log=TRUE)
+ rows[[length(rows)+1L]] <- data.frame(df=df,z=z,literal=literal,stable=stable,delta=literal-stable)
+}
+write.table(do.call(rbind,rows),stdout(),sep="\t",row.names=FALSE,quote=FALSE)

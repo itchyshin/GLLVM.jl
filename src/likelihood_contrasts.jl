@@ -316,7 +316,7 @@ end
 # Build the dense Σ_phy from a tree by inverting Q on the augmented
 # state (root-pinned), then selecting leaves. O(p³) — used only on
 # the trait-specific path where Σ_phy must be materialised.
-function _build_Σ_phy_dense(tree, σ²_phy::Real, ::Type{T_el}) where {T_el}
-    Σ = sigma_phy_dense(tree; σ²_phy = float(σ²_phy))
+function _build_Σ_phy_dense(tree, σ²_phy, ::Type{T_el}) where {T_el}
+    Σ = sigma_phy_dense(tree; σ²_phy = σ²_phy)
     return Matrix{T_el}(Σ)
 end

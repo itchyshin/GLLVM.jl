@@ -84,10 +84,6 @@ using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
             control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
         )
 
-        if (!identical(as.integer(fit_r$opt$convergence), 0L)) {
-            stop("gllvmTMB did not report convergence==0")
-        }
-
         r_logL  <- as.numeric(stats::logLik(fit_r))
         r_sigma <- as.numeric(fit_r$report$sigma_eps)
         Sig_sh  <- extract_Sigma(fit_r, level = "unit", part = "shared")$Sigma
@@ -97,7 +93,8 @@ using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
             logL      = r_logL,
             sigma     = r_sigma,
             Sigma_y   = Sigma_y_r,
-            objective = as.numeric(fit_r$opt$objective)
+            objective = as.numeric(fit_r$opt$objective),
+            converged = identical(as.integer(fit_r$opt$convergence), 0L)
         )
         invisible(NULL)
     """
@@ -106,6 +103,8 @@ using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
     r_sigma  = rcopy(Float64, R".gllvm_parity_gauss$sigma")
     r_Σ_y    = rcopy(Matrix{Float64}, R".gllvm_parity_gauss$Sigma_y")
     r_obj    = rcopy(Float64, R".gllvm_parity_gauss$objective")
+    r_conv   = rcopy(Bool, R".gllvm_parity_gauss$converged")
+    @test r_conv
 
     # Always print the numbers — verify by log, not exit code alone.
     println()

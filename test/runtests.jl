@@ -2,12 +2,10 @@ using Test
 using GLLVM
 
 # --- Deterministic Julia-suite sharding (GLLVM_TEST_SHARD="k/N") -----------
-# Splits the `_shard_include("test_*.jl")` calls below across N shards by file
-# position: shard k (1-based) gets file i when (i - 1) % N == k - 1. Unset or
-# empty means "run everything", so a local `julia test/runtests.jl` is
-# unchanged. The helpers live in shard_util.jl and are exercised standalone in
-# test_shard_selection.jl, which proves the N shards partition the file list
-# exactly -- disjoint AND complete, so sharding can never silently drop a file.
+# Splits the `include("test_*.jl")` calls below across N shards by file
+# position: shard k (1-based) gets file i when (i - 1) % N == k - 1. Unset
+# (default) runs every file — unchanged behaviour. Pure-logic helpers live in
+# shard_util.jl and are exercised standalone in test_shard_selection.jl.
 include("shard_util.jl")
 
 _shard_spec = get(ENV, "GLLVM_TEST_SHARD", "")
@@ -21,21 +19,27 @@ function _shard_include(path::AbstractString)
     end
 end
 
-# test_quality.jl is a repo-wide quality sweep, not a per-file suite, so it is
-# not worth spreading across shards: it runs once, in shard 1 only (or always
-# when unsharded), and is deliberately NOT behind `_shard_include`.
+# test_quality.jl (Aqua + JET) measured standalone at ~35s combined (2026-09)
+# — far cheaper than the suite split across the files below, so it is not
+# worth spreading across shards: it runs once, in shard 1 only (or always
+# when unsharded), and is deliberately NOT behind `_shard_include` above.
 _RUN_QUALITY = _SHARD === nothing || _SHARD[1] == 1
 
-# Count only the INDENTED call sites below, not this line's own literal:
-# `count("_shard_include(\"", ...)` over the whole source counts itself too,
-# which is a silent off-by-one in the header (harmless to selection, which
-# uses the runtime `_shard_pos` counter, but wrong in the log).
+# File count for the header below: every `_shard_include("` call literally
+# present in this file's own source — the same ordered list `_shard_include`
+# walks at runtime — so the count can never drift from the include list as
+# files are added or removed. Count only the INDENTED call sites: the bare
+# literal also matches this very expression, a silent off-by-one in the header
+# (harmless to selection, which uses the runtime `_shard_pos` counter, but
+# wrong in the log). Carried over from PR #278.
 _n_test_files = count("\n    _shard_include(\"", read(@__FILE__, String))
 _n_selected = _SHARD === nothing ? _n_test_files :
     length(_shard_indices(_n_test_files, _SHARD[1], _SHARD[2]))
+_n_reported = _n_selected + (_RUN_QUALITY ? 1 : 0)
+
 println(_SHARD === nothing ?
-    "GLLVM tests: all $_n_test_files files (unsharded)" :
-    "GLLVM tests: shard $(_SHARD[1])/$(_SHARD[2]) - $_n_selected of $_n_test_files files")
+    "GLLVM tests: all files ($_n_reported files)" :
+    "GLLVM tests: shard $(_SHARD[1])/$(_SHARD[2]) — $_n_reported files")
 
 # All suites run under one outer testset so that a failure in any included file
 # does not abort the run before later files execute: included `@testset`s nest
@@ -47,7 +51,6 @@ println(_SHARD === nothing ?
     end
 
     _shard_include("test_shard_selection.jl")
-
     _shard_include("test_likelihood.jl")
     _shard_include("test_packing.jl")
     _shard_include("test_none_dep.jl")
@@ -59,6 +62,7 @@ println(_SHARD === nothing ?
     _shard_include("test_phy.jl")
     _shard_include("test_signed_sigma_phy.jl")
     _shard_include("test_sparse_phy.jl")
+    _shard_include("test_phylo_precision.jl")
     _shard_include("test_ppca_init.jl")
     _shard_include("test_em_fa.jl")
     _shard_include("test_lowrank_cholesky.jl")
@@ -76,14 +80,28 @@ println(_SHARD === nothing ?
     _shard_include("test_fit_phylo.jl")
     _shard_include("test_families.jl")
     _shard_include("test_binomial_laplace.jl")
+    _shard_include("test_cloglog_likelihood.jl")
     _shard_include("test_aghq_grid.jl")
     _shard_include("test_aghq_adapt.jl")
+    _shard_include("test_aghq_frozen.jl")
+    _shard_include("test_aghq_outer.jl")
+    _shard_include("test_aghq_multistart.jl")
+    _shard_include("test_aghq_poisson.jl")
+    _shard_include("test_aghq_public_poisson.jl")
+    _shard_include("test_aghq_gaussian.jl")
+    _shard_include("test_aghq_public_gaussian.jl")
+    _shard_include("test_gaussian_empty_design.jl")
+    _shard_include("test_profile_failure_bounds.jl")
+    _shard_include("test_aghq_binomial.jl")
+    _shard_include("test_aghq_public_binomial.jl")
     _shard_include("test_aghq_gate.jl")
     _shard_include("test_aghq_kd_bound.jl")
     _shard_include("test_poisson_laplace.jl")
     _shard_include("test_truncated_poisson.jl")
     _shard_include("test_censored_poisson.jl")
     _shard_include("test_truncated_nbinom2.jl")
+    _shard_include("test_truncnb2_precision.jl")
+    _shard_include("test_nb2_precision.jl")
     _shard_include("test_negbin_laplace.jl")
     _shard_include("test_beta_laplace.jl")
     _shard_include("test_ordinal_laplace.jl")
@@ -159,9 +177,16 @@ println(_SHARD === nothing ?
     _shard_include("test_tweedie.jl")
     _shard_include("test_tweedie_engine_health.jl")
     _shard_include("test_tweedie_grouped_engine_health.jl")
+    _shard_include("test_tweedie_power_contract.jl")
     _shard_include("test_exponential.jl")
     _shard_include("test_studentt.jl")
+    _shard_include("test_studentt_input_validation.jl")
     _shard_include("test_studentt_disp_group.jl")
+    _shard_include("test_studentt_core070.jl")
+    _shard_include("test_studentt_boundary_honesty.jl")
+    _shard_include("test_studentt_boundary.jl")
+    _shard_include("test_studentt_normalizer_precision.jl")
+    _shard_include("test_studentt_retained_precision.jl")
     _shard_include("test_lognormal.jl")
     _shard_include("test_multinomial.jl")
     _shard_include("test_zib_x_identity.jl")
@@ -169,11 +194,17 @@ println(_SHARD === nothing ?
     _shard_include("test_ordinal_pertrait.jl")
     _shard_include("test_ordinal_probit.jl")
     _shard_include("test_fit_gllvm.jl")
+    _shard_include("test_truncated_formula.jl")
     _shard_include("test_unified_api.jl")
     _shard_include("test_com_poisson.jl")
     _shard_include("test_gaussian_pervar.jl")
+    _shard_include("test_gaussian_pervar_design.jl")
+    _shard_include("test_gaussian_fixed_residual.jl")
+    _shard_include("test_gaussian_pervar_fallback.jl")
+    _shard_include("test_formula_pervar.jl")
     _shard_include("test_aicbic_newfits.jl")
     _shard_include("test_postfit.jl")
+    _shard_include("test_statsapi.jl")
     _shard_include("test_postfit_zib_tweedie.jl")
     _shard_include("test_ordination.jl")
     _shard_include("test_model_selection.jl")
@@ -181,6 +212,18 @@ println(_SHARD === nothing ?
     _shard_include("test_cross_kernel.jl")
     _shard_include("test_extract_gamma.jl")
     _shard_include("test_cross_kernel_fit.jl")
+    _shard_include("test_source_covariance.jl")
+    _shard_include("test_gaussian_sources.jl")
+    _shard_include("test_gaussian_sources_fixed_residual.jl")
+    _shard_include("test_source_fit_optimizer_health.jl")
+    _shard_include("test_cross_objective_known_answer.jl")
+    _shard_include("test_cross_objective_helpers.jl")
+    _shard_include("test_gaussian_source_design.jl")
+    _shard_include("test_formula_sources.jl")
+    _shard_include("test_formula_structured_terms.jl")
+    _shard_include("test_gaussian_source_bindings.jl")
+    _shard_include("test_bridge_gradient_payload.jl")
+    _shard_include("test_bridge_sources.jl")
     _shard_include("test_coevolution_kronecker.jl")
     _shard_include("test_coevolution_blockna.jl")
     _shard_include("test_coevolution_glm.jl")
@@ -218,8 +261,12 @@ println(_SHARD === nothing ?
     _shard_include("test_offset.jl")
     _shard_include("test_fd_hessian.jl")
     _shard_include("test_confint_family.jl")
+    _shard_include("test_diagnostics.jl")
+    _shard_include("test_se_machinery.jl")
+    _shard_include("test_nobs_pn_convention.jl")
     _shard_include("test_summary_table.jl")
     _shard_include("test_covariates.jl")
+    _shard_include("test_formula_input.jl")
     _shard_include("test_formula.jl")
     _shard_include("test_simulate.jl")
     _shard_include("test_species_covariates.jl")
@@ -252,6 +299,7 @@ println(_SHARD === nothing ?
     _shard_include("test_bridge_zip_nox.jl")
     _shard_include("test_bridge_lognormal.jl")
     _shard_include("test_bridge_truncated_poisson.jl")
+    _shard_include("test_bridge_truncated_input.jl")
     _shard_include("test_bridge_lv_predictor.jl")
     _shard_include("test_lv_ci.jl")
     _shard_include("test_phylo_eta_realized.jl")
@@ -262,5 +310,24 @@ println(_SHARD === nothing ?
     _shard_include("test_saturation_health.jl")
     _shard_include("test_known_sentinel_defects.jl")
     _shard_include("test_curvature_census.jl")
+    _shard_include("test_phylo_contrasts.jl")
+    _shard_include("test_edge_incidence.jl")
+    _shard_include("test_phylo_branch_re.jl")
+    _shard_include("test_branch_re_marginal_fallback.jl")
+    _shard_include("test_core070_receipts.jl")
+    _shard_include("test_core070_interface_registry.jl")
+    _shard_include("test_core070_shape_boundaries.jl")
+    _shard_include("test_ordinal_link_input.jl")
+    _shard_include("test_core070_link_boundaries.jl")
+    _shard_include("test_parity_trial_inputs.jl")
+    _shard_include("test_em_phylo.jl")
+    _shard_include("test_em_squarem.jl")
+    _shard_include("test_em_squarem_safety.jl")
+    _shard_include("test_relaxed_clock.jl")
+    _shard_include("test_spatial_cov.jl")
+    _shard_include("test_cv.jl")
     _RUN_QUALITY && include("test_quality.jl")
+    _shard_include("test_derived_ci_surfaces.jl")
+    _shard_include("test_extractors.jl")
+    _shard_include("test_postfit_tables.jl")
 end

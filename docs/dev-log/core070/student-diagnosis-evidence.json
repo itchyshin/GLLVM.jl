@@ -1,0 +1,35 @@
+{
+  "status": "DIAGNOSED_NOT_REPAIRED",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "numerical_candidate": "6e59ef546fec4f8465186eacc997e11913ecb614",
+  "diagnostic_receipt": ".unlazy/core070-aghq/student-diagnosis/attempt2/diagnostic/diagnostic.toml",
+  "diagnostic_sha256": "3632eb9cbc9ecd2b2b3c1286435847df34fea719792fa5cd3772c8f9f9369b8f",
+  "process_receipt": ".unlazy/core070-aghq/student-diagnosis/attempt2/process/process-receipt.json",
+  "process_sha256": "af0258a62b26f7a52077cbc6fc5a89aefe81de35f01df8a103f12e3670d62370",
+  "actual_exit": 0,
+  "elapsed_seconds": 10.493919173255563,
+  "r_optimizer_code": 1,
+  "r_optimizer_message": "false convergence (8)",
+  "r_loglik": -873.2341879916545,
+  "r_df": [
+    23174518756.022614,
+    5.018203582280346,
+    4.176622951652176,
+    3.928866769385607,
+    10.307563524768995
+  ],
+  "data_sha256": "2c8ac438e655b3ec39209799676f689c8a875ba300ec0df032c76ee506a94365",
+  "largest_gradient": {
+    "name": "theta_rr_B",
+    "gradient": "0.225440323999011"
+  },
+  "density_max_abs_error_by_nu": {
+    "4.0": 1.7013733968709783e-16,
+    "1000.0": 3.8034058273256873e-13,
+    "1.0e6": 5.466923064581811e-10,
+    "1.0e8": 1.2944942045564327e-07,
+    "2.3175e10": 1.2502810344972105e-05,
+    "1.0e12": 0.00018696768405132084
+  },
+  "claim_boundary": "R health gate remains failed; Julia normalizer precision defect measured independently. R finite differences unstable, complete cause not established. No R engine/fixture/tolerance change."
+}

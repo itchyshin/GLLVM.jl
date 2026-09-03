@@ -263,7 +263,12 @@ function estep_edge_moments(phy::EdgePhy, σ²_e::AbstractVector, σ²_eps::Real
         P[cm.leaf_rows[t], cm.leaf_rows[t]] += inv_eps
     end
     Psym = Symmetric((P + P') ./ 2)
-    cP = cholesky(Psym)
+    # Use shift / positive-definite check with regularisation fallback for near-singular edge cases
+    cP = try
+        cholesky(Psym)
+    catch
+        cholesky(Psym + 1e-12 * I)
+    end
 
     # RHS: Sᵀ (1/σ²_eps) y  (concentrated at leaf rows), all replicates batched.
     RHS = zeros(Float64, nc, n_rep)

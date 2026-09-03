@@ -1,0 +1,28 @@
+{
+  "status": "R_ADMISSION_SUBSET_PASS_JULIA_UNPAID",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "manifest_sha256": "a51906ddd90bdabc2c1764623245963fb600a3bdabd3164e31404e41f7ee587b",
+  "cases": 69,
+  "classifications": {
+    "required_core": 21,
+    "rejected": 33,
+    "compatibility_adapter": 1,
+    "intentionally_excluded_constructor_only": 14
+  },
+  "runtimes": [
+    "Rscript (R) version 4.6.0 (2026-04-24)",
+    "Rscript (R) version 4.5.3 (2026-03-11)"
+  ],
+  "source_pins": {
+    "R/families.R": "1d39b05e33ef60ffd11ded940e22f9fd3234fcea1cce0a91938d31dab61a5be6",
+    "R/fit-multi.R": "768db11bd09e6de872d4a27b60fd0a096f617434ac84c95db721fac8f8d77c02"
+  },
+  "prior_attempts": "v1 manifests and failed attempts1-3 retained; v2 distinguishes constructor and engine rejection stages",
+  "negative_controls": [
+    "omitted case rejected",
+    "stale source rejected",
+    "incorrect expected ID rejected"
+  ],
+  "raw_root": ".unlazy/core070-aghq/family-admission",
+  "scope": "family/link admission only; no fits, covariance, data, postfit, formula or bridge evidence"
+}

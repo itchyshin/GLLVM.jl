@@ -129,3 +129,12 @@ parity.” `n_drift=0` ≠ these cells.
 | Σ_y (Gaussian) | atol ≤ 1e-4 |
 
 Do not silently widen. If a live cell fails, fix call shape / model identity.
+
+### Binomial oracle inputs
+
+The no-X and shared-X helpers accept `N` (traits×units) and `binomial_link`
+(`:logit`, `:probit`, `:cloglog`). Supplied trials become R weights; omitted
+trials preserve Bernoulli behavior. Complete-data fixtures require finite
+integer successes and positive integer trials, exactly representable as Float64.
+These controls are input-transport tested; new fitted link/trial parity remains
+unqualified. They do not widen the public R→Julia bridge.

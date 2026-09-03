@@ -1,0 +1,8 @@
+family=poisson
+p=50 n=500 K=2 seed=1014
+logLik=-51041.0331479977
+converged=TRUE
+has_sd_report=TRUE
+wall_fit_sec=12.0458
+wall_confint_sec=0.0002
+cond_H=2103.16

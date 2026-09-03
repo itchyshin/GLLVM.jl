@@ -1,0 +1,89 @@
+{
+  "status": "TEN_CASE_SUBSET_VERIFIED_NOT_FULL_FAMILY_OR_PROGRAMME",
+  "paired_run": {
+    "status": "VERIFIED_REGISTERED_SUBSET_NOT_FULL_FAMILY_OR_PROGRAMME",
+    "case_ids": [
+      "NATIVE-03-POISSON",
+      "NATIVE-06-NB2",
+      "NATIVE-08-BETA",
+      "NATIVE-12-TRUNCATED-NB2",
+      "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
+      "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+      "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
+      "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
+      "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
+      "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE"
+    ],
+    "actual_assertions": 187,
+    "executions": 9,
+    "elapsed_seconds": 97.5297699328512,
+    "models": {
+      "NATIVE-03-POISSON": {
+        "loglik_delta": 1.432454155292362e-11,
+        "native_gradient_max": 1.8774286656005279e-06,
+        "r_gradient_max": 3.452676528259424e-05
+      },
+      "NATIVE-08-BETA": {
+        "loglik_delta": 1.98667748918524e-11,
+        "native_gradient_max": 3.44977517304097e-07,
+        "r_gradient_max": 1.3801814040578786e-05
+      },
+      "NATIVE-06-NB2": {
+        "loglik_delta": 3.412827027204912e-06,
+        "native_gradient_max": 9.481014761282667e-07,
+        "r_gradient_max": 6.509060474424455e-05
+      },
+      "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE": {
+        "loglik_delta": 3.412827027204912e-06,
+        "native_gradient_max": 9.481014761282667e-07,
+        "r_gradient_max": 6.509060474424455e-05
+      },
+      "NATIVE-12-TRUNCATED-NB2": {
+        "loglik_delta": 8.67307790031191e-08,
+        "native_gradient_max": 6.536981751954038e-06,
+        "r_gradient_max": 2.746089928674922e-05
+      },
+      "Gaussian native/formula": {
+        "loglik_delta": 3.864101927320007e-09,
+        "native_gradient_max": 1.5420198451465694e-10,
+        "r_gradient_max": 4.445323898038918e-05
+      }
+    },
+    "execution_manifest_sha256": "dcfc7245ddf03f17c41cc17b2243f189df70cce9c17a76a5254a2a9152186572",
+    "contract_sha256": "9fc163de13b4b3633aac4aff0c4fecf0a066c0ddd6ef14227fd14641c1e72c80",
+    "process_receipt_sha256": "ba5e73e8a20508a678e13dfb8e0b64d19a685474709076744803722ace1878da",
+    "run_sha256": "0ecabc216cd292e58eb0ce43acb89a597074f7e8575ff535e26950637d75a562",
+    "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+  },
+  "formula_cases": {
+    "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE": {
+      "native_id": "NATIVE-03-POISSON",
+      "nfree": 14,
+      "data_sha256": "44e647ac7ff29672efa12ca03b7b628dd37a02ac0f8d2421a19d3969743e26da",
+      "report_sha256": "136c469a352a9bf8c47a5134ec29769d5c5f85b9e31c824879074a4bd2e580b4",
+      "native_health_sha256": "83ba48b6c420f560db1dc50a5dee4399592d9205f3ceba1932cf178bf97920cc",
+      "wide_native_loglik_delta": 0.0,
+      "long_native_loglik_delta": 0.0
+    },
+    "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE": {
+      "native_id": "NATIVE-08-BETA",
+      "nfree": 15,
+      "data_sha256": "3ddd9a90ae2e933af8c9f45f72fc7edda96dc0fda2a4389d3708a003d07ce099",
+      "report_sha256": "a872363a091ac1206e63968e8b0bc4acb3c6f74b5cb3bcd6b57c5bf66ea9999e",
+      "native_health_sha256": "ba1ca658986479f53815fc432183c69b4af125017008d3884fac4464d1bb0379",
+      "wide_native_loglik_delta": 0.0,
+      "long_native_loglik_delta": 0.0
+    },
+    "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE": {
+      "native_id": "NATIVE-12-TRUNCATED-NB2",
+      "nfree": 15,
+      "data_sha256": "ecbcf9f501c7e618131f2c3f1f0d213bb0e92364a72c0519095c52ef30930948",
+      "report_sha256": "8b290f631f59c79faf543c90f3236614233ed3988f95175f6f7fc883e76f18e6",
+      "native_health_sha256": "99cc3efdacad1c4a9aaef956952643fe4d96ad141d67854fd08b527e8aa447dd",
+      "wide_native_loglik_delta": 0.0,
+      "long_native_loglik_delta": 0.0
+    }
+  },
+  "registry_assertions": 40,
+  "contract_sha256": "52e817307a1bc088fd05de61631c257c101cf78e198c7c91de2603c2d111c162"
+}

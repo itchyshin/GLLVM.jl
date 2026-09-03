@@ -1,0 +1,47 @@
+{
+  "scope": "preservation only, not clean-worktree or implementation proof",
+  "archive": "/Users/z3437171/local-scratch/preservation/core070-aghq-20260830",
+  "archive_receipt": {
+    "finished_utc": "2026-08-30T13:38:20.324245+00:00",
+    "manifest_sha256": "015fbfb2b2c9bfcd59069f327ae72b76f9d5724c3956e0915446982680bc8e80",
+    "verification_failures": [],
+    "captured_worktrees": 145,
+    "unresolved_worktrees": 168,
+    "scope_status": "PARTIAL"
+  },
+  "supplement": "/Users/z3437171/local-scratch/preservation/core070-aghq-20260830-head-supplement",
+  "supplement_receipt": {
+    "finished_utc": "2026-08-30T13:52:28.371053+00:00",
+    "manifest_sha256": "7341e035b0466e5ab8158083b92085eecf244ada1ca6454743f1512001658d42",
+    "verification_failures": [],
+    "scope_status": "REGISTERED_HEAD_SUPPLEMENT",
+    "registered_heads": [
+      "051dcf38d27809253b9a44d66c88ef96f340cca2",
+      "1925bc247e060419298d9a5621c4dc385836b188",
+      "438a156ffdc91c0c0f7fe10b88305246591d2f27",
+      "697a01585ace44a98da2361871a59806aa674001",
+      "6a6c44f7706512e6beb8d877bf75a695d2c1482e",
+      "6db3296d66b0cfe820baff6cd0a082e6feb6996e",
+      "8a6d825cf3db2c8cc0de557c07c4d77462f65294",
+      "bd4fbede2fa2940264e51908ee1edf181847ea5a",
+      "e153180c5ffa1e59f0a1be40eb011ad88c4a9168"
+    ]
+  },
+  "registered_commit_coverage": {
+    "julia_distinct": 95,
+    "r_distinct": 209,
+    "uncovered_after_supplement": 0
+  },
+  "unresolved_disposition": {
+    "broken_r_checkouts": 46,
+    "missing_r_checkouts": 122,
+    "action": "HOLD_NO_DELETION: preserve available bytes and commit objects; missing working-tree bytes remain unknown; request owner disposition before recovery/cleanup."
+  },
+  "repeat_readback": "First archive fresh Unlazy G2 rerun passed; supplement first independent clone/readback passed.",
+  "index_state_qualification": {
+    "original_archive": "No index-stage inventory retained; patch marker audit found no marked conflicts but is not staged-state reconstruction.",
+    "future_capture": "Unmerged indexes classified UNRESOLVED_INDEX_CONFLICT; index inventory checksummed and change-detected.",
+    "regression": "old CAPTURED -> expected UNRESOLVED_INDEX_CONFLICT; fresh self-test passed",
+    "cleanup_authority": "none"
+  }
+}

@@ -1,0 +1,83 @@
+schema = 1
+reference_commit = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+scope = "paired control normalization only; no public fit"
+
+[[cases]]
+id = "AGHQ-CTRL-FALSE"
+julia_call = "GLLVM._aghq_request(false)"
+expected = "off"
+
+[[cases]]
+id = "AGHQ-CTRL-NULL"
+julia_call = "GLLVM._aghq_request(nothing)"
+expected = "off"
+
+[[cases]]
+id = "AGHQ-CTRL-TRUE"
+julia_call = "GLLVM._aghq_request(true)"
+expected = "auto"
+
+[[cases]]
+id = "AGHQ-CTRL-AUTO"
+julia_call = "GLLVM._aghq_request(:auto)"
+expected = "auto"
+
+[[cases]]
+id = "AGHQ-CTRL-ONE"
+julia_call = "GLLVM._aghq_request(1)"
+expected = "1"
+
+[[cases]]
+id = "AGHQ-CTRL-TWO"
+julia_call = "GLLVM._aghq_request(2)"
+expected = "2"
+
+[[cases]]
+id = "AGHQ-CTRL-NINE"
+julia_call = "GLLVM._aghq_request(9)"
+expected = "9"
+
+[[cases]]
+id = "AGHQ-INVALID-ZERO"
+julia_call = "GLLVM._aghq_request(0)"
+expected = "ArgumentError"
+
+[[cases]]
+id = "AGHQ-INVALID-NEGATIVE"
+julia_call = "GLLVM._aghq_request(-1)"
+expected = "ArgumentError"
+
+[[cases]]
+id = "AGHQ-INVALID-FRACTION"
+julia_call = "GLLVM._aghq_request(1.5)"
+expected = "ArgumentError"
+
+[[cases]]
+id = "AGHQ-INVALID-INF"
+julia_call = "GLLVM._aghq_request(Inf)"
+expected = "ArgumentError"
+
+[[cases]]
+id = "AGHQ-INVALID-NAN"
+julia_call = "GLLVM._aghq_request(NaN)"
+expected = "ArgumentError"
+
+[[cases]]
+id = "AGHQ-INVALID-NA"
+julia_call = "GLLVM._aghq_request(missing)"
+expected = "ArgumentError"
+
+[[cases]]
+id = "AGHQ-INVALID-VECTOR"
+julia_call = "GLLVM._aghq_request([3,5])"
+expected = "ArgumentError"
+
+[[cases]]
+id = "AGHQ-INVALID-EMPTY"
+julia_call = "GLLVM._aghq_request(Int[])"
+expected = "ArgumentError"
+
+[[cases]]
+id = "AGHQ-INVALID-STRING"
+julia_call = "GLLVM._aghq_request(\"9\")"
+expected = "ArgumentError"

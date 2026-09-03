@@ -54,7 +54,8 @@ end
 
 function _derived_spec(fit::GllvmFit)
     model = fit.model
-    q = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
+    q = count(!,_pars_fixed_mask(fit.pars,:β_fixed,q_full))
     return (q = q, p = model.p, K_B = model.K, K_W = model.K_W,
             has_diag = model.has_diag, K_phy = model.K_phy,
             has_phy_unique = model.has_phy_unique)
@@ -291,16 +292,21 @@ end
     phylo_signal(fit::GllvmFit; Σ_phy = nothing) -> Vector
 
 Per-trait phylogenetic signal
-`H²[t] = (Λ_phy_aug Λ_phy_aug')[t, t] · Σ_phy[t, t] / Σ_y_site[t, t]`,
-where `Λ_phy_aug = hcat(Λ_phy, σ_phy)` (each piece is included only when
-its flag is on). Returns a vector of length `p`; all entries are `NaN`
-when the fit has no phylogenetic block (`K_phy == 0` and
-`has_phy_unique == false`).
+`H²[t] = σ²_phy[t] / (σ²_phy[t] + Σ_y_site[t, t])`, where
+`σ²_phy[t] = (Λ_phy_aug Λ_phy_aug')[t, t] · Σ_phy[t, t]` and
+`Λ_phy_aug = hcat(Λ_phy, σ_phy)` (each piece is included only when its
+flag is on). This is the R oracle's convention
+(`profile-derived.R:145-156`: `H² = σ²_phy / (σ²_phy + σ²_non)`) — the
+denominator INCLUDES the phylogenetic variance, not just the per-site
+(non-phylogenetic) covariance. Returns a vector of length `p` with
+entries in `[0, 1]`; all entries are `NaN` when the fit has no
+phylogenetic block (`K_phy == 0` and `has_phy_unique == false`).
 
 `Σ_phy` defaults to the identity matrix (standardised convention, diag
 == 1 per trait), so the diagonal entries reduce to
-`H²[t] = (Λ_phy_aug Λ_phy_aug')[t, t] / Σ_y_site[t, t]`. Supply the
-fitted phylogenetic VCV explicitly when the diagonal is not unit.
+`H²[t] = (Λ_phy_aug Λ_phy_aug')[t, t] / ((Λ_phy_aug Λ_phy_aug')[t, t] +
+Σ_y_site[t, t])`. Supply the fitted phylogenetic VCV explicitly when the
+diagonal is not unit.
 """
 function phylo_signal(fit::GllvmFit; Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
     spec = _derived_spec(fit)
@@ -319,7 +325,10 @@ function phylo_signal(fit::GllvmFit; Σ_phy::Union{Nothing, AbstractMatrix} = no
     Σ = sigma_y_site(fit)
     diag_Σphy = Σ_phy === nothing ? ones(Float64, p) : diag(Σ_phy)
     ΛΛt = Λ_phy_aug * Λ_phy_aug'
-    return [ΛΛt[t, t] * diag_Σphy[t] / Σ[t, t] for t in 1:p]
+    return [begin
+        σ²phy = ΛΛt[t, t] * diag_Σphy[t]
+        σ²phy / (σ²phy + Σ[t, t])
+    end for t in 1:p]
 end
 
 # ---------------------------------------------------------------------------
@@ -489,6 +498,12 @@ function bootstrap_ci_derived(fit::GllvmFit, derived_fn::Function;
 
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     n_boot ≥ 1   || throw(ArgumentError("n_boot must be ≥ 1; got $n_boot"))
+
+    if _has_gaussian_record(fit)
+        data=y===nothing ? fit.integration.data.responses : y
+        return _gaussian_record_bootstrap_derived(fit,derived_fn;Y=data,X=X,Σ_phy=Σ_phy,
+            n_sites=n_sites,n_boot=n_boot,level=level,seed=seed)
+    end
 
     model = fit.model
     p     = model.p
@@ -686,6 +701,8 @@ function _derived_refit_with_fixed(fit::GllvmFit,
                                    g_tol::Real = 1e-4,
                                    iterations::Integer = 300)
     spec = _derived_spec(fit)
+    target_nll=_has_gaussian_record(fit) ? _gaussian_record_ci(fit,y;X=X,Σ_phy=Σ_phy).nll :
+        (theta->_derived_safe_nll(theta,y,spec,_profile_free_X(fit,X),Σ_phy))
     θ̂ = fit.pars.θ_packed
     θ0 = θ_warm === nothing ? collect(Float64, θ̂) : collect(Float64, θ_warm)
 
@@ -728,7 +745,7 @@ function _derived_refit_with_fixed(fit::GllvmFit,
     # from the previous minimiser.
     for w in schedule
         nll_pen = θ -> begin
-            nll = _derived_safe_nll(θ, y, spec, X, Σ_phy)
+            nll = target_nll(θ)
             g = derived_fn_packed(θ)
             return nll + 0.5 * w * (g - c_float)^2
         end
@@ -741,7 +758,12 @@ function _derived_refit_with_fixed(fit::GllvmFit,
     end
 
     θ_min = θ0
-    nll_unpen = _derived_safe_nll(θ_min, y, spec, X, Σ_phy)
+    nll_unpen = try
+        target_nll(θ_min)
+    catch e
+        e isa InterruptException && rethrow()
+        return (NaN,false,θ_min,NaN)
+    end
     # If the final unpenalised NLL is still at the barrier, the refit
     # landed in a non-PD region of θ-space — treat as a failure.
     if !isfinite(nll_unpen) || nll_unpen ≥ _DERIVED_NLL_BARRIER / 2
@@ -959,4 +981,196 @@ function profile_ci_derived(fit::GllvmFit, derived_fn::Function;
     end
     return (lower = lower, upper = upper,
             estimate = g_hat, method = method)
+end
+
+# ---------------------------------------------------------------------------
+# Feasible-range clamp + boundary flag for a profile_ci_derived result.
+#
+# profile_ci_derived's bracket-then-bisect walk has no notion of the derived
+# quantity's natural feasible range [lo_bound, hi_bound]: a bound can
+# overshoot past it (numerical slack near a genuinely near-boundary
+# optimum), or the deviance can plateau below the χ²₁ cutoff all the way out
+# to the range edge without ever crossing it (max_expand exhausted → NaN /
+# :partial, indistinguishable from an unrelated bracketing failure). This
+# wrapper (1) clamps any bound that violates the feasible range back to the
+# edge, and (2) for a NaN bound with a finite edge, evaluates the deviance
+# AT the edge itself — if it is still below cutoff, the CI plateaus at the
+# boundary and that is reported as the bound with `boundary = true`, rather
+# than a bare NaN/:partial.
+# ---------------------------------------------------------------------------
+function _profile_ci_bounded(fit::GllvmFit, derived_fn::Function, r::NamedTuple;
+                             level::Real, y::AbstractMatrix,
+                             X::Union{Nothing, AbstractArray{<:Real, 3}},
+                             Σ_phy::Union{Nothing, AbstractMatrix},
+                             lo_bound::Real, hi_bound::Real)
+    cutoff = quantile(Chisq(1), level)
+    lower, upper, boundary = r.lower, r.upper, false
+
+    if isfinite(lower) && lower < lo_bound
+        lower, boundary = float(lo_bound), true
+    elseif isnan(lower) && isfinite(lo_bound)
+        ll_c, ok, _, _ = _derived_refit_with_fixed(fit, derived_fn, lo_bound, y, X, Σ_phy)
+        if ok
+            D = 2.0 * (fit.logLik - ll_c)
+            if isfinite(D) && D ≤ cutoff
+                lower, boundary = float(lo_bound), true
+            end
+        end
+    end
+
+    if isfinite(upper) && upper > hi_bound
+        upper, boundary = float(hi_bound), true
+    elseif isnan(upper) && isfinite(hi_bound)
+        ll_c, ok, _, _ = _derived_refit_with_fixed(fit, derived_fn, hi_bound, y, X, Σ_phy)
+        if ok
+            D = 2.0 * (fit.logLik - ll_c)
+            if isfinite(D) && D ≤ cutoff
+                upper, boundary = float(hi_bound), true
+            end
+        end
+    end
+
+    method = if isnan(lower) && isnan(upper)
+        :failed
+    elseif isnan(lower) || isnan(upper)
+        :partial
+    else
+        :profile
+    end
+
+    return merge(r, (; lower = lower, upper = upper, boundary = boundary, method = method))
+end
+
+# ---------------------------------------------------------------------------
+# Thin profile-CI wrappers named to match the missing-surface case map
+# (docs/dev-log/core070/required-source-case-map.json rows
+# namespace/export/profile_ci_total_variance,
+# namespace/export/profile_ci_phylo_signal). Both are one-line closures over
+# the generic profile_ci_derived machinery above; no new numerical method.
+# ---------------------------------------------------------------------------
+
+# Total per-trait variance Σ_y_site[t,t] from the packed θ. AD-friendly
+# (reuses _sigma_y_site_from_unpacked, already ForwardDiff-clean).
+function _total_variance_packed(θ::AbstractVector, spec::NamedTuple, t::Integer)
+    Σ = _sigma_y_site_packed(θ, spec)
+    return Σ[t, t]
+end
+
+function _make_total_variance_closure(spec::NamedTuple, t::Integer)
+    return θ -> _total_variance_packed(θ, spec, t)
+end
+
+"""
+    profile_ci_total_variance(fit::GllvmFit, t::Integer; level=0.95, y=nothing,
+                              X=nothing, Σ_phy=nothing, kwargs...)
+        -> NamedTuple
+
+Profile-likelihood CI for the per-trait total variance `Σ_y_site[t, t]`
+(see [`sigma_y_site`](@ref) for the definition). Thin wrapper around
+[`profile_ci_derived`](@ref) with `derived_fn = θ -> Σ_y_site(θ)[t, t]`; all
+keyword arguments (`penalty_weight`, `initial_step`, `max_expand`,
+`max_bisect`) are forwarded. `t` is a 1-based trait index. No transform is
+applied — the total variance is strictly positive but unbounded above, so
+the raw-scale bracket-then-bisect search (mirroring how this file already
+profiles `σ²_eps`) can in principle return a `lower` bound that drifted at
+or below `0`, or a plateau that never crosses the χ²₁ cutoff before the
+bracket expansion gives up. [`_profile_ci_bounded`](@ref) is applied to the
+result: any `lower < 0` is clamped to `0`, and a `NaN` `lower` whose
+deviance-at-`0` is itself still below cutoff is reported as `lower = 0`
+instead — both cases set the additional `boundary::Bool` field on the
+returned NamedTuple.
+"""
+function profile_ci_total_variance(fit::GllvmFit, t::Integer;
+                                   level::Real = 0.95,
+                                   y::Union{Nothing, AbstractMatrix} = nothing,
+                                   X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                   Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                                   kwargs...)
+    spec = _derived_spec(fit)
+    f = _make_total_variance_closure(spec, t)
+    r = profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                           kwargs...)
+    return _profile_ci_bounded(fit, f, r; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                               lo_bound = 0.0, hi_bound = Inf)
+end
+
+"""
+    profile_ci_phylo_signal(fit::GllvmFit, t::Integer; level=0.95, y=nothing,
+                            X=nothing, Σ_phy=nothing, kwargs...)
+        -> NamedTuple
+
+Profile-likelihood CI for the per-trait phylogenetic signal `H²[t]` (see
+[`phylo_signal`](@ref)). Thin wrapper around [`profile_ci_derived`](@ref)
+using the packed-θ closure `GLLVM._make_phylo_signal_closure`
+(`src/confint_derived_wald.jl`) — the same closure the transformed-Wald
+route `phylo_signal_wald_ci` uses, so the point estimate matches to the
+bit. `Σ_phy` enters only through its diagonal (standardised convention →
+unit diagonal when omitted), consistent with `phylo_signal`/
+`phylo_signal_wald_ci`. `t` is a 1-based trait index; all keyword
+arguments forward to `profile_ci_derived`.
+
+`H²[t] ∈ [0, 1]` (see [`phylo_signal`](@ref)): [`_profile_ci_bounded`](@ref)
+is applied to the result, clamping any bound outside `[0, 1]` back to the
+edge and reporting a boundary plateau (deviance-at-`0`-or-`1` already below
+the χ²₁ cutoff) as that edge instead of `NaN`/`:partial`. The returned
+NamedTuple carries the additional `boundary::Bool` field.
+"""
+function profile_ci_phylo_signal(fit::GllvmFit, t::Integer;
+                                 level::Real = 0.95,
+                                 y::Union{Nothing, AbstractMatrix} = nothing,
+                                 X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                 Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                                 kwargs...)
+    spec = _derived_spec(fit)
+    diag_Σphy = Σ_phy === nothing ? nothing : diag(Σ_phy)
+    f = _make_phylo_signal_closure(spec, t; diag_Σphy = diag_Σphy)
+    r = profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                           kwargs...)
+    return _profile_ci_bounded(fit, f, r; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                               lo_bound = 0.0, hi_bound = 1.0)
+end
+
+"""
+    loading_profile(fit::GllvmFit, t::Integer, k::Integer; level=0.95,
+                    y=nothing, X=nothing, Σ_phy=nothing, component=:B,
+                    kwargs...)
+        -> NamedTuple
+
+Profile-likelihood CI for the RAW reduced-rank loading entry `Λ[t, k]`
+(`component = :B`, default — the shared/between tier; `component = :W` for
+the within tier). This is the `loading_profile()` surface R's `loading_ci(
+method = "profile")` calls (`.unlazy/core070-aghq/oracle-source/readback/R/
+loading-profile.R`) — GLLVM.jl's dense reduced-rank fit has no separate
+grid-search profiler for Λ, so this is a thin wrapper around
+[`profile_ci_derived`](@ref) using the packed-θ closure
+`θ -> Λ_component(θ)[t, k]`; all keyword arguments forward.
+
+For `k > t` on the lower-triangular reduced-rank packing convention
+(`src/packing.jl`), the entry is structurally pinned at `0`: this returns
+`(lower = 0.0, upper = 0.0, estimate = 0.0, method = :pinned)` without
+running the profiler, matching the `pinned = TRUE` short-circuit in R's
+`loading_ci()`.
+"""
+function loading_profile(fit::GllvmFit, t::Integer, k::Integer;
+                         level::Real = 0.95,
+                         y::Union{Nothing, AbstractMatrix} = nothing,
+                         X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                         Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                         component::Symbol = :B,
+                         kwargs...)
+    if k > t
+        return (lower = 0.0, upper = 0.0, estimate = 0.0, method = :pinned)
+    end
+    spec = _derived_spec(fit)
+    f = θ -> begin
+        u = _derived_unpack(θ, spec)
+        Λ = component === :B ? u.Λ_B :
+            component === :W ? u.Λ_W :
+            throw(ArgumentError("component must be :B or :W; got $(component)"))
+        Λ === nothing && throw(ArgumentError(
+            "fit has no Λ_$(component) block; loading_profile is undefined"))
+        Λ[t, k]
+    end
+    return profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
+                              kwargs...)
 end

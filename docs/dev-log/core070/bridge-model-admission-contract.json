@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "status": "TWO_BOUND_REFERENCE_BRIDGE_BEHAVIORS_NOT_MODEL_PARITY",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "inputs": {
+    "docs/dev-log/core070/gaussian-required-contract.json": "93400f090057fb6a26db60b866b4b1941dcf9b1003cab0107d4fdb43df59dbb4",
+    "docs/dev-log/core070/registered-models-contract.json": "8b49cc205616479e8ea74703e417bc72b0cf3e517684a37ad344ca8afe41353a",
+    "docs/dev-log/core070/bridge-descriptor-contract.json": "8311e9c5499f8911ffcd57ccb3210c139f582b0fb86373ab3feb22c81d16c3cc"
+  },
+  "cases": [
+    {
+      "id": "CORE070-FAMILY-00-IDENTITY-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "acceptance_level": "reference_bridge_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-00-IDENTITY"
+      ],
+      "model_contract_id": "MODEL-FAMILY-00-IDENTITY",
+      "native_case_id": "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+      "native_contract": "docs/dev-log/core070/gaussian-required-contract.json",
+      "native_contract_row_sha256": "4b6e10a42399a8558238796674aee178e66dc91949fdd40ff7146280e4647450",
+      "native_model_contract": "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda\u2032+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty",
+      "model_contract": "p4,n120,K1,seed81031; zero mean; M=Lambda*Lambda\u2032+diag(psi^2+c^2), c=max(0.001sd(vec(Y)),1e-6) fixed; 4 loadings+4 log unique SD in R; Julia log unique variance=2logSD; exact Gaussian likelihood with constants, no penalty",
+      "fixture": "tools/core070_gaussian_bridge_boundary.R",
+      "fixture_sha256": "2f3a976a00180e828e455a154cfd18f92a2afa5fefa1541debef46bd97bb96d1",
+      "r_call": "gllvmTMB(value~0+latent(0+trait|site,d=1), data=original_gaussian_data, unit=\"site\", trait=\"trait\", family=gaussian(), engine=\"julia\")",
+      "julia_call": "fit_gaussian_pervar_gllvm(Y;K=1,X=zeros(4,120,0),fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)",
+      "bridge_admission": "reference_model_change",
+      "acceptance_rule": "Original zero-mean p4/n120/K1 fixture: default unique request warns and equals explicit unique=false; common residual scale and df5 rather than required df8. This is reference model-change behavior, not same-model parity.",
+      "scope_boundary": "Reference bridge behavior only; native/formula same-model requirements unchanged.",
+      "data_fixture": "test/parity/fixtures/core070_gaussian_original.toml",
+      "data_fixture_sha256": "52a4664c99295ec675a7b666458350bf57ff57e338c77d5ada1cf9d2e5efba92"
+    },
+    {
+      "id": "CORE070-FAMILY-11-LOG-PUBLIC-R-BRIDGE",
+      "coverage_role": "public_r_bridge",
+      "acceptance_level": "reference_bridge_boundary",
+      "source_fact_ids": [
+        "family/FAMILY-11-LOG"
+      ],
+      "model_contract_id": "MODEL-FAMILY-11-LOG",
+      "native_case_id": "NATIVE-12-TRUNCATED-NB2",
+      "native_contract": "docs/dev-log/core070/registered-models-contract.json",
+      "native_contract_row_sha256": "a48376d60c4f936750e6eae0b5ac91971b5d2f5820c1f537d605d88fe2dee679",
+      "native_model_contract": "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; observed Laplace curvature\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log of untruncated mean\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 120, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 58}",
+      "model_contract": "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; observed Laplace curvature\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log of untruncated mean\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 120, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 58}",
+      "fixture": "tools/core070_bridge_descriptor_admission.R",
+      "fixture_sha256": "9bce24f0a764c3c9c93547275b2ff08118275156fcfb07d2af203503feb51d28",
+      "r_call": "gllvm_julia_fit(matrix(1,4,6),family=truncated_nbinom2(),num.lv=1); gllvmTMB(value~0+trait+latent(0+trait|site,d=1,unique=FALSE), data=valid_4_trait_6_unit_data,unit=\"site\",trait=\"trait\",family=truncated_nbinom2(),engine=\"julia\")",
+      "julia_call": "fit_truncated_nbinom2_gllvm_pertrait(Y; K = K)",
+      "bridge_admission": "reference_rejected",
+      "acceptance_rule": "Both exported public routes reproduce the exact GJL-GATE-FAMILY error on valid generic data. Frozen R/julia-bridge.R maps the family before fitting. The original seed58 p5/n120/K1 native model still needs native/formula parity.",
+      "scope_boundary": "Reference bridge behavior only; native/formula same-model requirements unchanged.",
+      "native_data_sha256": "ecbcf9f501c7e618131f2c3f1f0d213bb0e92364a72c0519095c52ef30930948",
+      "descriptor_case_id": "BRIDGE-DESCRIPTOR-FAMILY-11-LOG"
+    }
+  ]
+}

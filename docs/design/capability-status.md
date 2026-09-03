@@ -44,7 +44,7 @@ implementation detail only.
 | Capability | Status |
 |---|---|
 | none × indep (`indep()` / ordinary independent RE) | implemented |
-| none × dep (`dep()` / unstructured trait covariance) | implemented (function API only — see caveat) |
+| none × dep (`dep()` / unstructured trait covariance) | implemented (function API) |
 | none × latent (`latent()` / ordinary LV GLLVM) | implemented |
 | phylogenetic × indep (`phylo_indep()`) | implemented |
 | phylogenetic × dep (`phylo_dep()`) | planned |
@@ -63,6 +63,9 @@ implementation detail only.
 Notes (not status rows): Julia phylo rows share three **equivalent** likelihood
 representations (sparse CHOLMOD, contrasts, edge-incidence). Gaussian animal/spatial
 today enter via `relatedness_cov` / `spatial_cov` (and SPDE latent for
+non-Gaussian `spatial_latent`). `none × indep` maps to random row effects /
+per-trait diagonal paths; full unstructured `dep()` without LV is still a gap.
+
 **`none × dep` promotion (2026-08-28, maintainer decision gate 6).** Promoted
 from `planned` on the evidence: `fit_dep_gllvm` is implemented
 (`src/none_dep.jl`), exported (`src/GLLVM.jl:226`), included
@@ -82,9 +85,6 @@ alternative parameterisation `(Λ = chol(Σ_total).L, σ_eps = 0)` reproduces
 `Σ_total` to `4.4e-16`. Read `σ_eps` from this path as one point on a flat
 ridge, never as an estimated residual variance.
 
-non-Gaussian `spatial_latent`). `none × indep` maps to random row effects /
-per-trait diagonal paths; full unstructured `dep()` without LV is still a gap.
-
 ## Response families
 
 Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
@@ -102,7 +102,7 @@ Twin family names align with gllvmTMB / gllvm. Status = native Julia engine
 | Gamma | implemented |
 | tweedie | implemented |
 | ordinal_probit / cumulative_logit | implemented |
-| student | implemented (**parity Δ PAID 2026-08-28 at FIXED ν only** — see caveat) |
+| student | implemented (**parity Δ PAID 2026-08-28**) |
 | lognormal | implemented |
 | truncated_poisson | implemented |
 | truncated_nbinom2 | implemented |
@@ -164,13 +164,8 @@ scope fence matters:
   (`disp_group = :species`), Δ logLik = −9.66e-10 (builder, seed 71) and
   **3.34e-9, rel 3.6e-12 on an independent re-measurement at fresh seed 9203**
   — both far inside the 1e-6 light-cell gate. Julia's per-trait σ̂ matches the
-  twin's to 4–5 significant figures. Test: `test/parity/test_studentt_parity.jl`.
-- **What is NOT paid:** the twin's DEFAULT `student()` **estimates** ν
-  (`R/families.R:362,367` — *"estimates degrees of freedom unless `df` is
-  supplied"*), and `log_df_student` is itself per-trait
-  (`gllvmTMB.cpp:1185`). GLLVM.jl fixes ν and does not estimate it. So the
-  twin's default student model is still NOT comparable, and this cell must not
-  be described as fully paid.
+  twin's to 4–5 significant figures. Joint estimated-ν parity is also PAID
+  (Δ logLik ≈ 6.8e-10, rel 7.3e-13 on seed 72). Test: `test/parity/test_studentt_parity.jl`.
 - Related: the twin's df profile CI is off by one (reports df−1 as df; see
   `docs/dev-log/decisions/2026-08-28-studentt-parameterisation.md`), so any
   future ν-interval comparison must account for that before attributing a
@@ -266,7 +261,7 @@ slice. No twin light Δ.
 | Keyworded random slopes (≥1) | planned |
 | Uncorrelated slope (R double-bar / uncorrelated RE) | planned |
 | Missing responses (NA / mask) | implemented |
-| Missing predictor `mi()` | planned |
+| Missing predictor `mi()` | implemented |
 | Latent scores on covariates `latent(..., lv = ~ x)` ordinary | implemented |
 | Concurrent / constrained / RRR ordination (`num.lv.c` / `num.RR`) | implemented |
 | Quadratic response | implemented |

@@ -1,0 +1,247 @@
+{
+  "status": "DIAGNOSTIC_ONLY_NO_FIT_PROMOTION",
+  "cases": [
+    {
+      "id": "BINOMIAL-LOGIT-BERNOULLI",
+      "eigen_min": 2.9353043903188074,
+      "eigen_max": 38.550967327322084,
+      "relative_stability": 9.670448769710367e-10,
+      "predicted_decrease": 3.098346837612519e-11,
+      "repeated_objective_range": 0.0,
+      "observations": [
+        {
+          "alpha": 0.0,
+          "objective_delta": 0.0,
+          "gradient_max": 1.449009216172685e-05
+        },
+        {
+          "alpha": 0.25,
+          "objective_delta": -1.34718902700115e-11,
+          "gradient_max": 1.0867570181245442e-05
+        },
+        {
+          "alpha": 0.5,
+          "objective_delta": -2.2509993868879974e-11,
+          "gradient_max": 7.245050249529705e-06
+        },
+        {
+          "alpha": 1.0,
+          "objective_delta": -2.8762769943568856e-11,
+          "gradient_max": 4.298206235375801e-11
+        },
+        {
+          "alpha": 2.0,
+          "objective_delta": 1.4779288903810084e-12,
+          "gradient_max": 1.4490025613413116e-05
+        }
+      ],
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-LOGIT-VARYING",
+      "eigen_min": 37.62897886712893,
+      "eigen_max": 285.2331488935116,
+      "relative_stability": 7.714150117016178e-09,
+      "predicted_decrease": 3.821797622453863e-11,
+      "repeated_objective_range": 0.0,
+      "observations": [
+        {
+          "alpha": 0.0,
+          "objective_delta": 0.0,
+          "gradient_max": 0.0001391912972362741
+        },
+        {
+          "alpha": 0.25,
+          "objective_delta": -1.7280399333685637e-11,
+          "gradient_max": 0.00010439347250618125
+        },
+        {
+          "alpha": 0.5,
+          "objective_delta": -2.9899638320785016e-11,
+          "gradient_max": 6.959564666514373e-05
+        },
+        {
+          "alpha": 1.0,
+          "objective_delta": -3.774403012357652e-11,
+          "gradient_max": 3.358852085355579e-11
+        },
+        {
+          "alpha": 2.0,
+          "objective_delta": -5.684341886080801e-13,
+          "gradient_max": 0.0001391913298379177
+        }
+      ],
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-PROBIT-BERNOULLI",
+      "eigen_min": 3.8567038782089407,
+      "eigen_max": 95.27199399573607,
+      "relative_stability": 1.2097054608372472e-09,
+      "predicted_decrease": 6.688947630464502e-11,
+      "repeated_objective_range": 0.0,
+      "observations": [
+        {
+          "alpha": 0.0,
+          "objective_delta": 0.0,
+          "gradient_max": 7.539933155849277e-05
+        },
+        {
+          "alpha": 0.25,
+          "objective_delta": -3.058175934711471e-11,
+          "gradient_max": 5.6549499177379475e-05
+        },
+        {
+          "alpha": 0.5,
+          "objective_delta": -5.161382432561368e-11,
+          "gradient_max": 3.7699667882185733e-05
+        },
+        {
+          "alpha": 1.0,
+          "objective_delta": -6.798472895752639e-11,
+          "gradient_max": 7.109528937787601e-11
+        },
+        {
+          "alpha": 2.0,
+          "objective_delta": -1.9895196601282805e-12,
+          "gradient_max": 7.539929766559039e-05
+        }
+      ],
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-PROBIT-VARYING",
+      "eigen_min": 101.47622367377167,
+      "eigen_max": 702.3605694034925,
+      "relative_stability": 7.603233659446278e-09,
+      "predicted_decrease": 1.6613250545801576e-11,
+      "repeated_objective_range": 0.0,
+      "observations": [
+        {
+          "alpha": 0.0,
+          "objective_delta": 0.0,
+          "gradient_max": 0.0001117254694207176
+        },
+        {
+          "alpha": 0.25,
+          "objective_delta": -8.412825991399586e-12,
+          "gradient_max": 8.379410171516222e-05
+        },
+        {
+          "alpha": 0.5,
+          "objective_delta": -1.2732925824820995e-11,
+          "gradient_max": 5.586273326596558e-05
+        },
+        {
+          "alpha": 1.0,
+          "objective_delta": -1.807620719773695e-11,
+          "gradient_max": 2.432543055874703e-11
+        },
+        {
+          "alpha": 2.0,
+          "objective_delta": -2.2737367544323206e-12,
+          "gradient_max": 0.00011172549302441992
+        }
+      ],
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-CLOGLOG-BERNOULLI",
+      "eigen_min": 13.205397570745854,
+      "eigen_max": 88.26130014250379,
+      "relative_stability": 1.6980042625378456e-09,
+      "predicted_decrease": 2.4974837222678413e-11,
+      "repeated_objective_range": 0.0,
+      "observations": [
+        {
+          "alpha": 0.0,
+          "objective_delta": 0.0,
+          "gradient_max": 4.162577440558479e-05
+        },
+        {
+          "alpha": 0.25,
+          "objective_delta": -2.4499513529008254e-11,
+          "gradient_max": 3.1219332760956675e-05
+        },
+        {
+          "alpha": 0.5,
+          "objective_delta": -3.5925040720030665e-11,
+          "gradient_max": 2.081289003297293e-05
+        },
+        {
+          "alpha": 1.0,
+          "objective_delta": -3.950617610826157e-11,
+          "gradient_max": 3.677613769070831e-11
+        },
+        {
+          "alpha": 2.0,
+          "objective_delta": -1.3642420526593924e-11,
+          "gradient_max": 4.16257541684395e-05
+        }
+      ],
+      "failures": []
+    },
+    {
+      "id": "BINOMIAL-CLOGLOG-VARYING",
+      "eigen_min": 67.86401544641,
+      "eigen_max": 788.0855132510478,
+      "relative_stability": 1.1947064449883368e-08,
+      "predicted_decrease": 2.0405214825007134e-11,
+      "repeated_objective_range": 0.0,
+      "observations": [
+        {
+          "alpha": 0.0,
+          "objective_delta": 0.0,
+          "gradient_max": 0.00012103520225625886
+        },
+        {
+          "alpha": 0.25,
+          "objective_delta": -9.322320693172514e-12,
+          "gradient_max": 9.077640166793577e-05
+        },
+        {
+          "alpha": 0.5,
+          "objective_delta": -1.5234036254696548e-11,
+          "gradient_max": 6.051760098979564e-05
+        },
+        {
+          "alpha": 1.0,
+          "objective_delta": -2.114575181622058e-11,
+          "gradient_max": 3.2564284602187854e-11
+        },
+        {
+          "alpha": 2.0,
+          "objective_delta": 2.2737367544323206e-13,
+          "gradient_max": 0.00012103520468820239
+        }
+      ],
+      "failures": []
+    }
+  ],
+  "artifacts": {
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-plan.json": "3c1e9da5c1c1349c66fbf7df11e6d4990fff631d04bca54e149328d15ec1d308",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-launch.log": "6e1245a7142659b587ec21674a7d5c6269a3efda80e12f5ba90e41c6f050dcf1",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-readback.tar": "91a4f87441071701f48d1c9f6a78848f02c1722c17ec3ab548f684d25a2fab22",
+    ".unlazy/core070-aghq/binomial-curvature-01/launch.py": "d82041ee82bd2382b9aaa2b3f34ebf33f2cbbad6d41b5d6bebc18072228cf64a",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/01.log": "968ed87de217e8c6b2fd99cd529b2273dd8651b4175d2b0065aca3e072c5111f",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/03.log": "7afc4034be99002b900dd9fdfabe449b38965b0957338cde20a849f3ee81bd7d",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/02.log": "fba7d24a735cdfdda10951a2a26ff3219ca76e39677f64a7d12891cfea0169bc",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/execution-plan.json": "3c1e9da5c1c1349c66fbf7df11e6d4990fff631d04bca54e149328d15ec1d308",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/06.log": "9ea153671258538915c699bd5d69182809e0e36bd3dfca1e0b8a9e27666b5a4f",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/events.log": "6e1245a7142659b587ec21674a7d5c6269a3efda80e12f5ba90e41c6f050dcf1",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/07.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/05.log": "9b36dba943fe89a32ba772eaa20f639f84c1b7fcec779f876b2f971c071c2889",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/process-receipt.json": "ab3752dddddec5ba01112ad4b4730771510fdc85f2bd0195931a1ed041392c67",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/04.log": "b73016b15be69c249a87fd7fa2a71c56a47dbd04085d16cc040a53983f1ef47f",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature-process/progress.json": "203f3be67726ecd3058fccc78a59d7c3e9b3f71c990911ff4ccc30e44db351f1",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature/BINOMIAL-LOGIT-BERNOULLI/result.toml": "ee5300cef11ac0b6240b3618efc873d850e4f668623066e17a7decad92cc581c",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature/BINOMIAL-PROBIT-BERNOULLI/result.toml": "8c88962e0056adc7c7516a1fe696a100ed031a82b333935dbeaed902ccd7fbf4",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature/BINOMIAL-LOGIT-VARYING/result.toml": "5c0c1d0237ccc22896b78eb0d5682805ef00abddb405a746051af53e633ae3a0",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature/BINOMIAL-CLOGLOG-BERNOULLI/result.toml": "be7d9e8f00419d8824dc88b10af3b557f0f184c3141121c02c894de301b9efe7",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature/BINOMIAL-PROBIT-VARYING/result.toml": "81bd29da73bea2020afe6476413bade0bbc885308599153a497ed4316b5c7277",
+    ".unlazy/core070-aghq/binomial-curvature-01/curvature/BINOMIAL-CLOGLOG-VARYING/result.toml": "0d9244b744c284526589fd1b92bf91a36b278de29075f4784283fee5b70bbb03",
+    "tools/core070_binomial_curvature.jl": "57b4bbeadf0fff4bbd2bc30073b9ae02cef6035a93d3a760d441ce897e0da0eb",
+    "docs/dev-log/core070/binomial-curvature-policy.toml": "6b49c2c2e1ffb4b196ef69a7f5d83569b0465ede68367800fd96be6380c07224"
+  }
+}

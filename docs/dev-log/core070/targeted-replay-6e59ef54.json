@@ -1,0 +1,118 @@
+{
+  "numerical_candidate": "6e59ef546fec4f8465186eacc997e11913ecb614",
+  "scope": "targeted M1 family checks only",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "host": "Totoro",
+  "julia": "1.12.6",
+  "r": "4.5.3",
+  "threads": 1,
+  "blas_threads": 1,
+  "batch_status": "FAIL",
+  "tweedie": {
+    "status": "PASS",
+    "assertions_passed": 28,
+    "assertions_failed": 0,
+    "comparisons": [
+      {
+        "power_contract": "fixed",
+        "julia_loglik": -1065.0974499677473,
+        "r_loglik": -1065.0974499918532,
+        "absolute_delta": 2.410592969681602e-08
+      },
+      {
+        "power_contract": "shared",
+        "julia_loglik": -1064.0123700628378,
+        "r_loglik": -1064.0123701164218,
+        "absolute_delta": 5.358401722332928e-08
+      },
+      {
+        "power_contract": "species",
+        "julia_loglik": -1057.5665192134634,
+        "r_loglik": -1057.5665192439374,
+        "absolute_delta": 3.047398422495462e-08
+      }
+    ],
+    "r_free_counts": [
+      15,
+      16,
+      20
+    ],
+    "r_free_power_counts": [
+      0,
+      1,
+      5
+    ],
+    "r_scaled_gradients": [
+      8.182050488084539e-07,
+      5.394517895786788e-07,
+      6.969528443068581e-07
+    ],
+    "hessian": "not measured; se=FALSE"
+  },
+  "student": {
+    "status": "FAIL",
+    "assertions_passed": 31,
+    "assertions_failed": 2,
+    "original_absolute_delta": 0.0007305893702778121,
+    "absolute_tolerance": 0.001,
+    "r_optimizer_code": 1,
+    "r_optimizer_message": "false convergence (8)",
+    "r_optimizer_iterations": 136
+  },
+  "process_results": [
+    {
+      "id": "tweedie",
+      "argv": [
+        "/usr/bin/env",
+        "CORE070_PARITY_CASE_IDS=NATIVE-07-TWEEDIE",
+        "GLLVM_PARITY_RECEIPT_DIR=/home/snakagaw/core070-aghq-20260830/integrated-6e59ef54/tweedie-receipts",
+        "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--project=test/parity",
+        "test/parity/runparity.jl"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 710.6192864645272,
+      "log": "00.log",
+      "log_sha256": "6be6ce3297d1e45f4b15a5be8928139051098cd5fd698d8b66e04f683202ce2c"
+    },
+    {
+      "id": "student",
+      "argv": [
+        "/usr/bin/env",
+        "CORE070_PARITY_CASE_IDS=NATIVE-10-STUDENT",
+        "GLLVM_PARITY_RECEIPT_DIR=/home/snakagaw/core070-aghq-20260830/integrated-6e59ef54/student-receipts",
+        "/home/snakagaw/.julia/juliaup/julia-1.12.6+0.x64.linux.gnu/bin/julia",
+        "--startup-file=no",
+        "--project=test/parity",
+        "test/parity/runparity.jl"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 34.400027783587575,
+      "log": "01.log",
+      "log_sha256": "79f22d282c68f6ca75f3f2100e32eb34a4ec5b3f0dfff4611ad5cc23875890d9"
+    }
+  ],
+  "raw_root": ".unlazy/core070-aghq/integrated-recheck/paired-6e59ef54",
+  "file_hashes": {
+    "paired-output/00.log": "6be6ce3297d1e45f4b15a5be8928139051098cd5fd698d8b66e04f683202ce2c",
+    "paired-output/01.log": "79f22d282c68f6ca75f3f2100e32eb34a4ec5b3f0dfff4611ad5cc23875890d9",
+    "paired-output/process-receipt.json": "11063d7b60f9e29fba2dab285caf96cf6fc7bcbad1277b0d02056362d0dd779d",
+    "paired-output/progress.json": "55ad1bad5738565c4d729806ba7604042708ce60b2d8863c00c9496edc4fc43f",
+    "student-receipts/source.json": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    "student-receipts/run.toml": "2a3e5d08b95853982e72234be95ebd7da472e06c57954097570a4c064f061596",
+    "student-receipts/cell-NATIVE-10-STUDENT.toml": "7ce0c1e90084ba33082be6c2421300706b884157add2b164b46c3ad023a3a3e1",
+    "student-receipts/build.json": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4",
+    "tweedie-receipts/source.json": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    "tweedie-receipts/run.toml": "7611b0a423cef853d9699012bc024cdaeb601199f21779a402883ee4287b0aa0",
+    "tweedie-receipts/cell-NATIVE-07-TWEEDIE.toml": "a3553965d3087275f55559bf1b3828fccd1f9edc86e6f66252272ab5f006e253",
+    "tweedie-receipts/build.json": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4"
+  },
+  "limitations": [
+    "full capability manifest not frozen",
+    "no full suite or original CI-environment validation",
+    "no recovery/coverage claim",
+    "external process binding still required before full aggregation",
+    "numerical candidate6e59ef54; later commits change supervisor and documentation only"
+  ]
+}

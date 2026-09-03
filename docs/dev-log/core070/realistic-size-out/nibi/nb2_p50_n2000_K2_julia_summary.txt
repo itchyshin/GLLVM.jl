@@ -1,0 +1,11 @@
+family=nb2
+p=50 n=2000 K=2 seed=1024
+converged=true
+logLik=-224682.83238429754
+hessian_selector=observed (grouped default)
+wall_fit_sec=3886.3755872249603
+dispersion_boundary=Bool[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+pd_hessian=true
+wall_confint_sec=5494.230283975601
+boundary_terms=
+cond_H=858.4747161378777

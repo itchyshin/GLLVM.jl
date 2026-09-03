@@ -1,0 +1,19 @@
+{
+  "scope": "RETAINED_PARAMETER_SCALAR_DIAGNOSTIC_NOT_FITTED_HEALTH",
+  "engine_changed": false,
+  "fit_health_passed": false,
+  "assertions": 900,
+  "runtime": ".unlazy/core070-aghq/student-retained-scalar",
+  "artifacts": {
+    ".unlazy/core070-aghq/student-retained-scalar/negative-plan.json": "e35eee242839af3ff3346c6d4736b964979e89fe0cf1f94c2c33dfbaeb1df6b6",
+    ".unlazy/core070-aghq/student-retained-scalar/plan1.json": "0b1e2f75e0ddac333f614de8b44ab1e2f707bdd2bed3701a6ba34ee52daef450",
+    ".unlazy/core070-aghq/student-retained-scalar/process1/00.log": "ba035bb22802a44118cd7ea6025284b74da8a125116868430b9112b599988575",
+    ".unlazy/core070-aghq/student-retained-scalar/process1/execution-plan.json": "0b1e2f75e0ddac333f614de8b44ab1e2f707bdd2bed3701a6ba34ee52daef450",
+    ".unlazy/core070-aghq/student-retained-scalar/process1/process-receipt.json": "19f6a67e6d15164ecc344c997aeaba7f65e11b88cea70a6b994033b9a4b28986",
+    ".unlazy/core070-aghq/student-retained-scalar/process1/progress.json": "477de0bd2b1df4999467170776e522a45ea45bae832772e52aab6e601598aa80",
+    ".unlazy/core070-aghq/student-retained-scalar/negative-process/00.log": "33f18bff0673e333ed20180a86efdc125b7c7eecb6bc7ec4d0a0e0be756c3594",
+    ".unlazy/core070-aghq/student-retained-scalar/negative-process/execution-plan.json": "e35eee242839af3ff3346c6d4736b964979e89fe0cf1f94c2c33dfbaeb1df6b6",
+    ".unlazy/core070-aghq/student-retained-scalar/negative-process/process-receipt.json": "bd0e16db110fd6bb8b0e6f3fc43e69f0eb4322b4d8597996496ef8478a9c69f4",
+    ".unlazy/core070-aghq/student-retained-scalar/negative-process/progress.json": "fb30e4fc061d85c934899a602a701e44b7a8a4230ce42177f6266d2b2c5912bf"
+  }
+}

@@ -1,0 +1,722 @@
+{
+ "area": "covariance",
+ "rows": [
+  {
+   "source_id": "covariance/COV-ANIMAL-LATENT",
+   "planned_case_ids": [
+    "STRUCT-ANI-PED-SPARSE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/structured-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "structured_reference_case_ids already names STRUCT-ANI-PED-SPARSE (sparse pedigree animal-model native case) as the planned coverage for this fact; no additional case needed beyond what that annex already tracks.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-KERNEL-FOLDED-UNIQUE",
+   "planned_case_ids": [
+    "STRUCT-KER-SINGLE-PSI",
+    "STRUCT-KER-MULTI",
+    "STRUCT-KER-MULTI-PSI-PRUNED"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/structured-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "structured_reference_case_ids already names three kernel-latent structured cases covering single-psi, multi-kernel, and pruned multi-psi-kernel shapes; the folded/auto-unique reduced-rank variant of kernel_latent() is covered by the same kernel-model fixtures (folding is a loading-construction detail on top of the same kernel covariance, not a distinct fit).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-KERNEL-LATENT",
+   "planned_case_ids": [
+    "STRUCT-KER-SINGLE-PSI",
+    "STRUCT-KER-MULTI",
+    "STRUCT-KER-MULTI-PSI-PRUNED"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/structured-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "structured_reference_case_ids already names the kernel-latent structured cases; no additional case needed beyond what that annex already tracks.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-ORD-SLOPE",
+   "planned_case_ids": [
+    "SLOPE-ORD-LAT-DEFAULT",
+    "SLOPE-ORD-LAT-POISDEFAULT"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "slope_reference_case_ids already names the default-unique ordinal-augmented-slope Gaussian and Poisson cases as the planned coverage for latent(1+x|site,d=1); no additional case needed.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-ORD-SLOPE-NOUNIQUE",
+   "planned_case_ids": [
+    "SLOPE-ORD-LAT-NOUNIQUE",
+    "SLOPE-ORD-LAT-POISNOUNIQUE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "slope_reference_case_ids already names the unique=FALSE ordinal-augmented-slope Gaussian and Poisson cases as the planned coverage; no additional case needed.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-INDEP",
+   "planned_case_ids": [
+    "STRUCT-PHY-TREE-RR",
+    "STRUCT-PHY-DENSE-RR",
+    "STRUCT-PHY-TREE-PROPTO"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/structured-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "structured_reference_case_ids already names the tree-RR, dense-RR, and tree-proportional structured phylo cases; phylo_indep(0+trait|species) is the independent-loading variant of the same reduced-rank phylo covariance already exercised by those fixtures.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-LATENT",
+   "planned_case_ids": [
+    "STRUCT-PHY-TREE-RR",
+    "STRUCT-PHY-DENSE-RR",
+    "STRUCT-PHY-TREE-PROPTO"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/structured-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "structured_reference_case_ids already names the tree-RR, dense-RR, and tree-proportional structured phylo cases as the planned coverage for phylo_latent(species); no additional case needed.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F00-L0",
+   "planned_case_ids": [
+    "SLOPE-ORD-LAT-DEFAULT",
+    "SLOPE-ORD-LAT-NOUNIQUE",
+    "SLOPE-ORD-LAT-RANK4",
+    "SLOPE-ANIMAL-INDEP-BAR",
+    "SLOPE-ANIMAL-INDEP-DBAR",
+    "SLOPE-ANIMAL-DEP-BAR",
+    "SLOPE-ANIMAL-DEP-DBAR",
+    "SLOPE-ANIMAL-LAT-NOUNIQUE",
+    "SLOPE-ANIMAL-LAT-DEFAULT",
+    "SLOPE-PHYLO-DEP-MULTIGAUSS"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "slope_reference_case_ids names all ten gaussian-family (family_id=0, link_id=0) augmented-slope reference cases spanning ordinal-latent, animal, and phylo routes as the planned coverage for .augmented_slope_family_allowed(0,0); all ten are retained here (narrowing to a 5-ID subset was a drafting error — narrowing frozen coverage is a maintainer decision, not a draft decision, so the full input list is kept verbatim rather than proposed for reduction).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F02-L0",
+   "planned_case_ids": [
+    "SLOPE-ORD-LAT-POISDEFAULT",
+    "SLOPE-ORD-LAT-POISNOUNIQUE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "slope_reference_case_ids already names the Poisson (family_id=2, link_id=0) augmented-slope cases as the planned coverage for .augmented_slope_family_allowed(2,0); no additional case needed.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SPATIAL-DEP",
+   "planned_case_ids": [
+    "STRUCT-SPA-INDEP",
+    "STRUCT-SPA-LATENT",
+    "STRUCT-SPA-LATENT-PSI",
+    "STRUCT-SPA-DEP",
+    "STRUCT-SPA-COMMON-MAP"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/structured-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "structured_reference_case_ids already names STRUCT-SPA-DEP directly, plus the surrounding spatial-structured family; no additional case needed.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SPATIAL-FOLDED-UNIQUE",
+   "planned_case_ids": [
+    "STRUCT-SPA-INDEP",
+    "STRUCT-SPA-LATENT",
+    "STRUCT-SPA-LATENT-PSI",
+    "STRUCT-SPA-DEP",
+    "STRUCT-SPA-COMMON-MAP"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/structured-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "structured_reference_case_ids already names the spatial-structured case family (STRUCT-SPA-LATENT-PSI covers the unique-diagonal spatial_latent(unique=TRUE) shape); no additional case needed.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SPATIAL-INDEP",
+   "planned_case_ids": [
+    "STRUCT-SPA-INDEP",
+    "STRUCT-SPA-LATENT",
+    "STRUCT-SPA-LATENT-PSI",
+    "STRUCT-SPA-DEP",
+    "STRUCT-SPA-COMMON-MAP"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/structured-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "structured_reference_case_ids already names STRUCT-SPA-INDEP directly; no additional case needed.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SPATIAL-LATENT",
+   "planned_case_ids": [
+    "STRUCT-SPA-INDEP",
+    "STRUCT-SPA-LATENT",
+    "STRUCT-SPA-LATENT-PSI",
+    "STRUCT-SPA-DEP",
+    "STRUCT-SPA-COMMON-MAP"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/structured-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "structured_reference_case_ids already names STRUCT-SPA-LATENT directly; no additional case needed.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-ANIMAL-FOLDED-UNIQUE",
+   "planned_case_ids": [
+    "CORE070-COV-ANIMAL-FOLDED-UNIQUE-FORMULA",
+    "CORE070-COV-ANIMAL-FOLDED-UNIQUE-NATIVE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-ANIMAL-FOLDED-UNIQUE-FORMULA",
+     "r_call": "gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + trait + animal_latent(species, A = A, d = 2, unique = TRUE))) -- expect covstructs to contain a phylo_rr entry with extra$vcv resolving to A and extra$d == 2, plus a second phylo_rr entry with extra$.phylo_unique == TRUE, extra$.auto_unique == TRUE, and extra$vcv resolving to A (R/brms-sugar.R:3035-3040: animal_latent(id, d=K, ...) desugars to phylo_rr(id, d=K, vcv=A) + phylo_rr(id, .phylo_unique=TRUE, .auto_unique=TRUE, vcv=A) by default when unique=TRUE).",
+     "julia_surface": "No Julia formula-grammar entry point exists for animal_latent(); GLLVM.jl (src/formula.jl) only wraps a StatsModels-style site-level design formula. The nearest engine primitive is passing a user-supplied pedigree/GRM matrix directly as the Sigma_phy argument of fit_gaussian_gllvm / sparse_phy_grad.jl, which has no automatic folded/auto-unique reduced-rank loading construction.",
+     "comparands": [
+      "gllvmTMB term_has() admission fixture (frozen reference b4d5fee6)",
+      "planned GLLVM.jl formula-grammar parse test (not yet implemented)"
+     ],
+     "evidence_kind": "formula"
+    },
+    {
+     "case_id": "CORE070-COV-ANIMAL-FOLDED-UNIQUE-NATIVE",
+     "r_call": "gllvmTMB fit using animal_latent(species, A=A, unique=TRUE) on a 2-trait Gaussian response with a supplied relatedness matrix A",
+     "julia_surface": "planned: fit_gaussian_gllvm(Y; Sigma_phy=A, K=2) with a folded/auto-unique loading constraint reproduced by hand (no automatic constraint construction exists yet)",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "No Julia model fixture or formula-grammar route exists for the folded/auto-unique reduced-rank animal-model term; both the grammar-parity role and the model role remain to be built. Kept required_core (public animal-model behaviour, not an R internal) with two planned cases: a formula-parity case to add once the Julia grammar exists, and a native model case using the existing Sigma_phy primitive as a stopgap.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-META-EXACT",
+   "planned_case_ids": [
+    "CORE070-COV-META-EXACT-FORMULA"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-META-EXACT-FORMULA",
+     "r_call": "gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + meta_V(V = V))) -- expect covstructs[[1]]$kind == \"equalto\" with extra$vcv resolving to V (R/brms-sugar.R:1404 meta_V(V, type=\"exact\") rewrites to meta(sampling_var=V) at R/brms-sugar.R:4546, which itself desugars to equalto(0+obs|grp_V, V) at R/brms-sugar.R:4726-4729 -- \"equalto\" is one of the real covstruct kinds handled by parse_multi_formula(), R/parse-multi-formula.R:100).",
+     "julia_surface": "No meta-analysis known-sampling-variance family exists in GLLVM.jl. The nearest neighbour, src/families/gaussian_pervar.jl, fits a per-species residual variance as a free parameter rather than accepting a user-supplied, exactly-known per-observation sampling variance V (the defining feature of a meta-analytic model).",
+     "comparands": [
+      "gllvmTMB same_rewrite() grammar-equivalence fixture",
+      "planned GLLVM.jl meta()-equivalent constructor (not yet implemented)"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "COV-META-EXACT is public grammar sugar (meta_V() rewriting to meta(sampling_var=)), not an R internal, so it is not a reclassification candidate. GLLVM.jl has no known-sampling-variance meta-analysis family at all yet (gaussian_pervar.jl fits variance, it does not fix it from user data), so this is a genuine roadmap gap: one planned formula-parity case is drafted against the future meta() entry point.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-META-LEGACY",
+   "planned_case_ids": [
+    "CORE070-COV-META-LEGACY-ADAPTER"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-META-LEGACY-ADAPTER",
+     "r_call": "gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + meta_known_V(V = V))) -- expect covstructs[[1]]$kind == \"equalto\" with extra$vcv resolving to V, identical to meta_V(V=V) (R/brms-sugar.R:1358 meta_known_V(V, type=\"exact\") and R/brms-sugar.R:1404 meta_V both hit the same `fn == \"meta_V\" || fn == \"meta_known_V\"` branch at R/brms-sugar.R:4541-4546, rewriting to meta(sampling_var=V) then equalto(0+obs|grp_V, V) at R/brms-sugar.R:4726-4729).",
+     "julia_surface": "Same gap as COV-META-EXACT (no meta() equivalent exists yet). Once meta() lands in GLLVM.jl, this row additionally needs a documented decision on whether GLLVM.jl exposes a meta_known_V-style legacy alias or requires callers to use the single spelling directly.",
+     "comparands": [
+      "gllvmTMB same_rewrite() legacy-alias fixture",
+      "planned Julia adapter/alias decision (not yet made)"
+     ],
+     "evidence_kind": "control"
+    }
+   ],
+   "rationale": "Already classified compatibility_adapter upstream (a legacy R spelling that rewrites to the same target as COV-META-EXACT); the adapter itself is public-facing sugar, not an R internal, so it is kept as compatibility_adapter rather than reclassified. Planned case documents the alias-naming decision GLLVM.jl still needs to make once meta() exists.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-ORD-LATENT-BARE",
+   "planned_case_ids": [
+    "CORE070-COV-ORD-LATENT-BARE-FORMULA"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-ORD-LATENT-BARE-FORMULA",
+     "r_call": "gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + trait + latent(0 + trait | site, unique = FALSE))) -- expect covstructs to contain exactly one entry with kind == \"rr\" and no diag companion term (R/brms-sugar.R:3644 latent -> rr rewrite target; R/brms-sugar.R:3729-3731 shows `isFALSE(unique_arg)` returns the bare rr() call unmodified, skipping the diag-companion fold).",
+     "julia_surface": "No Julia formula-grammar route for a multi-trait, site-level latent(0+trait|site, ...) covariance term exists. src/families/ordinal.jl fits a single ordinal response with a per-species Laplace family (logit or probit link); it does not build a shared cross-trait site covariance from a `unique=`/`common=`/default-auto-unique specification the way gllvmTMB's latent() term does.",
+     "comparands": [
+      "gllvmTMB term_has() grammar-admission fixture",
+      "planned GLLVM.jl multi-trait latent-covariance grammar (not yet implemented)"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "COV-ORD-LATENT-BARE is the bare-variant of the ordinal latent() trait-covariance term; GLLVM.jl's ordinal family (src/families/ordinal.jl) fits single-response models and has no multi-trait site-covariance grammar to admit unique=FALSE/common=TRUE/default-auto-unique shapes. Kept required_core (public grammar, not internal); one planned formula-parity case drafted per variant.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-ORD-LATENT-COMMON",
+   "planned_case_ids": [
+    "CORE070-COV-ORD-LATENT-COMMON-FORMULA"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-ORD-LATENT-COMMON-FORMULA",
+     "r_call": "gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + trait + latent(0 + trait | site, common = TRUE))) -- expect covstructs to contain two entries: kind == \"rr\" and kind == \"diag\" with extra$.auto_unique == TRUE and extra$common == TRUE (R/brms-sugar.R:3702-3708: common=TRUE requires unique=TRUE (the default) in latent(); R/brms-sugar.R:3736-3743 folds a diag(..., .auto_unique=TRUE, common=TRUE) companion onto the rr() term via `call(\"+\", new_call, psi_call)`).",
+     "julia_surface": "No Julia formula-grammar route for a multi-trait, site-level latent(0+trait|site, ...) covariance term exists. src/families/ordinal.jl fits a single ordinal response with a per-species Laplace family (logit or probit link); it does not build a shared cross-trait site covariance from a `unique=`/`common=`/default-auto-unique specification the way gllvmTMB's latent() term does.",
+     "comparands": [
+      "gllvmTMB term_has() grammar-admission fixture",
+      "planned GLLVM.jl multi-trait latent-covariance grammar (not yet implemented)"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "COV-ORD-LATENT-COMMON is the common-variant of the ordinal latent() trait-covariance term; GLLVM.jl's ordinal family (src/families/ordinal.jl) fits single-response models and has no multi-trait site-covariance grammar to admit unique=FALSE/common=TRUE/default-auto-unique shapes. Kept required_core (public grammar, not internal); one planned formula-parity case drafted per variant.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-ORD-LATENT-DEFAULT",
+   "planned_case_ids": [
+    "CORE070-COV-ORD-LATENT-DEFAULT-FORMULA"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-ORD-LATENT-DEFAULT-FORMULA",
+     "r_call": "gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + trait + latent(0 + trait | site))) -- expect covstructs to contain two entries: kind == \"rr\" and kind == \"diag\" with extra$.auto_unique == TRUE and no extra$common (R/brms-sugar.R:598 latent(formula, d=1, unique=TRUE, ...) defaults unique to TRUE; R/brms-sugar.R:3736-3743 folds a diag(..., .auto_unique=TRUE) companion onto the rr() term via `call(\"+\", new_call, psi_call)` whenever unique is TRUE and common is not).",
+     "julia_surface": "No Julia formula-grammar route for a multi-trait, site-level latent(0+trait|site, ...) covariance term exists. src/families/ordinal.jl fits a single ordinal response with a per-species Laplace family (logit or probit link); it does not build a shared cross-trait site covariance from a `unique=`/`common=`/default-auto-unique specification the way gllvmTMB's latent() term does.",
+     "comparands": [
+      "gllvmTMB term_has() grammar-admission fixture",
+      "planned GLLVM.jl multi-trait latent-covariance grammar (not yet implemented)"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "COV-ORD-LATENT-DEFAULT is the default-variant of the ordinal latent() trait-covariance term; GLLVM.jl's ordinal family (src/families/ordinal.jl) fits single-response models and has no multi-trait site-covariance grammar to admit unique=FALSE/common=TRUE/default-auto-unique shapes. Kept required_core (public grammar, not internal); one planned formula-parity case drafted per variant.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-A-ALIAS",
+   "planned_case_ids": [
+    "CORE070-COV-PHYLO-A-ALIAS-ADAPTER"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-PHYLO-A-ALIAS-ADAPTER",
+     "r_call": "gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + trait + phylo_latent(species, A = A))) -- expect covstructs[[1]]$kind == \"phylo_rr\" with extra$vcv resolving to A (R/brms-sugar.R:753 phylo_latent(species, d=1, A=NULL, ...) carries its own vcv/tree/A argument and rewrite_canonical_aliases (R/brms-sugar.R:2398) forwards it onto the internal phylo_rr AST node). Compare against gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + trait + phylo_rr(species, d = 1))) -- expect covstructs[[1]]$kind == \"phylo_rr\" with extra$vcv absent (NULL), because the real exported phylo_rr <- function(species, d = 1) (R/brms-sugar.R:422) takes NO vcv argument -- the original case_spec's literal \"phylo_rr(species,d=1L,vcv=A)\" is not a callable R expression and has been replaced.",
+     "comparands": [
+      "gllvmTMB same_rewrite() alias fixture",
+      "GLLVM.jl single Sigma_phy call surface (already implemented, name-neutral)"
+     ],
+     "evidence_kind": "control"
+    }
+   ],
+   "rationale": "Already classified compatibility_adapter upstream: an R-side spelling alias with a single canonical target. GLLVM.jl's covariance-matrix argument is already name-neutral (one Sigma_phy/vcv-style keyword, no A= vs vcv= alias split), so the planned case is a documentation/control check that the alias collapses to the same Julia call rather than a new fit. Defect fix: the case_spec's r_call previously asserted a literal same_rewrite(\"phylo_latent(species,A=A)\", \"phylo_rr(species,d=1L,vcv=A)\") target; the real exported phylo_rr <- function(species, d = 1) (R/brms-sugar.R:422) has no vcv argument, so that target string is not a callable R expression. The r_call now exercises the actual desugar_brms_sugar()/parse_multi_formula() entry points (R/brms-sugar.R:4666, R/parse-multi-formula.R:62) and states the real expected parsed structure: phylo_latent(species, A=A) rewrites to an internal phylo_rr AST node carrying extra$vcv = A, while the bare phylo_rr(species, d=1) spelling has no in-formula vcv slot at all -- equivalent legacy-spelling behaviour requires the top-level phylo_vcv = A argument to gllvmTMB() instead.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-DEP",
+   "planned_case_ids": [
+    "CORE070-COV-PHYLO-DEP-FORMULA"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-PHYLO-DEP-FORMULA",
+     "r_call": "gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + trait + phylo_dep(0 + trait | species))) -- expect covstructs[[1]]$kind == \"phylo_rr\" with extra$.dep == TRUE and extra$d == quote(.deferred_n_traits) (R/brms-sugar.R:4459-4465: the intercept-only phylo_dep(0+trait|species) branch rewrites to phylo_rr(species, d=.deferred_n_traits, .dep=TRUE); `.deferred_n_traits` is a placeholder symbol resolved to n_traits later in fit-multi.R, not by parse_multi_formula itself).",
+     "julia_surface": "No public Julia route for a cross-trait DEPENDENT (correlated-loading) phylogenetic term exists. The phylo_*_xlv.jl kernels (e.g. src/phylo_poisson_xlv.jl) are explicitly marked internal reduction-tested proofs, not R grammar support (\"deliberately not exported ... not R grammar support\"), and the exported sparse/contrasts/edge-incidence phylo paths (sparse_phy.jl, phylo_contrasts.jl, edge_incidence.jl) fit a single phylogenetic latent-variable structure without a documented dependent-vs-independent cross-trait loading switch.",
+     "comparands": [
+      "gllvmTMB term_has() grammar-admission fixture",
+      "planned Julia dependent cross-trait phylogenetic loading route (not yet public)"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "phylo_dep() is the dependent (cross-trait-correlated) counterpart to phylo_indep()/phylo_latent(), already covered elsewhere by structured-required-case-plan reduced-rank fixtures. The internal phylo_*_xlv.jl kernels that could in principle supply this are explicitly documented as non-grammar internal proofs, so no public Julia surface currently exists; kept required_core with one planned formula-parity case.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-PHYLO-FOLDED-UNIQUE",
+   "planned_case_ids": [
+    "CORE070-COV-PHYLO-FOLDED-UNIQUE-FORMULA"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/covariance-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-PHYLO-FOLDED-UNIQUE-FORMULA",
+     "r_call": "gllvmTMB:::parse_multi_formula(gllvmTMB:::desugar_brms_sugar(value ~ 0 + trait + phylo_latent(species, unique = TRUE))) -- expect covstructs to contain two entries: kind == \"phylo_rr\" with extra$d == 1 (the loadings-only term), and kind == \"phylo_rr\" with extra$.phylo_unique == TRUE and extra$.auto_unique == TRUE (the folded companion) (R/brms-sugar.R:3753 phylo_latent(species, d=1, unique=FALSE, ...) desugars via the phylo_latent branch at R/brms-sugar.R:3763-3785: unique=TRUE builds psi_call = phylo_rr(species, .phylo_unique=TRUE, .auto_unique=TRUE) and returns `call(\"+\", new_call, psi_call)`).",
+     "julia_surface": "Same grammar gap as COV-ANIMAL-FOLDED-UNIQUE: GLLVM.jl's phylo covariance entry points (sparse_phy.jl, phylo_contrasts.jl, edge_incidence.jl) accept a tree or Sigma_phy matrix and a fixed rank K, with no automatic folded/auto-unique reduced-rank loading construction mirroring .phylo_unique/.auto_unique.",
+     "comparands": [
+      "gllvmTMB term_has() grammar-admission fixture",
+      "planned GLLVM.jl folded/auto-unique phylo loading construction (not yet implemented)"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Folded/auto-unique variant of phylo_latent(), structurally identical gap to COV-ANIMAL-FOLDED-UNIQUE: the reduced-rank phylo fit itself is covered by structured-required-case-plan fixtures (STRUCT-PHY-*), but the .phylo_unique/.auto_unique folded-loading construction has no Julia-side counterpart yet. Kept required_core with one planned formula-parity case.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F01-L0",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F01L0-NATIVE",
+    "CORE070-COV-SLOPE-F01L0-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F01L0-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(1L,0L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=binomial, link=logit",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with Binomial with LogitLink() (src/families/binomial.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to binomial/logit.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(1,0) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=binomial, link=logit"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F01L0-BRIDGE",
+     "r_call": "gllvmTMB fit using family=binomial(link=\"logit\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=Binomial with LogitLink()) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(1,0) admits family_id=1 (binomial), link_id=0 (logit) for the R augmented-slope route. GLLVM.jl implements binomial with the logit link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F01-L1",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F01L1-NATIVE",
+    "CORE070-COV-SLOPE-F01L1-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F01L1-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(1L,1L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=binomial, link=probit",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with Binomial with ProbitLink() (src/families/binomial.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to binomial/probit.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(1,1) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=binomial, link=probit"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F01L1-BRIDGE",
+     "r_call": "gllvmTMB fit using family=binomial(link=\"probit\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=Binomial with ProbitLink()) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(1,1) admits family_id=1 (binomial), link_id=1 (probit) for the R augmented-slope route. GLLVM.jl implements binomial with the probit link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F03-L0",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F03L0-NATIVE",
+    "CORE070-COV-SLOPE-F03L0-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F03L0-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(3L,0L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=lognormal, link=log",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with Lognormal with LogLink() (src/families/lognormal.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to lognormal/log.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(3,0) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=lognormal, link=log"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F03L0-BRIDGE",
+     "r_call": "gllvmTMB fit using family=lognormal(link=\"log\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=Lognormal with LogLink()) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(3,0) admits family_id=3 (lognormal), link_id=0 (log) for the R augmented-slope route. GLLVM.jl implements lognormal with the log link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F04-L0",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F04L0-NATIVE",
+    "CORE070-COV-SLOPE-F04L0-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F04L0-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(4L,0L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=Gamma, link=log",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with Gamma with LogLink() (src/families/gamma.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to Gamma/log.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(4,0) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=Gamma, link=log"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F04L0-BRIDGE",
+     "r_call": "gllvmTMB fit using family=Gamma(link=\"log\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=Gamma with LogLink()) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(4,0) admits family_id=4 (Gamma), link_id=0 (log) for the R augmented-slope route. GLLVM.jl implements Gamma with the log link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F05-L0",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F05L0-NATIVE",
+    "CORE070-COV-SLOPE-F05L0-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F05L0-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(5L,0L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=nbinom2, link=log",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with NegBin (NB2) with LogLink() (src/families/negbin.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to nbinom2/log.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(5,0) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=nbinom2, link=log"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F05L0-BRIDGE",
+     "r_call": "gllvmTMB fit using family=nbinom2(link=\"log\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=NegBin) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(5,0) admits family_id=5 (nbinom2), link_id=0 (log) for the R augmented-slope route. GLLVM.jl implements nbinom2 with the log link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F07-L0",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F07L0-NATIVE",
+    "CORE070-COV-SLOPE-F07L0-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F07L0-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(7L,0L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=Beta, link=logit",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with Beta with LogitLink() (src/families/beta.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to Beta/logit.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(7,0) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=Beta, link=logit"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F07L0-BRIDGE",
+     "r_call": "gllvmTMB fit using family=Beta(link=\"logit\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=Beta with LogitLink()) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(7,0) admits family_id=7 (Beta), link_id=0 (logit) for the R augmented-slope route. GLLVM.jl implements Beta with the logit link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F08-L0",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F08L0-NATIVE",
+    "CORE070-COV-SLOPE-F08L0-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F08L0-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(8L,0L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=betabinomial, link=logit",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with BetaBinom with LogitLink() (src/families/beta_binomial.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to betabinomial/logit.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(8,0) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=betabinomial, link=logit"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F08L0-BRIDGE",
+     "r_call": "gllvmTMB fit using family=betabinomial(link=\"logit\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=BetaBinom with LogitLink()) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(8,0) admits family_id=8 (betabinomial), link_id=0 (logit) for the R augmented-slope route. GLLVM.jl implements betabinomial with the logit link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F09-L0",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F09L0-NATIVE",
+    "CORE070-COV-SLOPE-F09L0-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F09L0-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(9L,0L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=student, link=identity",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with StudentTFamily with IdentityLink() (src/families/studentt.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to student/identity.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(9,0) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=student, link=identity"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F09L0-BRIDGE",
+     "r_call": "gllvmTMB fit using family=student(link=\"identity\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=StudentTFamily with IdentityLink()) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(9,0) admits family_id=9 (student), link_id=0 (identity) for the R augmented-slope route. GLLVM.jl implements student with the identity link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F14-L0",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F14L0-NATIVE",
+    "CORE070-COV-SLOPE-F14L0-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F14L0-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(14L,0L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=ordinal_probit, link=probit",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with Ordinal with ProbitLink() (src/families/ordinal.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to ordinal_probit/probit.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(14,0) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=ordinal_probit, link=probit"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F14L0-BRIDGE",
+     "r_call": "gllvmTMB fit using family=ordinal_probit(link=\"probit\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=Ordinal with ProbitLink()) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(14,0) admits family_id=14 (ordinal_probit), link_id=0 (probit) for the R augmented-slope route. GLLVM.jl implements ordinal_probit with the probit link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "covariance/COV-SLOPE-F15-L0",
+   "planned_case_ids": [
+    "CORE070-COV-SLOPE-F15L0-NATIVE",
+    "CORE070-COV-SLOPE-F15L0-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/slopes-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-COV-SLOPE-F15L0-NATIVE",
+     "r_call": "identical(.augmented_slope_family_allowed(15L,0L), TRUE) \u2014 admission gate for an augmented random-slope (1 + x | site) term with family=nbinom1, link=log",
+     "julia_surface": "planned: random_slopes.jl augmented-loading path (src/families/random_slopes.jl, family-generic Laplace reuse) exercised with NB1 with LogLink() (src/families/negbin1.jl). random_slopes.jl is documented as validated for Poisson first (\"stage 2 of the slopes track (Poisson first)\"); this case extends validation to nbinom1/log.",
+     "comparands": [
+      "gllvmTMB .augmented_slope_family_allowed(15,0) == TRUE admission fact",
+      "GLLVM.jl random_slopes.jl fit converging for family=nbinom1, link=log"
+     ],
+     "evidence_kind": "native"
+    },
+    {
+     "case_id": "CORE070-COV-SLOPE-F15L0-BRIDGE",
+     "r_call": "gllvmTMB fit using family=nbinom1(link=\"log\") with an augmented random slope (1 + x | site)",
+     "julia_surface": "GLLVM.jl fit_gllvm(...; family=NB1 with LogLink()) with the equivalent random_slopes.jl augmentation",
+     "comparands": [
+      "gllvmTMB fitted logLik/point estimates",
+      "GLLVM.jl fitted logLik/point estimates"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": ".augmented_slope_family_allowed(15,0) admits family_id=15 (nbinom1), link_id=0 (log) for the R augmented-slope route. GLLVM.jl implements nbinom1 with the log link (per src/families/), and random_slopes.jl's family-generic Laplace reuse makes the combination reachable in principle, but the module's own comments scope its validated coverage to Poisson first. Kept required_core; two planned cases drafted \u2014 a native random-slopes fit and an RCall.jl bridge cross-check against gllvmTMB on the same family/link.",
+   "reclassify": null,
+   "uncertain": false
+  }
+ ]
+}

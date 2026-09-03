@@ -16,11 +16,9 @@ on:
         default: false
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Cancel superseded PR runs, but NEVER a run on main. A cancelled run on the
-  # default branch leaves the merge with no completed evidence, and GitHub logs
-  # it with the same "cancelled" string as a timeout -- which is how a merge
-  # sequence can read green BY ABSENCE. PR runs are safe to cancel: the next
-  # push to that PR re-runs them.
+  # Never cancel a run on main: a superseded main run reports no status at all,
+  # and "green by absence" is indistinguishable from green. PR runs are the only
+  # ones a later push makes genuinely redundant. (Carried over from PR #278.)
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   test:
@@ -32,26 +30,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Routine runs are Linux-only (LTS + current stable). Measured 2026-09-03
-        # on this repo's own history: a single ubuntu job ran 186 min (Julia 1)
-        # and 138 min (1.10), so a 4-OS matrix on every push rarely finished at
-        # all before the next push cancelled it. macOS/Windows coverage runs on
-        # demand via workflow_dispatch with full_matrix=true, which is what a
-        # release needs.
+        # Routine runs are Linux-only (LTS + current stable): the suite is now
+        # ~13k tests and takes hours per OS, so a 4-OS matrix on every push
+        # costs real money (macOS 10x, Windows 2x the Linux rate) and — with
+        # cancel-in-progress — rarely even finishes before the next push.
+        # macOS/Windows coverage runs on demand via workflow_dispatch with
+        # full_matrix=true, which is what a release needs.
         #
-        # `shard` splits each routine (version, os) combo 4 ways via
-        # GLLVM_TEST_SHARD (see test/runtests.jl), so 2 versions x 1 os x 4
-        # shards = 8 Julia jobs each covering ~1/4 of the suite instead of one
-        # multi-hour job. test_shard_selection.jl proves the 4 shards partition
-        # the file list exactly -- disjoint AND complete -- so this cannot
-        # silently drop a test file.
+        # `shard` 4-ways splits each routine (version, os) combo via
+        # GLLVM_TEST_SHARD (see test/runtests.jl) so 2 versions x 1 os x 4
+        # shards = 8 Julia jobs, each covering ~1/4 of the ~13k tests instead
+        # of one multi-hour job.
         version: ['1.10', '1']     # LTS + current stable
         os: [ubuntu-latest]
         shard: [1, 2, 3, 4]
         include: ${{ (github.event_name == 'workflow_dispatch' && inputs.full_matrix) && fromJSON('[{"version":"1","os":"macOS-latest"},{"version":"1","os":"windows-latest"}]') || fromJSON('[]') }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v2
@@ -63,16 +59,119 @@ jobs:
           # unset/empty GLLVM_TEST_SHARD as "no sharding".
           GLLVM_TEST_SHARD: ${{ matrix.shard && format('{0}/4', matrix.shard) || '' }}
         with:
-          # Coverage is off on routine (push/PR) runs -- instrumentation cost
+          # Coverage is off on routine (push/PR) runs — instrumentation cost
           # across 8 sharded jobs adds up for no benefit most pushes need; turn
           # it on with workflow_dispatch's `coverage` input before a release.
           coverage: ${{ github.event_name == 'workflow_dispatch' && inputs.coverage }}
       - uses: julia-actions/julia-processcoverage@v1
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.coverage }}
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v6
         if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.coverage }}
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
         continue-on-error: true
+
+  test-parity:
+    name: Frozen R 0.7.0 family smoke (advisory; rebuilt oracle)
+    runs-on: ubuntu-latest
+    # ADVISORY, not blocking — see
+    # docs/dev-log/core070/ci-oracle-reproducibility-finding.md: a rebuilt
+    # oracle matches the frozen SOURCE and R version but not the retained
+    # BUILD (installed_tree_sha256 differs), and two cells' R-side health
+    # gates were calibrated against that build. The retained pinned-build
+    # receipts remain the authority; this job still runs and still uploads
+    # its receipts and failures. No engine gate or tolerance was changed.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          # Pinned to the retained oracle receipt's own R
+          # (.unlazy/core070-aghq/oracle-receipts/build.json: "R version 4.5.3").
+          # 'release' floated ahead of the pinned build and the CI-built oracle
+          # then landed at slightly different optima than the retained one —
+          # R's own gradient failed the cells' 1e-4 health gate (2.4e-3) and
+          # its Student-t free-nu fit did not converge. The oracle must be
+          # reproduced, not approximated.
+          r-version: '4.5.3'
+          use-public-rspm: true
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1'
+      - uses: julia-actions/cache@v2
+      - name: Check out the frozen R reference
+        uses: actions/checkout@v4
+        with:
+          repository: itchyshin/gllvmTMB
+          ref: b4d5fee64def88bc768dda1f1f77c29b295edd86
+          path: .unlazy/r-source
+      - name: System libraries for the spatial R stack (units/sf/fmesher)
+        run: |
+          # The dated CRAN snapshot serves sources for these, so the geo stack
+          # must be present to compile them; the floating binary repo used to
+          # hide this. Cheap and deterministic.
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libudunits2-dev libgdal-dev libgeos-dev libproj-dev
+
+      - name: Build an isolated, source-pinned R oracle
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Date-locked snapshot so TMB/Matrix/RcppEigen resolve to the same
+          # versions the retained oracle build used (floating CRAN is what let
+          # the CI oracle drift from the pinned one).
+          Rscript -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/2026-08-31"), HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os))); install.packages("remotes"); remotes::install_deps(".unlazy/r-source", dependencies=c("Depends", "Imports", "LinkingTo"), upgrade="never")'
+          python3 tools/core070_build_oracle.py prepare --repo .unlazy/r-source --destination .unlazy/r-archive
+          python3 tools/core070_build_oracle.py build --archive .unlazy/r-archive/gllvmTMB-core070.tar --source-receipt .unlazy/r-archive/source.json --destination .unlazy/r-build --r-binary "$(command -v R)" --timeout 1200
+          python3 tools/core070_build_oracle.py verify --destination .unlazy/r-build
+      - name: Instantiate parity environment
+        run: |
+          julia --project=test/parity -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate(); Pkg.build("RCall"); Pkg.precompile()'
+      - name: Stage oracle receipts where the parity helper reads them
+        run: |
+          # test/parity/parity_helpers.jl pins the retained-receipt layout
+          # (.unlazy/core070-aghq/...); the CI build writes to .unlazy/r-build
+          # and .unlazy/r-archive. Copy, never move: the upload-artifact step
+          # still retains the build-side originals.
+          mkdir -p .unlazy/core070-aghq/oracle-receipts .unlazy/core070-aghq/oracle-source
+          cp .unlazy/r-build/build.json .unlazy/core070-aghq/oracle-receipts/build.json
+          cp .unlazy/r-archive/source.json .unlazy/core070-aghq/oracle-source/source.json
+
+      - name: Run parity suite with LD_PRELOAD libunwind
+        run: |
+          export LD_PRELOAD="$(julia -e 'print(abspath(joinpath(Sys.BINDIR, "..", "lib", "julia", "libunwind.so.8")))')"
+          # Single-threaded BLAS is the campaign's standing convention
+          # (AGENTS.md compute rules; every Totoro/DRAC run pins it). Without
+          # it the runner's multi-threaded BLAS takes a different optimizer
+          # path and R's own fit lands at a different optimum — CI measured
+          # r_gradient_max 2.4e-3 where the retained Totoro receipt for the
+          # SAME fixture (cell-NATIVE-06-NB2.toml, 18/18 assertions) passes
+          # the cells' 1e-4 gate.
+          export OPENBLAS_NUM_THREADS=1
+          export OMP_NUM_THREADS=1
+          export JULIA_NUM_THREADS=1
+          export GLLVM_PARITY_TESTS=1
+          export CORE070_PARITY_REQUIRED=1
+          export GLLVM_PARITY_RECEIPT_DIR="$PWD/.unlazy/ci-parity-receipts"
+          export R_LIBS="$PWD/.unlazy/r-build/library"
+          export GLLVM_PARITY_R_LIBS="$R_LIBS"
+          export GLLVM_PARITY_R_SOURCE_PIN="$R_LIBS/gllvmTMB/CORE070_SOURCE_PIN.toml"
+          export R_HOME="$(R RHOME)"
+          export LD_LIBRARY_PATH="$(R RHOME)/lib:$LD_LIBRARY_PATH"
+          julia --project=test/parity test/parity/runparity.jl
+
+      - name: Retain oracle provenance and parity receipts, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frozen-core070-family-smoke
+          include-hidden-files: true
+          path: |
+            .unlazy/r-archive/source.json
+            .unlazy/r-build/build.json
+            .unlazy/r-build/install.log
+            .unlazy/r-build/library/gllvmTMB/CORE070_SOURCE_PIN.toml
+            .unlazy/ci-parity-receipts/

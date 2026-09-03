@@ -190,11 +190,12 @@ end
 function _confint_reconstruct_nll(fit::GllvmFit, y::AbstractMatrix,
                                   X::Union{Nothing, AbstractArray{<:Real, 3}},
                                   Σ_phy::Union{Nothing, AbstractMatrix})
+    _has_gaussian_record(fit) && return _gaussian_record_ci(fit,y;X=X,Σ_phy=Σ_phy).nll
     model = fit.model
     q_full = fit.pars.β === nothing ? 0 : length(fit.pars.β)
     β_fixed = _pars_fixed_mask(fit.pars, :β_fixed, q_full)
     β_free = _free_coeff_indices(β_fixed)
-    X_free = X === nothing ? nothing : Array{Float64,3}(X[:, :, β_free])
+    X_free = X === nothing || isempty(β_free) ? nothing : Array{Float64,3}(X[:, :, β_free])
     spec = (q = length(β_free), p = model.p, K_B = model.K, K_W = model.K_W,
             has_diag = model.has_diag, K_phy = model.K_phy,
             has_phy_unique = model.has_phy_unique)
@@ -247,7 +248,13 @@ function confint(fit::GllvmFit;
                  parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing,
                  y::Union{Nothing, AbstractMatrix} = nothing,
                  X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
-                 Σ_phy::Union{Nothing, AbstractMatrix} = nothing)
+                 Σ_phy::Union{Nothing, AbstractMatrix} = nothing,kwargs...)
+
+    if _has_gaussian_record(fit)
+        data=y===nothing ? fit.integration.data.responses : y
+        return _gaussian_record_confint(fit,data;level=level,parm=parm,X=X,Σ_phy=Σ_phy,kwargs...)
+    end
+    isempty(kwargs) || throw(ArgumentError("extra inference controls require retained Gaussian integration data"))
 
     0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
     _has_lv_predictor(fit) && throw(ArgumentError(
@@ -347,4 +354,17 @@ function confint(fit::GllvmFit;
             upper = upper_out,
             se = se_out,
             pd_hessian = pd)
+end
+
+function confint(fit::GllvmFit, y::AbstractMatrix;
+                 level::Real = 0.95,
+                 parm::Union{Nothing, AbstractString, Symbol, AbstractVector} = nothing,
+                 X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                 Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                 method::Symbol = :wald,
+                 kwargs...)
+    if _has_gaussian_record(fit)
+        return _gaussian_record_confint(fit,y;level=level,parm=parm,X=X,Σ_phy=Σ_phy,method=method,kwargs...)
+    end
+    return confint(fit; level = level, parm = parm, y = y, X = X, Σ_phy = Σ_phy)
 end

@@ -1,0 +1,120 @@
+{
+  "as_of": "2026-08-30T15:28:54.657599+00:00",
+  "counts": {
+    "julia": {
+      "registered": 103,
+      "missing": 0,
+      "broken": 0,
+      "functional": 103,
+      "dirty": 31,
+      "status_errors": 0,
+      "stashes": 5
+    },
+    "r": {
+      "registered": 210,
+      "missing": 122,
+      "broken": 46,
+      "functional": 42,
+      "dirty": 9,
+      "status_errors": 0,
+      "stashes": 16
+    }
+  },
+  "git_state_delta": {
+    "julia": {
+      "counts": {
+        "registered": 103,
+        "missing": 0,
+        "broken": 0,
+        "functional": 103,
+        "dirty": 31,
+        "status_errors": 0,
+        "stashes": 5
+      },
+      "worktree_changes": [
+        {
+          "path": "/private/tmp/GLLVM.jl-core070-aghq-20260830",
+          "changes": {
+            "HEAD": {
+              "before": "ea7c7582457c34223ead99f91b1aa63d919a8dcb",
+              "after": "7cdc0cbf128b97addd4ae708e755aa5f04e6644b"
+            },
+            "head_observed": {
+              "before": "ea7c7582457c34223ead99f91b1aa63d919a8dcb",
+              "after": "7cdc0cbf128b97addd4ae708e755aa5f04e6644b"
+            },
+            "status_tokens": {
+              "before": [
+                " M src/phylo_branch_re.jl",
+                " M test/parity/parity_helpers.jl",
+                " M test/parity/runparity.jl",
+                " M test/test_phylo_branch_re.jl",
+                "?? docs/dev-log/after-task/2026-08-30-core070-preservation.md",
+                "?? docs/dev-log/core070/README.md",
+                "?? docs/dev-log/core070/frozen-r070-contract.toml",
+                "?? docs/dev-log/decisions/2026-08-30-core070-branch-re.md",
+                "?? docs/dev-log/decisions/2026-08-30-core070-tweedie-power.md",
+                "?? tools/__pycache__/core070_preserve.cpython-313.pyc",
+                "?? tools/core070_evidence.py",
+                "?? tools/core070_preserve.py"
+              ],
+              "after": []
+            },
+            "disposition": {
+              "before": "PRESERVE_DIRTY",
+              "after": "CLEAN_NOT_DISPOSABLE"
+            }
+          }
+        }
+      ],
+      "refs_changed": true,
+      "stashes_changed": false
+    },
+    "r": {
+      "counts": {
+        "registered": 210,
+        "missing": 122,
+        "broken": 46,
+        "functional": 42,
+        "dirty": 9,
+        "status_errors": 0,
+        "stashes": 16
+      },
+      "worktree_changes": [
+        {
+          "path": "/Users/z3437171/.codex/worktrees/dca1/gllvmTMB",
+          "changes": {
+            "HEAD": {
+              "before": "fb99172edabdaac68fdbf284531a6a423e9679ee",
+              "after": "2e10e3fb04348f56fdfd4ee28377b1155cde783b"
+            },
+            "head_observed": {
+              "before": "fb99172edabdaac68fdbf284531a6a423e9679ee",
+              "after": "2e10e3fb04348f56fdfd4ee28377b1155cde783b"
+            }
+          }
+        }
+      ],
+      "refs_changed": true,
+      "stashes_changed": false
+    },
+    "scope": "Git tips/status only; unchanged status does not prove unchanged file bytes."
+  },
+  "preservation_note": "New article tip requires its separate article-delta/tree supplement; original full archive is not silently described as current. Unchanged Git status does not prove unchanged bytes.",
+  "foreign_article_risk": "The local article checkpoint reports a stable triangular-solve repair in the full coefficient Gaussian prior, with arithmetic evidence but no optimizer/recovery/article signoff. Not independently replayed here; do not import that work or change the frozen R oracle. Review relevance during covariance-manifest completion.",
+  "article_supplement": {
+    "scope": "protected article lane preservation only; no integration",
+    "old_tip": "fb99172edabdaac68fdbf284531a6a423e9679ee",
+    "new_tip": "2e10e3fb04348f56fdfd4ee28377b1155cde783b",
+    "base_archive": "/Users/z3437171/local-scratch/preservation/core070-aghq-20260830",
+    "delta_bundle_verification": "PASS against preserved prerequisite available in source repo",
+    "tree_archive_independent_readback": "PASS; every archived blob matches exact Git tree",
+    "tree_blob_count": 4842,
+    "hashes": {
+      "article-delta.bundle": "2b4d3deff29addcdc670d01348ed596b5cfd414313a9026baa8b21de3e549d04",
+      "bundle-verify.log": "d99beef85984944773dc4d511a5796ec0cd04ae7da6fc37be2b7c88997b180d8",
+      "article-tree.tar": "0bb76de1deaf6944f90205d43e0dd8c53665fc253e8896c84346acca167c2b46"
+    },
+    "not_claimed": "No complete standalone history restore from delta; requires baseline bundle. No new dirty-byte comparison or article validation."
+  }
+}

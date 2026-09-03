@@ -1,0 +1,43 @@
+{
+  "scope": "LOCAL_SCALAR_KERNEL_CANDIDATE_NOT_FITTED_PARITY",
+  "phases": [
+    "red",
+    "red-kernel",
+    "green",
+    "extended-red",
+    "extended-green",
+    "final"
+  ],
+  "root": ".unlazy/core070-aghq/truncnb2-kernel",
+  "artifacts": {
+    ".unlazy/core070-aghq/truncnb2-kernel/red/process/00.log": "d94b8f807e595bf2b930fc60354cc95aca4e580d0f9e30f712c73875b64357e3",
+    ".unlazy/core070-aghq/truncnb2-kernel/red/process/execution-plan.json": "7bb8f3cd7267e22f902ae4cb678bb0ba15abaf8ca8510895e883fa366a5cfc66",
+    ".unlazy/core070-aghq/truncnb2-kernel/red/process/process-receipt.json": "7f1852a6a4bad09bda165cd5fb6a1c5f29faa3bf8f1a1388dd3125224306007a",
+    ".unlazy/core070-aghq/truncnb2-kernel/red/process/progress.json": "5c11391b7654c2ebc38ee267dca3234d39a12b800e5453337dd864525791f630",
+    ".unlazy/core070-aghq/truncnb2-kernel/red-kernel/process/00.log": "953d21fa3cf3db9d6d0a08ae706810b5c7dd50e0bad294d4f611db14d4fb9372",
+    ".unlazy/core070-aghq/truncnb2-kernel/red-kernel/process/execution-plan.json": "564476753012509c81a64f11b351076a57646369cbf879c390420537b6a9a7bf",
+    ".unlazy/core070-aghq/truncnb2-kernel/red-kernel/process/process-receipt.json": "87ecfdef8c22de575a0f38c33a3130e8b9bd5f58ca65b47616dae2f22873dcb3",
+    ".unlazy/core070-aghq/truncnb2-kernel/red-kernel/process/progress.json": "2bbae7ef62f2e4195aea0ef21ddd4ba4aff899e61122ac9aa4f6eecbfb3876d9",
+    ".unlazy/core070-aghq/truncnb2-kernel/green/process/00.log": "63807c2eccc2444d8361f54438900089c358741500e0fbc6ed5dc6b199b8c295",
+    ".unlazy/core070-aghq/truncnb2-kernel/green/process/execution-plan.json": "1343aacbe5e9cb757118ed5b020306015333b7992c307173598000886f5b7011",
+    ".unlazy/core070-aghq/truncnb2-kernel/green/process/process-receipt.json": "fa34be9874d573831ab55d49a913ad035b63bae971a6186007d8550ff5cab376",
+    ".unlazy/core070-aghq/truncnb2-kernel/green/process/progress.json": "1df7a8b7232263ab634549f836ca5bbd27377869df136dd1528b33149d0d4289",
+    ".unlazy/core070-aghq/truncnb2-kernel/extended-red/process/00.log": "eca88a43d01dab2b62f57050607887beb2846a860a8f43d55705acb6c15faa72",
+    ".unlazy/core070-aghq/truncnb2-kernel/extended-red/process/execution-plan.json": "633e002e4f5e28b268489fc10593b550aa2d52a2d9bb27ced4abc07a9184178b",
+    ".unlazy/core070-aghq/truncnb2-kernel/extended-red/process/process-receipt.json": "64eaabb7483dd3e2658d2c838dc5309c3e9fea4132eee5061206fc0b28981c08",
+    ".unlazy/core070-aghq/truncnb2-kernel/extended-red/process/progress.json": "c67f80f388618c1805de1f1deee464db3b0f1d5b7101e5579ad715b2d57a0044",
+    ".unlazy/core070-aghq/truncnb2-kernel/extended-green/process/00.log": "aadbe1de9b528b9be53167e0852df5a7d3059054a3eab902b4f088f0b799ceec",
+    ".unlazy/core070-aghq/truncnb2-kernel/extended-green/process/execution-plan.json": "4f187a53fba7734ec891b597dfecf4a24751e5a976e39638f411a0d587b4db6a",
+    ".unlazy/core070-aghq/truncnb2-kernel/extended-green/process/process-receipt.json": "6bdd69185e07268701c2793b94f34c8a2248084ea196fe19bbb032b975540f24",
+    ".unlazy/core070-aghq/truncnb2-kernel/extended-green/process/progress.json": "d950a15302cd330d2df79a12c35c95cb630067e52aa1db72b9a582ac7f68a6bb",
+    ".unlazy/core070-aghq/truncnb2-kernel/final/process/00.log": "5254958dc8fc4fa2775f67e41350f9627244b6d6fa815017a7db1ad98b63f948",
+    ".unlazy/core070-aghq/truncnb2-kernel/final/process/execution-plan.json": "f18a7390f25f4815090f2190ab2a6a93bf3a8f3d0f316717f747c7864b52ec97",
+    ".unlazy/core070-aghq/truncnb2-kernel/final/process/process-receipt.json": "82ad72d4593b21c0f6f96fe07bc700e567f0a3418b23d759bdf1d8d8ea94bc2b",
+    ".unlazy/core070-aghq/truncnb2-kernel/final/process/progress.json": "22d5e2da9cf542ed5573507484d9c90dd936615303dfb40eefb5c492f3e4b91a"
+  },
+  "final_assertions": 352,
+  "whole_package_loaded": false,
+  "independent_review": false,
+  "remote_fit_replay": false,
+  "environment": "local Julia1.10.0; copied historical macOS Manifest; exact source prefix loader; offline; one thread"
+}

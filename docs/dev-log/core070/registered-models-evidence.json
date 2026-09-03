@@ -1,0 +1,52 @@
+{
+  "status": "VERIFIED_SEVEN_REGISTERED_CASES_NOT_FULL_FAMILY_OR_PROGRAMME",
+  "case_ids": [
+    "NATIVE-03-POISSON",
+    "NATIVE-06-NB2",
+    "NATIVE-08-BETA",
+    "NATIVE-12-TRUNCATED-NB2",
+    "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
+    "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+    "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+  ],
+  "actual_assertions": 121,
+  "executions": 6,
+  "elapsed_seconds": 77.77757340110838,
+  "models": {
+    "NATIVE-03-POISSON": {
+      "loglik_delta": 1.432454155292362e-11,
+      "native_gradient_max": 1.8774286656005279e-06,
+      "r_gradient_max": 3.452676528259424e-05
+    },
+    "NATIVE-08-BETA": {
+      "loglik_delta": 1.98667748918524e-11,
+      "native_gradient_max": 3.44977517304097e-07,
+      "r_gradient_max": 1.3801814040578786e-05
+    },
+    "NATIVE-06-NB2": {
+      "loglik_delta": 3.412827027204912e-06,
+      "native_gradient_max": 9.481014761282667e-07,
+      "r_gradient_max": 6.509060474424455e-05
+    },
+    "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE": {
+      "loglik_delta": 3.412827027204912e-06,
+      "native_gradient_max": 9.481014761282667e-07,
+      "r_gradient_max": 6.509060474424455e-05
+    },
+    "NATIVE-12-TRUNCATED-NB2": {
+      "loglik_delta": 8.67307790031191e-08,
+      "native_gradient_max": 6.536981751954038e-06,
+      "r_gradient_max": 2.746089928674922e-05
+    },
+    "Gaussian native/formula": {
+      "loglik_delta": 3.864101927320007e-09,
+      "native_gradient_max": 1.5420198451465694e-10,
+      "r_gradient_max": 4.445323898038918e-05
+    }
+  },
+  "execution_manifest_sha256": "e8c9c46c23cf75356dc16ba8d7ca50e95ddad0e5db3818fb0300367f50e478e8",
+  "contract_sha256": "c6bf04470a4324cb71df491134d5ca7549e72336848b6f6af6742ca7388925b0",
+  "process_receipt_sha256": "cb0c5c29e80b574a67186a07e398ae2d6f9ad79bc4c46344453f3f0832c3824d",
+  "run_sha256": "11211de003c2e133fbd8648663993eaa7e1e1c00e43d897af01e0c2048a6449e",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+}

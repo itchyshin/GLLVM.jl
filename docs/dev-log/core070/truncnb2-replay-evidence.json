@@ -1,0 +1,143 @@
+{
+  "scope": "ORIGINAL_FIXTURE_PUBLIC_BFGS_QUALIFIED_NOT_DEFAULT_OR_FULL_CAPABILITY",
+  "source": {
+    "source_marker_sha256": "e14983b7d0bb423cecb4b5db3767bd5c664beb02f185ba61b3b2bd6bd5022dfe",
+    "julia_package_root": "/home/snakagaw/core070-aghq-20260830/truncnb2-bfgs-02",
+    "tmb_version": "1.9.21",
+    "oracle_build_receipt_sha256": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4",
+    "matrix_version": "1.7.6",
+    "julia_machine": "x86_64-linux-gnu",
+    "julia_source_tree_sha256": "c8048849d5c94bae8f274d8180a3497f1c5d5ebd8420db264fcbda9505149be3",
+    "source_tree_sha256": "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7",
+    "julia_version": "1.12.6",
+    "oracle_source_receipt_sha256": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    "julia_project_sha256": "505afcac9fd3c52052f5e1043d655ef91c53223fb870084707468b04885327dc",
+    "blas_threads": 1,
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc",
+    "namespace_sha256": "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c",
+    "installed_tree_sha256": "b25f5b8838d1d476a95f4e79133a5c72fad2496d648ef97cd9422acd39bc5bb5",
+    "julia_project_path": "/home/snakagaw/core070-aghq-20260830/truncnb2-bfgs-02/test/parity/Project.toml",
+    "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "rcall_version": "0.14.13",
+    "r_library_path": "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library/gllvmTMB",
+    "julia_threads": 1,
+    "julia_package_path": "/home/snakagaw/core070-aghq-20260830/truncnb2-bfgs-02/src/GLLVM.jl",
+    "r_version": "R version 4.5.3 (2026-03-11)",
+    "r_home": "/usr/lib/R",
+    "julia_manifest_sha256": "28bcbc2c4317dfa2e49f1be44be2fb656bdfc89a47b51aeaf4e90548603a1451"
+  },
+  "metrics": {
+    "loglik_delta": 8.67307790031191e-08,
+    "native_gradient_max": 6.536981751954038e-06,
+    "r_gradient_max": 2.746089928674922e-05,
+    "fd_stability": 1.4080714992003955e-07,
+    "samepoint_delta": 1.659207100601634e-07,
+    "r_code": 0,
+    "original_r_code": 1,
+    "native_nfree": 15,
+    "r_nfree": 15
+  },
+  "attempts": [
+    {
+      "name": "truncnb2-replay-01",
+      "status": "FAIL",
+      "commands": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11530294828116894
+        },
+        {
+          "id": "truncnb2-replay",
+          "exit_code": 1,
+          "elapsed_seconds": 30.089105127379298
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.1654518786817789
+        }
+      ]
+    },
+    {
+      "name": "truncnb2-bfgs-01",
+      "status": "FAIL",
+      "commands": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11529153771698475
+        },
+        {
+          "id": "truncnb2-bfgs",
+          "exit_code": 1,
+          "elapsed_seconds": 26.831344347447157
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.16536061838269234
+        }
+      ]
+    },
+    {
+      "name": "truncnb2-bfgs-02",
+      "status": "PASS",
+      "commands": [
+        {
+          "id": "oracle-before",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11535246670246124
+        },
+        {
+          "id": "truncnb2-bfgs",
+          "exit_code": 0,
+          "elapsed_seconds": 27.99383849091828
+        },
+        {
+          "id": "oracle-after",
+          "exit_code": 0,
+          "elapsed_seconds": 0.11534303985536098
+        }
+      ]
+    }
+  ],
+  "tools": {
+    "tools/core070_truncnb2_replay.jl": "51854801ac5720425b3f544da5ed1d47e57fa2c929fd26ae491bf414a74c4a8d",
+    "tools/core070_truncnb2_bfgs.jl": "23d4e91d14e34dccd43f64b516cf9d7b69f4ff059ce3b6731556f02bd4d7fa51",
+    "tools/core070_verify_truncnb2_replay.py": "e6d01b7bcb30f920336a3f5f3a9409d0a262dcc19f125600bf61e60dd3eecf10",
+    "tools/core070_verify_truncnb2_bfgs.py": "297426240cefce4c69a33ccaf1a0f96102800038107f7b54fc6f3f8df920ff89"
+  },
+  "raw_sha256": {
+    ".unlazy/core070-aghq/truncnb2-replay-01/plan.json": "cf23b75bc8bb583956ba900905daaac85649030a6dac4b53faccb2a3586ec441",
+    ".unlazy/core070-aghq/truncnb2-replay-01/source.tar": "b788ee2821a3724869e46b90e3a242795e849dbce0c13ac8084321801394d297",
+    ".unlazy/core070-aghq/truncnb2-replay-01/attempt1/health/whole-fits.rds": "252fe9cbb27c488e43516560ea4d1c79cdea8f056398a6e7aa6eb099c6948ddb",
+    ".unlazy/core070-aghq/truncnb2-replay-01/attempt1/health/result.toml": "4cd5b73ed50e3ff0d429a5d2a75d6f4c15c940c91745ddc05d06a5e6f0e090e4",
+    ".unlazy/core070-aghq/truncnb2-replay-01/attempt1/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/truncnb2-replay-01/attempt1/process/01.log": "a2cb65c6ca7010ec7926f3a9325c1bf4ee977e8f9c318907630c586c4d352435",
+    ".unlazy/core070-aghq/truncnb2-replay-01/attempt1/process/02.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/truncnb2-replay-01/attempt1/process/process-receipt.json": "20890f3cd5c56a168c9ae5537c897c3c77ce59cb70f08bf5acbdacec9740fd01",
+    ".unlazy/core070-aghq/truncnb2-bfgs-01/plan.json": "f1b4e0e3b0050267875d85cc8c1ffda995b4b606729aa9aa7fb8e8c5c48a53b7",
+    ".unlazy/core070-aghq/truncnb2-bfgs-01/source.tar": "6940ed7c02c99d2be834e44ab6e689aa118cc34043154fe1ed74605b4815eda1",
+    ".unlazy/core070-aghq/truncnb2-bfgs-01/attempt1/health/whole-fits.rds": "9f7740a2a6de0bbaa72e43290b242571c591e1d4360da5f47564bf0f03dc7da3",
+    ".unlazy/core070-aghq/truncnb2-bfgs-01/attempt1/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/truncnb2-bfgs-01/attempt1/process/01.log": "cb5387cdcf2f7ec78fdda115cb11933dd20fce9b0d09397aff0208b644cd6970",
+    ".unlazy/core070-aghq/truncnb2-bfgs-01/attempt1/process/02.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/truncnb2-bfgs-01/attempt1/process/process-receipt.json": "402442214d2ca8ad9bba8a9199fdd10b950797abc40f45b151c4e11662ed2a50",
+    ".unlazy/core070-aghq/truncnb2-bfgs-02/plan.json": "08091b4fb8b77f213984b7f4db47f9593dc0e4af383ff0bd5126632cf56a3d6a",
+    ".unlazy/core070-aghq/truncnb2-bfgs-02/source.tar": "75b1985aee5a967ea7004f78600c15ab5ce5695318f64c79029d30296a7b0f4a",
+    ".unlazy/core070-aghq/truncnb2-bfgs-02/attempt1/health/whole-fits.rds": "9f7740a2a6de0bbaa72e43290b242571c591e1d4360da5f47564bf0f03dc7da3",
+    ".unlazy/core070-aghq/truncnb2-bfgs-02/attempt1/health/result.toml": "f6b4dd27a02e1fc52ff9ea2e7e914461b521fc7fb78aacfe32f28278af75e0b1",
+    ".unlazy/core070-aghq/truncnb2-bfgs-02/attempt1/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/truncnb2-bfgs-02/attempt1/process/01.log": "144659779cf975a5765dbfad7ab9026f90ce6095341e23a149c9558edce4c8ac",
+    ".unlazy/core070-aghq/truncnb2-bfgs-02/attempt1/process/02.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/truncnb2-bfgs-02/attempt1/process/process-receipt.json": "4a6d93467c1bdd42400dd8042e983fd7cd3de36f84ab1e3d6408cbb60de70488"
+  },
+  "negative_controls": {
+    "replay": 7,
+    "bfgs": 8
+  },
+  "default_runner": "UNMODIFIED_STILL_FAILS_R_HEALTH",
+  "full_manifest": "DRAFT_INCOMPLETE_NOT_FROZEN",
+  "independent_review": "NOT_RUN"
+}

@@ -1,0 +1,453 @@
+{
+  "status": "IMPLEMENTATION_MAPPING_NOT_PARITY",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "source_commit": "f0d83c680fdb5eb9fbdacd24417d82dca2f4112c",
+  "pins": {
+    "src/source_covariance.jl": "bcbccacd61330e8f12c47127753e24accad3c9530157cb505fa94dfc1324d5ae",
+    "src/likelihood.jl": "92b6d5aa79b1fe8f63ffa9243d8cf3c11575d047715644c462344b41f5917141",
+    "src/fit.jl": "6db5fd8d228398fb5a605aa80c77bfc8cbbd8f3227f4e6eeb72f4616bfda28b9",
+    "src/structured_cov.jl": "80401fda340952f875f0c7591c4ac862700ccd14c1db63226d47c24bd662133c",
+    "src/coevolution_kronecker.jl": "0806ae44bb3890bc8a631ea8d5cf4bfac402443c7ef1f5b28ac9d988dd9e27bb",
+    "src/spde_fit.jl": "be1f189de617c600b12388a787e66c1c392c603d79251f45d2b492281b82957c",
+    "src/spde_latent.jl": "fccb7b6b2bb7890128afce30d34044bb8698fdabb013b6906026abebe0d23051",
+    "src/spde.jl": "0065451ecd110c1c2e63277147c1e9df5b35784f7de7c8c7a1e1a68292d767e3",
+    "src/formula.jl": "99680e6c89892735e4c131ce60e858807d19ee5eb1c8b18c6a59e0439475086d",
+    "src/bridge.jl": "40ab2cabb7de7fe012e4675b6f09324d554e2110196b667453e2a2841fecfdd8",
+    "docs/dev-log/core070/structured-required-case-plan.json": "a7b6c56ce53db11e491793b8a75978cd19593b9b29d60934bc24a465b6eb0cdf",
+    "docs/dev-log/core070/structured-native-mapping.md": "0dca59db0060b0d9548ea6c8bb7340881097acc3edc1635964680be8800543d3"
+  },
+  "cases": [
+    {
+      "id": "STRUCT-PHY-TREE-RR",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + phylo_latent(species, d = 1, tree = tree),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": "GLLVM._gaussian_source_loglik(Y,beta,reshape(lambda,3,1),[Symmetric(inv(Symmetric(Qtree)))],reshape(repeat([2,3,4],inner=4),12,1),sigma_eps)",
+      "reusable_call_status": "CANDIDATE_NOT_EXECUTED_ON_THIS_FIXTURE",
+      "source_kind": "TREE",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-PHY-DENSE-RR",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + phylo_latent(species, d = 1, vcv = C),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": "GLLVM._gaussian_source_loglik(Y,beta,reshape(lambda,3,1),[Symmetric(C+1e-8I)],reshape(repeat([1,2,3],inner=4),12,1),sigma_eps)",
+      "reusable_call_status": "CANDIDATE_NOT_EXECUTED_ON_THIS_FIXTURE",
+      "source_kind": "PHYLO_DENSE",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-PHY-TREE-PROPTO",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + phylo_scalar(species, tree = tree),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "TREE_TIP_MARGINAL",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-ANI-PED-SPARSE",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_latent(animal, d = 1, pedigree = ped,      unique = FALSE), dp, cluster = \"animal\", family = stats::gaussian(),      control = control)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": "GLLVM._gaussian_source_loglik(Y,beta,reshape(lambda,3,1),[Symmetric(inv(Symmetric(Qped)))],reshape(repeat([3,4],inner=6),12,1),sigma_eps)",
+      "reusable_call_status": "CANDIDATE_NOT_EXECUTED_ON_THIS_FIXTURE",
+      "source_kind": "PEDIGREE",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-KER-SINGLE-PSI",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1,      name = \"k1\", unique = TRUE), df, cluster = \"species\", family = stats::gaussian(),      control = control)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "KERNEL",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-KER-MULTI",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1,      name = \"k1\", unique = FALSE) + kernel_latent(species, K = K2,      d = 1, name = \"k2\", unique = FALSE), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": "GLLVM._gaussian_source_loglik(Y,beta,hcat(lambda1,lambda2),[Symmetric(C+1e-8I),Symmetric(K2+1e-8I)],repeat(reshape(repeat([1,2,3],inner=4),12,1),1,2),sigma_eps)",
+      "reusable_call_status": "CANDIDATE_NOT_EXECUTED_ON_THIS_FIXTURE",
+      "source_kind": "KERNEL",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-SPA-INDEP",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + spatial_indep(0 + trait | coords),      ds, cluster = \"species\", family = stats::gaussian(), control = control,      mesh = mesh)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "SPDE",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-SPA-LATENT",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + spatial_latent(0 + trait | coords,      d = 1, unique = FALSE), ds, cluster = \"species\", family = stats::gaussian(),      control = control, mesh = mesh)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "SPDE",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-SPA-LATENT-PSI",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + spatial_latent(0 + trait | coords,      d = 1, unique = TRUE), ds, cluster = \"species\", family = stats::gaussian(),      control = control, mesh = mesh)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "SPDE",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-SPA-DEP",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + spatial_dep(0 + trait | coords),      ds, cluster = \"species\", family = stats::gaussian(), control = control,      mesh = mesh)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "SPDE",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-SPA-COMMON-MAP",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + spatial_indep(0 + trait | coords,      common = TRUE), ds, cluster = \"species\", family = stats::gaussian(),      control = control, mesh = mesh)",
+      "required_roles": [
+        "native_model",
+        "formula_interface",
+        "public_r_bridge"
+      ],
+      "reference_status": "PREPARED_REFERENCE_NUMERICS_UNPAID",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "SPDE",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-KER-MULTI-PSI-PRUNED",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1,      name = \"k1\", unique = TRUE) + kernel_latent(species, K = K2,      d = 1, name = \"k2\", unique = TRUE), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "reference_defect_disposition"
+      ],
+      "reference_status": "BLOCKED_REFERENCE_PARAMETER_LOSS",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "KERNEL",
+      "owner": "B1/B2/B5",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-TREE-ULTRA",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + phylo_latent(species, d = 1, tree = bad_tree),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "TREE",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-TREE-NEGATIVE",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + phylo_latent(species, d = 1, tree = negative_tree),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "TREE",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-PED-PARENT",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_latent(animal, d = 1, pedigree = missing_ped,      unique = FALSE), dp, cluster = \"animal\", family = stats::gaussian(),      control = control)",
+      "required_roles": [
+        "reference_boundary",
+        "diagnostic_quality"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "PEDIGREE",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-PED-CYCLE",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + animal_latent(animal, d = 1, pedigree = cycle_ped,      unique = FALSE), dp, cluster = \"animal\", family = stats::gaussian(),      control = control)",
+      "required_roles": [
+        "reference_boundary",
+        "diagnostic_quality"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "PEDIGREE",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-KER-ASYM",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = asymK,      d = 1, name = \"k1\", unique = FALSE) + kernel_latent(species,      K = K2, d = 1, name = \"k2\", unique = FALSE), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "KERNEL",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-KER-PSD",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = indefK,      d = 1, name = \"k1\", unique = FALSE) + kernel_latent(species,      K = K2, d = 1, name = \"k2\", unique = FALSE), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "KERNEL",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-KER-RANK",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 4,      name = \"k1\", unique = FALSE) + kernel_latent(species, K = K2,      d = 1, name = \"k2\", unique = FALSE), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "KERNEL",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-KER-GROUP",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(site, K = C, d = 1,      name = \"k1\", unique = FALSE) + kernel_latent(species, K = K2,      d = 1, name = \"k2\", unique = FALSE), df, cluster = \"species\",      family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "KERNEL",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-KER-DEP",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + kernel_dep(species, K = C, name = \"k1\") +      kernel_latent(species, K = K2, d = 1, name = \"k2\", unique = FALSE),      df, cluster = \"species\", family = stats::gaussian(), control = control)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "KERNEL",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-KER-PSI",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + kernel_latent(species, K = C, d = 1,      name = \"k1\", unique = FALSE) + kernel_unique(species, K = C,      name = \"k1\") + kernel_latent(species, K = K2, d = 1, name = \"k2\",      unique = FALSE), df, cluster = \"species\", family = stats::gaussian(),      control = control)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "KERNEL",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-SPA-RAW",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + spatial_indep(0 + trait | coords),      ds, cluster = \"species\", family = stats::gaussian(), control = control,      mesh = raw_mesh)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "SPDE",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    },
+    {
+      "id": "STRUCT-BAD-SPA-ROWS",
+      "reference_call": "gllvmTMB(value ~ 0 + trait + spatial_indep(0 + trait | coords),      ds, cluster = \"species\", family = stats::gaussian(), control = control,      mesh = short_mesh)",
+      "required_roles": [
+        "reference_boundary"
+      ],
+      "reference_status": "REFERENCE_REJECTED",
+      "native_status": "UNPAID",
+      "public_fit_call": null,
+      "formula_call": null,
+      "bridge_call": null,
+      "reusable_fixed_parameter_call": null,
+      "reusable_call_status": "NO_EXACT_CURRENT_ENTRY_POINT_IDENTIFIED",
+      "source_kind": "SPDE",
+      "owner": "B1/B2 validation",
+      "acceptance_contract": "docs/dev-log/core070/structured-native-mapping.md"
+    }
+  ]
+}

@@ -41,9 +41,9 @@
 # directly.
 #
 # ===========================================================================
-# THE ESTIMATOR — EXACT ML, NEVER FORMING DENSE V (the whole point)
+# THE ESTIMATOR — EXACT ML, SPARSE PRECISION WITH A MARGINAL FALLBACK
 # ===========================================================================
-# Everything goes through the SPARSE E×E z-posterior precision
+# The usual path uses the SPARSE E×E z-posterior precision
 #       Λ = W + σ_eps⁻² · Zᵀ Z            (sparse; nnz ≈ E·depth for balanced trees)
 # via the Woodbury / matrix-determinant-lemma identities for
 # Σ = σ²_eps·I + Z D Zᵀ,  D = σ²·diag(ℓ),  W = D⁻¹:
@@ -51,8 +51,9 @@
 #   Σ⁻¹ b   = σ_eps⁻² b − σ_eps⁻⁴ · Z · ( Λ⁻¹ ( Zᵀ b ) )
 #   log|Σ|  = p·log σ²_eps + log|Λ| + log|D|,   log|D| = E·log σ² + Σ_e log ℓ_e
 #
-# log|Λ| and every solve come from ONE sparse Cholesky of Λ. The dense p×p V is
-# never built. μ is profiled out by GLS:  μ̂ = (1ᵀΣ⁻¹1)⁻¹ (1ᵀΣ⁻¹y). The two
+# Normally log|Λ| and every solve use one sparse Cholesky. Numerically unsafe
+# auxiliary systems instead factor the equivalent dense marginal covariance.
+# μ is profiled out by GLS: μ̂ = (1ᵀΣ⁻¹1)⁻¹ (1ᵀΣ⁻¹y). The two
 # variances {σ², σ²_eps} are fit by maximising the profile marginal likelihood
 # (2-D, derivative-free).
 #
@@ -144,7 +145,7 @@ end
 # ---------------------------------------------------------------------------
 # All inference primitives consume a precomputed `ZtZ = Zᵀ Z` (sparse, built
 # once per tree) so the per-evaluation cost is one diagonal update + one sparse
-# Cholesky. The dense p×p V is NEVER formed.
+# Cholesky. Numerically unsafe auxiliary systems use a dense marginal fallback.
 
 """
     BranchRECache
@@ -180,8 +181,69 @@ function _lambda(cache::BranchRECache, σ²::Real, σ²_eps::Real)
     return Λ
 end
 
-# Cholesky of the (SPD) sparse Λ. Λ is SPD because W ≻ 0 and σ_eps⁻²ZᵀZ ⪰ 0.
-_lambda_chol(Λ) = cholesky(Symmetric(Λ))
+# Cholesky of the (SPD) sparse Λ, scaled by its largest stored magnitude.
+# Λ is SPD because W ≻ 0 and σ_eps⁻²ZᵀZ ⪰ 0.  Scaling only changes the
+# numerical representation supplied to CHOLMOD: Λ = λscale * Λscaled.  It
+# never changes the objective with a ridge or other model perturbation.
+function _lambda_chol(Λ::SparseMatrixCSC{Float64,Int})
+    λscale = maximum(abs, nonzeros(Λ))
+    isfinite(λscale) && λscale > 0 ||
+        throw(DomainError(λscale, "Λ contains an unsafe numerical scale"))
+    return cholesky(Symmetric(Λ / λscale)), λscale
+end
+
+# An auxiliary precision can be ill-conditioned while the marginal covariance
+# is benign. Return nothing to choose an equivalent marginal representation,
+# never to exclude such a parameter point from the statistical model.
+_valid_branch_variances(a, b) = isfinite(a) && a > 0 && isfinite(b) && b > 0
+function _branch_precision_factor(cache::BranchRECache, σ²::Real, σ²_eps::Real)
+    inv_eps = 1.0 / σ²_eps
+    isfinite(inv_eps) || return nothing
+    Λ = _lambda(cache, σ², σ²_eps)
+    all(isfinite, nonzeros(Λ)) || return nothing
+    λscale = maximum(abs, nonzeros(Λ))
+    cond_lower = cache.E > cache.p ? λscale * σ² * minimum(cache.ℓ) : 1.0
+    isfinite(cond_lower) && cond_lower ≤ inv(sqrt(eps(Float64))) || return nothing
+    try
+        return _lambda_chol(Λ)[1], λscale, inv_eps
+    catch err
+        err isa PosDefException || rethrow(err)
+        return nothing
+    end
+end
+
+function _branch_marginal_factor(cache::BranchRECache, σ²::Real, σ²_eps::Real)
+    @warn "Branch precision is numerically unsafe; using the equivalent dense marginal covariance (O(p²) memory)." maxlog=1
+    scale = max(σ², σ²_eps)
+    B = Matrix(cache.Z * spdiagm(0 => (σ² / scale) .* cache.ℓ) * cache.Z')
+    @inbounds for i in 1:cache.p
+        B[i, i] += σ²_eps / scale
+    end
+    all(isfinite, B) || throw(DomainError(scale, "marginal covariance is not representable"))
+    return cholesky(Symmetric(B)), scale
+end
+
+function _branch_marginal_profile(cache::BranchRECache, y, σ², σ²_eps)
+    C, scale = try
+        _branch_marginal_factor(cache, σ², σ²_eps)
+    catch err
+        (err isa PosDefException || err isa DomainError) || rethrow(err)
+        return Inf, NaN
+    end
+    ymean = mean(y)
+    yc = y .- ymean
+    one = ones(cache.p)
+    w1 = C \ one
+    wy = C \ yc
+    denominator = dot(one, w1)
+    isfinite(denominator) && denominator > 0 || return Inf, NaN
+    μc = dot(one, wy) / denominator
+    r = yc .- μc
+    q = dot(r, C \ r) / scale
+    nll = (cache.p * log(2π) + logdet(C) + cache.p * log(scale) + q) / 2
+    μ = ymean + μc
+    return isfinite(nll) && isfinite(μ) && q >= 0 ? (nll, μ) : (Inf, NaN)
+end
 
 # ---------------------------------------------------------------------------
 # 4. Profile marginal log-likelihood (μ profiled out by GLS).
@@ -191,8 +253,10 @@ _lambda_chol(Λ) = cholesky(Symmetric(Λ))
     branch_re_profile_negll(cache, y, σ², σ²_eps) -> (negll, μ̂)
 
 Exact profile −log-likelihood of the single-variance branch-RE model at
-`(σ², σ²_eps)`, with `μ` profiled out by GLS, computed ENTIRELY through the
-sparse E×E system Λ (never forming dense V). `y` is a length-p single trait.
+`(σ², σ²_eps)`, with `μ` profiled out by GLS, normally through sparse E×E
+precision Λ. Numerically unsafe auxiliary systems use an equivalent dense
+marginal covariance with a warning; no parameter-space restriction or ridge
+is imposed. `y` is a length-p single trait.
 
 Uses Σ⁻¹b = σ_eps⁻²b − σ_eps⁻⁴ Z Λ⁻¹ Zᵀb and
 log|Σ| = p·log σ²_eps + log|Λ| + (E·log σ² + Σ log ℓ).
@@ -201,29 +265,57 @@ function branch_re_profile_negll(cache::BranchRECache, y::AbstractVector,
                                  σ²::Real, σ²_eps::Real)
     length(y) == cache.p ||
         throw(ArgumentError("y length $(length(y)) must equal p $(cache.p)"))
-    inv_eps = 1.0 / σ²_eps
-    Λ = _lambda(cache, σ², σ²_eps)
-    cΛ = _lambda_chol(Λ)
+    # Nelder–Mead is unconstrained on the log scale.  An overflowed or
+    # underflowed exponent is an invalid objective trial, not a near-optimal
+    # parameter point and not evidence that the SPD model needs a ridge.
+    _valid_branch_variances(σ², σ²_eps) || return Inf, NaN
+    all(isfinite, y) || return Inf, NaN
+    precision = _branch_precision_factor(cache, σ², σ²_eps)
+    isnothing(precision) && return _branch_marginal_profile(cache, y, σ², σ²_eps)
+    cΛ, λscale, inv_eps = precision
 
-    # Σ⁻¹ applied to an arbitrary RHS via Woodbury.
-    Σinv(b) = inv_eps .* b .- (inv_eps^2) .* (cache.Z * (cΛ \ (cache.Z' * b)))
+    # Σ⁻¹ applied to an arbitrary RHS via Woodbury.  Solve for the posterior
+    # mean first, then form the residual at b's original scale.  Expanding this
+    # to inv_eps*b - inv_eps²*Z*Λ⁻¹Z'b loses the residual when σ²_eps is small.
+    # Here Λ⁻¹ = Λscaled⁻¹ / λscale and λscale ≥ inv_eps.
+    function Σinv(b)
+        zpost = (inv_eps / λscale) .* (cΛ \ (cache.Z' * b))
+        return inv_eps .* (b .- cache.Z * zpost)
+    end
 
+    # The intercept is profiled, so centre before the sparse solves. This is
+    # translation-invariant and prevents a large mean from obscuring the
+    # residual in the Woodbury subtraction.
+    ymean = mean(y)
+    yc = y .- ymean
     one_p = ones(cache.p)
     Sinv_1 = Σinv(one_p)
-    Sinv_y = Σinv(y)
+    Sinv_y = Σinv(yc)
     a11 = dot(one_p, Sinv_1)            # 1ᵀ Σ⁻¹ 1
     a1y = dot(one_p, Sinv_y)            # 1ᵀ Σ⁻¹ y
-    μ̂ = a1y / a11                       # GLS intercept
+    isfinite(a11) && a11 > 0 && isfinite(a1y) || return Inf, NaN
+    μc = a1y / a11                       # GLS intercept of the centred data
+    μ̂ = ymean + μc
 
-    r = y .- μ̂                          # residual
-    # rᵀ Σ⁻¹ r = yᵀΣ⁻¹y − μ̂²·1ᵀΣ⁻¹1  (since 1ᵀΣ⁻¹y = μ̂·1ᵀΣ⁻¹1)
-    quad = dot(y, Sinv_y) - μ̂^2 * a11
+    r = yc .- μc                         # residual
+    # At the GLS intercept rᵀΣ⁻¹y = rᵀΣ⁻¹r.  This form avoids subtracting
+    # two O(μ̂²) terms in yᵀΣ⁻¹y − μ̂²·1ᵀΣ⁻¹1.
+    quad = dot(r, Sinv_y)
+    if !isfinite(quad)
+        return Inf, NaN
+    elseif quad < 0
+        # This subtraction can lose its non-negative quadratic-form property
+        # when the fitted intercept is large. Re-evaluate from the residual;
+        # a negative result is never accepted as a healthy likelihood.
+        quad = dot(r, Σinv(r))
+        isfinite(quad) && quad >= 0 || return Inf, NaN
+    end
 
-    logdetΣ = cache.p * log(σ²_eps) + logdet(cΛ) +
+    logdetΣ = cache.p * log(σ²_eps) + logdet(cΛ) + cache.E * log(λscale) +
               (cache.E * log(σ²) + cache.sum_log_ℓ)
 
     negll = 0.5 * (cache.p * log(2π) + logdetΣ + quad)
-    return negll, μ̂
+    return isfinite(negll) && isfinite(μ̂) ? (negll, μ̂) : (Inf, NaN)
 end
 
 # ---------------------------------------------------------------------------
@@ -237,15 +329,25 @@ Branch-increment BLUPs ẑ = E[z|y] = σ_eps⁻² Λ⁻¹ Zᵀ(y − μ·1), and
 rate read-outs:
   * `std_incr[e] = ẑ_e / √ℓ_e`  (prior scale; ~N(0, σ²) under the prior),
   * `rate_e[e]   = ẑ_e² / ℓ_e`  (per-branch rate; prior mean σ²).
-All via the sparse Λ — no dense V.
+Uses the sparse precision when safe, otherwise the same dense marginal
+fallback as [`branch_re_profile_negll`](@ref). Invalid variances raise
+`DomainError`; response-length mismatches raise `ArgumentError`.
 """
 function branch_blups(cache::BranchRECache, y::AbstractVector,
                       σ²::Real, σ²_eps::Real, μ::Real)
-    inv_eps = 1.0 / σ²_eps
-    Λ = _lambda(cache, σ², σ²_eps)
-    cΛ = _lambda_chol(Λ)
-    rhs = inv_eps .* (cache.Z' * (y .- μ))
-    ẑ = cΛ \ rhs
+    length(y) == cache.p || throw(ArgumentError("y length must equal p $(cache.p)"))
+    _valid_branch_variances(σ², σ²_eps) ||
+        throw(DomainError((σ², σ²_eps), "branch variances must be finite and positive"))
+    all(isfinite, y) && isfinite(μ) ||
+        throw(DomainError(μ, "response and mean must be finite"))
+    precision = _branch_precision_factor(cache, σ², σ²_eps)
+    if isnothing(precision)
+        C, scale = _branch_marginal_factor(cache, σ², σ²_eps)
+        ẑ = ((σ² / scale) .* cache.ℓ) .* (cache.Z' * (C \ (y .- μ)))
+    else
+        cΛ, λscale, inv_eps = precision
+        ẑ = (inv_eps / λscale) .* (cΛ \ (cache.Z' * (y .- μ)))
+    end
     sqrtℓ = sqrt.(cache.ℓ)
     std_incr = ẑ ./ sqrtℓ
     rate_e = (ẑ .^ 2) ./ cache.ℓ
@@ -334,6 +436,9 @@ function fit_branch_re(phy::EdgePhy, y::AbstractVector;
         n_iter = iters
         converged = conv
     end
+
+    isfinite(negll) && isfinite(σ²) && σ² > 0 && isfinite(σ²_eps) && σ²_eps > 0 ||
+        throw(ErrorException("branch-RE optimisation found no finite likelihood point"))
 
     _, μ̂ = branch_re_profile_negll(cache, yv, σ², σ²_eps)
     ẑ, std_incr, rate_e = branch_blups(cache, yv, σ², σ²_eps, μ̂)

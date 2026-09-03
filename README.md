@@ -8,6 +8,19 @@ status-tracked GLM response-family surface.
 
 > API may change before v1.0.
 
+`fit_gaussian_sources(...; sigma_eps_fixed=s)` also supports a specified positive
+residual SD; omitted means it is estimated. Fixed coordinates are excluded from
+`dof`, gradients and Hessians. This does not establish full source-model parity.
+
+Local development candidate: `SourceCovariance` and `fit_gaussian_sources`
+represent fixed covariance among source nodes with explicit observation-to-node
+projections. Targeted numerical checks and six retained comparisons with R
+0.7.0 pass. This evidence is limited to those fixed Gaussian source models;
+explicit-source Gaussian formulas support fixed predictors with a complete mean
+design. R bridge support, calibrated uncertainty and performance improvements
+remain unverified. See the structured-dependence guide for covariance axes
+and the nearly singular unique-variance case.
+
 ## Why
 
 GLLVMs decompose a multivariate response into a low-rank latent factor
@@ -30,8 +43,9 @@ y_s ~ N(X_s β, Λ_B Λ_B' + diag(d_total))
 — solving directly via SVD (PPCA closed form) when possible, otherwise
 warm-starting LBFGS with the PPCA initialisation. Per-iteration cost is
 O(p K² + K³) via the Woodbury identity (instead of O(p³) for generic
-Cholesky). On our Gaussian benchmark grid that path runs **161–698× faster**
-than the R `gllvmTMB` engine on the same problem, with answers agreeing to at
+Cholesky). On our published Gaussian closed-form profile grid that path runs
+**median 265.1× faster (range 161–698×)** than the R `gllvmTMB` engine on the
+same problem, with answers agreeing to at
 least six significant digits (worst case across our benchmark grid:
 `|Δ logLik| = 2.3e-07`, `Σ_y` relative Frobenius `4.4e-05`; see
 [Benchmarks](https://itchyshin.github.io/GLLVM.jl/dev/benchmarks)).
@@ -111,12 +125,21 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - Closed-form Gaussian marginal log-likelihood (no Laplace approximation)
 - One-part GLM response families via a Laplace marginal: Poisson, negative binomial
   (NB2 and NB1, linear variance), Binomial / Bernoulli, beta-binomial
-  (overdispersed binomial), Beta, Gamma, Exponential, Ordinal (logit or probit),
-  Tweedie, Student-t (heavy-tailed continuous, fixed `ν`; outlier-robust
+  (overdispersed binomial), Beta, Gamma, Exponential, Ordinal (logit or probit only),
+  Tweedie, Student-t (heavy-tailed continuous, fixed finite positive `ν` or estimated
+  degrees of freedom with `StudentTFamily()`; outlier-robust
   alternative to Gaussian, `family = StudentTFamily(ν)`), Conway–Maxwell–Poisson
   (under- or over-dispersed counts, `family = COMPoisson()`; marker `ν` is a
   tag payload, always estimated)
-- Heteroscedastic Gaussian with per-species variance (`fit_gaussian_pervar_gllvm`)
+- Grouped Tweedie has explicit fixed-common, shared-estimated and per-species
+  estimated power controls; these are distinct models, with separate parameter
+  counts. Full R0.7.0 Core + AGHQ parity remains under validation.
+- Heteroscedastic Gaussian with per-species variance (`fit_gaussian_pervar_gllvm`),
+  including explicit full-rank fixed-effect designs profiled by GLS. The development
+  `fixed_residual_sd` option separates a supplied residual scale from estimated
+  unique variances. `gllvm(...; family=Normal(), pervar=true)` exposes the complete
+  formula mean design. AGHQ requests retain exact Gaussian/Laplace with explicit
+  fallback provenance; bridge and interval parity remain unverified.
 - Per-species / grouped dispersion (`disp.group`) for NB2, NB1, Beta, beta-binomial,
   Gamma, and Tweedie via the `_grouped` drivers — per-species is the `fit_gllvm`
   default for NB2, NB1, Beta, and beta-binomial (`family = NB1()`,
@@ -140,6 +163,8 @@ with sparse random-effect design matrices. `GLLVM.jl` solves a
 - SPDE / Matérn spatial latent field, with kriging prediction
 - Offsets, response-missing masks for GLM Laplace rows, Dunn–Smyth residuals, AIC / BIC,
   `predict` / `getLV` / `ordination`, and an `@formula` front-end
+  (wide formula tables require one row per site, including intercept-only fits;
+  an empty table is allowed when there are no covariates)
 - Wald / profile / bootstrap CI routes across scalar-dispersion GLM, grouped
   NB2/NB1/Beta/Gamma, and two-part families; grouped Tweedie, per-trait
   ordinal, and bridge-only edge rows remain status-gated before promotion
@@ -157,6 +182,13 @@ remaining sparse-Cholesky / CHOLMOD paths stay conservative until their analytic
 gradients clear the same runtime accuracy gate; the VA estimator adds analytic
 inner and envelope-theorem outer gradients.
 
+Truncated NB2 accepts explicit `disp_group=:species` through `fit_gllvm` and
+intercept-only wide/long formulas. Its default remains shared dispersion;
+partial grouping and site covariates remain unsupported.
+
+The truncated-Poisson R→Julia bridge rejects fractional, non-finite, or
+inexactly representable counts before fitting; it never rounds the response.
+
 ## Citation
 
 If you use `GLLVM.jl` in published work, please cite:
@@ -167,3 +199,25 @@ If you use `GLLVM.jl` in published work, please cite:
 ## License
 
 MIT
+
+### Poisson AGHQ candidate
+
+`fit_poisson_gllvm(Y; K=2, aghq=5)` opts into unpenalized adaptive quadrature
+for an ordinary log-link Poisson latent block. Default fits remain Laplace.
+Inspect `fit.integration` for actual integration, fallback reasons and retained
+attempts. Inference uses the fitted frozen-node objective; full Stage 1a parity,
+recovery and coverage remain unverified. See the quickstart for controls and limits.
+
+`fit_binomial_gllvm(Y; K=2, N=trials, aghq=5)` also exposes an ordinary
+binomial candidate with logit, probit or cloglog link. Trials, masks and offsets
+are retained for inference and postfit methods. `predict` returns probabilities;
+`simulate` returns counts. The original five-node binomial comparison currently
+fails both-engine convergence and the likelihood gate; do not infer full parity.
+
+`fit_gaussian_gllvm(Y; K=2, aghq=3)` adds the shared-residual-SD Gaussian
+candidate. Default fitting remains the exact Gaussian marginal with zero mean;
+use `X[p,n,q]` for fixed effects. Recorded masks, offsets and fixed-zero
+coefficients carry through prediction and inference. Gaussian AGHQ uses a real
+outer quadrature fit, even though the exact marginal is available as a check.
+Its interval objective is the fitted frozen-node surrogate. See the quickstart
+for an executed example; this does not establish the whole parity programme.

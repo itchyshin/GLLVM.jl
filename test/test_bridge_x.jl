@@ -40,6 +40,11 @@ function _bx_ci_max_absdiff(n1, lo1, hi1, n2, lo2, hi2)
     d = 0.0
     for i in eachindex(n1)
         for (x, y) in ((lo1[i], lo2[i]), (hi1[i], hi2[i]))
+            # T14 F3: agreement first, for ANY value — covers `Inf == Inf` and
+            # `-Inf == -Inf` (a correctly unbounded Wald CI at a dispersion
+            # boundary agreeing on both sides), which would otherwise reach
+            # `abs(Inf - Inf) = NaN` below and poison `d` via two-arg `max`.
+            (x == y) && continue
             (isnan(x) && isnan(y)) && continue
             @test !(isnan(x) ⊻ isnan(y))
             isnan(x) || (d = max(d, abs(x - y)))
@@ -48,10 +53,28 @@ function _bx_ci_max_absdiff(n1, lo1, hi1, n2, lo2, hi2)
     return d
 end
 
+# T14 F3 (docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md): `_bx_ci_max_absdiff`
+# computed `abs(x - y)` for any non-NaN pair, so two SIDES AGREEING at `Inf` (a
+# correctly unbounded Wald CI at a dispersion boundary) produced `abs(Inf-Inf) =
+# NaN`, and two-arg `max` propagates that NaN for the rest of the loop — turning
+# agreement into a spurious failure. Contract: `x == y` (covers `Inf == Inf` and
+# `-Inf == -Inf`) is zero difference; a genuinely mixed Inf/finite pair (a real
+# disagreement) must still surface as `Inf` (or another large finite value), not
+# `NaN`, so it is not silently swallowed by the `(isnan(x)&&isnan(y))` skip.
+@testset "_bx_ci_max_absdiff treats agreed Inf as agreement" begin
+    @test _bx_ci_max_absdiff(["a"], [Inf], [1.0], ["a"], [Inf], [1.0]) == 0.0
+    @test _bx_ci_max_absdiff(["a"], [-Inf], [1.0], ["a"], [-Inf], [1.0]) == 0.0
+    # Mixed: one side Inf, the other finite — a real disagreement; must be Inf,
+    # never NaN (NaN would again be silently skipped by the isnan-agreement check).
+    d_mixed = _bx_ci_max_absdiff(["a"], [Inf], [1.0], ["a"], [3.0], [1.0])
+    @test !isnan(d_mixed)
+    @test d_mixed == Inf
+end
+
 # Simulate one-part responses with a covariate-driven mean (η = β + Xγ + Λz).
-function _bx_sim(family_marker, p, n, K, q; seed = 7, Ntrial = 1)
+function _bx_sim(family_marker, p, n, K, q; seed = 7, Ntrial = 1, nb_r = 8.0, intercept = 0.0)
     rng = Random.MersenneTwister(seed)
-    β = 0.3 .* randn(rng, p)
+    β = intercept .+ 0.3 .* randn(rng, p)
     γ = 0.6 .* randn(rng, q)
     Λ = 0.4 .* randn(rng, p, K)
     xs = [randn(rng, n) for _ in 1:q]
@@ -68,7 +91,7 @@ function _bx_sim(family_marker, p, n, K, q; seed = 7, Ntrial = 1)
             pr = 1 / (1 + exp(-η_ts))
             Y[t, s] = float(rand(rng, Binomial(Ntrial, pr)))
         elseif family_marker isa NegativeBinomial
-            r = 8.0; μ = exp(η_ts)
+            r = nb_r; μ = exp(η_ts)
             Y[t, s] = float(rand(rng, NegativeBinomial(r, r / (r + μ))))
         elseif family_marker isa Beta
             φ = 8.0; μ = clamp(1 / (1 + exp(-η_ts)), 1e-3, 1 - 1e-3)
@@ -336,7 +359,40 @@ end
             end
         end
 
-        @testset "negbinomial Wald (grouped_cov)" begin
+        # T14 (docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md): seed 523 is a
+        # KNOWN degenerate fixture — two of three traits fit at the NB2->Poisson
+        # boundary (r_group ~ 1e9-1e20 depending on environment). It is kept here,
+        # explicitly named, as the degenerate-pattern case: native and bridge must
+        # agree (same NaN/Inf positions via the F3 helper fix; `d` finite, and
+        # `== 0.0` since bridge_fit calls the SAME `fit_nb_gllvm_grouped_cov` on
+        # the same data) and, after F1, must carry the SAME `dispersion_boundary` /
+        # `converged` verdict on both sides.
+        # T14 F2(a): the identity on a WELL-CONDITIONED NB2 fixture. The default
+        # generator (r = 8, mean counts ~1, n = 70) leaves the per-trait dispersion
+        # nearly unidentified — ~35,000 seeds gave no fixture well-conditioned on
+        # both Julia 1.10 and 1.12. Identification needs real overdispersion and
+        # larger means/n: r = 2, intercept 1.5 (mean counts ~4.5), n = 200. The
+        # conditioning is ASSERTED so a future drift fails with its reason.
+        @testset "negbinomial Wald (grouped_cov): well-conditioned fixture (T14 F2)" begin
+            Y, X = _bx_sim(NegativeBinomial(), 3, 200, 1, 1; seed = 523, nb_r = 2.0, intercept = 1.5)
+            Yi = round.(Int, Y)
+            oracle = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:3))
+            @test all(0.5 .<= oracle.r_group .<= 100)
+            @test !any(oracle.dispersion_boundary)
+            @test oracle.converged
+            nat = GLLVM.confint(oracle, Yi; method = :wald, X = X)
+            @test nat.pd_hessian
+            @test all(isfinite, nat.lower) && all(isfinite, nat.upper)
+            br = bridge_fit(; y = Y, family = "negbinomial", d = 1, X = X,
+                            options = Dict("ci_method" => "wald"))
+            @test br.ci_method == "wald"
+            @test any(==("gamma[1]"), br.ci_param_names)
+            d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
+                                   nat.term, nat.lower, nat.upper)
+            @test d < 1e-8
+        end
+
+        @testset "negbinomial Wald (grouped_cov): seed-523 degenerate case (T14 F2)" begin
             Y, X = _bx_sim(NegativeBinomial(), 3, 70, 1, 1; seed = 523)
             Yi = round.(Int, Y)
             oracle = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:3))
@@ -347,7 +403,14 @@ end
             @test any(==("gamma[1]"), br.ci_param_names)
             d = _bx_ci_max_absdiff(br.ci_param_names, br.ci_lower, br.ci_upper,
                                    nat.term, nat.lower, nat.upper)
-            @test d < 1e-8
+            @test isfinite(d)
+            @test d == 0.0
+            # this fixture is confirmed degenerate on THIS environment: at least
+            # one group is at the boundary, and native/bridge share that verdict
+            # (bridge_fit calls the identical fitter, so this is not a coincidence).
+            @test any(oracle.dispersion_boundary)
+            @test oracle.converged == false
+            @test br.converged == oracle.converged
         end
 
         @testset "beta Wald (grouped_cov)" begin

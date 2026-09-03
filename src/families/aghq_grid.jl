@@ -283,3 +283,82 @@ function aghq_stage1a_marginal_loglik(family, Y::AbstractMatrix, N::AbstractMatr
     end
     return acc
 end
+
+"""
+    AGHQAdaptation
+
+Internal, fixed site-adaptation cache. `mode` is the supplied conditional mode;
+`inverse_root = inv(R)` for observed precision `H = R'R`, and `logjac` is
+`-sum(log, diag(R))`. `curvature_repaired` records the frozen R compatibility
+branch; `minimum_eigenvalue` describes the original symmetrized precision.
+The cache does not find or certify a conditional mode. Its buffers are owned
+copies, but callers must treat them as read-only while evaluating an objective.
+"""
+struct AGHQAdaptation
+    mode::Vector{Float64}
+    inverse_root::Matrix{Float64}
+    logjac::Float64
+    curvature_repaired::Bool
+    minimum_eigenvalue::Float64
+end
+
+"""
+    aghq_adaptation(mode, observed_hessian) -> AGHQAdaptation
+
+Construct a fixed, Float64 adaptation from a supplied mode and its **observed**
+negative log-joint Hessian. Symmetrize as in the frozen R Stage 1a adapter.
+Only when Cholesky fails, floor eigenvalues at `1e-8` and record the repair.
+A positive-definite Hessian, including one with smaller positive eigenvalues,
+is left unchanged. Nonfinite inputs fail; no loading penalty is introduced.
+
+This constructor is outside differentiation of the frozen-node surrogate.
+It neither certifies stationarity nor replaces the outer adaptation algorithm.
+Provenance: `docs/dev-log/core070/aghq-frozen-contract.md`.
+"""
+function aghq_adaptation(mode::AbstractVector, observed_hessian::AbstractMatrix)
+    d = length(mode)
+    d > 0 || throw(ArgumentError("AGHQ adaptation needs a nonempty latent mode"))
+    size(observed_hessian) == (d, d) || throw(DimensionMismatch(
+        "AGHQ observed Hessian must match the latent mode dimension"))
+    all(isfinite, mode) && all(isfinite, observed_hessian) ||
+        throw(ArgumentError("AGHQ adaptation requires finite mode and Hessian"))
+    m = Vector{Float64}(mode)
+    H = Matrix{Float64}(observed_hessian)
+    H = (H + H') / 2
+    all(isfinite, m) && all(isfinite, H) ||
+        throw(ArgumentError("AGHQ adaptation is not finite in Float64"))
+    A = Symmetric(H)
+    minimum_eigenvalue = eigmin(A)
+    F = cholesky(A; check=false)
+    repaired = !issuccess(F)
+    if repaired
+        E = eigen(A)
+        A = Symmetric(E.vectors * Diagonal(max.(E.values, 1e-8)) * E.vectors')
+        F = cholesky(A)
+    end
+    inverse_root = Matrix(F.U \ Matrix{Float64}(I, d, d))
+    logjac = -sum(log, diag(F.U))
+    return AGHQAdaptation(m, inverse_root, logjac, repaired, minimum_eigenvalue)
+end
+
+"""
+    aghq_frozen_logintegral(logjoint, adaptation, grid)
+
+Internal fixed-adaptation quadrature. `logjoint(z)` must include the normalized
+latent prior as well as the conditional response density. Grid weights already
+contain the normal-measure correction; no extra normalizing factor is applied.
+
+AD through parameters captured by `logjoint` differentiates the **frozen-node
+surrogate** only. It does not differentiate the mode or observed curvature and
+must not be reported as the derivative of the re-adapted objective. New node
+vectors leave the supplied cache unchanged. No public estimator is exposed.
+"""
+function aghq_frozen_logintegral(logjoint, adaptation::AGHQAdaptation, grid::AGHQGrid)
+    grid.d == length(adaptation.mode) || throw(DimensionMismatch(
+        "AGHQ grid and adaptation dimensions differ"))
+    # Comprehension preserves the callback's scalar type, including ForwardDiff
+    # Dual values; unlike the older adaptive evaluator, no Float64 terms buffer.
+    terms = [grid.logw[j] + logjoint(adaptation.mode +
+        adaptation.inverse_root * view(grid.nodes, j, :)) for j in axes(grid.nodes, 1)]
+    return adaptation.logjac + _aghq_logsumexp(terms)
+end

@@ -1,0 +1,99 @@
+id	stage	parm	method	variant	expected_kind	expected	classification	owner	julia_status
+CI-ROUTE-001	dispatch	Lambda	DEFAULT	healthy	route	.confint_lambda:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-002	dispatch	Lambda	profile	healthy	route	.confint_lambda:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-003	dispatch	Lambda	wald	healthy	route	.confint_lambda:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-004	dispatch	Lambda	bootstrap	healthy	route	.confint_lambda:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-005	dispatch	Lambda	wald_asym	healthy	route	.confint_lambda:wald_asym	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-006	dispatch	Lambda	fisher-z	healthy	route	.confint_lambda:fisher-z	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-007	dispatch	Lambda	bogus	healthy	route	.confint_lambda:bogus	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-008	dispatch	icc	DEFAULT	healthy	route	.confint_icc:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-009	dispatch	icc	profile	healthy	route	.confint_icc:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-010	dispatch	icc	wald	healthy	route	.confint_icc:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-011	dispatch	icc	bootstrap	healthy	route	.confint_icc:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-012	dispatch	icc	wald_asym	healthy	route	.confint_icc:wald_asym	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-013	dispatch	icc	fisher-z	healthy	route	.confint_icc:fisher-z	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-014	dispatch	icc	bogus	healthy	route	.confint_icc:bogus	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-015	dispatch	phylo_signal	DEFAULT	healthy	route	.confint_phylo_signal:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-016	dispatch	phylo_signal	profile	healthy	route	.confint_phylo_signal:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-017	dispatch	phylo_signal	wald	healthy	route	.confint_phylo_signal:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-018	dispatch	phylo_signal	bootstrap	healthy	route	.confint_phylo_signal:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-019	dispatch	phylo_signal	wald_asym	healthy	route	.confint_phylo_signal:wald_asym	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-020	dispatch	phylo_signal	fisher-z	healthy	route	.confint_phylo_signal:fisher-z	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-021	dispatch	phylo_signal	bogus	healthy	route	.confint_phylo_signal:bogus	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-022	dispatch	communality:unit	DEFAULT	healthy	route	.confint_communality:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-023	dispatch	communality:unit	profile	healthy	route	.confint_communality:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-024	dispatch	communality:unit	wald	healthy	route	.confint_communality:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-025	dispatch	communality:unit	bootstrap	healthy	route	.confint_communality:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-026	dispatch	communality:unit	wald_asym	healthy	route	.confint_communality:wald_asym	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-027	dispatch	communality:unit	fisher-z	healthy	route	.confint_communality:fisher-z	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-028	dispatch	communality:unit	bogus	healthy	route	.confint_communality:bogus	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-029	dispatch	rho:unit:1,2	DEFAULT	healthy	route	.confint_rho:fisher-z	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-030	dispatch	rho:unit:1,2	profile	healthy	route	.confint_rho:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-031	dispatch	rho:unit:1,2	wald	healthy	route	.confint_rho:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-032	dispatch	rho:unit:1,2	bootstrap	healthy	route	.confint_rho:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-033	dispatch	rho:unit:1,2	wald_asym	healthy	route	.confint_rho:wald_asym	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-034	dispatch	rho:unit:1,2	fisher-z	healthy	route	.confint_rho:fisher-z	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-035	dispatch	rho:unit:1,2	bogus	healthy	route	.confint_rho:bogus	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-036	dispatch	proportion:shared_unit	DEFAULT	healthy	route	.confint_proportion:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-037	dispatch	proportion:shared_unit	profile	healthy	route	.confint_proportion:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-038	dispatch	proportion:shared_unit	wald	healthy	route	.confint_proportion:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-039	dispatch	proportion:shared_unit	bootstrap	healthy	route	.confint_proportion:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-040	dispatch	proportion:shared_unit	wald_asym	healthy	route	.confint_proportion:wald_asym	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-041	dispatch	proportion:shared_unit	fisher-z	healthy	route	.confint_proportion:fisher-z	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-042	dispatch	proportion:shared_unit	bogus	healthy	route	.confint_proportion:bogus	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-043	dispatch	Sigma_unit	DEFAULT	healthy	route	.confint_sigma:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-044	dispatch	Sigma_unit	wald	healthy	route	.confint_sigma:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-045	dispatch	Sigma_unit	bootstrap	healthy	route	.confint_sigma:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-046	dispatch	Sigma_unit_obs	DEFAULT	healthy	route	.confint_sigma:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-047	dispatch	Sigma_unit_obs	wald	healthy	route	.confint_sigma:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-048	dispatch	Sigma_unit_obs	bootstrap	healthy	route	.confint_sigma:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-049	dispatch	Sigma_cluster	DEFAULT	healthy	route	.confint_sigma:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-050	dispatch	Sigma_cluster	wald	healthy	route	.confint_sigma:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-051	dispatch	Sigma_cluster	bootstrap	healthy	route	.confint_sigma:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-052	dispatch	Sigma_cluster2	DEFAULT	healthy	route	.confint_sigma:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-053	dispatch	Sigma_cluster2	wald	healthy	route	.confint_sigma:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-054	dispatch	Sigma_cluster2	bootstrap	healthy	route	.confint_sigma:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-055	dispatch	Sigma_B	DEFAULT	healthy	route	.confint_sigma:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-056	dispatch	Sigma_B	wald	healthy	route	.confint_sigma:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-057	dispatch	Sigma_B	bootstrap	healthy	route	.confint_sigma:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-058	dispatch	Sigma_W	DEFAULT	healthy	route	.confint_sigma:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-059	dispatch	Sigma_W	wald	healthy	route	.confint_sigma:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-060	dispatch	Sigma_W	bootstrap	healthy	route	.confint_sigma:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-061	dispatch	sigma_phy	DEFAULT	healthy	route	.confint_sigma:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-062	dispatch	sigma_phy	wald	healthy	route	.confint_sigma:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-063	dispatch	sigma_phy	bootstrap	healthy	route	.confint_sigma:bootstrap	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-064	dispatch	Sigma_unit	fisher-z	healthy	error	'arg' should be one of	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-065	dispatch	beta	DEFAULT	healthy	route	.confint_fixef_profile:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-066	dispatch	beta	wald	healthy	route	tidy:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-067	dispatch	beta	bootstrap	healthy	route	tidy:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-068	dispatch	sigma_eps	DEFAULT	healthy	route	.confint_profile_targets:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-069	dispatch	sigma_eps	wald	healthy	route	.confint_wald_targets:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-070	dispatch	sigma_eps	bootstrap	healthy	route	tidy:wald	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-071	dispatch	Lambda	wald	mspl	class	gllvmTMB_mspl_inference_unsupported	intentionally excluded	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-072	dispatch	Lambda	wald	weighted	class	gllvmTMB_weighted_inference_unsupported	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-073	dispatch	icc	wald	mspl	class	gllvmTMB_mspl_inference_unsupported	intentionally excluded	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-074	dispatch	icc	wald	weighted	class	gllvmTMB_weighted_inference_unsupported	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-075	dispatch	Sigma_unit	wald	mspl	class	gllvmTMB_mspl_inference_unsupported	intentionally excluded	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-076	dispatch	Sigma_unit	wald	weighted	class	gllvmTMB_weighted_inference_unsupported	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-077	dispatch	beta	wald	mspl	class	gllvmTMB_mspl_inference_unsupported	intentionally excluded	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-078	dispatch	beta	wald	weighted	class	gllvmTMB_weighted_inference_unsupported	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-079	dispatch	beta	wald	no-se	class	gllvmTMB_confint_no_sdreport	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-080	dispatch	beta	wald	bad-se	class	gllvmTMB_confint_nonfinite_se	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-081	dispatch	beta	profile	no-se	route	.confint_fixef_profile:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-082	dispatch	sigma_eps	wald	no-se	class	gllvmTMB_confint_no_sdreport	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-083	dispatch	sigma_eps	wald	bad-se	class	gllvmTMB_confint_nonfinite_se	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-084	dispatch	sigma_eps	profile	no-se	route	.confint_profile_targets:profile	compatibility adapter	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-085	guard	icc	profile	healthy	class	gllvmTMB_repeatability_profile_withdrawn	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-086	guard	communality:unit	profile	healthy	class	gllvmTMB_nonlinear_profile_withdrawn	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-087	guard	rho:unit:1,2	profile	healthy	class	gllvmTMB_nonlinear_profile_withdrawn	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-088	guard	proportion:shared_unit	profile	healthy	class	gllvmTMB_nonlinear_profile_withdrawn	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-089	guard	rho:unit_slope:1,2	wald	healthy	class	gllvmTMB_nonlinear_profile_withdrawn	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-090	guard	rho:unit_slope:1,2	profile	healthy	class	gllvmTMB_nonlinear_profile_withdrawn	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-091	guard	rho:unit_slope:1,2	bootstrap	healthy	class	gllvmTMB_nonlinear_profile_withdrawn	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-092	guard	rho:unit_slope:1,2	fisher-z	healthy	class	gllvmTMB_nonlinear_profile_withdrawn	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-093	guard	icc	bogus	healthy	error	not supported	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-094	guard	phylo_signal	bogus	healthy	error	not implemented	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-095	guard	communality:unit	bogus	healthy	error	not implemented	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-096	guard	rho:unit:1,2	bogus	healthy	error	not supported	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-097	guard	proportion:shared_unit	bogus	healthy	error	not implemented	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED
+CI-ROUTE-098	guard	Lambda	bogus	healthy	error	'arg' should be one of	rejected	B4	UNQUALIFIED_NUMERICAL_CASE_REQUIRED

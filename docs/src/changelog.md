@@ -6,6 +6,46 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 ## GLLVM.jl (development version)
 
 ### Changed
+- **Development:** fixed Gaussian source fits accept a complete mean design `X`.
+  Explicit-source wide/long formulas expose trait intercepts, shared slopes,
+  categorical contrasts and interactions. Fits retain the copied design, response
+  shape and coefficient labels. No R source-grammar, bridge, random-slope or
+  calibrated-uncertainty claim is implied.
+- **Development:** per-trait Gaussian fitting accepts an explicit fixed residual
+  SD and estimates unique variances within that constraint. Results retain unique
+  and total diagonal variances; existing defaults and parameter counts are unchanged.
+  The `pervar=true` Gaussian formula route preserves trait intercepts,
+  zero-mean designs, shared slopes and categorical contrasts. Bridge and interval
+  parity are not established. AGHQ requests on the fixed-residual unique model
+  retain exact Gaussian/Laplace with warning and provenance; `k=1` is quiet.
+  Plain heteroscedastic AGHQ remains unimplemented and is labeled separately.
+- **PARTIAL:** `SourceCovariance` and `fit_gaussian_sources` fit fixed Gaussian
+  covariance among source groups. Targeted tests and six retained public-R
+  comparisons pass; bridge support and calibrated uncertainty remain
+  unverified. The unique-variance comparison has nearly singular curvature.
+- Exact Gaussian fits and Wald/profile intervals handle an empty fixed-effect
+  design. Failed profile refits cannot supply finite bounds without a finite
+  likelihood crossing.
+- Formula fits validate every supplied site-table column before response access,
+  including intercept-only fits. Empty tables remain valid without covariates.
+  The original NB2 wide/long formula model matches its native fit; broader
+  interface qualification remains incomplete.
+- **Local development candidate:** ordinary NB2 evaluates its density directly
+  from the mean and uses an overflow-safe observed curvature. The original
+  paired fit, scalar derivatives and required NB2/truncated-NB2 runner pass.
+  Broader recovery, full package checks and independent review remain pending.
+- Student-t fitting rejects infinite fixed degrees of freedom before reading
+  responses, for scalar and per-trait inputs. Finite positive fixed values and
+  the estimated-df route are unchanged.
+- **Local development candidate:** grouped Tweedie distinguishes fixed common,
+  shared estimated and per-species estimated power; `TweediePerTraitPowerFit`
+  stores the latter. Student fits record whether degrees of freedom were estimated
+  so information-criterion parameter counts are correct. These changes do not
+  establish full Core070 parity: the original Student-t R health gate remains
+  failed, and final candidate requalification is pending.
+- Branch-RE uses an equivalent dense marginal fallback when the auxiliary sparse
+  precision is numerically unsafe. This preserves valid marginal models without
+  a ridge, at a possible O(p²) memory cost reported by a warning.
 - **CHANGED:** Gamma's Laplace **log-determinant now uses the observed
   conditional curvature** `α·y/μ`, matching TMB and therefore `gllvmTMB`.
   It previously used the Fisher (expected) weight — the constant `α`, which is

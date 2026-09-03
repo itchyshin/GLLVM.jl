@@ -1,0 +1,355 @@
+{
+ "schema": "core070-required-case-plan/v1",
+ "status": "DRAFT_V2_PLANNED_PENDING_MAINTAINER_SIGNOFF",
+ "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+ "generated": "2026-09-01 manifest-freeze fan-out (adversarially verified drafts)",
+ "rows": [
+  {
+   "source_id": "postfit-policy/POST-COEF-EMPTY",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-COEF-EMPTY-NATIVE",
+     "r_call": "coef.gllvmTMB_multi(object) on a fit with X_fix_names of length 0 (R/vcov-coef.R:59-64) -- returns stats::setNames(numeric(0), character(0))",
+     "julia_surface": "StatsAPI.coef(fit::GllvmFit) (src/postfit.jl:633) on a fit built with no fixed-effect design (X=nothing / \u03b2===nothing) -- returns Float64[]",
+     "comparands": [
+      "length(coef) == 0 in both engines",
+      "R names(coef) == character(0) vs Julia's unnamed empty vector (Julia has no coef-name carrier; document as an accepted representational gap, not a value mismatch)"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "coef.gllvmTMB_multi's empty-X_fix branch (R/vcov-coef.R:60-63) is a genuine public-behavior fact -- callable and observable from a plain fit with no fixed effects -- and GLLVM.jl's StatsAPI.coef already returns an empty vector on the analogous no-fixed-effect fit, so a native paired case is executable now."
+  },
+  {
+   "source_id": "postfit-policy/POST-COEF-NAMED",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-COEF-NAMED-NATIVE",
+     "r_call": "coef.gllvmTMB_multi(object) on a fit with >=1 fixed-effect term -- stats::setNames(as.numeric(.gllvmTMB_b_fix_values(object)), object$X_fix_names) (R/vcov-coef.R:59-64)",
+     "julia_surface": "StatsAPI.coef(fit::GllvmFit) (src/postfit.jl:633) returning copy(fit.pars.\u03b2) for a fit with a fixed-effect design",
+     "comparands": [
+      "fixed-effect point-estimate vector, elementwise, to the shared parity tolerance (<=1e-6)",
+      "R's names(coef) (X_fix_names) documented against Julia's positional \u03b2 ordering -- no Julia name carrier exists, so name correspondence is asserted by construction order, not compared as strings"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Direct point-estimate parity case; both engines already expose a coef-like accessor over a fixed-effect fit, so this is executable without new Julia surface."
+  },
+  {
+   "source_id": "postfit-policy/POST-CONFINT-METHODS",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-CONFINT-METHODS-WALD-NATIVE",
+     "r_call": "confint.gllvmTMB_multi(object, method = c('profile','wald','bootstrap')) (R/z-confint-gllvmTMB.R:1608-1620) -- one confint() entry point dispatching on a `method` argument with those three named routes",
+     "julia_surface": "GLLVM.jl's confint(fit::GllvmFit; ...) in src/confint.jl plus the separate confint_profile.jl / confint_bootstrap.jl modules -- there is no single `method=` keyword unifying all three routes the way R's one generic does",
+     "comparands": [
+      "Wald interval bounds at matched level, to the shared CI parity tolerance -- the only route both engines currently expose behind a plain call"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R's fact is specifically the THREE-WAY method dispatch under one generic. GLLVM.jl has the profile/bootstrap/Wald machinery but split across separate entry points rather than one `method=` argument, so only the Wald leg is paired natively today; the unified-dispatch shape itself is not yet mirrored."
+  },
+  {
+   "source_id": "postfit-policy/POST-DEVIANCE",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-DEVIANCE-NATIVE",
+     "r_call": "deviance.gllvmTMB_multi(object) = -2 * as.numeric(logLik(object, ...)) (R/methods-gllvmTMB.R:2862-2864), delegating through logLik with no independent recomputation",
+     "julia_surface": "StatsAPI.deviance(fit::AnyGllvmFit) -- NOT YET IMPLEMENTED in src/postfit.jl (only StatsAPI.loglikelihood, dof, aic, bic exist there); must be added as -2 * StatsAPI.loglikelihood(fit)",
+     "comparands": [
+      "deviance value equals -2*logLik to machine precision in both engines, and matches -2*loglikelihood(fit) computed by hand from the same fit object"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Simple derived-from-logLik fact with no independent computation; the only gap is that GLLVM.jl has no `deviance` export yet -- a one-line addition, so this stays required_core with a planned native case rather than a reclassification."
+  },
+  {
+   "source_id": "postfit-policy/POST-FITTED-DEFAULT",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-FITTED-DEFAULT-NATIVE",
+     "r_call": "fitted.gllvmTMB_multi(object, type = c('response','link')) -- a thin wrapper: predict(object, newdata=NULL, type=type, ...) (R/methods-gllvmTMB.R:2837-2839), default type='response'",
+     "julia_surface": "StatsAPI.fitted(fit::AnyGllvmFit, data; kwargs...) = predict(fit, data; type=:response, kwargs...) (src/postfit.jl:306)",
+     "comparands": [
+      "fitted() output equals predict(..., type=response/:response) elementwise in both engines (the delegation itself), and fitted-value vectors agree to the shared parity tolerance on a matched fixture"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Both engines already implement fitted() as a pure delegation to predict(type=response); directly executable as a native paired case."
+  },
+  {
+   "source_id": "postfit-policy/POST-LOGLIK-DF",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-LOGLIK-DF-NATIVE",
+     "r_call": "attr(logLik(object), 'df') <- length(object$opt$par) + (if REML: length(X_fix_names) else 0) (R/methods-gllvmTMB.R:1064-1066)",
+     "julia_surface": "StatsAPI.dof(fit::AnyGllvmFit) = _nparams(fit) (src/postfit.jl:573) -- a plain parameter count with no REML fixed-effect add-back term (GLLVM.jl has no REML fitting path yet)",
+     "comparands": [
+      "df value on a non-REML fit: length(object$opt$par) in R vs _nparams(fit) in Julia, matched on an equivalent model"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "The non-REML branch (df = number of optimized parameters) is directly comparable to Julia's dof(); the REML add-back term has no Julia counterpart since GLLVM.jl does not yet fit REML, so only the ML leg is paired."
+  },
+  {
+   "source_id": "postfit-policy/POST-LOGLIK-NOBS",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-LOGLIK-NOBS-NATIVE",
+     "r_call": "attr(logLik(object), 'nobs') <- (is_y_observed-mask sum, or length(y) fallback) (R/methods-gllvmTMB.R:1114 and surrounding), mirroring nobs.gllvmTMB_multi's own logic",
+     "julia_surface": "StatsAPI.nobs(fit::AnyGllvmFit) (src/postfit.jl:614) -- logLik itself carries no 'nobs' attribute in Julia; the equivalent value is StatsAPI.nobs(fit) called separately",
+     "comparands": [
+      "R's attr(logLik(fit),'nobs') numeric value equals Julia's StatsAPI.nobs(fit) on a matched complete-data fixture, and equals the masked-observation count on a fixture with missing cells"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Value-level fact (what number logLik's nobs attribute carries) is paired against Julia's separate nobs() accessor; the attribute-vs-standalone-function packaging difference is a representational gap, not a blocker."
+  },
+  {
+   "source_id": "postfit-policy/POST-LOGLIK-VALUE",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-LOGLIK-VALUE-NATIVE",
+     "r_call": "logLik.gllvmTMB_multi(object) = -likelihood_nll, sourced from object$objective_components$likelihood_nll with the opt$objective/tmb_obj$fn(opt$par) fallback chain for older/penalised fits (R/methods-gllvmTMB.R:1026-1063)",
+     "julia_surface": "StatsAPI.loglikelihood(fit::AnyGllvmFit) = _loglik(fit) (src/postfit.jl:580)",
+     "comparands": [
+      "logLik value to the shared parity tolerance (<=1e-3 absolute, per family-required-case-plan's acceptance convention) on an unpenalised, unweighted, non-mspl fit"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Core headline value already validated per-family in the existing family-required-case-plan/aghq-required-case-plan annexes on the plain (unpenalised) branch; this row registers the postfit-policy-area case pointing at that same comparison so the source fact has its own paired case id."
+  },
+  {
+   "source_id": "postfit-policy/POST-LOGNORMAL-RESPONSE-MEAN",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-LOGNORMAL-RESPONSE-MEAN-NATIVE",
+     "r_call": ".apply_linkinv_per_row(eta, family_id=3, ...) for a lognormal (fid 3) row: exp(e + 0.5*sigma_eps^2), NOT exp(e) -- the median (R/methods-gllvmTMB.R:334-343)",
+     "julia_surface": "No lognormal family fit type currently exists in src/families/ or src/postfit.jl's predict/fitted dispatch -- there is no Julia analog to pair against yet",
+     "comparands": [
+      "would be: predict(fit, type=:response) on a lognormal fit equals exp(eta + 0.5*sigma_eps^2), not exp(eta), on a matched fixture -- deferred until a lognormal family lands"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "GLLVM.jl has no lognormal response family implemented (the supported set is Gaussian/Binomial/Poisson/NegBin/Beta/Gamma/Ordinal per CLAUDE.md); this fact cannot be paired against any Julia surface today."
+  },
+  {
+   "source_id": "postfit-policy/POST-MIXED-LINK-DISPATCH",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-MIXED-LINK-DISPATCH-NATIVE",
+     "r_call": ".apply_linkinv_per_row(eta, family_id_vec, link_id_vec, ...) (R/methods-gllvmTMB.R:305-347) -- per-ROW inverse-link dispatch on a mixed-family long-format fit, guarding against the fixed BUG-1/#399 (using only family[[1]]'s link for every row)",
+     "julia_surface": "No mixed-family long-format ('one fit spans multiple response families/links per row') architecture exists in GLLVM.jl -- every GllvmFit type in src/families/ is single-family",
+     "comparands": [
+      "would be: per-row response-scale value on a fit mixing e.g. binomial-logit and poisson-log rows dispatches the correct inverse link per row, not one link applied uniformly -- deferred until a mixed-family fit type lands"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "This fact is specifically about R's long-format multi-trait architecture where one fit object can mix families/links across rows (isdm_sources()-style). GLLVM.jl's current architecture is per-family fit types with no cross-family single-fit concept, so there is no Julia surface to pair against."
+  },
+  {
+   "source_id": "postfit-policy/POST-NOBS-COUNT",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-NOBS-COUNT-NATIVE",
+     "r_call": "nobs.gllvmTMB_multi(object) preferring object$missing_data$counts$likelihood_rows (R/methods-gllvmTMB.R:1133-1147)",
+     "julia_surface": "StatsAPI.nobs(fit::AnyGllvmFit) (src/postfit.jl:614) and the type-specific nobs(fit, Y) = size(Y,2) overload (src/postfit.jl:607)",
+     "comparands": [
+      "nobs() value on a complete-data fixture equals p (number of species/response columns) x n (sites) as counted in both engines"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Both engines expose a plain nobs() accessor over complete data; directly executable."
+  },
+  {
+   "source_id": "postfit-policy/POST-NOBS-FALLBACK",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-NOBS-FALLBACK-NATIVE",
+     "r_call": "nobs.gllvmTMB_multi's fallback chain when missing_data$counts$likelihood_rows is NULL: sum(is_y_observed==1L) if present, else length(y) (R/methods-gllvmTMB.R:1138-1146)",
+     "julia_surface": "StatsAPI.nobs(fit::AnyGllvmFit) (src/postfit.jl:614) on a fit with no explicit missing-data bookkeeping struct -- falls back to a plain size-based count",
+     "comparands": [
+      "nobs() value on a fit built with no missing-cell tracking equals length(y) / total-cell count in both engines"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "The no-missing-data fallback leg is directly comparable against Julia's plain nobs() path; executable now."
+  },
+  {
+   "source_id": "postfit-policy/POST-NOBS-MASK",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-NOBS-MASK-NATIVE",
+     "r_call": "nobs.gllvmTMB_multi via is_y_observed mask sum, excluding masked/missing-response rows -- documented against response='include' retaining masked rows (R/methods-gllvmTMB.R:1128-1136)",
+     "julia_surface": "predict/residuals functions in src/postfit.jl accept a `mask` keyword (e.g. residuals(fit, y; mask=...)), but there is no StatsAPI.nobs(fit) overload that reads a mask -- nobs() is not currently mask-aware in Julia",
+     "comparands": [
+      "would be: nobs() on a fixture with masked/missing response cells excludes those cells from the count in both engines -- deferred until nobs() is made mask-aware"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "GLLVM.jl's mask handling lives in predict/residuals, not in a nobs() accessor; the masked-count fact has no direct Julia counterpart today, so this is flagged uncertain rather than silently paired against an unrelated function."
+  },
+  {
+   "source_id": "postfit-policy/POST-PREDICT-DEFAULT",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-PREDICT-DEFAULT-NATIVE",
+     "r_call": "predict.gllvmTMB_multi(object, newdata=NULL, type=c('link','response'), re_form=~., se.fit=FALSE, ...) -- default type='link' (R/methods-gllvmTMB.R:2421-2429)",
+     "julia_surface": "predict(fit::GllvmFit, y; type::Symbol=:response, ...) (src/postfit.jl:258) -- default type is :response, the OPPOSITE default from R's :link",
+     "comparands": [
+      "predict output at type=:link/'link' matches between engines elementwise on a matched fixture; the default-type mismatch (R defaults to link, Julia defaults to response) is itself flagged as a documented divergence, not silently normalized away"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Both engines have a predict() entry point comparable at a fixed explicit type; the default-type disagreement (R: link, Julia: response) is a real cross-engine surface difference worth its own documented comparison rather than being smoothed over."
+  },
+  {
+   "source_id": "postfit-policy/POST-RE-FORM-FULL",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-RE-FORM-FULL-NATIVE",
+     "r_call": "predict(fit, re_form = ~.) -- .gllvmTMB_re_form_is_zero returns FALSE for the literal '~.' formula, so the full conditional predictor (object$report$eta, random effects included) is returned (R/methods-gllvmTMB.R:2158-2163, 2454-2461)",
+     "julia_surface": "No re_form-style argument exists on any GLLVM.jl predict()/fitted() -- Julia's predict(fit, y; ...) always uses the fitted conditional linear predictor (random effects included) with no fixed-effects-only toggle",
+     "comparands": [
+      "would be: predict(..., re_form=~.) full-conditional output equals Julia's unconditional predict() output on a matched fixture -- comparable in VALUE terms since Julia's only mode is the RE-included one, but the re_form ARGUMENT itself has no Julia counterpart"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "The VALUE this leg produces (full conditional predictor, random effects included) is Julia's only predict() mode today, so a value-level comparison is executable even though Julia has no re_form argument to select it explicitly."
+  },
+  {
+   "source_id": "postfit-policy/POST-RE-FORM-ZERO",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-RE-FORM-ZERO-NATIVE",
+     "r_call": "predict(fit, re_form = ~0) -- fixed-effects-only predictor: .gllvmTMB_predict_fixed_eta(object, X_fix) + offset, dropping all random-effect contributions (R/methods-gllvmTMB.R:2454-2462)",
+     "julia_surface": "No fixed-effects-only predict mode exists in GLLVM.jl -- predict()/fitted() always include the fitted random-effect (latent-variable) contribution; there is no argument to compute X_fix %*% \u03b2 alone",
+     "comparands": [
+      "would be: predict(re_form=~0) output equals X_fix %*% b_fix (+offset) with the LV/random-effect term dropped, on a matched fixture -- deferred until a fixed-effects-only predict mode is added to GLLVM.jl"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "This is the substantive re_form fact (the fixed-effects-only prediction mode) and it has no Julia counterpart at all today; flagged uncertain with a planned native case naming what would need to be built, rather than reclassified away, since a fixed-effects-only predict mode is plausible near-term scope."
+  },
+  {
+   "source_id": "postfit-policy/POST-RESIDUAL-CONDITIONAL",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-RESIDUAL-CONDITIONAL-NATIVE",
+     "r_call": "residuals.gllvmTMB_multi(..., condition_on_RE = TRUE) forwarded to simulate.gllvmTMB_multi for type='simulation_rank' residuals (R/predictive-diagnostics.R:203-213; condition_on_RE semantics at R/methods-gllvmTMB.R:1371-1405)",
+     "julia_surface": "residuals(fit::GllvmFit, y; type=:dunnsmyth/:pearson, ...) (src/postfit.jl:316) -- Julia's Dunn-Smyth/Pearson residuals are computed directly from the fitted conditional mode, with no simulation-rank route and no condition_on_RE toggle (random-effect modes are always the fitted ones, i.e. always 'conditional' in R's terminology)",
+     "comparands": [
+      "residual values on a matched fixture, both computed conditional on the fitted random-effect modes (Julia has no unconditional/redraw residual path to compare against R's condition_on_RE=FALSE default)"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Julia's residuals are always computed conditional on the fitted LV modes (there is no redraw-RE alternative), which is the same regime R's condition_on_RE=TRUE selects -- so the TRUE leg is the one with an executable Julia counterpart."
+  },
+  {
+   "source_id": "postfit-policy/POST-RESIDUAL-SCALES",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-RESIDUAL-SCALES-NATIVE",
+     "r_call": "residuals.gllvmTMB_multi(..., scale = c('normal','uniform')) -- 'normal' returns normal-quantile residuals, 'uniform' returns the randomized PIT value (R/predictive-diagnostics.R:197-201)",
+     "julia_surface": "residuals(fit::GllvmFit, y; type=:dunnsmyth/:pearson, ...) (src/postfit.jl:316) -- Julia's `type` selects the RESIDUAL FORMULA (Dunn-Smyth vs Pearson), not an output scale; there is no separate normal-vs-uniform scale toggle (Dunn-Smyth residuals are normal-quantile by construction; the underlying uniform PIT is not separately exposed)",
+     "comparands": [
+      "would be: Julia's :dunnsmyth output vs R's scale='normal' output on the same fixture (both normal-quantile) -- the uniform-PIT leg has no Julia surface to compare against"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R's scale argument and Julia's type argument are different axes (output scale vs residual formula); only the normal-quantile leg has a plausible Julia counterpart (Dunn-Smyth), and the uniform-PIT value is not separately exposed in Julia today."
+  },
+  {
+   "source_id": "postfit-policy/POST-RESIDUAL-TYPES",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-RESIDUAL-TYPES-NATIVE",
+     "r_call": "residuals.gllvmTMB_multi(..., type = c('randomized_quantile','simulation_rank')) -- exact family-CDF RQ residuals vs simulation-rank fallback (R/predictive-diagnostics.R:157-233)",
+     "julia_surface": "residuals(fit, y; type=:dunnsmyth) and family-specific overloads (e.g. residuals(fit::BinomialFit, ...; type=:dunnsmyth) at src/postfit.jl:439) -- Dunn-Smyth IS an exact family-CDF randomized-quantile residual, so it is the Julia analog of R's 'randomized_quantile' leg; Julia has no simulation-rank fallback",
+     "comparands": [
+      "residual values (or at minimum their normal-quantile distribution under the null) on a matched fixture and supported family, comparing R's type='randomized_quantile' to Julia's type=:dunnsmyth"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Dunn-Smyth residuals are exact-CDF randomized-quantile residuals, matching R's primary 'randomized_quantile' leg for the families both engines support; the simulation_rank fallback has no Julia counterpart and is out of scope for this case."
+  },
+  {
+   "source_id": "postfit-policy/POST-SE-GUARD-ADMIT",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-SE-GUARD-ADMIT-NATIVE",
+     "r_call": ".gllvmTMB_predict_se_guard(object, newdata) -- typed cli_abort rejections for se.fit=TRUE with newdata!=NULL, multinomial fits, active mi() models, REML=TRUE fits, or a missing sd_report (R/methods-gllvmTMB.R:401-437)",
+     "julia_surface": "GLLVM.jl's confint()/predict() functions throw ArgumentError on unsupported combinations (e.g. confint's _has_lv_predictor guard in src/confint.jl:255-256, and vcov's non-finite/missing sdreport checks) but there is no single se.fit-style admission guard with the same five named rejection reasons",
+     "comparands": [
+      "would be: for each of R's five documented rejection conditions, an analogous unsupported-combination call in Julia raises an error rather than silently returning a wrong SE -- pairable per-condition as each condition's Julia analog is identified (newdata support, REML, missing sd_report/vcov all have partial analogs already; multinomial and mi() have none since neither exists in GLLVM.jl)"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "The underlying discipline (reject rather than silently mis-report an SE) is shared, and several of the five conditions have partial Julia analogs (missing-vcov / unsupported-configuration guards), but there is no single unified guard function to pair one-to-one; flagged uncertain pending per-condition decomposition."
+  },
+  {
+   "source_id": "postfit-policy/POST-SIMULATE-DEFAULT",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-SIMULATE-DEFAULT-NATIVE",
+     "r_call": "simulate.gllvmTMB_multi(object, nsim=1, ...) -- default condition_on_RE=FALSE, i.e. random effects are REDRAWN from the fitted covariance (unconditional simulation for parametric bootstrap) (R/methods-gllvmTMB.R:1371-1381)",
+     "julia_surface": "simulate(fit::_ScalarMuFit, n; rng=...) and family-specific overloads (src/simulate_fit.jl:30 onward) -- these draw new responses from the fitted family at the FITTED (conditional-mode) linear predictor; GLLVM.jl's simulate() does not redraw the latent-variable scores from their covariance, so it matches R's condition_on_RE=TRUE leg, not R's default FALSE leg",
+     "comparands": [
+      "would be: R's default (condition_on_RE=FALSE, LV redrawn) output distribution vs Julia's simulate() (LV held at conditional mode) -- these are NOT the same generative distribution, so this is a documented default-mismatch case, not a direct value comparison"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "R's default simulate() redraws random effects (unconditional); Julia's simulate() only ever conditions on the fitted LV modes. The two engines' DEFAULT behaviors disagree on what is redrawn, which is itself the fact worth registering (a documented divergence) rather than a false value-parity claim."
+  },
+  {
+   "source_id": "postfit-policy/POST-TIDY-EFFECTS",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-TIDY-EFFECTS-NATIVE",
+     "r_call": "tidy.gllvmTMB_multi(x, effects = c('fixed','ran_pars','cutpoint'), ...) (R/methods-gllvmTMB.R:1177-1183) -- three named effect tables, 'cutpoint' only populated for ordinal_probit traits",
+     "julia_surface": "A `tidy` symbol is referenced in src/summary_table.jl, producing a coefficient/variance-component table, but with no matching three-way `effects=` selector (fixed / ran_pars / cutpoint) as its own argument",
+     "comparands": [
+      "would be: the 'fixed' effects table's point estimates match Julia's coefficient table on a matched fixture -- the ran_pars and cutpoint legs need their Julia table shapes identified first"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "GLLVM.jl has a tidy-like summary table but its effects-selector argument shape is not yet confirmed to mirror R's three-way split; flagged uncertain pending inspection of src/summary_table.jl's actual signature rather than assumed to match."
+  },
+  {
+   "source_id": "postfit-policy/POST-TRUNCPOIS-RESPONSE-PARAMETER",
+   "cases": [
+    {
+     "case_id": "CORE070-POSTFIT-TRUNCPOIS-RESPONSE-PARAMETER-NATIVE",
+     "r_call": ".apply_linkinv_per_row for family_id=10 (truncated_poisson, log link) falls into the generic log-link branch and returns exp(eta) -- the UNTRUNCATED Poisson rate parameter, not the zero-truncated distribution's true conditional mean lambda/(1-exp(-lambda)) (R/methods-gllvmTMB.R:41-48, 344-346)",
+     "julia_surface": "No zero-truncated Poisson family fit type exists in GLLVM.jl's src/families/ or src/postfit.jl predict dispatch",
+     "comparands": [
+      "would be: predict(fit, type=:response) on a truncated-Poisson fit returns exp(eta) (the rate parameter), not the corrected truncated mean, matching R's documented (if surprising) behavior -- deferred until a truncated-Poisson family lands"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "GLLVM.jl's supported family set (Gaussian, Binomial, Poisson, NegBin, Beta, Gamma, Ordinal per CLAUDE.md) does not include zero-truncated Poisson; there is no Julia surface to pair this rate-vs-truncated-mean quirk against."
+  }
+ ]
+}

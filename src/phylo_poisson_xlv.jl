@@ -316,6 +316,15 @@ function _phylo_poisson_xlv_profile_indices(indices, nb::Integer)
     return idx
 end
 
+# A constrained-refit theta is treated as sitting on the σ²_phy = 0 boundary
+# when the unpacked variance falls below this floor. Any genuine phylogenetic
+# variance component fitted from real count data is many orders of magnitude
+# above this (O(1e-3)-O(10)); this floor sits deep in double-precision
+# underflow territory (exp(theta) below ~1e-8 means the packed log-variance
+# coordinate is already south of -18), so it only fires on true boundary
+# degeneracy, never on an interior estimate.
+const _PHYLO_POISSON_XLV_SIGMA2_BOUNDARY_TOL = 1e-8
+
 function _phylo_poisson_xlv_constrained_refit(nll::Function, theta_start::AbstractVector,
         p::Integer, K::Integer, q_lv::Integer, entry::Integer, target::Real;
         profile_iterations::Integer, penalty_weights)
@@ -344,9 +353,16 @@ function _phylo_poisson_xlv_constrained_refit(nll::Function, theta_start::Abstra
     catch
         NaN
     end
+    sigma2_c = try
+        _phylo_poisson_xlv_unpack_packed(theta_c, p, K, q_lv)[4]
+    catch
+        NaN
+    end
+    sigma2_boundary = isfinite(sigma2_c) && sigma2_c <= _PHYLO_POISSON_XLV_SIGMA2_BOUNDARY_TOL
     return (nll = val_c, theta = collect(theta_c), effect = b_c,
             constraint_error = abs(b_c - target),
-            converged = last_res !== nothing && Optim.converged(last_res))
+            converged = last_res !== nothing && Optim.converged(last_res),
+            sigma2_phy = sigma2_c, sigma2_boundary = sigma2_boundary)
 end
 
 function _phylo_poisson_xlv_profile_eta_realized(fit, Y::AbstractMatrix,
@@ -395,6 +411,7 @@ function _phylo_poisson_xlv_profile_eta_realized(fit, Y::AbstractMatrix,
     lowers = Float64[]
     uppers = Float64[]
     endpoint_status = Symbol[]
+    endpoint_boundary = Bool[]
     for entry in idx
         target = float(eta_realized_truth[entry])
         refit_truth = _phylo_poisson_xlv_constrained_refit(
@@ -420,13 +437,28 @@ function _phylo_poisson_xlv_profile_eta_realized(fit, Y::AbstractMatrix,
                 float(endpoint_step)
             theta_lower = copy(theta0)
             theta_upper = copy(theta0)
+            side_boundary_used = Ref(false)
             function dev_at(c, start)
                 refit = _phylo_poisson_xlv_constrained_refit(
                     nll, start, p, K, q_lv, entry, c;
                     profile_iterations = profile_iterations,
                     penalty_weights = penalty_weights)
-                ok = refit.converged && isfinite(refit.nll) &&
-                     refit.constraint_error <= constraint_tol
+                # The domain success criterion for a constrained-refit endpoint
+                # is that it lands on the constraint (constraint_error within
+                # tolerance) with a finite objective -- that IS the definition
+                # of a valid profile point. Optim's own `converged` flag is a
+                # generic solver diagnostic, not that criterion, and it is
+                # unreliable at the sigma2_phy = 0 boundary: NelderMead flickers
+                # converged=false there even though successive refits agree on
+                # the constrained objective to several significant digits (the
+                # log-scale coordinate is flat near double-precision underflow).
+                # Mirrors `_tweedie_verdict`'s `:power_at_boundary` handling and
+                # the Student-t `nu_boundary` convention: don't trust the raw
+                # optimizer flag at a variance boundary, trust the domain check.
+                domain_ok = isfinite(refit.nll) && refit.constraint_error <= constraint_tol
+                boundary_accept = domain_ok && !refit.converged && refit.sigma2_boundary
+                boundary_accept && (side_boundary_used[] = true)
+                ok = domain_ok && (refit.converged || boundary_accept)
                 return ok ? 2 * (refit.nll - nll0) : NaN, refit.theta
             end
             function dev_lower(c)
@@ -450,10 +482,12 @@ function _phylo_poisson_xlv_profile_eta_realized(fit, Y::AbstractMatrix,
             push!(endpoint_status, isnan(lo) && isnan(hi) ? :failed :
                                    isnan(lo) || isnan(hi) ? :partial :
                                    :profile)
+            push!(endpoint_boundary, side_boundary_used[])
         else
             push!(lowers, NaN)
             push!(uppers, NaN)
             push!(endpoint_status, :not_requested)
+            push!(endpoint_boundary, false)
         end
     end
 
@@ -465,6 +499,7 @@ function _phylo_poisson_xlv_profile_eta_realized(fit, Y::AbstractMatrix,
             constrained_error = constraint_errors,
             constrained_converged = converged, covered = covered,
             endpoint_status = endpoint_status,
+            endpoint_boundary = endpoint_boundary,
             level = level, method = :profile_eta_realized,
             pd_hessian = all(converged) &&
                          all(s -> s === :profile || s === :not_requested,

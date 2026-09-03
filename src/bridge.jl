@@ -33,6 +33,10 @@
 #   df           :: Int               — free-parameter count for AIC
 #   nobs         :: Int               — observed cells (p*n for complete data)
 #   converged    :: Bool
+#   gradient_max :: Float64           — max-abs gradient of the fit's packed NLL at
+#                                        the fitted parameters (ACC-BRIDGE-GRADIENT);
+#                                        NaN when no packed objective can be rebuilt
+#                                        for this fit (documented per family below)
 #   iterations   :: Int
 #   message      :: String
 #   link         :: Vector{String}    — per-trait link name
@@ -248,6 +252,51 @@ function _bridge_scores(f)
     end
 end
 
+# --- gradient diagnostics (ACC-BRIDGE-GRADIENT) -----------------------------
+#
+# real-workflow-acceptance-lessons.md class 6: the R side had no way to read
+# the Julia gradient / convergence health through the bridge. Every payload
+# now carries `gradient_max`, the max-abs gradient of the fit's OWN packed
+# negative log-likelihood at the fitted parameters, on the same basis a native
+# `confint`/`profile_ci` call would see it. Rebuilt via the SAME objective
+# reconstruction the confint machinery already uses (never re-derived here)
+# and differentiated with ForwardDiff; NaN whenever no packed objective can be
+# rebuilt for this fit or ForwardDiff fails on the rebuilt objective — never
+# silently absent.
+
+# Gaussian path (GllvmFit / REML's synthetic GllvmFit). Mirrors confint()'s own
+# guards: a REML fit carries no packed vector (`fit.pars.θ_packed` is empty),
+# and an X_lv (C1 predictor-informed latent-score) fit's legacy θ_packed layout
+# excludes alpha_lv, so the reconstructed nll would not be the fit's actual
+# objective — both cases return NaN rather than a misleading gradient.
+function _bridge_gradient_max_gaussian(fit::GllvmFit, Y, X, Σ_phy)
+    (isempty(fit.pars.θ_packed) || _has_lv_predictor(fit)) && return NaN
+    try
+        nll = _confint_reconstruct_nll(fit, Y, X, Σ_phy)
+        g = ForwardDiff.gradient(nll, fit.pars.θ_packed)
+        return all(isfinite, g) ? maximum(abs, g) : NaN
+    catch e
+        e isa InterruptException && rethrow()
+        return NaN
+    end
+end
+
+# Non-Gaussian (Laplace) family path: reuse the `_family_ci` per-family adapter
+# (src/confint_family.jl) for the fit's own (θ, nll). Families with no adapter
+# there (lognormal, truncated_poisson, ordinal per-trait +/- X, mixed-family)
+# raise MethodError, caught below -> NaN. X_lv fits are rejected inside
+# `_family_ci` itself (same reason confint() rejects them) -> also NaN.
+function _bridge_gradient_max_family(fit, Y; kwargs...)
+    try
+        ci = _family_ci(fit, Y; kwargs...)
+        g = ForwardDiff.gradient(ci.nll, ci.θ)
+        return all(isfinite, g) ? maximum(abs, g) : NaN
+    catch e
+        e isa InterruptException && rethrow()
+        return NaN
+    end
+end
+
 # --- confidence-interval routing -------------------------------------------
 #
 # Optionally route Wald / profile-likelihood / parametric-bootstrap CIs through
@@ -375,6 +424,19 @@ function _bridge_compute_ci_gaussian(fit::GllvmFit, ydata, method::AbstractStrin
     end
 end
 
+# Delta-method Wald CI fields for predictor-informed latent-score effects,
+# reshaped from confint_lv_effects' vec(B_lv) order to the p×q_lv layout that
+# matches `lv_effects`. Merged into the X_lv bridge rows when ci_method=="wald".
+function _bridge_lv_ci_fields(ci, q_lv::Integer)
+    p = length(ci.estimate) ÷ q_lv
+    return (lv_effects_lower = reshape(collect(Float64, ci.lower), p, q_lv),
+            lv_effects_upper = reshape(collect(Float64, ci.upper), p, q_lv),
+            lv_effects_se = reshape(collect(Float64, ci.se), p, q_lv),
+            lv_effects_ci_level = float(ci.level),
+            lv_effects_ci_method = "wald",
+            lv_effects_ci_pd = ci.pd_hessian)
+end
+
 # --- public entry point ----------------------------------------------------
 
 """
@@ -393,6 +455,10 @@ shared scalar trials count, so `N` is **required** (there is no safe default —
 `p x n` `N` is accepted only when every entry is equal, then collapsed to that
 scalar. The value actually used is returned as `trials`.
 
+For `family = "truncated_poisson"`, responses must be finite positive integers
+exactly representable by the bridge as `Int`; fractional counts are rejected,
+never rounded.
+
 Confidence intervals are routed through `options` (all optional):
   - `"ci_method"` ∈ {`"none"` (default), `"wald"`, `"profile"`, `"bootstrap"`}.
     When not `"none"`, the returned tuple gains the `ci_*` keys documented in the
@@ -403,19 +469,6 @@ Confidence intervals are routed through `options` (all optional):
   - `"ci_nboot"` — bootstrap replicates (default `200`).
   - `"ci_seed"`  — bootstrap RNG seed (default `0`; fixed → reproducible).
 """
-# Delta-method Wald CI fields for predictor-informed latent-score effects,
-# reshaped from confint_lv_effects' vec(B_lv) order to the p×q_lv layout that
-# matches `lv_effects`. Merged into the X_lv bridge rows when ci_method=="wald".
-function _bridge_lv_ci_fields(ci, q_lv::Integer)
-    p = length(ci.estimate) ÷ q_lv
-    return (lv_effects_lower = reshape(collect(Float64, ci.lower), p, q_lv),
-            lv_effects_upper = reshape(collect(Float64, ci.upper), p, q_lv),
-            lv_effects_se = reshape(collect(Float64, ci.se), p, q_lv),
-            lv_effects_ci_level = float(ci.level),
-            lv_effects_ci_method = "wald",
-            lv_effects_ci_pd = ci.pd_hessian)
-end
-
 function bridge_fit(; y,
                     family,
                     d::Integer = 1,
@@ -425,9 +478,16 @@ function bridge_fit(; y,
                     mask = nothing,
                     trait_names = nothing,
                     unit_names = nothing,
+                    sources = nothing,
                     options = Dict{String,Any}())
     K = Int(d)
     K >= 0 || throw(ArgumentError("d must be a non-negative integer"))
+    if sources !== nothing
+        return _bridge_fit_sources(y, family, K, sources;
+            X = X, X_lv = X_lv, mask = mask, N = N,
+            trait_names = trait_names, unit_names = unit_names,
+            options = options)
+    end
     # Fixed-effect covariates X (a p×n×q array) are wired for the Gaussian family
     # and the one-part NON-Gaussian `_BRIDGE_X_FAMILIES` (incl. nb1 grouped_cov and
     # ordinal/ordinal_probit per-trait cutpoint cov). Mixed-family X remains a
@@ -832,7 +892,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                        "ci_method=\"wald\" (delta method); profile/bootstrap, " *
                        "response masks, mixed-family X_lv, and source-specific " *
                        "X_lv remain separate gates.",
-                ci = nothing)
+                ci = nothing, gradient_max = _bridge_gradient_max_gaussian(fit, Yc, nothing, nothing))
             return merge(base, (lv_effects = Matrix{Float64}(extract_lv_effects(fit)),
                                 alpha_lv = Matrix{Float64}(fit.pars.alpha_lv),
                                 scores_mean = scores_mean,
@@ -874,7 +934,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                 converged = fit.converged, iterations = fit.n_iter,
                 note = "fixed-effect covariate fit: X carries the full mean structure " *
                        "(per-trait intercepts + covariates); alpha is the per-trait " *
-                       "fitted mean. coef_fixed entries, if any, are fixed at zero.", ci = ci)
+                       "fitted mean. coef_fixed entries, if any, are fixed at zero.", ci = ci,
+                gradient_max = _bridge_gradient_max_gaussian(fit, Yf, Xarr, nothing))
             return merge(base, (mean_coef = β,
                                 mean_coef_status = _fixed_status(coef_fixed)))
         end
@@ -913,7 +974,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                 converged = rfit.converged, iterations = rfit.iterations,
                 note = "REML fit (restricted ML): loglik is the REML criterion, " *
                        "not directly comparable to ML loglik; alpha are GLS trait means.",
-                ci = ci)
+                ci = ci,
+                # Same empty-θ_packed guard as the CI skip above: NaN, not fabricated.
+                gradient_max = _bridge_gradient_max_gaussian(fit, Yc, nothing, nothing))
         end
         alpha = vec(Statistics.mean(Yf; dims = 2))
         Yc = Yf .- alpha
@@ -929,7 +992,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             alpha = alpha, dispersion = fill(NaN, p), sigma_eps = fit.pars.σ_eps,
             link = fill("IdentityLink", p), Sigma = Sigma, corr = corr, comm = comm,
             scores = scores, df = df, loglik = fit.logLik,
-            converged = fit.converged, iterations = fit.n_iter, note = "", ci = ci)
+            converged = fit.converged, iterations = fit.n_iter, note = "", ci = ci,
+            gradient_max = _bridge_gradient_max_gaussian(fit, Yc, nothing, nothing))
     end
 
     # Non-Gaussian: fit, then build the latent-scale derived quantities. The six
@@ -1014,17 +1078,26 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                    "(no getLV(::LognormalFit)); CI, X, X_lv, and masks " *
                    "remain follow-ups; light RCall Δ still OWED " *
                    "(not invented here)",
-            ci = nothing)
+            ci = nothing,
+            # gradient_max: NaN — LognormalFit has no _family_ci adapter (no packed
+            # objective to rebuild on this engine yet).
+            gradient_max = NaN)
     elseif key == "truncated_poisson"
         # No-X only. TruncatedPoissonFit has no getLV / link-residual / confint
         # adapter on this engine, so assemble the shared block ΛΛᵀ directly
         # (same honest fallback as lognormal) and fence CI / X / X_lv / masks
-        # via list membership plus a loud CI guard. Support is y ≥ 1 strictly
-        # (twin fid 10); zeros and non-positive cells fail loud.
-        all(>=(1), Yf) || throw(ArgumentError(
-            "bridge_fit: family=\"truncated_poisson\" requires y ≥ 1; found y < 1"))
+        # via list membership plus a loud CI guard. Frozen twin fid 10 admits
+        # positive integers only. Validate before conversion or CI dispatch:
+        # rounding here would fit a response different from the supplied one.
+        all(eachindex(Yf)) do i
+            v = Yf[i]
+            isfinite(v) && v >= 1 && isinteger(v) &&
+                v < Float64(typemax(Int)) && v == y[i]
+        end || throw(ArgumentError(
+            "bridge_fit: family=\"truncated_poisson\" requires positive integer " *
+            "responses y ≥ 1 exactly representable by the bridge as Int; values are not rounded"))
         _bridge_ci_guard_truncated_poisson(ci_method)
-        Yi = round.(Int, Yf)
+        Yi = Int.(Yf)
         fit = fit_truncated_poisson_gllvm(Yi; K = K)
         L = Matrix{Float64}(fit.Λ * _svd_rotation(fit.Λ))
         Σ = L * L'; Σ = (Σ + Σ') ./ 2
@@ -1048,7 +1121,10 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                    "scores empty (no getLV(::TruncatedPoissonFit)); CI, X, " *
                    "X_lv, and masks remain follow-ups; light RCall Δ still " *
                    "OWED (not invented here)",
-            ci = nothing)
+            ci = nothing,
+            # gradient_max: NaN — TruncatedPoissonFit has no _family_ci adapter (no
+            # packed objective to rebuild on this engine yet).
+            gradient_max = NaN)
     elseif key in _BRIDGE_BINOMIAL_FAMILIES
         Yi = round.(Int, Yf)
         Ni = N === nothing ? fill(1, p, n) :
@@ -1283,6 +1359,8 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
         scores = _bridge_scores(() -> getLV(fit, Yi; rotate = true, mask = M))
         family_out = key == "ordinal_probit" ? "ordinal_probit" : "ordinal"
         model_out = key == "ordinal_probit" ? "ordinal_probit_rr" : "ordinal_rr"
+        # gradient_max resolves to NaN here: OrdinalPerTraitFit has no _family_ci
+        # adapter (no packed objective to rebuild on this engine yet).
         base = _bridge_assemble_ng(fit, family_out, model_out, traits, units, p, K, Yi, nothing;
             alpha = fit.β, dispersion = fill(NaN, p),
             df = _nparams(fit), scores = scores, ci = nothing, mask = M)
@@ -1322,7 +1400,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                    "logits beta_zero, count intercepts alpha=beta_c, Λz=0; " *
                    "Sigma/correlation use the shared block Lambda*Lambda' only " *
                    "(communality 1); no twin light Δ.",
-            ci = ci)
+            ci = ci, gradient_max = _bridge_gradient_max_family(fit, Float64.(Yi)))
         return merge(base, (beta_zero = collect(Float64, fit.βz),))
     elseif key == "zinb"
         Yi = round.(Int, Yf)
@@ -1348,7 +1426,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
             note = "ZINB no-X (Julia-forward / twin-asymmetric): structural-zero " *
                    "logits beta_zero, count intercepts alpha=beta_c, Λz=0, " *
                    "shared scalar r; no twin light Δ.",
-            ci = ci)
+            ci = ci, gradient_max = _bridge_gradient_max_family(fit, Float64.(Yi)))
         return merge(base, (beta_zero = collect(Float64, fit.βz),))
     elseif key == "zib"
         Yi = round.(Int, Yf)
@@ -1385,7 +1463,7 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                    "not per-observation cbind); Sigma/correlation use the shared " *
                    "block Lambda*Lambda' only (communality 1); no twin light Δ — " *
                    "the twin gllvmTMB has no ZIB.",
-            ci = ci)
+            ci = ci, gradient_max = _bridge_gradient_max_family(fit, Float64.(Yi)))
         return merge(base, (beta_zero = collect(Float64, fit.βz),
                             trials = Ni))
     end
@@ -1525,7 +1603,7 @@ function _bridge_fit_onepart_cov(Yf::AbstractMatrix{Float64}, key::AbstractStrin
             "coefficients. coef_fixed entries, if any, are fixed at zero. " *
             "Sigma/correlation use the shared block Lambda*Lambda' " *
             "(communality 1).",
-        ci = ci)
+        ci = ci, gradient_max = _bridge_gradient_max_family(fit, Ydata; X = Xarr, N = Nm))
     return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed)))
 end
 
@@ -1587,7 +1665,7 @@ function _bridge_assemble_grouped_cov(fit::Union{NBGroupedCovFit, NB1GroupedCovF
             "fixed-effect covariate fit (non-Gaussian, twin API B): eta = beta + " *
             "X*gamma + Lambda*z. $disp_note Shared-dispersion + X remains via " *
             "fit_gllvm_cov. Sigma/correlation use Lambda*Lambda' (communality 1).",
-        ci = ci)
+        ci = ci, gradient_max = _bridge_gradient_max_family(fit, Ydata; X = Xarr, N = N))
     return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed)))
 end
 
@@ -1621,7 +1699,7 @@ function _bridge_assemble_zip_cov(fit::ZIPCovFit, traits, units, Ydata, Xarr, co
             "Wald/profile/bootstrap CI under X are routed (finite-difference Hessian). " *
             "No twin light RCall Δ (twin ZIP cut). " *
             "Sigma/correlation use Lambda*Lambda' (communality 1).",
-        ci = ci)
+        ci = ci, gradient_max = _bridge_gradient_max_family(fit, Ydata; X = Xarr))
     return merge(base, (beta_cov = βc, beta_zero = βz, gamma = γc, gamma_z = γz,
                         gamma_c = γc, gamma_status = _fixed_status(coef_fixed)))
 end
@@ -1658,7 +1736,7 @@ function _bridge_assemble_zinb_cov(fit::ZINBCovFit, traits, units, Ydata, Xarr, 
             "Wald/profile/bootstrap CI under X are routed (finite-difference Hessian). " *
             "No twin light RCall Δ (twin ZINB cut). " *
             "Sigma/correlation use Lambda*Lambda' (communality 1).",
-        ci = ci)
+        ci = ci, gradient_max = _bridge_gradient_max_family(fit, Ydata; X = Xarr))
     return merge(base, (beta_cov = βc, beta_zero = βz, gamma = γc, gamma_z = γz,
                         gamma_c = γc, gamma_status = _fixed_status(coef_fixed)))
 end
@@ -1690,7 +1768,10 @@ function _bridge_assemble_ordinal_cov(fit::OrdinalPerTraitCovFit,
             "X*gamma + Lambda*z with per-trait cutpoints (τ₁=0, K−2 log-spacings). " *
             "CI routing remains a follow-up. Sigma/correlation use Lambda*Lambda' " *
             "(communality 1).",
-        ci = nothing)
+        ci = nothing,
+        # gradient_max: NaN — OrdinalPerTraitCovFit has no _family_ci adapter (no
+        # packed objective to rebuild on this engine yet).
+        gradient_max = NaN)
     return merge(base, (beta_cov = β, gamma = γ, gamma_status = _fixed_status(coef_fixed),
                         cutpoints = Matrix{Float64}(fit.τ),
                         n_categories = Vector{Int}(fit.C),
@@ -1791,7 +1872,11 @@ function _bridge_fit_mixed(y, family_strs::AbstractVector, K::Integer, N,
         families = keys_norm,
         note = "mixed-family GLLVM: one shared latent block across distinct response " *
                "families; `correlation` is the cross-distribution latent-scale " *
-               "correlation. `families` is the per-trait family vector.", ci = ci)
+               "correlation. `families` is the per-trait family vector.", ci = ci,
+        # gradient_max: NaN — MixedFamilyFit has no _family_ci adapter (no packed
+        # objective to rebuild on this engine yet, same as its no native confint
+        # engine above).
+        gradient_max = NaN)
 end
 
 # Non-Gaussian assembler: REAL latent-scale derived quantities via the salvaged
@@ -1799,7 +1884,8 @@ end
 # Falls back to the shared block ΛΛᵀ ONLY when a family has no extractor on this
 # engine (narrow MethodError catch — e.g. NB1); other errors propagate.
 function _bridge_assemble_ng(fit, family, model, traits, units, p, K, Ydata, N;
-                             alpha, dispersion, df, scores, ci = nothing, mask = nothing)
+                             alpha, dispersion, df, scores, ci = nothing, mask = nothing,
+                             gradient_max = _bridge_gradient_max_family(fit, Ydata; N = N, mask = mask))
     Sigma, corr, comm, note = try
         S  = N === nothing ? sigma_y_site(fit, Ydata; mask = mask)  : sigma_y_site(fit, Ydata; N = N, mask = mask)
         C  = N === nothing ? correlation(fit, Ydata; mask = mask)   : correlation(fit, Ydata; N = N, mask = mask)
@@ -1818,7 +1904,7 @@ function _bridge_assemble_ng(fit, family, model, traits, units, p, K, Ydata, N;
         link = fill(_bridge_link_name(fit.link), p), Sigma = Sigma, corr = corr,
         comm = comm, scores = scores, df = df, loglik = fit.loglik,
         converged = fit.converged, iterations = fit.iterations, note = note, ci = ci,
-        nobs = mask === nothing ? nothing : count(mask))
+        nobs = mask === nothing ? nothing : count(mask), gradient_max = gradient_max)
 end
 
 # Shared flat-NamedTuple builder. `ci` (when non-nothing) is a flat CI payload
@@ -1830,7 +1916,7 @@ function _bridge_assemble(fit, family::AbstractString, model::AbstractString,
                           alpha, dispersion, sigma_eps, link, Sigma, corr, comm,
                           scores, df, loglik, converged, iterations, note,
                           loadings = nothing, families = nothing, ci = nothing,
-                          nobs = nothing)
+                          nobs = nothing, gradient_max::Float64 = NaN)
     p = length(traits)
     n = length(units)
     L = loadings === nothing ? _bridge_loadings(fit) : loadings
@@ -1860,7 +1946,13 @@ function _bridge_assemble(fit, family::AbstractString, model::AbstractString,
         scores       = Matrix{Float64}(scores),
         loglik       = ll,
         aic          = 2 * df - 2 * ll,
-        bic          = df * log(n) - 2 * ll,
+        # nobs_val (not `n`, the site count) — R's p·n cell-count convention
+        # (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md
+        # #1): stats::BIC.default(object) uses nobs(object), which counts
+        # observed cells, not sites. Was `df * log(n) - 2 * ll` (disagreed
+        # with the `nobs` field two lines below, which already used the
+        # cell count).
+        bic          = df * log(nobs_val) - 2 * ll,
         df           = df,
         nobs         = nobs_val,
         converged    = converged,
@@ -1868,6 +1960,120 @@ function _bridge_assemble(fit, family::AbstractString, model::AbstractString,
         message      = converged ? "converged" : "not converged",
         link         = Vector{String}(link),
         note         = note,
+        gradient_max = gradient_max,
     )
     return ci === nothing ? base : merge(base, ci)
 end
+
+# --- structured-covariance sources route (Gaussian, v1) ----------------------
+# Design: docs/dev-log/julia-bridge-structured-design-julia-side.md. Single
+# source, default trait-intercept mean, no CI/mask/X composition — everything
+# unsupported rejects loudly. The native target is `fit_gaussian_sources`.
+
+function _bridge_source_from_dict(spec, n::Integer, index::Integer)
+    spec isa AbstractDict || throw(ArgumentError(
+        "bridge_fit: sources[$index] must be a Dict-like source spec"))
+    name = Symbol(String(_bridge_get(spec, "name", "source$index")))
+    C = _bridge_get(spec, "covariance", nothing)
+    C isa AbstractMatrix || throw(ArgumentError(
+        "bridge_fit: sources[$index] needs a square covariance matrix"))
+    Cm = Matrix{Float64}(C)
+    mode_raw = lowercase(strip(String(_bridge_get(spec, "mode", "latent"))))
+    mode_raw in ("latent", "indep", "dep") || throw(ArgumentError(
+        "bridge_fit: sources[$index] mode must be latent, indep, or dep; " *
+        "got \"$mode_raw\""))
+    mode = Symbol(mode_raw)
+    rank_raw = _bridge_get(spec, "rank", nothing)
+    rank = rank_raw === nothing ? nothing : Int(rank_raw)
+    mode !== :latent && rank !== nothing && throw(ArgumentError(
+        "bridge_fit: sources[$index] rank is only valid for mode = latent"))
+    uniq = Bool(_bridge_get(spec, "unique", false))
+    comm = Bool(_bridge_get(spec, "common", false))
+    proj = _bridge_get(spec, "projection", nothing)
+    groups = _bridge_get(spec, "groups", nothing)
+    if proj !== nothing
+        P = Matrix{Float64}(proj)
+        size(P, 1) == n || throw(ArgumentError(
+            "bridge_fit: sources[$index] projection needs $n rows (one per unit)"))
+        return mode === :latent ?
+            SourceCovariance(Cm, P; name = name, mode = mode,
+                rank = rank === nothing ? 1 : rank, unique = uniq, common = comm) :
+            SourceCovariance(Cm, P; name = name, mode = mode,
+                unique = uniq, common = comm)
+    end
+    groups === nothing && throw(ArgumentError(
+        "bridge_fit: sources[$index] needs groups or projection"))
+    g = [Int(x) for x in collect(groups)]
+    length(g) == n || throw(ArgumentError(
+        "bridge_fit: sources[$index] groups length $(length(g)) must equal " *
+        "the unit count $n"))
+    return mode === :latent ?
+        SourceCovariance(Cm; groups = g, name = name, mode = mode,
+            rank = rank === nothing ? 1 : rank, unique = uniq, common = comm) :
+        SourceCovariance(Cm; groups = g, name = name, mode = mode,
+            unique = uniq, common = comm)
+end
+
+function _bridge_fit_sources(y, family, K::Integer, sources;
+        X, X_lv, mask, N, trait_names, unit_names, options)
+    fam = _bridge_family_key(String(family))
+    fam == "gaussian" || throw(ArgumentError(
+        "bridge_fit: sources are supported for the gaussian family only"))
+    X === nothing || throw(ArgumentError(
+        "bridge_fit: sources and X are mutually exclusive in this slice"))
+    X_lv === nothing || throw(ArgumentError(
+        "bridge_fit: sources and X_lv are mutually exclusive"))
+    mask === nothing || throw(ArgumentError(
+        "bridge_fit: sources do not support response masks"))
+    N === nothing || throw(ArgumentError(
+        "bridge_fit: sources do not take a trials matrix"))
+    ci_method = lowercase(String(_bridge_get(options, "ci_method", "none")))
+    ci_method == "none" || throw(ArgumentError(
+        "bridge_fit: sources support ci_method = \"none\" only " *
+        "(fit_gaussian_sources has no bridge CI engine yet)"))
+    specs = collect(sources)
+    isempty(specs) && throw(ArgumentError("bridge_fit: sources is empty"))
+    length(specs) == 1 || throw(ArgumentError(
+        "bridge_fit: exactly one source is supported in this slice; " *
+        "multi-source transport is a documented follow-up"))
+    Yf = Matrix{Float64}(y)
+    p, n = size(Yf)
+    native = [_bridge_source_from_dict(specs[1], n, 1)]
+    g_tol = Float64(_bridge_get(options, "g_tol", 1e-6))
+    iterations = Int(_bridge_get(options, "iterations", 500))
+    fit = fit_gaussian_sources(Yf; sources = native, g_tol = g_tol,
+        iterations = iterations)
+    src = only(fit.sources)
+    B = Matrix{Float64}(only(fit.trait_covariances))
+    Sigma = B + fit.sigma_eps^2 * Matrix{Float64}(I, p, p)
+    dstd = sqrt.(max.(diag(Sigma), 0.0))
+    corr = Sigma ./ (dstd * dstd')
+    comm = [Sigma[i, i] > 0 ? B[i, i] / Sigma[i, i] : NaN for i in 1:p]
+    q = p   # default trait-intercept mean design
+    L = if src.mode === :latent
+        unpack_lambda(fit.parameters[(q + 1):(q + rr_theta_len(p, src.rank))],
+            p, src.rank)
+    elseif src.mode === :dep
+        unpack_lambda(fit.parameters[(q + 1):(q + rr_theta_len(p, p))], p, p)
+    else
+        zeros(p, 0)
+    end
+    traits = _bridge_names(trait_names, p, "trait")
+    units = _bridge_names(unit_names, n, "unit")
+    base = _bridge_assemble(fit, "gaussian", "gaussian_sources", traits, units;
+        alpha = fit.beta, dispersion = fill(NaN, p), sigma_eps = fit.sigma_eps,
+        link = fill("identity", p), Sigma = Sigma, corr = corr, comm = comm,
+        scores = zeros(0, n), df = length(fit.parameters),
+        loglik = fit.loglik, converged = fit.converged,
+        iterations = fit.iterations, note = "", loadings = L,
+        gradient_max = Float64(fit.gradient_norm))
+    return merge(base, (
+        source_names = [String(src.name)],
+        source_modes = [String(src.mode)],
+        source_common = [src.common],
+        source_unique = [src.unique],
+        source_rank = [src.mode === :latent ? src.rank : 0],
+        source_covariance = B,
+    ))
+end
+

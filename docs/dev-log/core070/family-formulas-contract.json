@@ -1,0 +1,75 @@
+{
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "status": "THREE_FORMULA_CONTRACTS_EXECUTION_PENDING",
+  "cases": [
+    {
+      "id": "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
+      "planned_case_id": "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE",
+      "fixture": "test/parity/test_poisson_formula_parity.jl",
+      "fixture_sha256": "3970427322a2ed7eaf97a6bf5ad31eb4c8804811e6d149b7b97ad05b7970d9bb",
+      "reference_call": "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=poisson(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=poisson(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }",
+      "r_call": "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=poisson(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=2,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=poisson(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }",
+      "julia_call": "gllvm(@formula(y ~ 1),Y,(site=collect(1:n),);family=GLLVM.Poisson(),K=K); separately gllvm(@formula(y ~ 1),long;family=GLLVM.Poisson(),K=K)",
+      "model_contract": "{\"K\": 2, \"curvature\": \"canonical Fisher equals observed\", \"dispersion\": \"none\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 44}",
+      "model_contract_id": "MODEL-FAMILY-02-LOG",
+      "coverage_role": "formula_interface",
+      "acceptance_level": "paired_fit_interface",
+      "acceptance_rule": "22 assertions: original native case and R policy must run in this same required invocation; native parameters match its health record at absolute tolerance1e-10; wide/reordered-long parameters and logLik equal native at absolute tolerance1e-10; same native/R likelihood and gradient gates; malformed row count, missing and duplicate long cells reject.",
+      "source_fact_ids": [
+        "family/FAMILY-02-LOG"
+      ],
+      "data_sha256": "44e647ac7ff29672efa12ca03b7b628dd37a02ac0f8d2421a19d3969743e26da",
+      "reference_control_policy": "public_start_from_refinement_v1",
+      "scope_boundary": "Original ordinary loadings-only unique=false complete-data model. Other parameter/covariance/data routes, public R bridge and full family remain unpaid.",
+      "prerequisite_case_ids": [
+        "NATIVE-03-POISSON"
+      ]
+    },
+    {
+      "id": "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
+      "planned_case_id": "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE",
+      "fixture": "test/parity/test_beta_formula_parity.jl",
+      "fixture_sha256": "d218f6d26837310f96658030d673c75eee5a0e7a5eca05df9949bf73679ed761",
+      "reference_call": "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=Beta(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }",
+      "r_call": "{ original <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=Beta(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE),data=df_long,unit=\"site\",trait=\"trait\",family=gllvmTMB::Beta(),control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original,optArgs=list(control=list(rel.tol=1e-12,eval.max=2000,iter.max=1500)))) }",
+      "julia_call": "gllvm(@formula(y ~ 1),Y,(site=collect(1:n),);family=GLLVM.Beta(),K=K, g_tol=1e-7, iterations=800); separately gllvm(@formula(y ~ 1),long;family=GLLVM.Beta(),K=K, g_tol=1e-7, iterations=800)",
+      "model_contract": "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait Beta precision\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"logit\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 60, \"normalization\": \"full response log-density including constants\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 45}",
+      "model_contract_id": "MODEL-FAMILY-07-LOGIT",
+      "coverage_role": "formula_interface",
+      "acceptance_level": "paired_fit_interface",
+      "acceptance_rule": "22 assertions: original native case and R policy must run in this same required invocation; native parameters match its health record at absolute tolerance1e-10; wide/reordered-long parameters and logLik equal native at absolute tolerance1e-10; same native/R likelihood and gradient gates; malformed row count, missing and duplicate long cells reject.",
+      "source_fact_ids": [
+        "family/FAMILY-07-LOGIT"
+      ],
+      "data_sha256": "3ddd9a90ae2e933af8c9f45f72fc7edda96dc0fda2a4389d3708a003d07ce099",
+      "reference_control_policy": "public_start_from_refinement_v1",
+      "scope_boundary": "Original ordinary loadings-only unique=false complete-data model. Other parameter/covariance/data routes, public R bridge and full family remain unpaid.",
+      "prerequisite_case_ids": [
+        "NATIVE-08-BETA"
+      ]
+    },
+    {
+      "id": "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE",
+      "planned_case_id": "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE",
+      "fixture": "test/parity/test_truncnb2_formula_parity.jl",
+      "fixture_sha256": "c3218c748779592726bb42921a2ccb2296cc17a744675ab3d2ea6eaab457910c",
+      "reference_call": "{ original_fit <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original_fit,optimizer=\"optim\",optArgs=list(method=\"BFGS\",control=list(reltol=1e-12,maxit=1500)))) }",
+      "r_call": "{ original_fit <- gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE)); gllvmTMB(value ~ 0 + trait + latent(0 + trait | site,d=1,unique=FALSE), data=df_long, unit=\"site\", trait=\"trait\", family=truncated_nbinom2(), control=gllvmTMBcontrol(n_init=1L,se=FALSE,start_from=original_fit,optimizer=\"optim\",optArgs=list(method=\"BFGS\",control=list(reltol=1e-12,maxit=1500)))) }",
+      "julia_call": "gllvm(@formula(y ~ 1),Y,(site=collect(1:n),);family=TruncatedNegBin2(),K=K, disp_group=:species, hessian=:observed); separately gllvm(@formula(y ~ 1),long;family=TruncatedNegBin2(),K=K, disp_group=:species, hessian=:observed)",
+      "model_contract": "{\"K\": 1, \"curvature\": \"observed Laplace\", \"dispersion\": \"per-trait NB2 size; observed Laplace curvature\", \"identification\": \"triangular loading convention; compare invariant quantities\", \"link\": \"log of untruncated mean\", \"mean\": \"per-trait intercepts; no site covariates\", \"n\": 120, \"normalization\": \"full response log-density including constants; truncated NB2 conditions on Y>=1\", \"p\": 5, \"random_block\": \"ordinary loadings-only; unique=FALSE\", \"seed\": 58}",
+      "model_contract_id": "MODEL-FAMILY-11-LOG",
+      "coverage_role": "formula_interface",
+      "acceptance_level": "paired_fit_interface",
+      "acceptance_rule": "22 assertions: original native case and R policy must run in this same required invocation; native parameters match its health record at absolute tolerance1e-10; wide/reordered-long parameters and logLik equal native at absolute tolerance1e-10; same native/R likelihood and gradient gates; malformed row count, missing and duplicate long cells reject.",
+      "source_fact_ids": [
+        "family/FAMILY-11-LOG"
+      ],
+      "data_sha256": "ecbcf9f501c7e618131f2c3f1f0d213bb0e92364a72c0519095c52ef30930948",
+      "reference_control_policy": "truncnb2_default_then_public_bfgs_v1",
+      "scope_boundary": "Original ordinary loadings-only unique=false complete-data model. Other parameter/covariance/data routes, public R bridge and full family remain unpaid. Truncated-NB2 curvature is explicitly requested as observed; its fit object does not retain that control.",
+      "prerequisite_case_ids": [
+        "NATIVE-12-TRUNCATED-NB2"
+      ]
+    }
+  ]
+}

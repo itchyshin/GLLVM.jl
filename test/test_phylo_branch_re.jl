@@ -3,18 +3,12 @@
 #
 #   julia --project=. -e 'using GLLVM; include("test/test_phylo_branch_re.jl")'
 #
-# NOT wired into runtests.jl (matching the constraint not to touch runtests.jl).
-# Pulls the new src files in directly, after `using GLLVM`, exactly as
-# test_relaxed_clock.jl / test_edge_incidence.jl do.
+# Included by runtests.jl and also runnable standalone. Implementation loads
+# through GLLVM; this file does not redefine the source module.
 
 using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Statistics
 
-include(joinpath(@__DIR__, "..", "src", "edge_incidence.jl"))
-include(joinpath(@__DIR__, "..", "src", "phylo_branch_re.jl"))
-# Augmented-precision (Hadfield–Nakagawa) path for the head-to-head, and the
-# sparse-phy marginal log-lik that drives it.
-include(joinpath(@__DIR__, "..", "src", "sparse_phy.jl"))
-include(joinpath(@__DIR__, "..", "src", "likelihood_sparse_phy.jl"))
+# Single-variance branch random-effects: included in GLLVM.jl.
 
 # ---------------------------------------------------------------------------
 # Helpers.
@@ -98,6 +92,55 @@ end
         ẑ_bf = D .* (Z' * (Σ \ (y .- μ_sp)))
         ẑ, _, _ = branch_blups(cache, y, σ², σ²_eps, μ_sp)
         @test maximum(abs.(ẑ .- ẑ_bf)) < 1e-9
+    end
+
+    # Optimiser trials can leave the representable variance domain.  They are
+    # rejected as an infinite objective value before a non-finite Λ reaches
+    # CHOLMOD; this is distinct from accepting a ridge-altered likelihood.
+    @testset "unsafe variance trial is rejected before sparse Cholesky" begin
+        phy = _balanced_edge_phy(8; bl = 0.5)
+        cache = branch_re_cache(phy)
+        y = collect(1.0:8.0)
+        for (σ², σ²_eps) in ((NaN, 1.0), (Inf, 1.0), (0.0, 1.0),
+                              (-1.0, 1.0), (1.0, NaN), (1.0, Inf),
+                              (1.0, 0.0), (1.0, -1.0))
+            negll, μ̂ = branch_re_profile_negll(cache, y, σ², σ²_eps)
+            @test isinf(negll)
+            @test isnan(μ̂)
+        end
+    end
+
+    @testset "scaled sparse precision matches dense reference" begin
+        phy = edge_phy("((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.1);")
+        cache = branch_re_cache(phy)
+        Z = path_membership(phy)
+        V = Matrix(Z * spdiagm(0 => phy.branch_lengths) * Z')
+        # Mean offset 10 (not 1e8): the profiled mean makes the BLUPs and the
+        # negll invariant to a constant shift, but the DENSE reference loses
+        # digits at 1e8 (eps(1e8) ≈ 1.5e-8 > rtol 1e-9); CI verdict df7009b3.
+        y = [10.0, 10.5, 9.75, 10.75]
+        one_p = ones(phy.n_leaves)
+
+        # Four-order signal/noise ratios exercise the scaled factor while
+        # remaining in the strict dense-reference accuracy regime.
+        for (σ², σ²_eps) in ((1e2, 1e-2), (1e-2, 1e2))
+            Σ = σ² .* V
+            @inbounds for i in 1:phy.n_leaves
+                Σ[i, i] += σ²_eps
+            end
+            μ_dense = dot(one_p, Σ \ y) / dot(one_p, Σ \ one_p)
+            r_dense = y .- μ_dense
+            negll_dense = 0.5 * (phy.n_leaves * log(2π) + logdet(Σ) +
+                                 dot(r_dense, Σ \ r_dense))
+            negll_sparse, μ_sparse = branch_re_profile_negll(cache, y, σ², σ²_eps)
+            @test negll_sparse ≈ negll_dense rtol = 1e-10 atol = 1e-8
+            @test μ_sparse ≈ μ_dense rtol = 1e-10 atol = 1e-8
+
+            D = σ² .* phy.branch_lengths
+            z_dense = D .* (Z' * (Σ \ (y .- μ_dense)))
+            z_sparse, _, _ = branch_blups(cache, y, σ², σ²_eps, μ_sparse)
+            @test z_sparse ≈ z_dense rtol = 1e-9 atol = 1e-8
+        end
     end
 
     # -----------------------------------------------------------------------
@@ -237,7 +280,7 @@ end
         fs = fit_branch_re(phy, yv)
         fd = fit_branch_re_dense(phy, yv)
         @test fs.σ²     ≈ fd.σ²     rtol = 1e-3
-        @test fs.σ²_eps ≈ fd.σ²_eps rtol = 1e-3
+        @test isapprox(fs.σ²_eps, fd.σ²_eps; atol = 1e-5, rtol = 1e-3)
         @test fs.μ      ≈ fd.μ      rtol = 1e-4
         @test maximum(abs.(fs.ẑ .- fd.ẑ)) < 1e-4 * (maximum(abs.(fd.ẑ)) + 1e-6)
     end

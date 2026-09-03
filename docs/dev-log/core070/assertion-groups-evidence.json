@@ -1,0 +1,38 @@
+{
+  "status": "SCOPED_RECEIPT_ACCOUNTING_PASS",
+  "scope": "NO_MODEL_FITS_NO_NUMERICAL_PARITY",
+  "source_pins": {
+    "test/parity/core070_receipts.jl": "405e4f0d8471108240688c069b38ec82640ab4c5fcd5af66175459cc4a4b7811",
+    "test/parity/parity_helpers.jl": "be3c6bd06986d0ada1655354314d43e51d6021e3a2d5c390824c9ca291f939b8",
+    "test/test_core070_receipts.jl": "674ea9fc822fbf6904374dd7ce68ad25e7335e34dcbca6d7d8b54139fe3be720",
+    "tools/core070_evidence.py": "bcea93dc0a1a597da35ad9973f2c1fcbada8090961597801b84ddac796452a9c",
+    "tools/test_core070_assertion_groups.py": "387d826fdf786d24cdeca35d4e538829ced391a94ebb702c895164e88756b670",
+    "tools/test_core070_collection.py": "f0c545b97452e5a2ce92d360f7e0929ccad76ef709876f2ebe91219464377741"
+  },
+  "local_python_tests": 29,
+  "local_julia_assertions": 45,
+  "remote_julia_assertions": 45,
+  "remote_python_tests": 4,
+  "remote_elapsed_seconds": 10.350852041970938,
+  "cross_language": {
+    "required_ids": 5,
+    "unique_passed_assertions": 33,
+    "fixture_files": 1,
+    "executions": 3
+  },
+  "artifacts": {
+    ".unlazy/core070-aghq/assertion-groups/python-red.log": "d32536dff7aee43e238d3fdc1d3b612b582cd119b5ee5d7bda8c6cf8d85ea242",
+    ".unlazy/core070-aghq/assertion-groups/julia-red.log": "e1bfb9a9c00e5fff15bb6146fd46602b3baadf73850a804d51c3fa5c9f2cf5b0",
+    ".unlazy/core070-aghq/assertion-groups/python-final29.log": "201aec1eeca7bf607cb1fa0b5c7a60928b88cb333b52bf315068a021f7ee97b9",
+    ".unlazy/core070-aghq/assertion-groups/julia-final45.log": "a5fbad08f1e8e62b8836e00b6caecd6a4bfc7a7acf1a44bc64af94e3c04bccf2",
+    ".unlazy/core070-aghq/assertion-groups/aggregate-selftest.log": "b6c833835f8ad3f5db2ada43c3f7ac03d6b458cfa472488215173606630b5af8",
+    ".unlazy/core070-aghq/assertion-groups/totoro.log": "a727020725450d6f1127bf28ae5fa3111dc17331aef2e7ec30bcd1b40f2c5e97",
+    ".unlazy/core070-aghq/assertion-groups/totoro-receipt.json": "e9c49c02ff5644237183b421187f3a1b0032e693b4e72875f97e2ef993cc4781",
+    ".unlazy/core070-aghq/assertion-groups/julia-emitted.toml": "4e56bf8c37c82e8dec5050d2e771017cf1852bb03d7182f1739d75ac3cc5e6d4"
+  },
+  "limitations": [
+    "Old receipts without explicit group schema remain historical and cannot pass current aggregation",
+    "Prepared binomial packet source pin/preflight must be refreshed after helper change, before fits",
+    "Full manifest remains draft; no fitted model or independent review"
+  ]
+}

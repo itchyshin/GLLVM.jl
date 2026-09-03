@@ -1,0 +1,604 @@
+#!/usr/bin/env python3
+"""Fail-closed aggregation for immutable CORE-070 parity receipts.
+
+This is deliberately a programme aggregator, not the 17-family smoke runner:
+it rejects a smoke-only receipt until every frozen executable obligation exists.
+"""
+import argparse
+from copy import deepcopy
+import hashlib
+import json
+import re
+from pathlib import Path
+import sys
+import tempfile
+import tomllib
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_MANIFEST = ROOT / "docs/dev-log/core070/frozen-r070-contract.toml"
+ORACLE_BUILD = ROOT / ".unlazy/core070-aghq/oracle-receipts/build.json"
+ORACLE_SOURCE = ROOT / ".unlazy/core070-aghq/oracle-source/source.json"
+CONTRACT_REL = "docs/dev-log/core070/frozen-r070-contract.toml"
+EXECUTION_STATIC = (
+    "src", "test/parity/core070_receipts.jl", "test/parity/core070_case_registry.jl", "test/parity/parity_helpers.jl",
+    "test/parity/parity_trial_inputs.jl", "test/parity/test_negbin_parity.jl", "test/parity/truncnb2_policy.jl", "test/parity/nb2_health.jl",
+    "test/parity/family_formula_cases.jl", "test/parity/test_truncated_nbinom2_parity.jl", "docs/dev-log/core070/family-formulas-contract.json",
+    "test/parity/poisson_beta_health.jl", "test/parity/test_poisson_parity.jl", "test/parity/test_beta_parity.jl", "docs/dev-log/core070/poisson-beta-required-contract.json", "test/parity/runparity.jl", "test/parity/r_health.R", "Project.toml", "test/Project.toml",
+    "test/parity/Project.toml", "tools/core070_delta_matched.jl",
+    "test/parity/test_delta_lognormal_parity.jl", "test/parity/test_delta_gamma_parity.jl", "test/parity/fixtures/core070_gaussian_original.toml",
+    "test/parity/covariance_formula_cases.jl", "docs/dev-log/core070/covariance-formula-programme-contract.json", "tools/core070_covariance_mode_fits.jl", "tools/core070_source_fixed_residual_pair.jl", "test/parity/fixtures/core070_covariance_modes.R", "test/parity/fixtures/core070_covariance_fits.R", "docs/dev-log/core070/covariance-programme-contract.json",
+    "test/parity/fixtures/core070_gaussian_reference.R",
+)
+
+
+class EvidenceError(RuntimeError):
+    pass
+
+
+def execution_assertion_counts(cells):
+    """Count each explicitly shared execution once; reject incomplete attribution."""
+    totals = dict(passed=0, failed=0, errored=0, broken=0)
+    seen = set()
+    for case_id, cell in cells.items():
+        members = cell.get('execution_case_ids')
+        if not isinstance(members, list) or not members or \
+                any(not isinstance(member, str) or not member for member in members) or \
+                len(members) != len(set(members)) or case_id not in members or not set(members) <= set(cells):
+            raise EvidenceError('INVALID_EXECUTION_GROUP')
+        counts = cell.get('assertions', {})
+        if not isinstance(counts, dict) or set(counts) != set(totals) or any(type(counts[key]) is not int or counts[key] < 0 for key in totals):
+            raise EvidenceError('INVALID_EXECUTION_COUNTS')
+        group = tuple(sorted(members))
+        signature = (cell.get('fixture'), cell.get('fixture_sha256'), counts)
+        for member in members:
+            other = cells[member]
+            if other.get('execution_case_ids') != list(group) or \
+                    (other.get('fixture'), other.get('fixture_sha256'), other.get('assertions')) != signature:
+                raise EvidenceError('INCONSISTENT_EXECUTION_GROUP')
+        if group not in seen:
+            for key in totals:totals[key] += counts[key]
+            seen.add(group)
+    return totals
+
+
+def digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def tree_digest(root: Path) -> str:
+    rows = [f"{path.relative_to(root)}\0{digest(path)}" for path in sorted(root.rglob("*"))
+            if path.is_file() and not path.is_symlink()]
+    return hashlib.sha256("\n".join(rows).encode()).hexdigest()
+
+
+def load_toml(path: Path) -> dict:
+    try:
+        return tomllib.loads(path.read_text())
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        raise EvidenceError(f"BAD_RECEIPT {path}: {exc}") from exc
+
+
+def _load_manifest_metadata(path: Path) -> dict:
+    manifest = load_toml(path)
+    required = manifest.get("family_smoke_case_ids", [])
+    families = manifest.get("families", [])
+    if manifest.get("reference_commit") != "b4d5fee64def88bc768dda1f1f77c29b295edd86":
+        raise EvidenceError("STALE_SOURCE: unexpected frozen R commit")
+    if len(required) != 17 or len(set(required)) != 17:
+        raise EvidenceError("MANIFEST_INVALID: exactly 17 unique family-smoke IDs are required")
+    if len(families) != 17 or {row.get("id") for row in families} != set(required):
+        raise EvidenceError("MANIFEST_INVALID: family rows do not exactly bind required IDs")
+    interface_ids = manifest.get("interface_case_ids", [])
+    interfaces = manifest.get("interfaces", [])
+    if set(interface_ids) != {"CORE070-FAMILY-05-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE", "CORE070-FAMILY-02-LOG-FORMULA-INTERFACE", "CORE070-FAMILY-07-LOGIT-FORMULA-INTERFACE", "CORE070-FAMILY-11-LOG-FORMULA-INTERFACE"} or len(interface_ids) != len(set(interface_ids)) or set(interface_ids) & set(required) or \
+            len(interfaces) != len(interface_ids) or {row.get("id") for row in interfaces} != set(interface_ids):
+        raise EvidenceError("MANIFEST_INVALID: interface registry must be unique and separate from families")
+    if any(not row.get("fixture") or not row.get("model_contract_id") or row.get("role") != "formula_interface" for row in interfaces):
+        raise EvidenceError("MANIFEST_INVALID: interface row needs a fixture and model contract")
+    model_ids = manifest.get("model_case_ids", [])
+    models = manifest.get("models", [])
+    if model_ids != ["CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL"] or len(models) != 1 or models[0].get("id") != model_ids[0] or not models[0].get("fixture") or models[0].get("role") != "native_model" or not models[0].get("model_contract_id"):
+        raise EvidenceError("MANIFEST_INVALID: native model registry must bind the original Gaussian case")
+    if manifest.get("reference_source_tree_sha256") != "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7":
+        raise EvidenceError("STALE_SOURCE: source-tree hash differs from exact archived R pin")
+    if manifest.get("reference_archive_sha256") != "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc":
+        raise EvidenceError("STALE_SOURCE: archive hash differs from exact R pin")
+    classes = manifest.get("namespace_classification", {})
+    inventory = ROOT / classes.get("inventory", "")
+    if classes.get("unmatched") != "reject" or not inventory.is_file():
+        raise EvidenceError("MANIFEST_INVALID: namespace inventory is not fail-closed")
+    rows = [line.split("\t") for line in inventory.read_text().splitlines()
+            if line and not line.startswith("#")][1:]
+    if len(rows) != classes.get("expected_entries") or len(rows) != 215:
+        raise EvidenceError("MANIFEST_INVALID: frozen export/registration inventory is incomplete")
+    if any(len(row) != 7 or not row[6].startswith("NAMESPACE:dd2d012e6326584e8a5badcfa12fca30c2ab7bb4:")
+           for row in rows):
+        raise EvidenceError("MANIFEST_INVALID: namespace row lacks frozen source binding")
+    if any(row[4] in {"REVIEW_REQUIRED", "R_ONLY"} for row in rows):
+        raise EvidenceError("MANIFEST_INVALID: namespace row has an unclassified implementation status")
+    obligation_fields = {"id", "scope", "owner", "source", "r_call", "julia_call_or_missing",
+                         "fixture_specification", "parameterisation", "identification", "acceptance_rule",
+                         "implementation_status", "evidence_path"}
+    obligations = manifest.get("obligation", [])
+    if not obligations or any(not obligation_fields.issubset(row) for row in obligations):
+        raise EvidenceError("MANIFEST_INVALID: required obligation rows are not source-complete")
+    if not (set(required) | set(interface_ids) | set(model_ids)).issubset({row["id"] for row in obligations}):
+        raise EvidenceError("MANIFEST_INVALID: every family-smoke row needs its own source-bound obligation")
+    if 'public_r_bridge_case_ids' in manifest or any(r.get('executor')=='public_r_bridge' for r in manifest.get('executable_case',[])):
+        from core070_programme_bridge import validate_registry
+        try:
+            validate_registry(manifest,ROOT)
+        except (OSError,ValueError,KeyError,TypeError) as error:
+            raise EvidenceError('MANIFEST_INVALID: public R bridge '+str(error)) from error
+        if not set(manifest['public_r_bridge_case_ids']) <= {r['id'] for r in obligations}:
+            raise EvidenceError('MANIFEST_INVALID: public R bridge obligations missing')
+    if 'covariance_case_ids' in manifest or manifest.get('covariance_models') or any(
+            r.get('id','').startswith(('MODE-ORD-','FIT-MODE-')) for r in manifest.get('executable_case',[])):
+        from core070_covariance_programme import validate_registry
+        try:validate_registry(manifest,ROOT)
+        except (OSError,ValueError,KeyError,TypeError) as error:
+            raise EvidenceError('MANIFEST_INVALID: covariance registry '+str(error)) from error
+    if 'covariance_formula_case_ids' in manifest or manifest.get('covariance_interfaces'):
+        from core070_covariance_formula_programme import validate_registry as validate_formula_registry
+        try:validate_formula_registry(manifest,ROOT)
+        except (OSError,ValueError,KeyError,TypeError) as error:
+            raise EvidenceError('MANIFEST_INVALID: covariance formula registry '+str(error)) from error
+    return manifest
+
+
+
+def load_manifest(path: Path) -> dict:
+    """Load a contract; a FROZEN label requires the source-to-case closure proof."""
+    manifest = _load_manifest_metadata(path)
+    if manifest.get("status") == "FROZEN":
+        from core070_manifest_coverage import CoverageError, require_frozen_manifest
+        try:
+            require_frozen_manifest(manifest, ROOT)
+        except CoverageError as error:
+            raise EvidenceError(str(error)) from error
+    return manifest
+
+
+def programme_executor_ids(manifest: dict) -> dict[str, set[str]]:
+    """Partition all obligations; a bridge case cannot be paid by Julia cells."""
+    required=manifest.get('required_case_ids',[])
+    cases=manifest.get('executable_case',[])
+    ids=[row.get('id') for row in cases]
+    if not required or len(set(required))!=len(required) or len(set(ids))!=len(ids) or set(ids)!=set(required):
+        raise EvidenceError('INVALID_EXECUTOR_REGISTRY: missing or duplicate executable cases')
+    result={'julia':set(),'public_r_bridge':set()}
+    for row in cases:
+        executor=row.get('executor','julia')
+        if executor not in result:
+            raise EvidenceError('INVALID_EXECUTOR_REGISTRY: unknown executor')
+        result[executor].add(row['id'])
+    bridge_ids=manifest.get('public_r_bridge_case_ids',[])
+    if len(bridge_ids)!=len(set(bridge_ids)) or set(bridge_ids)!=result['public_r_bridge']:
+        raise EvidenceError('INVALID_EXECUTOR_REGISTRY: public R bridge registry differs')
+    return result
+
+
+def verify_public_bridge_component(manifest: dict, selection: dict | None) -> dict:
+    from core070_programme_bridge import verify_component
+    try:
+        return verify_component(manifest,selection,ROOT)
+    except (OSError,ValueError,KeyError,TypeError) as error:
+        raise EvidenceError('PUBLIC_R_BRIDGE: '+str(error)) from error
+
+
+def synthetic_native_contract_text(path: Path) -> str:
+    """Remove typed bridge/covariance blocks for synthetic format tests only."""
+    return re.sub(r'\n# BEGIN (?:PUBLIC R BRIDGE|COVARIANCE)[^\n]*\n[\s\S]*?\n# END (?:PUBLIC R BRIDGE|COVARIANCE)[^\n]*\n',
+                  '\n',path.read_text())
+
+
+def _hash_inventory(entries: list[dict]) -> str:
+    rows = sorted(f"{row['path']}\0{row['sha256']}" for row in entries)
+    return hashlib.sha256("\n".join(rows).encode()).hexdigest()
+
+
+def execution_inventory(case_by_id: dict[str, dict], requested_ids: list[str], manifest_path: Path) -> dict:
+    paths = list(EXECUTION_STATIC) + [case_by_id[case_id]["fixture"] for case_id in requested_ids]
+    for rel in ("Manifest.toml", "test/Manifest.toml", "test/parity/Manifest.toml"):
+        if (ROOT / rel).is_file():
+            paths.append(rel)
+    paths.append(CONTRACT_REL)
+    entries = []
+    for rel in sorted(set(paths)):
+        path = ROOT / rel
+        if rel == CONTRACT_REL:
+            entries.append({"path": rel, "sha256": digest(manifest_path)})
+        elif path.is_file() and not path.is_symlink():
+            entries.append({"path": rel, "sha256": digest(path)})
+        elif path.is_dir():
+            entries.extend({"path": str(child.relative_to(ROOT)), "sha256": digest(child)}
+                           for child in sorted(path.rglob("*"))
+                           if child.is_file() and not child.is_symlink())
+        else:
+            raise EvidenceError(f"MISSING_EXECUTION_INPUT: {rel}")
+    entries.sort(key=lambda row: row["path"])
+    return {"entries": entries, "manifest_sha256": _hash_inventory(entries)}
+
+
+def _require_string(mapping: dict, key: str, error: str) -> str:
+    value = mapping.get(key)
+    if not isinstance(value, str) or not value:
+        raise EvidenceError(error)
+    return value
+
+
+def _oracle_build() -> dict:
+    try:
+        return json.loads(ORACLE_BUILD.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise EvidenceError(f"MISSING_DEPENDENCY: immutable oracle build receipt: {exc}") from exc
+
+
+def _validate_source(source: dict, manifest: dict, execution: dict, receipt_dir: Path | None) -> None:
+    if source.get("reference_commit") != manifest["reference_commit"]:
+        raise EvidenceError("STALE_SOURCE: installed R reference commit differs from frozen pin")
+    for key, manifest_key in (("namespace_sha256", "reference_namespace_sha256"),
+                              ("source_tree_sha256", "reference_source_tree_sha256"),
+                              ("archive_sha256", "reference_archive_sha256")):
+        if source.get(key) != manifest[manifest_key]:
+            raise EvidenceError(f"STALE_SOURCE: source.{key}")
+    build = _oracle_build()
+    if source.get("source_marker_sha256") != build.get("marker_sha256"):
+        raise EvidenceError("STALE_ORACLE: source marker does not match immutable build receipt")
+    if source.get("installed_tree_sha256") != build.get("installed_tree_sha256"):
+        raise EvidenceError("STALE_ORACLE: installed tree does not match immutable build receipt")
+    if source.get("oracle_build_receipt_sha256") != digest(ORACLE_BUILD) or \
+       source.get("oracle_source_receipt_sha256") != digest(ORACLE_SOURCE):
+        raise EvidenceError("STALE_ORACLE: retained oracle receipt hash mismatch")
+    if receipt_dir is not None:
+        for source_path, local_name, key in ((ORACLE_BUILD, "build.json", "oracle_build_receipt_sha256"),
+                                             (ORACLE_SOURCE, "source.json", "oracle_source_receipt_sha256")):
+            retained = receipt_dir / local_name
+            if not retained.is_file() or digest(retained) != digest(source_path) or digest(retained) != source[key]:
+                raise EvidenceError("MISSING_OR_STALE_ORACLE_RECEIPT")
+    if source.get("julia_source_tree_sha256") != tree_digest(ROOT / "src"):
+        raise EvidenceError("STALE_JULIA_SOURCE: receipt does not bind the current Julia src tree")
+    hashes = {entry["path"]: entry["sha256"] for entry in execution["entries"]}
+    if source.get("julia_project_sha256") != hashes.get("test/parity/Project.toml"):
+        raise EvidenceError("STALE_DEPENDENCY: active Julia project does not match execution inventory")
+    if source.get("julia_manifest_sha256") != hashes.get("test/parity/Manifest.toml", "ABSENT"):
+        raise EvidenceError("STALE_DEPENDENCY: active Julia manifest does not match execution inventory")
+    for key in ("julia_package_path", "julia_package_root", "julia_project_path", "julia_version",
+                "julia_machine", "rcall_version", "r_version", "r_home", "r_library_path",
+                "tmb_version", "matrix_version"):
+        _require_string(source, key, f"MISSING_RUNTIME_PIN: source.{key}")
+    for key in ("julia_threads", "blas_threads"):
+        if not isinstance(source.get(key), int) or source[key] < 1:
+            raise EvidenceError(f"MISSING_RUNTIME_PIN: source.{key}")
+
+
+def _verify_loaded(run: dict, cell_files: dict[str, dict], manifest: dict,
+                   manifest_path: Path, receipt_dir: Path | None = None, *, required_subset: bool = False) -> dict:
+    if manifest.get("status") != "FROZEN":
+        raise EvidenceError("DRAFT_CONTRACT: aggregate evidence is disabled until every required row is frozen")
+    obligations = {row["id"] for row in manifest["obligation"]}
+    expected_ids = manifest.get("required_case_ids", [])
+    if len(expected_ids) != len(set(expected_ids)) or set(expected_ids) != obligations:
+        raise EvidenceError("INCOMPLETE_PROGRAMME: required IDs must include every obligation, not only family smoke")
+    cases = manifest.get("executable_case", [])
+    case_by_id = {row.get("id"): row for row in cases}
+    needed = ("id", "fixture", "fixture_sha256", "reference_call", "julia_call", "model_contract", "acceptance_rule")
+    if len(cases) != len(expected_ids) or len(case_by_id) != len(expected_ids) or set(case_by_id) != set(expected_ids) or \
+       any(not all(row.get(key) for key in needed) for row in cases):
+        raise EvidenceError("INCOMPLETE_PROGRAMME: every obligation requires an executable frozen case")
+    executors=programme_executor_ids(manifest)
+    if run.get("status") != "success" or run.get("success_marker") != "CORE070_PARITY_SUCCESS" or run.get("exit_code") != 0:
+        raise EvidenceError("NONZERO_OR_INCOMPLETE_RUN: no successful parity marker")
+    requested = run.get("requested_case_ids")
+    completed = run.get("completed_case_ids")
+    if isinstance(requested,list) and set(requested).intersection(executors['public_r_bridge']):
+        raise EvidenceError('WRONG_EXECUTOR: Julia run contains public R bridge cases')
+    if not isinstance(requested, list) or not requested or len(requested) != len(set(requested)) or \
+       not set(requested).issubset(executors['julia']) or (not required_subset and set(requested) != executors['julia']):
+        raise EvidenceError("INCOMPLETE_PROGRAMME: run did not request every frozen executable case")
+    if not isinstance(completed, list) or len(completed) != len(set(completed)) or set(completed) != set(requested):
+        raise EvidenceError("UNEXECUTED_OR_DUPLICATE_CASE: completed cases do not exactly match requested cases")
+    if run.get("contract_sha256") != digest(manifest_path):
+        raise EvidenceError("STALE_CONTRACT: full contract changed since execution")
+    execution = run.get("execution")
+    if not isinstance(execution, dict):
+        raise EvidenceError("MISSING_EXECUTION_INVENTORY")
+    expected_inventory = execution_inventory(case_by_id, requested, manifest_path)
+    if execution != expected_inventory:
+        raise EvidenceError("STALE_EXECUTION_INVENTORY: helper, runner, fixture, dependency, source, or contract changed")
+    _validate_source(run.get("source", {}), manifest, execution, receipt_dir)
+    if not isinstance(run.get("run_id"), str) or not run["run_id"]:
+        raise EvidenceError("MISSING_RUN_ID")
+    if set(cell_files) != set(requested):
+        raise EvidenceError("MISSING_OR_EXTRA_CELL_RECEIPT")
+    if len({cell.get("id") for cell in cell_files.values()}) != len(cell_files):
+        raise EvidenceError("DUPLICATE_CELL_ID")
+    if run.get('assertion_counting') != 'execution_groups_v1':
+        raise EvidenceError('MISSING_EXECUTION_GROUP_SCHEMA')
+    for case_id in requested:
+        cell = cell_files[case_id]
+        frozen = case_by_id[case_id]
+        if cell.get("id") != case_id or cell.get("run_id") != run["run_id"]:
+            raise EvidenceError(f"TRANSPLANTED_CELL: {case_id}")
+        if cell.get("status") != "success":
+            raise EvidenceError(f"FAILED_CELL: {case_id}")
+        counts = cell.get("assertions", {})
+        if not all(isinstance(counts.get(key), int) for key in ("passed", "failed", "errored", "broken")) or \
+           counts.get("passed", 0) <= 0 or any(counts[key] != 0 for key in ("failed", "errored", "broken")):
+            raise EvidenceError(f"INVALID_ASSERTIONS: {case_id}")
+        fixture = ROOT / frozen["fixture"]
+        if cell.get("fixture") != frozen["fixture"] or not fixture.is_file() or \
+           cell.get("fixture_sha256") != digest(fixture) or frozen["fixture_sha256"] != digest(fixture):
+            raise EvidenceError(f"STALE_FIXTURE: {case_id}")
+        if cell.get("execution_manifest_sha256") != execution["manifest_sha256"] or \
+           cell.get("contract_sha256") != run["contract_sha256"]:
+            raise EvidenceError(f"TRANSPLANTED_CELL: {case_id}")
+    total_assertions = execution_assertion_counts(cell_files)['passed']
+    if type(run.get("actual_assertions")) is not int or run["actual_assertions"] != total_assertions or total_assertions == 0:
+        raise EvidenceError("INVALID_ASSERTION_TOTAL")
+    summary = run.get("cells", {})
+    if not isinstance(summary, dict) or set(summary) != set(requested) or any(summary[key] != cell_files[key] for key in requested):
+        raise EvidenceError("CELL_RUN_MISMATCH")
+    return {"status": "PASS", "scope": "REQUIRED_SUBSET" if required_subset else (
+                "JULIA_COMPONENT" if executors['public_r_bridge'] else "FULL_PROGRAMME"),
+            "required_cells": len(expected_ids), "verified_cells": len(requested),
+            "actual_assertions": total_assertions, "manifest_sha256": digest(manifest_path)}
+
+
+def verify_process(receipt_dir: Path, process_path: Path | None, inventory: dict) -> dict:
+    """Bind portable run artifacts to the exit captured by the parent supervisor."""
+    try:
+        if process_path is None:
+            raise EvidenceError("EXTERNAL_PROCESS_MISSING")
+        process_path = Path(process_path)
+        process = json.loads(process_path.read_text())
+        plan_path = process_path.parent / "execution-plan.json"
+        plan = json.loads(plan_path.read_text())
+        if process.get("status") != "PASS" or process.get("source_unchanged") is not True or process.get("supervisor_error"):
+            raise EvidenceError("EXTERNAL_PROCESS_FAILED")
+        if process.get("plan_sha256") != digest(plan_path) or process.get("source_pins") != plan.get("pins"):
+            raise EvidenceError("EXTERNAL_PROCESS_STALE_PLAN")
+        pins = process["source_pins"]
+        if not inventory.get("entries") or any(pins.get(e["path"]) != e["sha256"] for e in inventory["entries"]):
+            raise EvidenceError("EXTERNAL_PROCESS_UNPINNED_EXECUTION")
+        commands = plan["commands"]
+        expected = [c["id"] for c in commands]
+        results = process["results"]
+        if len(set(expected)) != len(expected) or process.get("expected_ids") != expected or [r["id"] for r in results] != expected:
+            raise EvidenceError("EXTERNAL_PROCESS_INCOMPLETE_BATCH")
+        run_path = receipt_dir / "run.toml"
+        run_hash = digest(run_path)
+        matched = []
+        for command, result in zip(commands, results):
+            if result.get("exit_code") != 0 or result.get("supervisor_error") or result.get("parity_error") or result.get("argv") != command["argv"]:
+                raise EvidenceError("EXTERNAL_PROCESS_NONZERO_OR_CHANGED_COMMAND")
+            log_name = result["log"]
+            if Path(log_name).name != log_name or digest(process_path.parent / log_name) != result["log_sha256"]:
+                raise EvidenceError("EXTERNAL_PROCESS_STALE_LOG")
+            parity = result.get("parity")
+            if not isinstance(parity, dict):
+                continue
+            if parity.get("directory") != command.get("parity_receipts"):
+                raise EvidenceError("EXTERNAL_PROCESS_WRONG_OUTPUT")
+            files = parity.get("files", {})
+            if files.get("run.toml") != run_hash:
+                continue
+            if any(Path(name).name != name or digest(receipt_dir / name) != pin for name, pin in files.items()):
+                raise EvidenceError("EXTERNAL_PROCESS_STALE_OUTPUT")
+            actual = {p.name for p in receipt_dir.glob('*') if p.name in {'run.toml','build.json','source.json'} or
+                      (p.name.startswith('cell-') and p.suffix == '.toml')}
+            if set(files) != actual:
+                raise EvidenceError("EXTERNAL_PROCESS_UNBOUND_OUTPUT")
+            matched.append(result["id"])
+        if len(matched) != 1:
+            raise EvidenceError("EXTERNAL_PROCESS_MISSING_OR_TRANSPLANTED_RUN")
+        loaded_root = load_toml(run_path).get("source", {}).get("julia_package_root")
+        if loaded_root is not None and loaded_root != plan.get("cwd"):
+            raise EvidenceError("EXTERNAL_PROCESS_WRONG_LOADED_ROOT")
+        return {"process_receipt_sha256": digest(process_path), "run_sha256": run_hash,
+                "command_id": matched[0], "observed_exit_code": 0}
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise EvidenceError(f"EXTERNAL_PROCESS_BAD_RECEIPT: {exc}") from exc
+
+
+def _load_receipts(receipt_dir: Path) -> tuple[dict, dict]:
+    if not receipt_dir.is_dir():
+        raise EvidenceError(f"MISSING_DEPENDENCY: receipt directory absent: {receipt_dir}")
+    run_path = receipt_dir / "run.toml"
+    if not run_path.is_file():
+        raise EvidenceError("MISSING_RECEIPT: run.toml")
+    run = load_toml(run_path)
+    cells: dict[str, dict] = {}
+    for path in receipt_dir.glob("cell-*.toml"):
+        cell = load_toml(path)
+        cell_id = cell.get("id")
+        if not isinstance(cell_id, str) or cell_id in cells:
+            raise EvidenceError("DUPLICATE_OR_BAD_CELL_FILE")
+        cells[cell_id] = cell
+    return run, cells
+
+
+def verify(receipt_dir: Path, manifest_path: Path, process_path: Path | None = None) -> dict:
+    manifest = load_manifest(manifest_path)
+    if manifest.get('public_r_bridge_case_ids'):
+        raise EvidenceError('PUBLIC_R_BRIDGE_REQUIRED: use a mixed-language collection')
+    run, cells = _load_receipts(receipt_dir)
+    report = _verify_loaded(run, cells, manifest, manifest_path, receipt_dir)
+    report["external_process"] = verify_process(receipt_dir, process_path, run["execution"])
+    return report
+
+
+def verify_collection(collection_path: Path, manifest_path: Path) -> dict:
+    """Verify all listed runs, without choosing successes or deduplicating attempts.
+
+    A collection is an explicit integration selection, not an archive census.
+    Failed historical attempts must remain archived separately. A listed failure
+    cannot be suppressed by a later success. Relocated roots are allowed only
+    when content pins and runtime versions agree; each root is independently
+    bound to its supervisor's execution plan.
+    """
+    manifest = load_manifest(manifest_path)
+    try:
+        collection = json.loads(collection_path.read_text())
+        if collection.get("contract_sha256") != digest(manifest_path):
+            raise EvidenceError("STALE_CONTRACT: collection does not bind the frozen manifest")
+        rows = collection.get("runs")
+        if not isinstance(rows, list) or not rows:
+            raise EvidenceError("EMPTY_COLLECTION")
+        seen_ids, seen_runs = set(), set()
+        reports = []
+        baseline_source = None
+        # Absolute locations may differ after an identical checkout is transferred.
+        location_keys = {"julia_package_path", "julia_package_root", "julia_project_path",
+                         "r_home", "r_library_path"}
+        for row in rows:
+            if not isinstance(row, dict) or not isinstance(row.get("receipts"), str) or not row["receipts"]:
+                raise EvidenceError("MISSING_RECEIPT_PATH")
+            if not isinstance(row.get("process_receipt"), str) or not row["process_receipt"]:
+                raise EvidenceError("MISSING_PROCESS_RECEIPT_PATH")
+            receipt_dir = collection_path.parent / row["receipts"]
+            process_path = collection_path.parent / row["process_receipt"]
+            run, cells = _load_receipts(receipt_dir)
+            report = _verify_loaded(run, cells, manifest, manifest_path, receipt_dir, required_subset=True)
+            report["external_process"] = verify_process(receipt_dir, process_path, run["execution"])
+            ids = set(run["requested_case_ids"])
+            if seen_ids.intersection(ids) or run["run_id"] in seen_runs:
+                raise EvidenceError("DUPLICATE_COLLECTION_CASE_OR_RUN")
+            source = {key:value for key,value in run["source"].items() if key not in location_keys}
+            if baseline_source is not None and source != baseline_source:
+                raise EvidenceError("MIXED_RUNTIME: source/runtime pins differ between required runs")
+            baseline_source = source
+            seen_ids.update(ids)
+            seen_runs.add(run["run_id"])
+            report.update(run_id=run["run_id"], case_ids=run["requested_case_ids"])
+            reports.append(report)
+        executors=programme_executor_ids(manifest)
+        if seen_ids != executors['julia']:
+            raise EvidenceError("INCOMPLETE_PROGRAMME: collection omits required cases")
+        bridge_report=None
+        if executors['public_r_bridge']:
+            bridge_report=verify_public_bridge_component(manifest,collection.get('public_r_bridge'))
+            if bridge_report.get('status')!='PASS' or set(bridge_report.get('case_ids',[]))!=executors['public_r_bridge'] or len(bridge_report.get('case_ids',[]))!=len(executors['public_r_bridge']):
+                raise EvidenceError('PUBLIC_R_BRIDGE: incomplete or failed component')
+            if bridge_report.get('manifest_sha256')!=digest(manifest_path):
+                raise EvidenceError('PUBLIC_R_BRIDGE: component binds a different programme manifest')
+        elif 'public_r_bridge' in collection:
+            raise EvidenceError('PUBLIC_R_BRIDGE: undeclared component')
+        return {"status": "PASS", "scope": "FULL_PROGRAMME", "required_cells": len(manifest['required_case_ids']),
+                "actual_assertions": sum(report["actual_assertions"] for report in reports),
+                "assertion_scope":"Julia Test.jl only; public R evidence reported separately",
+                "manifest_sha256": digest(manifest_path), "collection_sha256": digest(collection_path),
+                "runs": reports, "public_r_bridge":bridge_report}
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise EvidenceError(f"BAD_COLLECTION: {exc}") from exc
+
+
+def _expect_error(fn, marker: str) -> None:
+    try:
+        fn()
+    except EvidenceError as exc:
+        assert marker in str(exc), (marker, exc)
+    else:
+        raise AssertionError(f"negative control was accepted: {marker}")
+
+
+def self_test(manifest_path: Path) -> None:
+    draft = load_manifest(manifest_path)
+    with tempfile.TemporaryDirectory() as tmp:
+        tmpdir = Path(tmp)
+        frozen_path = tmpdir / "frozen.toml"
+        all_ids = [row["id"] for row in draft["obligation"] if row['id'] not in draft.get('public_r_bridge_case_ids',[])+draft.get('covariance_case_ids',[])+draft.get('covariance_formula_case_ids',[])]
+        frozen_text = synthetic_native_contract_text(manifest_path).replace('status = "DRAFT_INCOMPLETE_NOT_FROZEN"', 'status = "FROZEN"', 1)
+        frozen_text = re.sub(r"\n\[\[executable_case\]\][\s\S]*?(?=\n\[|\Z)", "", frozen_text)
+        frozen_text = "required_case_ids = " + json.dumps(all_ids) + "\n" + frozen_text
+        family_fixture = {row["id"]: row["fixture"] for row in draft["families"]}
+        for case_id in all_ids:
+            fixture = family_fixture.get(case_id, draft["families"][0]["fixture"])
+            frozen_text += ("\n[[executable_case]]\n" +
+                            f'id = {json.dumps(case_id)}\nfixture = {json.dumps(fixture)}\n' +
+                            f'fixture_sha256 = {json.dumps(digest(ROOT / fixture))}\n' +
+                            'reference_call = "self-test"\njulia_call = "self-test"\n' +
+                            'model_contract = "self-test"\nacceptance_rule = "self-test"\n')
+        frozen_path.write_text(frozen_text)
+        # Synthetic receipt-format test only. Real entrypoints use load_manifest,
+        # which rejects this deliberately incomplete source-to-case contract.
+        _expect_error(lambda: load_manifest(frozen_path), "SOURCE_COVERAGE")
+        frozen = _load_manifest_metadata(frozen_path)
+        cases = {row["id"]: row for row in frozen["executable_case"]}
+        execution = execution_inventory(cases, all_ids, frozen_path)
+        hashes = {row["path"]: row["sha256"] for row in execution["entries"]}
+        build = _oracle_build()
+        source = {
+            "reference_commit": frozen["reference_commit"], "namespace_sha256": frozen["reference_namespace_sha256"],
+            "source_tree_sha256": frozen["reference_source_tree_sha256"], "archive_sha256": frozen["reference_archive_sha256"],
+            "source_marker_sha256": build["marker_sha256"], "installed_tree_sha256": build["installed_tree_sha256"],
+            "oracle_build_receipt_sha256": digest(ORACLE_BUILD), "oracle_source_receipt_sha256": digest(ORACLE_SOURCE),
+            "julia_source_tree_sha256": tree_digest(ROOT / "src"), "julia_package_path": "/tmp/GLLVM/src/GLLVM.jl",
+            "julia_package_root": "/tmp/GLLVM", "julia_project_path": "/tmp/GLLVM/test/parity/Project.toml",
+            "julia_project_sha256": hashes["test/parity/Project.toml"], "julia_manifest_sha256": hashes.get("test/parity/Manifest.toml", "ABSENT"),
+            "julia_version": "1.10", "julia_machine": "selftest", "julia_threads": 1, "blas_threads": 1,
+            "rcall_version": "0.14", "r_version": "R", "r_home": "/R", "r_library_path": "/R/library/gllvmTMB",
+            "tmb_version": "1", "matrix_version": "1",
+        }
+        run_id = "self-test-run"
+        cells = {case_id: {"id": case_id, "run_id": run_id, "status": "success", "execution_case_ids": [case_id],
+                           "fixture": row["fixture"], "fixture_sha256": digest(ROOT / row["fixture"]),
+                           "assertions": {"passed": 1, "failed": 0, "errored": 0, "broken": 0},
+                           "execution_manifest_sha256": execution["manifest_sha256"],
+                           "contract_sha256": digest(frozen_path)} for case_id, row in cases.items()}
+        run = {"status": "success", "success_marker": "CORE070_PARITY_SUCCESS", "exit_code": 0,
+               "run_id": run_id, "requested_case_ids": all_ids, "completed_case_ids": all_ids,
+               "actual_assertions": len(cells), "assertion_counting": "execution_groups_v1", "source": source, "execution": execution,
+               "contract_sha256": digest(frozen_path), "cells": cells}
+        receipt_dir = tmpdir / "receipts"
+        receipt_dir.mkdir()
+        (receipt_dir / "build.json").write_bytes(ORACLE_BUILD.read_bytes())
+        (receipt_dir / "source.json").write_bytes(ORACLE_SOURCE.read_bytes())
+        assert _verify_loaded(run, cells, frozen, frozen_path, receipt_dir)["status"] == "PASS"
+        missing = deepcopy(cells); missing.pop(all_ids[0])
+        _expect_error(lambda: _verify_loaded(run, missing, frozen, frozen_path, receipt_dir), "MISSING_OR_EXTRA_CELL_RECEIPT")
+        skipped = deepcopy(cells); skipped[all_ids[0]]["assertions"]["broken"] = 1
+        _expect_error(lambda: _verify_loaded(run, skipped, frozen, frozen_path, receipt_dir), "INVALID_ASSERTIONS")
+        zero = deepcopy(cells); zero[all_ids[0]]["assertions"]["passed"] = 0
+        _expect_error(lambda: _verify_loaded(run, zero, frozen, frozen_path, receipt_dir), "INVALID_ASSERTIONS")
+        transplanted = deepcopy(cells); transplanted[all_ids[0]]["run_id"] = "other-run"
+        _expect_error(lambda: _verify_loaded(run, transplanted, frozen, frozen_path, receipt_dir), "TRANSPLANTED_CELL")
+        stale_helper = deepcopy(run); stale_helper["execution"]["entries"][0]["sha256"] = "0" * 64
+        _expect_error(lambda: _verify_loaded(stale_helper, cells, frozen, frozen_path, receipt_dir), "STALE_EXECUTION_INVENTORY")
+        bad_oracle = deepcopy(run); bad_oracle["source"]["source_marker_sha256"] = "0" * 64
+        _expect_error(lambda: _verify_loaded(bad_oracle, cells, frozen, frozen_path, receipt_dir), "STALE_ORACLE")
+        smoke_only = deepcopy(run); smoke_only["requested_case_ids"] = draft["family_smoke_case_ids"]
+        smoke_only["completed_case_ids"] = draft["family_smoke_case_ids"]
+        _expect_error(lambda: _verify_loaded(smoke_only, cells, frozen, frozen_path, receipt_dir), "INCOMPLETE_PROGRAMME")
+        _expect_error(lambda: _verify_loaded(run, cells, draft, manifest_path, receipt_dir), "DRAFT_CONTRACT")
+    print("CORE070_EVIDENCE_SELFTEST_PASS")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
+    parser.add_argument("--receipts", type=Path)
+    parser.add_argument("--process-receipt", type=Path)
+    parser.add_argument("--collection", type=Path, help="JSON index of separately supervised required-case runs")
+    parser.add_argument("--self-test", action="store_true")
+    args = parser.parse_args()
+    try:
+        if args.collection is not None and (args.receipts is not None or args.process_receipt is not None or args.self_test):
+            raise EvidenceError("AMBIGUOUS_INPUT: collection cannot be combined with single-run options")
+        if args.self_test:
+            self_test(args.manifest)
+            return 0
+        if args.collection is not None:
+            print(json.dumps(verify_collection(args.collection, args.manifest), sort_keys=True))
+            return 0
+        if args.receipts is None:
+            raise EvidenceError("MISSING_DEPENDENCY: --receipts is required")
+        print(json.dumps(verify(args.receipts, args.manifest, args.process_receipt), sort_keys=True))
+        return 0
+    except EvidenceError as exc:
+        print(f"CORE070_EVIDENCE_FAIL: {exc}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

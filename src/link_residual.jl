@@ -100,7 +100,7 @@ _link_residual_one(::Gamma, ::LogLink, μ̂::Real, dispersion::Real) =
 # latent-scale Σ as undefined rather than silently zero/clamped). `dispersion` is σ.
 function _link_residual_one(f::StudentTFamily, ::IdentityLink, μ̂::Real, dispersion::Real)
     ν = f.ν
-    ν > 2 || return Inf
+    (ν === nothing || ν <= 2) && return Inf
     return dispersion^2 * ν / (ν - 2)
 end
 
@@ -216,7 +216,7 @@ _fit_family(::BinomialFit) = Binomial()
 _fit_family(fit::NBFit)    = NegativeBinomial(fit.r, 0.5)
 _fit_family(fit::GammaFit) = Gamma(fit.α, 1.0)
 _fit_family(fit::BetaFit)  = Beta(fit.φ, 1.0)
-_fit_family(fit::StudentTFit) = StudentTFamily(fit.ν, fit.σ)
+_fit_family(fit::StudentTFit) = StudentTFamily(fit.ν isa Vector ? fit.ν[1] : fit.ν, fit.σ isa Vector ? fit.σ[1] : fit.σ)
 _fit_family(::OrdinalFit)  = Ordinal()
 _fit_family(::OrdinalPerTraitFit) = Ordinal()
 
@@ -451,6 +451,7 @@ end
 # ν ≤ 2, where the t has no finite variance).
 function link_residual(fit::StudentTFit, Y::AbstractMatrix)
     p = size(fit.Λ, 1)
-    v = _link_residual_one(StudentTFamily(fit.ν, fit.σ), fit.link, 0.0, fit.σ)
-    return fill(Float64(v), p)
+    σ_vec = fit.σ isa Real ? fill(fit.σ, p) : fit.σ
+    ν_vec = fit.ν isa Real ? fill(fit.ν, p) : fit.ν
+    return [_link_residual_one(StudentTFamily(ν_vec[t], σ_vec[t]), fit.link, 0.0, σ_vec[t]) for t in 1:p]
 end

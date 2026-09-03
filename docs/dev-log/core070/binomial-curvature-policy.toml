@@ -1,0 +1,16 @@
+scope = "BINOMIAL_RETAINED_POINT_CURVATURE_NOT_FIT_PROMOTION"
+reference_commit = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+hypothesis = "The singular-convergence message may reflect changes below reliable objective resolution rather than a singular model Hessian."
+construction = "Replay each original seeded default fit only to reconstruct its TMB objective; evaluate the previous stopping diagnostic parameter vector without further optimizer refinement."
+curvature_steps = [1e-4, 5e-5]
+fixed_step_multipliers = [0.0, 0.25, 0.5, 1.0, 2.0]
+repeated_objective_evaluations = 5
+point_gradient_replay_atol = 1e-7
+point_objective_replay_atol = 1e-8
+curvature_relative_stability = 1e-4
+curvature_relative_asymmetry = 1e-4
+positive_curvature_ratio_for_diagnostic_solve = 1e-8
+estimate_minutes = [1, 3]
+timeout_seconds = 180
+case_timeout_seconds = 60
+failure_action = "Retain all results; non-positive or unstable curvature disallows a Newton diagnostic step and is not repaired by a ridge. No fitted-object promotion."

@@ -66,7 +66,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         # call, not its default — pin that explicitly rather than let this
         # test silently encode the pre-2026-08-28 default.
         ll_shared  = GLLVM.tweedie_marginal_loglik_laplace(Y, Λ, β, φ, power; hessian = :fisher)
-        ll_grouped = GLLVM.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p), power)
+        ll_grouped = GLLVM.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p), power; hessian = :fisher)
         @test ll_grouped ≈ ll_shared atol = 1e-10
         # mixed per-species dispersion also evaluates finitely.
         @test isfinite(GLLVM.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, [0.8, 1.2, 1.5, 2.0], power))

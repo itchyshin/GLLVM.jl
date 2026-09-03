@@ -1,0 +1,28 @@
+{
+  "status": "PREPARED_NOT_FITTED",
+  "datasets_generated": 0,
+  "fits_run": 0,
+  "runtime": ".unlazy/core070-aghq/binomial-refresh-01",
+  "artifacts": {
+    ".unlazy/core070-aghq/binomial-refresh-01/negative-plan.json": "6513a7dedd4fe7a4291983313d4de32ed92241592fe70a25d1db09bf2251cbb1",
+    ".unlazy/core070-aghq/binomial-refresh-01/final-plan.json": "69aaa4648696c328beddda1918244c712c20ea5f1e3449ff10a420d3a5cdd7b5",
+    ".unlazy/core070-aghq/binomial-refresh-01/preflight-plan.json": "69aaa4648696c328beddda1918244c712c20ea5f1e3449ff10a420d3a5cdd7b5",
+    ".unlazy/core070-aghq/binomial-refresh-01/final-process/00.log": "e1c10221b1ddb17bb1b8549f20e59afc745d4b633815bb208eccffdace2a84e5",
+    ".unlazy/core070-aghq/binomial-refresh-01/final-process/01.log": "ee1a290599f5f7a9019210424d40a1c8f1db13dd59abac69e7654bce864d5142",
+    ".unlazy/core070-aghq/binomial-refresh-01/final-process/execution-plan.json": "69aaa4648696c328beddda1918244c712c20ea5f1e3449ff10a420d3a5cdd7b5",
+    ".unlazy/core070-aghq/binomial-refresh-01/final-process/events.log": "818971e1d467e3bc2f77d38d87f9ff5fdd90e9244a40d646fde25634fe1a1865",
+    ".unlazy/core070-aghq/binomial-refresh-01/final-process/process-receipt.json": "0bf9c0bb86c1297d45a3aee3cdf7f9b87086880f0e3a75b0745bbfc5eeaa8500",
+    ".unlazy/core070-aghq/binomial-refresh-01/final-process/progress.json": "53cc04fbdbbb93df5c149a3802e425d37352d0459119d44aa87fc0a294be61dd",
+    ".unlazy/core070-aghq/binomial-refresh-01/negative-process/00.log": "9dc78d55b4d755a67e7b5a2a10a76e6cc2ac789a59673f7899559cd1e44c325e",
+    ".unlazy/core070-aghq/binomial-refresh-01/negative-process/execution-plan.json": "6513a7dedd4fe7a4291983313d4de32ed92241592fe70a25d1db09bf2251cbb1",
+    ".unlazy/core070-aghq/binomial-refresh-01/negative-process/events.log": "ef24b20a27818be770d9497b2e605f4f7b087dc1031f4911c24f90c7fd92a355",
+    ".unlazy/core070-aghq/binomial-refresh-01/negative-process/process-receipt.json": "6a5fb5dc93dd0b9ed449ac3a444c693a3480d9d39a746c940ab75a5c23f3d803",
+    ".unlazy/core070-aghq/binomial-refresh-01/negative-process/progress.json": "e1fd370df2cbe630141b86ef2f1027597098cb81a474c2e905704588b49c7970",
+    ".unlazy/core070-aghq/binomial-refresh-01/preflight-process/00.log": "e1c10221b1ddb17bb1b8549f20e59afc745d4b633815bb208eccffdace2a84e5",
+    ".unlazy/core070-aghq/binomial-refresh-01/preflight-process/01.log": "ee1a290599f5f7a9019210424d40a1c8f1db13dd59abac69e7654bce864d5142",
+    ".unlazy/core070-aghq/binomial-refresh-01/preflight-process/execution-plan.json": "69aaa4648696c328beddda1918244c712c20ea5f1e3449ff10a420d3a5cdd7b5",
+    ".unlazy/core070-aghq/binomial-refresh-01/preflight-process/events.log": "818971e1d467e3bc2f77d38d87f9ff5fdd90e9244a40d646fde25634fe1a1865",
+    ".unlazy/core070-aghq/binomial-refresh-01/preflight-process/process-receipt.json": "4105f032e80d0499009c3fe80d54b8b98103eb7bedeca95b6dc396d02c0e892d",
+    ".unlazy/core070-aghq/binomial-refresh-01/preflight-process/progress.json": "f9f19cc1fd1866c47fbf01b668c1e78936b95905102cc670ed9859606da697f8"
+  }
+}

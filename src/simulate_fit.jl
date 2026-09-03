@@ -52,7 +52,12 @@ draws `z_total = X_lv * alpha_lv + z` with `z ~ N(0, I_K)`.
 function simulate(fit::BinomialFit, n::Integer;
                   N::Union{Nothing, AbstractMatrix} = nothing,
                   X_lv::Union{Nothing, AbstractMatrix} = nothing,
-                  rng::AbstractRNG = default_rng())
+                  rng::AbstractRNG = default_rng(),offset=nothing)
+    if _is_binomial_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only simulation does not use X_lv"))
+        return _binomial_aghq_simulate(fit,n;N=N,rng=rng,offset=offset)
+    end
+    offset===nothing || throw(ArgumentError("explicit offset currently requires AGHQ metadata"))
     p, K = size(fit.Λ)
     Nm = N === nothing ? fill(1, p, n) : N
     Zmean = if fit.alpha_lv === nothing
@@ -89,7 +94,12 @@ stream).
 """
 function simulate(fit::PoissonFit, n::Integer;
                   X_lv::Union{Nothing, AbstractMatrix} = nothing,
-                  rng::AbstractRNG = default_rng())
+                  rng::AbstractRNG = default_rng(),offset=nothing)
+    if _is_poisson_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only simulation does not use X_lv"))
+        return _poisson_aghq_simulate(fit,n;rng=rng,offset=offset)
+    end
+    offset===nothing || throw(ArgumentError("explicit simulation offset currently requires AGHQ metadata"))
     fam, link = _sim_family(fit)
     p, K = size(fit.Λ)
     Zmean = if fit.alpha_lv === nothing
@@ -275,7 +285,9 @@ function simulate(fit::StudentTFit, n::Integer; rng::AbstractRNG = default_rng()
         η = fit.β .+ fit.Λ * randn(rng, K)
         for t in 1:p
             μ = linkinv(fit.link, _clamp_eta(η[t]))
-            Y[t, s] = μ + fit.σ * rand(rng, TDist(fit.ν))
+            σ_t = fit.σ isa Real ? fit.σ : fit.σ[t]
+            ν_t = fit.ν isa Real ? fit.ν : fit.ν[t]
+            Y[t, s] = μ + σ_t * rand(rng, TDist(ν_t))
         end
     end
     return Y

@@ -1,0 +1,341 @@
+# Conversion batch #3 (wave-7): pays 7 of the 45 BLOCKED_NEEDS_JULIA_SURFACE
+# ledger rows in docs/dev-log/core070/required-source-case-map.json whose
+# Julia function name now exists in names(GLLVM) (verified against this
+# worktree's HEAD). The other 38 are deferred with a per-row trace in
+# docs/dev-log/core070/wave7-conversion-batch-contract.json's `deferred[]` --
+# most of them are SAME-NAME, DIFFERENT-SURFACE collisions discovered by
+# reading .unlazy/core070-aghq/oracle-source/readback/R/*.R directly (never
+# inferred from a Julia docstring, per the wave-5/wave-6 lesson): R's
+# getREsd(fit, block=) is not Julia's getREsd(fit, y); R's
+# compare_Sigma_table(x, truth, ...) compares a fit to a KNOWN TRUTH matrix,
+# not two fits; R's compare_dep_vs_two_psi(fit_two_psi, ...) is a
+# phylogenetic 'two-psi' identifiability refit-and-compare, not a generic
+# two-fit bridge; R's vcov.gllvmTMB_multi returns only the fixed-effect
+# covariance block (Julia's vcov is a full-parameter Diagonal); R's
+# diagnostic_table() requires diagnostic metadata attached by
+# predictive_check()/residuals() first, not a bare fit; R's profile_targets()
+# is a readiness registry, not a curve runner. See the contract's per-row
+# `deferred[].reason` for the complete accounting.
+#
+# Design mirrors tools/core070_wave6_conversion_batch.R: THIS R process (the
+# one with the frozen gllvmTMB library loaded) does 100% of the live R-side
+# computation and hands the Julia child a plain JSON oracle. The Julia child
+# (tools/core070_wave7_conversion_batch.jl) fits gaussian_small NATIVELY (an
+# independent optimiser run on the same Y, not a replay of R's numbers) and
+# calls the corresponding Julia surface, comparing at the contract's
+# per-case tolerance (1e-4 point-quantity class; paired-independent-fit
+# tier, never the 1e-6 "deterministic" tier, per the task brief -- every
+# quantity here crosses two independently-run optimisers). gaussian_small is
+# reused VERBATIM from tools/core070_surface_conversion_batch.R /
+# tools/core070_wave6_conversion_batch.R (seed 42).
+#
+# argv:
+#   Rscript --vanilla tools/core070_wave7_conversion_batch.R <frozen-library> <destination>
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+frozen_library <- normalizePath(args[[1]], mustWork = TRUE)
+output_dir <- args[[2]]
+stopifnot(!dir.exists(output_dir))
+dir.create(output_dir, recursive = TRUE)
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+.libPaths(c(frozen_library, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(normalizePath(find.package("gllvmTMB")) ==
+          normalizePath(file.path(frozen_library, "gllvmTMB")))
+
+root <- normalizePath(".")
+contract_path <- file.path(root, "docs/dev-log/core070/wave7-conversion-batch-contract.json")
+if (!file.exists(contract_path)) {
+  stop("FATAL: contract not found at ", contract_path, " -- refusing to run with no state.")
+}
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(
+  identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
+  identical(contract$status, "FROZEN_WAVE7_CONVERSION_BATCH_CONTRACT"),
+  length(contract$cases) == contract$expected_case_count,
+  contract$expected_case_count == 6L,
+  length(contract$deferred) == contract$expected_deferred_count,
+  contract$expected_deferred_count == 38L,
+  length(contract$negative_controls) >= 2L,
+  length(contract$rejection_cases) >= 1L
+)
+
+# ---------------------------------------------------------------------------
+# Fixture: gaussian_small -- reused VERBATIM from
+# tools/core070_surface_conversion_batch.R / tools/core070_wave6_conversion_batch.R.
+# ---------------------------------------------------------------------------
+set.seed(42)
+p <- 5L; K <- 2L; n <- 80L
+Lambda_true <- matrix(c(
+  0.8,  0.0,
+  0.5,  0.6,
+  0.3, -0.4,
+ -0.2,  0.5,
+  0.1,  0.3
+), nrow = p, ncol = K, byrow = TRUE)
+sigma_true <- 0.7
+eta_g <- matrix(rnorm(K * n), nrow = K, ncol = n)
+Y_g <- Lambda_true %*% eta_g + sigma_true * matrix(rnorm(p * n), nrow = p, ncol = n)
+Y_g <- Y_g - rowMeans(Y_g)
+
+trait_names <- paste0("t", seq_len(p))
+df_g <- data.frame(
+  site  = factor(rep(seq_len(n), each = p)),
+  trait = factor(rep(trait_names, times = n), levels = trait_names),
+  value = as.vector(Y_g)
+)
+fit_g <- gllvmTMB(
+  value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+  data = df_g, unit = "site", trait = "trait", family = gaussian(),
+  control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+)
+stopifnot("gllvmTMB_multi" %in% class(fit_g))
+
+# ---------------------------------------------------------------------------
+# Point-quantity dispatchers.
+# ---------------------------------------------------------------------------
+r_case_value <- function(case_id) {
+  switch(case_id,
+    "CORE070-WAVE7-FITTED-MULTI" = {
+      out <- fitted(fit_g)
+      stopifnot(is.data.frame(out), "est" %in% names(out))
+      as.numeric(out$est)
+    },
+    "CORE070-WAVE7-PREDICT-MULTI" = {
+      out <- predict(fit_g, newdata = NULL, type = "response")
+      stopifnot(is.data.frame(out), "est" %in% names(out))
+      as.numeric(out$est)
+    },
+    "CORE070-WAVE7-RESIDUALS-MULTI" = {
+      out <- residuals(fit_g, type = "randomized_quantile", scale = "normal")
+      stopifnot(is.data.frame(out), "residual" %in% names(out))
+      as.numeric(out$residual)
+    },
+    stop("BOGUS_CASE_ID: no dispatcher entry for '", case_id, "'")
+  )
+}
+
+oracle_values <- list()
+oracle_errors <- list()
+verdict_oracle <- list()
+own_consistency_oracle <- list()
+
+for (cs in contract$cases) {
+  kind <- cs$kind
+  cid <- cs$case_id
+  if (identical(kind, "point")) {
+    v <- tryCatch(list(ok = TRUE, value = r_case_value(cid), error = ""),
+                  error = function(e) list(ok = FALSE, value = NULL, error = conditionMessage(e)))
+    if (isTRUE(v$ok) && !is.null(v$value) && length(v$value) > 0L) {
+      oracle_values[[cid]] <- v$value
+    } else {
+      oracle_errors[[cid]] <- if (isTRUE(v$ok)) {
+        paste0("INTERNAL: r_case_value() returned ok=TRUE but a NULL/empty value for ", cid,
+               " -- treated as a coverage failure, never a silent pass.")
+      } else v$error
+    }
+  } else if (identical(kind, "verdict")) {
+    v <- tryCatch({
+      if (identical(cid, "CORE070-WAVE7-CHECK-AUTO-RESIDUAL")) {
+        r <- check_auto_residual(fit_g)
+        list(ok = TRUE, verdict = list(status_ok = identical(r$status, "ok")), error = "")
+      } else if (identical(cid, "CORE070-WAVE7-SANITY-MULTI")) {
+        r <- sanity_multi(fit_g)
+        list(ok = TRUE, verdict = list(
+          converged = isTRUE(r$converged),
+          pd_hessian = if (is.na(r$pd_hessian)) NA else isTRUE(r$pd_hessian)
+        ), error = "")
+      } else {
+        stop("BOGUS_CASE_ID: no verdict dispatcher entry for '", cid, "'")
+      }
+    }, error = function(e) list(ok = FALSE, verdict = NULL, error = conditionMessage(e)))
+    if (isTRUE(v$ok) && !is.null(v$verdict)) {
+      verdict_oracle[[cid]] <- v$verdict
+    } else {
+      oracle_errors[[cid]] <- if (isTRUE(v$ok)) {
+        paste0("INTERNAL: verdict dispatcher returned ok=TRUE but a NULL verdict for ", cid)
+      } else v$error
+    }
+  } else if (identical(kind, "own_consistency")) {
+    v <- tryCatch({
+      stopifnot(identical(cid, "CORE070-WAVE7-COMPARE-LOADINGS-SELF-CONSISTENCY"))
+      Lambda <- getLoadings(fit_g)
+      r <- compare_loadings(Lambda, Lambda)
+      list(ok = TRUE, frobenius = as.numeric(r$frobenius), error = "")
+    }, error = function(e) list(ok = FALSE, frobenius = NULL, error = conditionMessage(e)))
+    if (isTRUE(v$ok) && !is.null(v$frobenius)) {
+      own_consistency_oracle[[cid]] <- v$frobenius
+    } else {
+      oracle_errors[[cid]] <- if (isTRUE(v$ok)) {
+        paste0("INTERNAL: own_consistency dispatcher returned ok=TRUE but a NULL frobenius for ", cid)
+      } else v$error
+    }
+  } else {
+    oracle_errors[[cid]] <- paste0("BOGUS_KIND: unrecognised case kind '", kind, "' for ", cid)
+  }
+}
+
+# ---------------------------------------------------------------------------
+# LOUD coverage check: every case in contract$cases must have produced an
+# entry in EXACTLY ONE of oracle_values / verdict_oracle / own_consistency_oracle,
+# OR an oracle_errors entry -- never neither, never silently passed through.
+# ---------------------------------------------------------------------------
+all_contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+accounted_for <- union(union(names(oracle_values), names(verdict_oracle)),
+                        union(names(own_consistency_oracle), names(oracle_errors)))
+missing_case_ids <- setdiff(all_contract_case_ids, accounted_for)
+if (length(missing_case_ids) > 0L) {
+  stop(
+    "FATAL: ", length(missing_case_ids), " contract case(s) produced NO oracle entry of any kind ",
+    "(never silently passed through). Missing case_id(s):\n  ",
+    paste(missing_case_ids, collapse = "\n  ")
+  )
+}
+
+# ---------------------------------------------------------------------------
+# Rejection-path case: R must refuse; Julia's own asymmetric behaviour is
+# recorded independently by the Julia child (see contract$rejection_cases
+# notes -- this is a documented ASYMMETRY, not a matching-refusal case).
+# ---------------------------------------------------------------------------
+rejection_oracle <- list()
+for (rc in contract$rejection_cases) {
+  res <- tryCatch({
+    check_auto_residual(42)
+    list(raised = FALSE, message = "")
+  }, error = function(e) list(raised = TRUE, message = conditionMessage(e)))
+  rejection_oracle[[rc$case_id]] <- res
+}
+
+# --- negative controls -------------------------------------------------
+neg_unknown_case_id <- tryCatch({ r_case_value("this_case_id_does_not_exist"); list(rejected = FALSE) },
+                                 error = function(e) list(rejected = TRUE, message = conditionMessage(e)))
+neg_wrong_fixture <- list(
+  rejected = !("bogus_fixture_key" %in% names(contract$fixtures)),
+  message = "bogus_fixture_key absent from contract$fixtures"
+)
+neg_bogus_kind <- list(
+  rejected = !("bogus_kind" %in% c("point", "verdict", "own_consistency")),
+  message = "bogus_kind absent from the known kind set"
+)
+
+# ---------------------------------------------------------------------------
+# Write the oracle JSON for the Julia child.
+# ---------------------------------------------------------------------------
+oracle_path <- file.path(output_dir, "r-oracle.json")
+jsonlite::write_json(
+  list(
+    schema = "core070-wave7-conversion-r-oracle/v1",
+    gaussian_small = list(p = p, K = K, n = n, y = as.numeric(Y_g)),
+    oracle_values = oracle_values,
+    verdict_oracle = verdict_oracle,
+    own_consistency_oracle = own_consistency_oracle,
+    oracle_errors = oracle_errors,
+    rejection_oracle = rejection_oracle,
+    negative_controls = list(
+      unknown_case_id = neg_unknown_case_id,
+      wrong_fixture = neg_wrong_fixture,
+      bogus_kind = neg_bogus_kind
+    )
+  ),
+  oracle_path, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 17
+)
+
+# ---------------------------------------------------------------------------
+# Invoke the Julia child.
+# ---------------------------------------------------------------------------
+julia_out <- file.path(output_dir, "julia-results.json")
+julia_env <- c(CORE070_WAVE7_CONVERSION_R_ORACLE = oracle_path)
+julia_bin <- Sys.which("julia")
+stopifnot(nzchar(julia_bin))
+old_env <- Sys.getenv(names(julia_env), unset = NA, names = TRUE)
+do.call(Sys.setenv, as.list(julia_env))
+t0 <- Sys.time()
+julia_status <- tryCatch(
+  system2(julia_bin, c("--project=.", "tools/core070_wave7_conversion_batch.jl", julia_out),
+          stdout = file.path(output_dir, "julia-stdout.log"),
+          stderr = file.path(output_dir, "julia-stderr.log")),
+  finally = {
+    unset <- names(old_env)[is.na(old_env)]
+    if (length(unset)) Sys.unsetenv(unset)
+    set <- old_env[!is.na(old_env)]
+    if (length(set)) do.call(Sys.setenv, as.list(set))
+  }
+)
+elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+
+julia_report <- if (file.exists(julia_out)) {
+  jsonlite::read_json(julia_out, simplifyVector = FALSE)
+} else NULL
+
+contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+
+results_ok <- !is.null(julia_report) &&
+  identical(julia_status, 0L) &&
+  identical(julia_report$status, "PASS") &&
+  isTRUE(julia_report$all_checks) &&
+  isTRUE(julia_report$rejection_checks_ok) &&
+  isTRUE(julia_report$negative_controls_behaved_as_expected)
+
+cases_seen <- if (!is.null(julia_report)) names(julia_report$cases) else character(0)
+missing_result_case_ids <- setdiff(contract_case_ids, cases_seen)
+extra_case_ids <- setdiff(cases_seen, contract_case_ids)
+results_ok <- results_ok && length(missing_result_case_ids) == 0 && length(extra_case_ids) == 0
+
+raw_lines <- vapply(contract_case_ids, function(id) {
+  pass <- !is.null(julia_report) && id %in% names(julia_report$cases) &&
+    isTRUE(julia_report$cases[[id]]$pass)
+  paste(id, if (pass) "PASS" else "FAIL", "wave7_conversion", sep = "\t")
+}, character(1))
+raw_path <- file.path(output_dir, "results.tsv")
+writeLines(raw_lines, raw_path)
+
+diag_lines <- character(0)
+if (!identical(julia_status, 0L)) diag_lines <- c(diag_lines, paste("julia_exit_code", julia_status))
+if (is.null(julia_report)) diag_lines <- c(diag_lines, "julia-results.json was not written")
+if (length(oracle_errors)) {
+  for (id in names(oracle_errors)) {
+    diag_lines <- c(diag_lines, paste0("oracle_error[", id, "]: ", oracle_errors[[id]]))
+  }
+}
+if (length(missing_result_case_ids)) diag_lines <- c(diag_lines, paste("missing_case_ids:", paste(missing_result_case_ids, collapse = ", ")))
+if (length(extra_case_ids)) diag_lines <- c(diag_lines, paste("extra_case_ids:", paste(extra_case_ids, collapse = ", ")))
+diag_path <- file.path(output_dir, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+receipt <- list(
+  status = if (isTRUE(results_ok) && length(oracle_errors) == 0L) "PASS" else "FAIL",
+  scope = "CORE070_WAVE7_CONVERSION_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_unchanged = TRUE,
+  target_source_ids = contract$target_source_ids,
+  case_count = contract$expected_case_count,
+  deferred_count = contract$expected_deferred_count,
+  expected_case_ids = contract_case_ids,
+  oracle_error_count = length(oracle_errors),
+  julia_exit_code = julia_status,
+  julia_elapsed_seconds = elapsed,
+  julia_results_sha256 = if (file.exists(julia_out)) sha256_file(julia_out) else NA_character_,
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_version = R.version.string,
+  gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+  frozen_library = frozen_library
+)
+receipt_path <- file.path(output_dir, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+cat("CORE070_WAVE7_CONVERSION_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (identical(receipt$status, "PASS")) 0L else 1L)

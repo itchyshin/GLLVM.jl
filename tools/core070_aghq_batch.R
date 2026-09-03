@@ -1,0 +1,209 @@
+# Retained evidence runner for the "aghq control" M2 batch (16 paired-control
+# cases: 7 executable_case_id-normalization controls (.gllvmTMB_normalize_aghq
+# FALSE/NULL/TRUE/"auto"/1/2/9) + 9 invalid-input rejection controls; see
+# docs/dev-log/core070/aghq-batch-contract.json for the full case list and
+# the 22 NEEDS_NEW_JULIA_SURFACE deferrals carried over from
+# docs/dev-log/core070/aghq-required-case-plan.json's source_rows.
+#
+# Design mirrors tools/core070_namespace_2_batch.R's repair pattern: THIS R
+# process (the one with the frozen gllvmTMB library loaded) does 100% of the
+# live R-side computation itself (evaluating each frozen r_call/r_assertion
+# pair verbatim) and hands the Julia child a plain JSON oracle file; the
+# Julia child (tools/core070_aghq_batch.jl) runs zero R code and carries no
+# RCall dependency at all.
+#
+# No model fit anywhere in this batch: .gllvmTMB_normalize_aghq and
+# GLLVM._aghq_request are pure scalar-argument normalizers with no data
+# dependency, so this whole batch runs in well under a minute.
+#
+# argv (matches the contract's runner.outer_argv and the --self-test local
+# smoke, which never reaches this file):
+#   Rscript --vanilla tools/core070_aghq_batch.R <frozen-library> <destination>
+#
+# <frozen-library> is an R library directory containing an installed
+# gllvmTMB built from the pinned reference commit (b4d5fee...) -- the FROZEN,
+# INSTALLED library, matching masks_known.R's arg 1, not a source tree.
+# <destination> must not already exist; it is created and holds
+# r-oracle.json, julia-results.json, julia-stdout.log, julia-stderr.log,
+# results.tsv, diagnostics.log, and receipt.json.
+
+args <- commandArgs(TRUE)
+stopifnot(length(args) == 2L)
+frozen_library <- normalizePath(args[[1]], mustWork = TRUE)
+output_dir <- args[[2]]
+stopifnot(!dir.exists(output_dir))
+dir.create(output_dir, recursive = TRUE)
+
+sha256_file <- function(path) {
+  command <- if (nzchar(Sys.which("sha256sum"))) "sha256sum" else "shasum"
+  argv <- if (identical(command, "sha256sum")) path else c("-a", "256", path)
+  line <- system2(command, argv, stdout = TRUE, stderr = TRUE)
+  stopifnot(is.null(attr(line, "status")), length(line) >= 1L)
+  sub("[[:space:]].*$", "", line[[1L]])
+}
+
+.libPaths(c(frozen_library, .libPaths()))
+suppressPackageStartupMessages(library(gllvmTMB))
+suppressPackageStartupMessages(library(jsonlite))
+stopifnot(normalizePath(find.package("gllvmTMB")) ==
+          normalizePath(file.path(frozen_library, "gllvmTMB")))
+
+# .gllvmTMB_normalize_aghq (R/gllvmTMB.R:2046) is unexported, so bare-name
+# eval() of the contract's verbatim r_call/r_assertion strings (which call it
+# unqualified, matching docs/dev-log/core070/aghq-required-case-plan.json's
+# own frozen paired_control_cases text exactly) needs the internal binding
+# pulled into the evaluation environment once, up front.
+assign(".gllvmTMB_normalize_aghq",
+       get(".gllvmTMB_normalize_aghq", envir = asNamespace("gllvmTMB")),
+       envir = globalenv())
+
+root <- normalizePath(".")
+contract_path <- file.path(root, "docs/dev-log/core070/aghq-batch-contract.json")
+contract <- jsonlite::read_json(contract_path, simplifyVector = FALSE)
+contract_sha256 <- sha256_file(contract_path)
+
+stopifnot(identical(contract$reference_commit, "b4d5fee64def88bc768dda1f1f77c29b295edd86"),
+          identical(contract$status, "FROZEN_AGHQ_CONTROL_BATCH_CONTRACT"),
+          length(contract$cases) == contract$expected_case_count,
+          contract$expected_case_count == 16L,
+          length(contract$negative_controls) >= 3L)
+
+# --- validate pinned R source ------------------------------------------
+source_root <- file.path(root, ".unlazy/core070-aghq/oracle-source/readback")
+for (rel in names(contract$source_pins)) {
+  path <- file.path(source_root, rel)
+  stopifnot(file.exists(path))
+  digest <- sha256_file(path)
+  stopifnot(identical(digest, contract$source_pins[[rel]]))
+}
+
+# ---------------------------------------------------------------------------
+# 1. Evaluate the frozen r_call / r_assertion pair for each of the 16
+#    paired-control cases exactly as written in the contract (verbatim R
+#    source text from docs/dev-log/core070/aghq-required-case-plan.json's
+#    paired_control_cases; not re-derived).
+# ---------------------------------------------------------------------------
+r_case_results <- list()
+for (case in contract$cases) {
+  cid <- case$case_id
+  r_value <- tryCatch(
+    list(ok = TRUE, value = eval(parse(text = case$r_call)), error = NA_character_),
+    error = function(e) list(ok = FALSE, value = NULL, error = conditionMessage(e))
+  )
+  r_assertion_pass <- tryCatch(
+    isTRUE(eval(parse(text = case$r_assertion))),
+    error = function(e) FALSE
+  )
+  r_case_results[[cid]] <- list(
+    r_assertion_pass = r_assertion_pass,
+    r_call_errored = !r_value$ok,
+    r_call_error = if (r_value$ok) NA_character_ else r_value$error
+  )
+}
+stopifnot(all(vapply(r_case_results, function(x) isTRUE(x$r_assertion_pass), logical(1))))
+
+# ---------------------------------------------------------------------------
+# 2. Write the oracle JSON (per-case R assertion outcome only -- no model
+#    data of any kind) for the Julia child.
+# ---------------------------------------------------------------------------
+oracle_path <- file.path(output_dir, "r-oracle.json")
+jsonlite::write_json(
+  list(
+    schema = "core070-aghq-r-oracle/v1",
+    cases = r_case_results
+  ),
+  oracle_path, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 17
+)
+
+# --- invoke the Julia child ---------------------------------------------
+julia_out <- file.path(output_dir, "julia-results.json")
+julia_env <- c(CORE070_AGHQ_R_ORACLE = oracle_path)
+julia_bin <- Sys.which("julia")
+stopifnot(nzchar(julia_bin))
+old_env <- Sys.getenv(names(julia_env), unset = NA, names = TRUE)
+do.call(Sys.setenv, as.list(julia_env))
+t0 <- Sys.time()
+julia_status <- tryCatch(
+  system2(julia_bin, c("--project=.", "tools/core070_aghq_batch.jl", julia_out),
+          stdout = file.path(output_dir, "julia-stdout.log"),
+          stderr = file.path(output_dir, "julia-stderr.log")),
+  finally = {
+    unset <- names(old_env)[is.na(old_env)]
+    if (length(unset)) Sys.unsetenv(unset)
+    set <- old_env[!is.na(old_env)]
+    if (length(set)) do.call(Sys.setenv, as.list(set))
+  }
+)
+elapsed <- as.numeric(Sys.time() - t0, units = "secs")
+
+# --- read back and evaluate ----------------------------------------------
+julia_report <- if (file.exists(julia_out)) {
+  jsonlite::read_json(julia_out, simplifyVector = FALSE)
+} else {
+  NULL
+}
+
+contract_case_ids <- vapply(contract$cases, `[[`, "", "case_id")
+contract_neg_ids <- vapply(contract$negative_controls, `[[`, "", "control_id")
+
+results_ok <- !is.null(julia_report) &&
+  identical(julia_status, 0L) &&
+  identical(julia_report$status, "PASS") &&
+  isTRUE(julia_report$all_positive_pass) &&
+  isTRUE(julia_report$negative_controls_behaved_as_expected) &&
+  isTRUE(julia_report$all_checks) &&
+  identical(julia_report$case_count, length(contract$cases)) &&
+  all(vapply(julia_report$cases, function(x) isTRUE(x$pass), logical(1)))
+
+all_case_ids_seen <- if (!is.null(julia_report)) names(julia_report$cases) else character(0)
+missing_case_ids <- setdiff(contract_case_ids, all_case_ids_seen)
+extra_case_ids <- setdiff(all_case_ids_seen, contract_case_ids)
+results_ok <- results_ok && length(missing_case_ids) == 0 && length(extra_case_ids) == 0
+
+raw_lines <- vapply(contract_case_ids, function(id) {
+  pass <- !is.null(julia_report) && id %in% names(julia_report$cases) &&
+    isTRUE(julia_report$cases[[id]]$pass)
+  paste(id, if (pass) "PASS" else "FAIL", "positive", sep = "\t")
+}, character(1))
+neg_lines <- if (!is.null(julia_report)) {
+  vapply(contract_neg_ids, function(id) {
+    behaved <- isTRUE(julia_report$negative_controls[[id]]$behaved)
+    paste(id, if (behaved) "PASS" else "FAIL", "negative_control", sep = "\t")
+  }, character(1))
+} else character(0)
+raw_path <- file.path(output_dir, "results.tsv")
+writeLines(c(raw_lines, neg_lines), raw_path)
+
+diag_lines <- character(0)
+if (!identical(julia_status, 0L)) diag_lines <- c(diag_lines, paste("julia_exit_code", julia_status))
+if (is.null(julia_report)) diag_lines <- c(diag_lines, "julia-results.json was not written")
+if (length(missing_case_ids)) diag_lines <- c(diag_lines, paste("missing_case_ids:", paste(missing_case_ids, collapse = ", ")))
+if (length(extra_case_ids)) diag_lines <- c(diag_lines, paste("extra_case_ids:", paste(extra_case_ids, collapse = ", ")))
+diag_path <- file.path(output_dir, "diagnostics.log")
+writeLines(diag_lines, diag_path)
+
+receipt <- list(
+  status = if (isTRUE(results_ok)) "PASS" else "FAIL",
+  scope = "CORE070_AGHQ_CONTROL_BATCH",
+  reference_commit = contract$reference_commit,
+  contract_sha256 = contract_sha256,
+  source_pins = contract$source_pins,
+  source_unchanged = TRUE,
+  case_count = contract$expected_case_count,
+  negative_control_count = length(contract$negative_controls),
+  expected_case_ids = contract_case_ids,
+  negative_control_case_ids = contract_neg_ids,
+  julia_exit_code = julia_status,
+  julia_elapsed_seconds = elapsed,
+  julia_results_sha256 = if (file.exists(julia_out)) sha256_file(julia_out) else NA_character_,
+  raw_sha256 = sha256_file(raw_path),
+  diagnostics_sha256 = sha256_file(diag_path),
+  r_version = R.version.string,
+  gllvmTMB_version = as.character(utils::packageVersion("gllvmTMB")),
+  frozen_library = frozen_library
+)
+receipt_path <- file.path(output_dir, "receipt.json")
+jsonlite::write_json(receipt, receipt_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+
+cat("CORE070_AGHQ_CONTROL_BATCH_", receipt$status, "\n", sep = "")
+quit(status = if (isTRUE(results_ok)) 0L else 1L)

@@ -5,6 +5,69 @@ All notable changes to GLLVM.jl are documented here.
 ## Unreleased
 
 ### Changed
+- **Development:** fixed Gaussian source fits accept a complete mean design `X`.
+  Explicit-source wide/long formulas expose trait intercepts, shared slopes,
+  categorical contrasts and interactions. Fits retain the copied design, response
+  shape and coefficient labels. No R source-grammar, bridge, random-slope or
+  calibrated-uncertainty claim is implied.
+- Truncated NB2 exposes its existing per-trait fitter through explicit
+  `disp_group=:species` in native and intercept-only wide/long formula calls.
+  Shared dispersion remains the default; partial grouping is rejected.
+- **Development:** per-trait Gaussian fitting accepts an explicit fixed residual
+  SD and estimates unique variances within that constraint. Results retain unique
+  and total diagonal variances; existing defaults and parameter counts are unchanged.
+  The `pervar=true` Gaussian formula route preserves trait intercepts,
+  zero-mean designs, shared slopes and categorical contrasts. Bridge and interval
+  parity are not established. AGHQ requests on the fixed-residual unique model
+  retain exact Gaussian/Laplace with warning and provenance; `k=1` is quiet.
+  Plain heteroscedastic AGHQ remains unimplemented and is labeled separately.
+- Fix default exact Gaussian fitting with a zero-column design or all fixed-zero
+  coefficients, including ordinary and phylogenetic profiled likelihoods.
+- Restore Wald/profile intervals for these models; failed profile refits no
+  longer fabricate finite bounds without a finite likelihood crossing.
+- Add explicit `sigma_eps_fixed` for Gaussian source fits, retaining the free
+  residual default. Starts and parameter counts omit the fixed coordinate;
+  diagnostics differentiate only free parameters and retain fixed-noise provenance.
+- Development interface: typed fixed Gaussian source covariances, additive
+  projected-source fitting, and explicit gradient/Hessian diagnostics. Independent,
+  latent and dependent trait modes pass targeted tests. Six retained nonspatial
+  models match public R 0.7.0 fits under the declared likelihood/health checks.
+  The unique-variance case has nearly singular curvature; intervals are unverified.
+  Existing fitters are unchanged. No source-kernel estimation, R source-grammar/bridge,
+  non-Gaussian, inference, recovery or performance completion claim.
+- Local binomial candidate: opt-in ordinary AGHQ with logit/probit/cloglog,
+  retained trials/masks/offsets, estimator metadata and frozen-objective inference.
+  Public prediction returns probabilities and simulation returns counts. The
+  original k5 paired convergence/likelihood gate remains failed, not waived.
+- Local candidate: ordinary log-link Poisson fits accept opt-in `aghq` controls
+  and retain integration metadata, final adaptation and every start outcome.
+  Predictions preserve offsets; Wald/profile intervals use the fitted frozen
+  objective and bootstrap refits retain failures. Other-family/structured AGHQ
+  and calibrated coverage are not established. Default Laplace is unchanged.
+- Generic family Wald intervals now require a positive-definite Hessian;
+  a positive inverse diagonal alone no longer yields apparent valid uncertainty.
+- Ordinal fitters now reject unsupported links with an early `ArgumentError`;
+  logit and probit models and their likelihoods are unchanged.
+- Formula fits validate every supplied site-table column before response access,
+  including intercept-only fits. Empty tables remain valid without covariates.
+  The original NB2 wide/long formula model matches its native fit; broader
+  interface qualification remains incomplete.
+- **Local development candidate:** ordinary NB2 evaluates its density directly
+  from the mean and uses an overflow-safe observed curvature. The original
+  paired fit, scalar derivatives and required NB2/truncated-NB2 runner pass.
+  Broader recovery, full package checks and independent review remain pending.
+- Student-t fitting rejects infinite fixed degrees of freedom before reading
+  responses, for scalar and per-trait inputs. Finite positive fixed values and
+  the estimated-df route are unchanged.
+- **Local development candidate:** grouped Tweedie distinguishes fixed common,
+  shared estimated and per-species estimated power; `TweediePerTraitPowerFit`
+  stores the latter. Student fits record whether degrees of freedom were estimated
+  so information-criterion parameter counts are correct. These changes do not
+  establish full Core070 parity: the original Student-t R health gate remains
+  failed, and final candidate requalification is pending.
+- Branch-RE uses an equivalent dense marginal fallback when the auxiliary sparse
+  precision is numerically unsafe. This preserves valid marginal models without
+  a ridge, at a possible O(p²) memory cost reported by a warning.
 - **AGHQ Stage-1a site evaluator now threads the Fisher-vs-observed curvature
   selector (unpark Slice 0/1, 2026-08-28)**: `aghq_stage1a_loglik_site`
   (`src/families/aghq_grid.jl`, internal, no public `aghq=` surface) gains a
@@ -373,3 +436,13 @@ analytic-vs-finite-difference gradient checks), validated on Linux/macOS/Windows
 Gaussian + phylogenetic GLLVM pilot: closed-form Gaussian marginal, Woodbury/low-rank
 Cholesky, PPCA & EM-FA initialisation, σ_eps profile-out, the phylogenetic
 representations, and Wald/profile/bootstrap/derived confidence intervals.
+
+
+### Local Core070 candidate — public Gaussian AGHQ
+
+- Ordinary shared-SD Gaussian quadrature with explicit integration metadata;
+  preserve default exact zero-mean fitting and legacy constructors.
+- Carry fixed effects, fixed-zero coefficients, masks and offsets through
+  prediction and same-objective inference; retain bootstrap failures.
+- Original frozen-reference parity and full programme gates remain separate;
+  no calibrated-coverage or performance claim follows from functional tests.

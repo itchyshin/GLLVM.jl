@@ -1,0 +1,11 @@
+role	configured_model	configured_effort	context	elapsed_seconds	exit	receipt	limitation
+A1	gpt-5.6-luna	low	fresh_ephemeral	87	0	.unlazy/core070-aghq/dispatch/A1-events.dispatch.txt	configured route; backend routing not independently exposed
+Noether	gpt-5.6-terra	high	fresh_ephemeral	261	0	.unlazy/core070-aghq/dispatch/Noether-events.dispatch.txt	configured route; backend routing not independently exposed
+Rose	gpt-5.6-sol	high	fresh_ephemeral	244	0	.unlazy/core070-aghq/dispatch/Rose-events.dispatch.txt	configured route; backend routing not independently exposed
+Rose-repair-followup	gpt-5.6-sol	high	fresh_ephemeral	219	0	.unlazy/core070-aghq/dispatch/Rose-repair-events.dispatch.txt	configured route; backend routing not independently exposed; bounded follow-up not completion panel
+Noether-AGHQ-followup	gpt-5.6-terra	high	fresh_ephemeral	133	0	.unlazy/core070-aghq/dispatch/Noether-aghq-events.dispatch.txt	configured route; backend routing not independently exposed; bounded follow-up not completion panel
+Acceptance-collection-review	gpt-5.6-terra	high	fresh_ephemeral	124	0	.unlazy/core070-aghq/dispatch/collection-review-events.dispatch.txt	configured route; backend not independently exposed; no blockers on inspection; tests unavailable in read-only child
+Noether-student-normalizer	gpt-5.6-terra	high	fresh_ephemeral	206	0	.unlazy/core070-aghq/student-diagnosis/review-events.dispatch.txt	configured route; math design review only; no tests or fits in child
+Noether-source-covariance	gpt-5.6-terra	high	fresh_ephemeral	180	0	.unlazy/core070-aghq/source-fixed-point/review-events.dispatch.txt	configured route; backend not independently exposed; scoped representation review, not production parity or final panel
+Noether-native-source	gpt-5.6-terra	high	fresh_ephemeral	127	0	.unlazy/core070-aghq/native-source/review-events.dispatch.txt	configured route; no implementation blocker; unequal group count regression requested and added; no milestone completion verdict
+Noether-gaussian-fitted	gpt-5.6-terra	high	fresh_ephemeral	141	0	.unlazy/core070-aghq/gaussian-fitted/review-events.dispatch.txt	configured route; backend not independently exposed; single-fixture controlled postfit accepted; default route remains diagnostic, not milestone completion

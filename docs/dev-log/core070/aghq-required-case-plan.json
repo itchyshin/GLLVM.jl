@@ -1,0 +1,1761 @@
+{
+  "schema": 1,
+  "status": "REQUIRED_CASE_ANNEX_NOT_FROZEN",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "source_pins": {
+    "R/gllvmTMB.R": "bf78912c192311d1ca40704cd81493c2c06773eb3eb7aea14b826a7459dd6f20",
+    "R/fit-multi.R": "768db11bd09e6de872d4a27b60fd0a096f617434ac84c95db721fac8f8d77c02",
+    "R/aghq-control.R": "e0f6857e090d2928c87cc1186a07e2534ee1f3c4633459dd806b4d40f8969895",
+    "R/aghq-gate.R": "0c7969f587752db2ce23393805e3d016d4892445def694ff63b029cf1adf89b5"
+  },
+  "source_subset": "docs/dev-log/core070/aghq-control-subset.json",
+  "source_subset_sha256": "32f7a51a4433917a74f19c37b516d8dc4663c1be254acd6620233da9244f5d2b",
+  "family_inventory_sha256": "a51906ddd90bdabc2c1764623245963fb600a3bdabd3164e31404e41f7ee587b",
+  "source_rows": [
+    {
+      "source_id": "aghq/AGHQ-CTRL-FALSE",
+      "source_row_sha256": "11f3909e7f5a5abeb48cab137e99805126e094839639abb3200eb304f2cf404f",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-FALSE-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-NULL",
+      "source_row_sha256": "2b7e4133ef11a0c2560e7c72bb44c34fe6c252cfa409fe8ec6a361556e585971",
+      "classification": "compatibility_adapter",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-NULL-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-TRUE",
+      "source_row_sha256": "7a7cc7ac030355c7aa5c61225eceb577aca93fe8a420015ba62b8a8da66dfff9",
+      "classification": "compatibility_adapter",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-TRUE-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-AUTO",
+      "source_row_sha256": "a24541131e12ed67c3b42f1b33524521f13fddb8ae677700e5b3d0ebff5db8aa",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-AUTO-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-ONE",
+      "source_row_sha256": "ad9256bd81fb2e0ff62b4bde8882153cba0a1b96e0d086d9dc2c21023f075840",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-ONE-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-TWO",
+      "source_row_sha256": "140d3b5a7b1ead21bd0fd8c0e027d13f562a11bd44c03857f946c8f27edc2065",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-TWO-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-CTRL-NINE",
+      "source_row_sha256": "d71fe6f7db4bd58e741a28d6879048baf1cc0d9d94be9083c3ad63edf59e16b0",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-CTRL-NINE-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-ZERO",
+      "source_row_sha256": "52f3e519ecf1bfa3c00c621715387238d567c860eb98974a71617890ad2dafef",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-ZERO-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-NEGATIVE",
+      "source_row_sha256": "fa26d2a9e9b78b5f6d14a49800cb6d5519ed3a711bf364b644a3f2f3abe0a4d7",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-NEGATIVE-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-FRACTION",
+      "source_row_sha256": "8eec3a8c1c267b94e83984673739a102eaf9ffc907f069e4ba0535d181c85878",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-FRACTION-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-INF",
+      "source_row_sha256": "208054b8b0b40234460418ceded6d082a8a8c3837aba6907f0bc0cd04c2c6fa7",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-INF-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-NAN",
+      "source_row_sha256": "e8dd011d357e823530c5bb039c11be5c79e197ad8a64dae8cbc7ab439c424520",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-NAN-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-NA",
+      "source_row_sha256": "6b7882d4f3b7090a506a42490dd81b81caaf39baa97fef3734ec0f4725e5655e",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-NA-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-VECTOR",
+      "source_row_sha256": "ba583781db80cd7bc9aa88e939e0b42aed8aa72bc422e15f0922b09691f13b88",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-VECTOR-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-EMPTY",
+      "source_row_sha256": "ee65cef7930e6354b30ba8446b62e417d6269160805884f8c7f5715969f0160e",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-EMPTY-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-INVALID-STRING",
+      "source_row_sha256": "3a61b484fd18e81722ed1c839ef6c93e7aa9c6dd8a8701f66896c2f3edd38025",
+      "classification": "rejected",
+      "planned_case_ids": [
+        "CORE070-AGHQ-INVALID-STRING-PAIRED-CONTROL"
+      ],
+      "executable_case_ids": [],
+      "status": "PAIRED_CONTROL_BOUND_NOT_PUBLIC_FIT",
+      "remaining_obligation": "Public native/formula/bridge model replay remains separate."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-GAUSSIAN",
+      "source_row_sha256": "50928886869afe97a13981f4de78802a054cfbb9359bc4273397ad8d7c18a330",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-GAUSSIAN-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-POISSON",
+      "source_row_sha256": "6e9065db9dea5ad01f7e05420560fdcd09e46f57d9bcb1fc27dbeab8a13536b2",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-POISSON-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-BINOMIAL",
+      "source_row_sha256": "0d7b5fb77885ba826a721079767e35ddfc19c9c6d264f9d78d63fbded241b39c",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-BINOMIAL-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-NB2",
+      "source_row_sha256": "f54b9a1441871b6c6f27fdd24f446c4c957861904f9cc3a427e9743e9a7b30ad",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-NB2-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-TWEEDIE",
+      "source_row_sha256": "c29a63f0097ee72f46fb1dd8585d9eb8f7d17f33df583b080947c638deb5a3ad",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-TWEEDIE-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-ORDINAL",
+      "source_row_sha256": "98cfe49c3be4fc7a2f5ffd36498e1a9baa4fa8f72b89465b749425fbf1eb9588",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-ORDINAL-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-AUTO-K-DELTA",
+      "source_row_sha256": "dcfa7017888233235587a890c0b5ad530a0e579effa2e072f589d3ee7c4e4169",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-AUTO-K-DELTA-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-OFF",
+      "source_row_sha256": "f4eb0ace64eeabeffd0e21f4274ded26ad0b057db0193cc05cd658ccf0c9dcb2",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-OFF-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-EXPLICIT",
+      "source_row_sha256": "426282bc0ad68ac1827e81e7f70d4286723bd9378f276db3dc05d6548f93cb8d",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-EXPLICIT-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-TRAITS19",
+      "source_row_sha256": "5908969f429539d3bb8d815a8ffabec1b7b3ec0c35c4bd8a6ecbda94a1adda77",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-TRAITS19-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-TRAITS20",
+      "source_row_sha256": "0a62166e1153c0265099f6b985e464b3ab54551657dbb40acea8f32773e24506",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-TRAITS20-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-SITES-INDEPENDENT",
+      "source_row_sha256": "dc7abe8709cc49fe68558308e99ce9d8e9f4a5fc9b78ee717d826abd3bcca768",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-SITES-INDEPENDENT-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-MISSING-GATE",
+      "source_row_sha256": "c45b4c6ff8113d7c9a23e581641b93ef1cf107fb1541205eeaef91f08fdcb433",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-MISSING-GATE-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-EMPTY-GATE",
+      "source_row_sha256": "9728a0602aca14731b50f2b33c1e801acffae5440c40595ebb1f39fe62f81d62",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-EMPTY-GATE-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-BAD-COLUMNS",
+      "source_row_sha256": "95f93eebbc919db7eeceda6ce2b42cbde537c2b02a18bea370374c0723884783",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-BAD-COLUMNS-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-NO-QUADRATURE",
+      "source_row_sha256": "3c8bfa79f35501b2cdc178e0732b633b799bdc000f6463e11db6de6b6ec5ed56",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-NO-QUADRATURE-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-UNRESOLVED-WIDTH",
+      "source_row_sha256": "bb168bd95b2c51dd6923a65d2db33b72affe8c6f8d2ee6441fcea3f678afd11e",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-UNRESOLVED-WIDTH-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-BAD-TRAITS",
+      "source_row_sha256": "82612a1f9582afa1412693126f563e63a9543e56cef0f513f6f0defabf5a2377",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-BAD-TRAITS-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-BAD-DIMENSION",
+      "source_row_sha256": "5750dccfe154d1737c126d53826282bfacda64d714ccf7908fa79038f36e010a",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-BAD-DIMENSION-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF",
+      "source_row_sha256": "3d5b8e3489ba849a64ce8bc94619b0664610e0e51fa1daa6c84d6dcdd807addf",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-POLICY-AUTO-ENFORCE-CUTOFF",
+      "source_row_sha256": "ff9d784eb2b40ddfb0d01f874474714dbf06c3ea5c5e1cd2f17e8f1b75818a86",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-POLICY-AUTO-ENFORCE-CUTOFF-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-DEFAULT-OFF",
+      "source_row_sha256": "a4a3eb5a493b067312910d1f640e9a8f4973dbb20628b7ebb94c080c08d49a43",
+      "classification": "required_core",
+      "planned_case_ids": [
+        "CORE070-AGHQ-DEFAULT-OFF-CONTROL-CONTRACT"
+      ],
+      "executable_case_ids": [],
+      "status": "CONTROL_MAPPING_REQUIRED",
+      "remaining_obligation": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    },
+    {
+      "source_id": "aghq/AGHQ-DEFAULT-RIDGE-EXCLUDED",
+      "source_row_sha256": "51253451f65a228971c6babd9dd12b32a2d061bbb337507e030a2cb695a0ac79",
+      "classification": "intentionally_excluded",
+      "planned_case_ids": [],
+      "executable_case_ids": [],
+      "status": "EXCLUDED_LOADING_RIDGE",
+      "remaining_obligation": "No loading-ridge programme."
+    }
+  ],
+  "paired_control_cases": [
+    {
+      "id": "CORE070-AGHQ-CTRL-FALSE-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-CTRL-FALSE"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(FALSE)",
+      "r_assertion": "identical(.gllvmTMB_normalize_aghq(FALSE), FALSE)",
+      "julia_call": "GLLVM._aghq_request(false)",
+      "expected": "off",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-CTRL-NULL-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-CTRL-NULL"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(NULL)",
+      "r_assertion": "identical(.gllvmTMB_normalize_aghq(NULL), FALSE)",
+      "julia_call": "GLLVM._aghq_request(nothing)",
+      "expected": "off",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-CTRL-TRUE-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-CTRL-TRUE"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(TRUE)",
+      "r_assertion": "identical(.gllvmTMB_normalize_aghq(TRUE), \"auto\")",
+      "julia_call": "GLLVM._aghq_request(true)",
+      "expected": "auto",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-CTRL-AUTO-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-CTRL-AUTO"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(\"auto\")",
+      "r_assertion": "identical(.gllvmTMB_normalize_aghq(\"auto\"), \"auto\")",
+      "julia_call": "GLLVM._aghq_request(:auto)",
+      "expected": "auto",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-CTRL-ONE-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-CTRL-ONE"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(1)",
+      "r_assertion": "identical(.gllvmTMB_normalize_aghq(1), 1L)",
+      "julia_call": "GLLVM._aghq_request(1)",
+      "expected": "1",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-CTRL-TWO-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-CTRL-TWO"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(2)",
+      "r_assertion": "identical(.gllvmTMB_normalize_aghq(2), 2L)",
+      "julia_call": "GLLVM._aghq_request(2)",
+      "expected": "2",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-CTRL-NINE-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-CTRL-NINE"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(9)",
+      "r_assertion": "identical(.gllvmTMB_normalize_aghq(9), 9L)",
+      "julia_call": "GLLVM._aghq_request(9)",
+      "expected": "9",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-INVALID-ZERO-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-INVALID-ZERO"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(0)",
+      "r_assertion": "inherits(try(.gllvmTMB_normalize_aghq(0), silent=TRUE), \"try-error\")",
+      "julia_call": "GLLVM._aghq_request(0)",
+      "expected": "ArgumentError",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-INVALID-NEGATIVE-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-INVALID-NEGATIVE"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(-1)",
+      "r_assertion": "inherits(try(.gllvmTMB_normalize_aghq(-1), silent=TRUE), \"try-error\")",
+      "julia_call": "GLLVM._aghq_request(-1)",
+      "expected": "ArgumentError",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-INVALID-FRACTION-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-INVALID-FRACTION"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(1.5)",
+      "r_assertion": "inherits(try(.gllvmTMB_normalize_aghq(1.5), silent=TRUE), \"try-error\")",
+      "julia_call": "GLLVM._aghq_request(1.5)",
+      "expected": "ArgumentError",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-INVALID-INF-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-INVALID-INF"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(Inf)",
+      "r_assertion": "inherits(try(.gllvmTMB_normalize_aghq(Inf), silent=TRUE), \"try-error\")",
+      "julia_call": "GLLVM._aghq_request(Inf)",
+      "expected": "ArgumentError",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-INVALID-NAN-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-INVALID-NAN"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(NaN)",
+      "r_assertion": "inherits(try(.gllvmTMB_normalize_aghq(NaN), silent=TRUE), \"try-error\")",
+      "julia_call": "GLLVM._aghq_request(NaN)",
+      "expected": "ArgumentError",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-INVALID-NA-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-INVALID-NA"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(NA_real_)",
+      "r_assertion": "inherits(try(.gllvmTMB_normalize_aghq(NA_real_), silent=TRUE), \"try-error\")",
+      "julia_call": "GLLVM._aghq_request(missing)",
+      "expected": "ArgumentError",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-INVALID-VECTOR-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-INVALID-VECTOR"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(c(3,5))",
+      "r_assertion": "inherits(try(.gllvmTMB_normalize_aghq(c(3,5)), silent=TRUE), \"try-error\")",
+      "julia_call": "GLLVM._aghq_request([3,5])",
+      "expected": "ArgumentError",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-INVALID-EMPTY-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-INVALID-EMPTY"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(numeric(0))",
+      "r_assertion": "inherits(try(.gllvmTMB_normalize_aghq(numeric(0)), silent=TRUE), \"try-error\")",
+      "julia_call": "GLLVM._aghq_request(Int[])",
+      "expected": "ArgumentError",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    },
+    {
+      "id": "CORE070-AGHQ-INVALID-STRING-PAIRED-CONTROL",
+      "source_fact_ids": [
+        "aghq/AGHQ-INVALID-STRING"
+      ],
+      "coverage_role": "normalization_control",
+      "acceptance_level": "paired_control",
+      "fixture": "test/parity/core070_aghq_controls.toml",
+      "fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "r_call": ".gllvmTMB_normalize_aghq(\"9\")",
+      "r_assertion": "inherits(try(.gllvmTMB_normalize_aghq(\"9\"), silent=TRUE), \"try-error\")",
+      "julia_call": "GLLVM._aghq_request(\"9\")",
+      "expected": "ArgumentError",
+      "owner": "Ada/B6",
+      "acceptance_rule": "Frozen R assertion true and native normalization value/error matches; zero fit or interface claim."
+    }
+  ],
+  "public_obligations": [
+    {
+      "id": "CORE070-AGHQ-PUBLIC-FIXED-BETA",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Ordinary fixed predictors are not excluded by the Stage1a admission chain; qualify their b_fix parameter/random-vector construction separately from predictor-informed scores. Paired models must preserve design/contrasts and coefficient constraints; current Poisson/binomial AGHQ intercept-only routes are a gap, not an exclusion.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "4583-4583"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "5889-5893"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6351-6361"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-REML-RANDOM-BLOCK",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Classify the actual frozen random vector for a Gaussian REML request; if beta joins random, retain the same Laplace/REML target with warning. Do not infer Gaussian-only REML from non-Gaussian engine paths.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "5889-5893"
+        },
+        {
+          "path": "R/aghq-gate.R",
+          "lines": "225-249"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-GATE-K5",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Retain actual frozen R Hessian-sparsity gate table for ordinary K5; compare treewidth4/quadrature to native eligibility. K<=5 is not by itself a graph proof.",
+      "reference_sources": [
+        {
+          "path": "R/aghq-gate.R",
+          "lines": "185-194"
+        },
+        {
+          "path": "R/aghq-gate.R",
+          "lines": "241-260"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6362-6365"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_gate.jl",
+      "candidate_fixture_sha256": "ed09cbdf106eed6412e5130427d47f594e0013bbcf9f9dba2a33e0cc8c0f99cf",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-GATE-K6",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Retain actual frozen R gate table for ordinary K6; verify treewidth5/Laplace and warning. Examine model-zero/sparsity cases before claiming universal dimension equivalence.",
+      "reference_sources": [
+        {
+          "path": "R/aghq-gate.R",
+          "lines": "185-194"
+        },
+        {
+          "path": "R/aghq-gate.R",
+          "lines": "241-260"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6362-6365"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_gate.jl",
+      "candidate_fixture_sha256": "ed09cbdf106eed6412e5130427d47f594e0013bbcf9f9dba2a33e0cc8c0f99cf",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-NOOP-WARNING",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Quadrature used with zero parameter movement must retain selected-start/shift information and explicit warning; no improvement claim.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "7024-7036"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_public_poisson.jl",
+      "candidate_fixture_sha256": "8deda4e09b9770101daf24b094300dabda07a695a957a4eb779e511e98121c34",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-FAILED-ADAPTATION",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "All-unusable starts or failed re-adaptation: preserve the reference-selected valid iterate or explicit Laplace fallback and failure history, never silent success.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6639-6655"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_multistart.jl",
+      "candidate_fixture_sha256": "f98c764a1db33f71624a7c882971a9112e1f6a6ce3dcc2521341f259feb02960",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-FALLBACK-CURVATURE-CONTROL",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Specify family-consistent handling of explicit Fisher curvature on an ineligible AGHQ request. Current Gaussian checks before fallback, Poisson/binomial after; record as unresolved interface decision.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6333-6400"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-INTEGER-DIALECT",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "R whole numerics and auto strings map to Julia Integer and :auto. Test 9.0 and string auto rejection explicitly; these are language adapters, not identical accepted input types.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6330-6333"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/parity/core070_aghq_controls.toml",
+      "candidate_fixture_sha256": "28d7c40ef6dc64c6da549b7b5301f2d0b44e8789a4257dba31dab68f916ea9de",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-DEFAULT-OFF",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Compare omitted aghq and false on the same ordinary model; unchanged objective/parameters and no quadrature metadata.",
+      "reference_sources": [
+        {
+          "path": "R/gllvmTMB.R",
+          "lines": "1861-1864"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_public_poisson.jl",
+      "candidate_fixture_sha256": "8deda4e09b9770101daf24b094300dabda07a695a957a4eb779e511e98121c34",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-K1-PRECEDENCE",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Compare aghq=1 to Laplace on eligible and structurally ineligible models; no ignored-request warning, actual Laplace and one node.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6336-6386"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_public_gaussian.jl",
+      "candidate_fixture_sha256": "8db6f6c1a21fa6146440719c56cc54b3ca31f887a391de79f53528cec6157e76",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-EVEN-K2",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "An explicit k=2 eligible model executes two nodes per axis; no odd-node restriction; retain fit health and reference comparison.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6333-6403"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-UNIQUE-DEFAULT",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Ordinary latent default unique adds s_B; requested quadrature retains Laplace with warning and reason. Compare same-model Laplace baseline.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6351-6395"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_public_gaussian.jl",
+      "candidate_fixture_sha256": "8db6f6c1a21fa6146440719c56cc54b3ca31f887a391de79f53528cec6157e76",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-EXTRA-RANDOM-BLOCK",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Add an ordinary or phylogenetic random block to loadings-only B; warning, requested vs actual method, unchanged Laplace target.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6351-6355"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_public_gaussian.jl",
+      "candidate_fixture_sha256": "8db6f6c1a21fa6146440719c56cc54b3ca31f887a391de79f53528cec6157e76",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-NO-B-BLOCK",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "No B-tier loadings block: retain Laplace with explicit reason. Preserve first-failing-branch order when random is not z_B.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6351-6355"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-PREDICTOR-LATENTS",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Predictor-informed B scores: retain matching Laplace model with warning/provenance.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6356-6357"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_public_poisson.jl",
+      "candidate_fixture_sha256": "8deda4e09b9770101daf24b094300dabda07a695a957a4eb779e511e98121c34",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-MISSING-PREDICTORS",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "A supported mi() predictor model: retain matching Laplace model and warning. Missing responses are a different axis.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6358-6359"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-MULTINOMIAL",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Any family_id 16, including mixed rows, declines Stage1a. Retain the same multinomial model; rejection of an unsupported Julia model is not equivalent fallback.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6360-6361"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-GRAPH-NO-QUADRATURE",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Present graph gate with no quadrature route declines even explicit nodes; demonstrate a reachable model or document internal branch reachability.",
+      "reference_sources": [
+        {
+          "path": "R/aghq-gate.R",
+          "lines": "241-260"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6362-6365"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_gate.jl",
+      "candidate_fixture_sha256": "ed09cbdf106eed6412e5130427d47f594e0013bbcf9f9dba2a33e0cc8c0f99cf",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-AUTO-TRAIT-CUTOFF",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Same eligible structure at 19 and 20 traits: auto executes/declines respectively; explicit nodes at 20 bypass only the auto cutoff.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6366-6377"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-AUTO-AFFORDABILITY",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Auto malformed/absent/empty/unresolved gate declines; explicit numeric bypasses only auto policy. Separate injected helper checks from reachable public models.",
+      "reference_sources": [
+        {
+          "path": "R/aghq-control.R",
+          "lines": "311-368"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6366-6377"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_gate.jl",
+      "candidate_fixture_sha256": "ed09cbdf106eed6412e5130427d47f594e0013bbcf9f9dba2a33e0cc8c0f99cf",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-AUTO-FAMILY-NODES",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Verify selected node counts on actual admitted families: k5 ordinary versus k9 Tweedie/ordinal/delta. A family-label helper alone cannot satisfy this case.",
+      "reference_sources": [
+        {
+          "path": "R/aghq-control.R",
+          "lines": "192-275"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6330-6333"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-MIXED-FAMILIES",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Mixed admitted nonmultinomial rows with one z_B block: same row-specific likelihoods, nuisance grouping, masks and observed curvature; no unsupported homogeneous-only restriction inferred.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6360-6361"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": null,
+      "candidate_fixture_sha256": null,
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-INVALID-CONTROLS",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Through native, formula and bridge: invalid controls fail before optimizer; accepted language adapters preserve values and never coerce numeric strings.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6330-6333"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_public_poisson.jl",
+      "candidate_fixture_sha256": "8deda4e09b9770101daf24b094300dabda07a695a957a4eb779e511e98121c34",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-UNPENALISED",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "All R fit calls explicitly use aghq_ridge=Inf; native has no loading penalty. Verify objective constants and diagnostics; adaptation eigenvalue repair is separate.",
+      "reference_sources": [
+        {
+          "path": "R/gllvmTMB.R",
+          "lines": "1861-1864"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6419-6419"
+        }
+      ],
+      "requirement_origin": "approved programme validation",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "tools/core070_aghq_poisson_pair_run.jl",
+      "candidate_fixture_sha256": "c9c8a326967fef9762f04135781833a6ac3a0f911e04693a12ffb4615ae0c814",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-ADAPTATION-OBSERVED",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "At fixed parameters compare conditional modes, observed Hessian, Cholesky factors/logdet and normalized objective, not the generic Fisher default.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "9554-9584"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "numerical_kernel"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_frozen.jl",
+      "candidate_fixture_sha256": "2ee49a06f9d32d3f49fb0a7ed12fc43a24a5a65da6e4b49cc2434e8104e5b0a3",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-CURVATURE-REPAIR",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Trigger reference eigenvalue floor 1e-8 and record original spectrum and actual repair. PD-only fixtures cannot satisfy; invalid trials must not become certified healthy fits.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "9554-9584"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "numerical_kernel"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_frozen.jl",
+      "candidate_fixture_sha256": "2ee49a06f9d32d3f49fb0a7ed12fc43a24a5a65da6e4b49cc2434e8104e5b0a3",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-GRID-NORMALIZATION",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Gaussian mass/moments, nonidentity transformations, low-dimensional independent quadrature and k1/Laplace equality. Check peer-grid substitution convention.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "9520-9543"
+        }
+      ],
+      "requirement_origin": "approved programme validation",
+      "interfaces": [
+        "numerical_kernel"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_grid.jl",
+      "candidate_fixture_sha256": "3cc542c900a1b716b948f1329954ffcc8b3eb9790ad0f81c40905942aa852083",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-NODE-REFINEMENT",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Fixed-model increasing k comparisons with predeclared accuracy and health; auto selects one k, not a claimed adaptive ladder.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6330-6333"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6404-6411"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6972-6994"
+        }
+      ],
+      "requirement_origin": "approved programme validation",
+      "interfaces": [
+        "numerical_kernel"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "tools/core070_aghq_poisson_pair_run.jl",
+      "candidate_fixture_sha256": "c9c8a326967fef9762f04135781833a6ac3a0f911e04693a12ffb4615ae0c814",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-OUTER-FROZEN",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Differentiate frozen adaptation objective; validate AD/FD with caches fixed and measure omitted total-derivative chain term separately. Never certify total stationarity from frozen-gradient stopping.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6550-6850"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "numerical_kernel"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_outer.jl",
+      "candidate_fixture_sha256": "3a2e35736c66dfa734e025c7691cea8ba0e22d6d9b683bf88e4e433107bb7977",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-OUTER-CONVERGENCE",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Retain short-pass caps, backtracking merit acceptance, mode-shift/gradient stopping and two accepted passes; stagnation is not convergence.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6743-6825"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "numerical_kernel"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_outer.jl",
+      "candidate_fixture_sha256": "3a2e35736c66dfa734e025c7691cea8ba0e22d6d9b683bf88e4e433107bb7977",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-MULTISTART",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Retain every start; native ranking must match reference selection. Nonconverged original binomial seed43 k5 remains failed, not replaced by an easier start or k.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6440-6490"
+        },
+        {
+          "path": "R/fit-multi.R",
+          "lines": "6906-6945"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "numerical_kernel"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_multistart.jl",
+      "candidate_fixture_sha256": "f98c764a1db33f71624a7c882971a9112e1f6a6ce3dcc2521341f259feb02960",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    },
+    {
+      "id": "CORE070-AGHQ-PUBLIC-POSTFIT-INFERENCE",
+      "owner": "B6/Gauss",
+      "acceptance_level": "public_model_or_estimator_contract",
+      "acceptance_rule": "Final logLik/coef/predictions/modes and frozen-objective Hessian/Wald/profile/bootstrap preserve fitted estimator and data; same-model R comparisons of functional results. Recovery/coverage is a separate validation design, not a source-code assertion.",
+      "reference_sources": [
+        {
+          "path": "R/fit-multi.R",
+          "lines": "7041-7090"
+        }
+      ],
+      "requirement_origin": "frozen source contract, pending callable-domain qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "REQUIRED_NOT_CERTIFIED",
+      "candidate_fixture": "test/test_aghq_public_poisson.jl",
+      "candidate_fixture_sha256": "8deda4e09b9770101daf24b094300dabda07a695a957a4eb779e511e98121c34",
+      "evidence": null,
+      "coverage_boundary": "Existing helper/internal/native tests do not certify all three public surfaces."
+    }
+  ],
+  "family_obligations": [
+    {
+      "id": "CORE070-AGHQ-FAMILY-00-IDENTITY",
+      "family_source_id": "family/FAMILY-00-IDENTITY",
+      "reference_descriptor_call": "gaussian(link=\"identity\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-01-LOGIT",
+      "family_source_id": "family/FAMILY-01-LOGIT",
+      "reference_descriptor_call": "binomial(link=\"logit\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-02-LOG",
+      "family_source_id": "family/FAMILY-02-LOG",
+      "reference_descriptor_call": "poisson(link=\"log\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-03-LOG",
+      "family_source_id": "family/FAMILY-03-LOG",
+      "reference_descriptor_call": "lognormal(link=\"log\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-04-LOG",
+      "family_source_id": "family/FAMILY-04-LOG",
+      "reference_descriptor_call": "Gamma(link=\"log\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-05-LOG",
+      "family_source_id": "family/FAMILY-05-LOG",
+      "reference_descriptor_call": "nbinom2(link=\"log\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-06-LOG",
+      "family_source_id": "family/FAMILY-06-LOG",
+      "reference_descriptor_call": "tweedie(link=\"log\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-07-LOGIT",
+      "family_source_id": "family/FAMILY-07-LOGIT",
+      "reference_descriptor_call": "Beta(link=\"logit\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-08-LOGIT",
+      "family_source_id": "family/FAMILY-08-LOGIT",
+      "reference_descriptor_call": "betabinomial(link=\"logit\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-09-IDENTITY",
+      "family_source_id": "family/FAMILY-09-IDENTITY",
+      "reference_descriptor_call": "student(link=\"identity\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-10-LOG",
+      "family_source_id": "family/FAMILY-10-LOG",
+      "reference_descriptor_call": "truncated_poisson(link=\"log\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-11-LOG",
+      "family_source_id": "family/FAMILY-11-LOG",
+      "reference_descriptor_call": "truncated_nbinom2(link=\"log\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-12-LOGIT-LOG",
+      "family_source_id": "family/FAMILY-12-LOGIT-LOG",
+      "reference_descriptor_call": "delta_lognormal()",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-13-LOGIT-LOG",
+      "family_source_id": "family/FAMILY-13-LOGIT-LOG",
+      "reference_descriptor_call": "delta_gamma()",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-14-PROBIT",
+      "family_source_id": "family/FAMILY-14-PROBIT",
+      "reference_descriptor_call": "ordinal_probit(link=\"probit\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-15-LOG",
+      "family_source_id": "family/FAMILY-15-LOG",
+      "reference_descriptor_call": "nbinom1(link=\"log\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-16-LOGIT",
+      "family_source_id": "family/FAMILY-16-LOGIT",
+      "reference_descriptor_call": "multinomial(link=\"logit\")",
+      "disposition": "required_laplace_fallback",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-01-PROBIT",
+      "family_source_id": "family/FAMILY-01-PROBIT",
+      "reference_descriptor_call": "binomial(link=\"probit\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-01-CLOGLOG",
+      "family_source_id": "family/FAMILY-01-CLOGLOG",
+      "reference_descriptor_call": "binomial(link=\"cloglog\")",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-06-FIXED-SHAPE",
+      "family_source_id": "family/FAMILY-06-FIXED-SHAPE",
+      "reference_descriptor_call": "tweedie(p=1.5)",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    },
+    {
+      "id": "CORE070-AGHQ-FAMILY-09-FIXED-SHAPE",
+      "family_source_id": "family/FAMILY-09-FIXED-SHAPE",
+      "reference_descriptor_call": "student(df=4)",
+      "disposition": "requires_callable_domain_qualification",
+      "interfaces": [
+        "native",
+        "formula",
+        "public_r_bridge"
+      ],
+      "status": "NOT_CERTIFIED",
+      "contract": "One ordinary z_B loadings block, unique=false, unpenalized, observed adaptation; same family/link and fixed/free nuisance parameters. No automatic product with other covariance forms."
+    }
+  ],
+  "validation_designs": [
+    "Known-DGP recovery with every attempted fit retained, declared estimands and sign/rotation alignment.",
+    "Coverage must detect under- and over-coverage; size and approve campaigns separately before runs over30min."
+  ],
+  "remaining_domains": "Core covariance/data/postfit and exhaustive source admission review remain separate; this annex cannot freeze the full manifest."
+}

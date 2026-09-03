@@ -91,12 +91,12 @@ ft.φ, ft.p
 For continuous responses with occasional gross outliers, **Student-t** is an
 outlier-robust drop-in for `Normal()` on the identity link — the heavy tail bounds
 each cell's influence, so a few extreme values barely move `β̂`. The degrees of
-freedom `ν` sets the tail weight and is held **fixed** (it travels on the marker,
-not as a keyword); the scale `σ` is estimated:
+freedom `ν` sets the tail weight. A finite positive value on the marker fixes
+it; the empty marker requests estimation. The scale `σ` is estimated:
 
 ```julia
 fit_gllvm(Y; family = StudentTFamily(4.0), K = 2)   # ν = 4; fitted σ
-fit_gllvm(Y; family = StudentTFamily(), K = 2)      # same default ν
+fit_gllvm(Y; family = StudentTFamily(), K = 2)      # estimate ν and σ
 gllvm(@formula(y ~ 1), Y, site_data; family = StudentTFamily(4.0), K = 2)
 ```
 
@@ -105,7 +105,7 @@ Student-t is a no-X surface for now: covariates and row effects are not admitted
 For counts that are under- or over-dispersed relative to Poisson,
 **Conway–Maxwell–Poisson** estimates a shared dispersion exponent `ν`
 (`ν = 1` ⇒ Poisson). The marker's `ν` is a tag payload (always estimated) —
-the opposite of Student-t's fixed `ν`:
+unlike a numeric Student-t marker, whose `ν` fixes the degrees of freedom:
 
 ```julia
 fit_gllvm(Y; family = COMPoisson(), K = 2)          # ν estimated
@@ -151,6 +151,23 @@ fit_gamma_gllvm_grouped(Yc;   K = 2)             # Gamma shape α per species
 fit_tweedie_gllvm_grouped(Y;  K = 2)             # Tweedie φ per species (shared power p)
 ```
 
+For an intercept-only NB2 model, the formula interface retains the generic
+fitter's **per-species size** parameters:
+
+```julia
+site_data = (site = collect(1:size(Y, 2)),)
+f_formula = gllvm(@formula(y ~ 1), Y, site_data;
+    family = GLLVM.NegativeBinomial(), K = 2, g_tol = 1e-7, iterations = 800)
+```
+
+The `1` means a separate intercept for each species; `K` gives the latent rank.
+Every supplied table column must have one entry per column of `Y`, even if the
+formula does not use it. An empty `NamedTuple()` is also valid when there are no
+covariates. The long-format call `gllvm(@formula(y ~ 1), long_data; ...)` sorts
+species and site keys and requires a complete, duplicate-free grid. The original
+NB2 data qualification checks both shapes against the native model; broader formula
+models and the public R bridge still require separate qualification.
+
 For continuous Gaussian data with **unequal residual variance across species**
 (heteroscedastic; gllvm's default), `fit_gaussian_pervar_gllvm` estimates a
 separate variance per species instead of the single shared `σ_eps` of
@@ -159,6 +176,13 @@ separate variance per species instead of the single shared `σ_eps` of
 ```julia
 fpv = fit_gaussian_pervar_gllvm(Y; K = 2)   # per-species residual variances
 ```
+
+For fixed effects, pass a complete `X` design of shape `(p, n, q)`. The fitter
+profiles its `q` coefficients by GLS, adds no implicit intercept, and returns
+them in `coef(fpv)` for a fit made with that design. See the per-species Gaussian
+section of [Response families](response-families.md) for a worked design. Its
+explicit `fixed_residual_sd` option retains unique and total diagonal variances
+separately when the model has a known residual scale; it does not change defaults.
 
 Displaying any fit prints a summary (family, dimensions, log-likelihood, AIC,
 convergence):
@@ -309,7 +333,7 @@ bootstrap route, while species-covariate, fourth-corner, RRR, and constrained
 ordination fits use dedicated Wald helpers because their designs are not stored
 inside the fit object. (The Gaussian `GllvmFit` uses the separate `confint` /
 `profile_ci` / `bootstrap_ci` interface — see [Confidence
-intervals](/confidence-intervals).)
+intervals](confidence-intervals.md).)
 
 For the headline regression-style summary, `coef_table` wraps the Wald entry and
 adds the `z` statistic and two-sided p-value:
@@ -391,6 +415,15 @@ continuous main effects; dispatches to `fit_gaussian_gllvm` for `Normal()` and
 gllvm(@formula(y ~ 1 + temp + depth), Y, site_data; family = Poisson(), K = 2)
 ```
 
+For Gaussian trait-specific variances, add `pervar=true`. This route preserves
+trait intercepts in `y ~ 1 + temp`, shared site slopes, and the zero-mean choice
+`y ~ 0`. An explicit `fixed_residual_sd` can separate known residual variation
+from estimated unique variance. See the executed
+[per-variance examples](response-families.md#Gaussian-with-per-species-variance-—-fit_gaussian_pervar_gllvm).
+For this decomposition, AGHQ requests retain exact Gaussian/Laplace and report
+why unique effects are ineligible; `aghq=1` is quiet. The R bridge and intervals
+remain under development.
+
 ## 6. Structured latent fields
 
 The latent variables can themselves be given spatial or phylogenetic structure.
@@ -434,6 +467,41 @@ fph.σ²_phy                                            # estimated phylogenetic
 `Binomial()`, …); supply `N` for Binomial. As `σ²_phy → 0` the fit reduces to the
 independent-family marginal.
 
+#### R-convention precision (`PrecisionPhy`) and the `correlation` estimand
+
+`AugmentedPhy` (from `augmented_phy`/`make_phy`) is the native-Julia
+representation: leaves-first, root included, raw branch lengths — the
+convention `σ²_phy` fits under by default. R's `gllvmTMB` twin instead ships a
+**precision** already reduced to one canonical form (root dropped,
+internal-first/tips-last, unit root-to-tip height baked in) — the shape
+`animal_*`/pedigree/kernel inputs arrive in on the R side, and what a future
+bridge slice will hand across for phylo/animal parity fits.
+`PrecisionPhy(phy::AugmentedPhy)` builds that R-convention bundle from a
+native tree without any inversion (only a row/col drop and a permutation),
+and feeds the identical `gaussian_marginal_loglik_sparse_phy` kernel as
+`AugmentedPhy` itself:
+
+```julia
+phy = augmented_phy("((A:0.1,B:0.2):0.3,C:0.5);")
+pp  = PrecisionPhy(phy)                 # correlation = false: same estimand as phy
+recomputed, shipped, abs_diff = precision_logdet_check(pp)   # per-fit log-det checksum
+```
+
+Passing `correlation = true` — to `augmented_phy`, `make_phy`, or
+`PrecisionPhy` — rescales the precision to **unit root-to-tip height** (R's
+fit-path convention: `σ²_phy` then absorbs the raw tree scale). It requires
+an ultrametric tree (root-to-tip heights equal within `sqrt(eps())`); a
+non-ultrametric tree raises `GJL-GATE-PHYLO-NONULTRAMETRIC` rather than
+silently fitting an estimand that has no R fit to pair against. `σ²_phy`
+fitted with `correlation = true` is exactly `height` times the `σ²_phy`
+fitted with `correlation = false`, for the same actual model — the two give
+**identical log-likelihoods**, only the variance parameterisation differs.
+Native Julia fits default to `correlation = false` (opt-in — a default flip
+would silently change every existing user's `σ²_phy` by a tree-dependent
+factor); see `docs/dev-log/core070/phylo-transport-design.md` and
+`docs/dev-log/core070/phylo-transport-questions-2026-09-02.md` for the full
+rationale.
+
 ## 7. Choosing a family
 
 Match the family to the response support and its mean–variance behaviour:
@@ -460,8 +528,8 @@ Match the family to the response support and its mean–variance behaviour:
 
 When a Laplace fit looks unstable (a degenerate Hessian, implausible dispersion),
 the variational (`fit_*_gllvm_va`) drivers optimise an ELBO instead — slower but
-steadier; see [Response families](/response-families).
+steadier; see [Response families](response-families.md).
 
-See also: [Get started](/quickstart) · [Working with a fit](/working-with-a-fit) ·
-[Response families](/response-families) · [Structured dependence](/structured-dependence) ·
-[Confidence intervals](/confidence-intervals) · [Reference](/api).
+See also: [Get started](quickstart.md) · [Working with a fit](working-with-a-fit.md) ·
+[Response families](response-families.md) · [Structured dependence](structured-dependence.md) ·
+[Confidence intervals](confidence-intervals.md) · [Reference](api.md).

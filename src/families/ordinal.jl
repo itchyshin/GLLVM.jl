@@ -29,6 +29,12 @@ struct Ordinal end
 
 default_link(::Ordinal) = LogitLink()
 
+function _check_ordinal_link(link::Link)
+    link isa Union{LogitLink, ProbitLink} || throw(ArgumentError(
+        "ordinal fitters support only LogitLink or ProbitLink; got $(typeof(link))"))
+    return nothing
+end
+
 # Link CDF F and density f = F'. The cumulative model and the analytic
 # score/Fisher-weight are written generically in (F, f), so a new link only
 # swaps these two. Logit (default) keeps its exact prior numerics; probit uses
@@ -415,7 +421,7 @@ mean is `X_lv * alpha_lv`, `alpha_lv_init` can seed that q×K coefficient matrix
 and [`extract_lv_effects`](@ref) / [`confint_lv_effects`](@ref) target the
 rotation-stable `B_lv = Λ * alpha_lv'` product. Finite-difference gradient; warm
 start = empirical cumulative-proportion cutpoints + a normal-scores SVD loadings
-init.
+init. Unsupported links throw `ArgumentError` before response access.
 """
 function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogitLink(), Λ_init = nothing, mask = nothing,
@@ -423,6 +429,7 @@ function fit_ordinal_gllvm(Y::AbstractMatrix{<:Integer}; K::Integer,
         alpha_lv_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    _check_ordinal_link(link)
     p, n = size(Y)
     obs = mask === nothing ? trues(p, n) : mask
     # Category count and warm starts use OBSERVED cells only, so a masked cell's
@@ -552,13 +559,15 @@ end
 
 Fit a cumulative ordinal GLLVM with one ordered cutpoint vector per trait. The
 cutpoint contribution to the degrees of freedom is `sum(C_t - 1)`, matching the
-native `gllvmTMB` ordinal bridge target. The shared-cutpoint
+native `gllvmTMB` ordinal bridge target. Only `LogitLink()` and `ProbitLink()`
+are supported; other links throw `ArgumentError` before response access. The shared-cutpoint
 [`fit_ordinal_gllvm`](@ref) is preserved for experiments and old tests.
 """
 function fit_ordinal_gllvm_pertrait(Y::AbstractMatrix{<:Integer}; K::Integer,
         link::Link = LogitLink(), Λ_init = nothing, mask = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    _check_ordinal_link(link)
     p, n = size(Y)
     obs = mask === nothing ? trues(p, n) : mask
     C = zeros(Int, p)
@@ -652,7 +661,8 @@ log-spacings; offset `O = Xγ` enters the per-trait Laplace marginal as
 `η = β + O + Λz`. Public / bridge / `@formula` default under X for Ordinal
 (twin API B; decision 2026-08-03). Keep shared-cutpoint
 [`fit_ordinal_gllvm`](@ref) as an explicit comparator — do not route public X
-through shared cutpoints.
+through shared cutpoints. Only `LogitLink()` and `ProbitLink()` are supported;
+other links throw `ArgumentError` before response access.
 """
 function fit_ordinal_gllvm_pertrait_cov(Y::AbstractMatrix{<:Integer};
         X::AbstractArray{<:Real, 3}, K::Integer,
@@ -660,6 +670,7 @@ function fit_ordinal_gllvm_pertrait_cov(Y::AbstractMatrix{<:Integer};
         γ_fixed = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
+    _check_ordinal_link(link)
     p, n = size(Y)
     size(X, 1) == p && size(X, 2) == n ||
         throw(DimensionMismatch("X must be (p, n, q) = ($p, $n, q); got $(size(X))"))

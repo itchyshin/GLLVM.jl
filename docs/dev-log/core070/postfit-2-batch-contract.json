@@ -1,0 +1,1315 @@
+{
+  "schema": "core070-postfit-2-batch-contract/v1",
+  "status": "FROZEN_POSTFIT_2_BATCH_CONTRACT_ALL_39_ROWS_NEED_NEW_JULIA_SURFACE",
+  "area": "postfit-2",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "manifest_source": "docs/dev-log/core070/manifest-freeze-work/drafts/postfit-2.json",
+  "case_plan_annex": "docs/dev-log/core070/postfit-2-required-case-plan.json",
+  "expected_row_count": 50,
+  "expected_case_count": 76,
+  "bucket_counts": {
+    "EXECUTABLE_NOW": 0,
+    "NEEDS_NEW_JULIA_SURFACE_rows": 39,
+    "NEEDS_NEW_JULIA_SURFACE_cases": 65,
+    "SPEC_DEFECT_rows": 11,
+    "SPEC_DEFECT_cases": 11
+  },
+  "triage_method": "Every julia_surface named in the 39 native/bridge/readback rows was checked against the actual GLLVM module on this branch (grep of src/*.jl for the symbol, then, where a same-named symbol exists, a live functional probe against a real fit_gaussian_gllvm(...) fit -- see tools/core070_postfit_2_batch.jl). No row's required behaviour (full argument set + return shape + guard/rejection classes) exists today; several rows have a same-named Julia function with materially narrower behaviour (predict/residuals/simulate/summary/vcov/nobs/loglikelihood/ordiplot/rotation), which is recorded per-row rather than treated as a match. The 11 compatibility_adapter rows have null r_call/empty comparands in the manifest itself and carry no numeric contract to build against; they are SPEC_DEFECT for this batch, not NEEDS_NEW_JULIA_SURFACE, since there is nothing to build.",
+  "source_pins": {
+    "extract-sigma.R": "629740a1edf6b5ea9b2a0004046df6fdedaec9a6e02eb96e056fdd68ca08c76d",
+    "kernel-helpers.R": "3ba87ba05ccc52af3f0ffcf83eb6a08d7bfacebbd0851b9c8090dafc6328f394",
+    "loading-profile.R": "ba3bfa3b1bcda733cd814b695b961569a898c3dcf1e29da2260d2cc6f98d94d9",
+    "methods-gllvmTMB.R": "fd5515ec3eb355d0672ca19d7031ce251250d1dbeee80e8c2e772594cbd37fb3",
+    "output-methods.R": "576df3ae9070c9062ec58f8034e0dc329ef31f0a484693e2757a0759e31b2fac",
+    "plot-covariance-tables.R": "260f85154dd714d270c9ea64f86fa2617670b5f5d1b760edd6f2c81ce173f01d",
+    "plot-gllvmTMB.R": "734f7e4b4878143c7bfc6654f12ca9b9819494147b49a7571c32cf7f31a384b6",
+    "plot-loadings-confidence-eye.R": "fc2ceb99f0aaf7dfcd54eb40a559448ece5b79398f5c31b864fb80cf9f68adae",
+    "plot-rotated-loadings.R": "d1f1cf7efbf27045032681dd6301ad1bcbedcfeba4aebb6124237907d5cc0958",
+    "plot.R": "eddf51c7de5e0469e1582e7531ca845ea3cf97158283167ee0817d587a7da91b",
+    "predictive-diagnostics.R": "7416069e6e6dcb46bb242f296093131e70d9e8cc35f0d40bd19c728b2c85efc0",
+    "profile-ci.R": "b6e9dc29c06d7a52709630f3020ea92dac25f94b5cb002b810b51284cab1b3b5",
+    "profile-derived-curves.R": "31fda975d0a24c1a92eb6b1a79adab0b2fe931690224751a22ec0b0bb049aa86",
+    "profile-derived.R": "e527be9c360a5f2d4ce29e35069d7eee83a97b363e37a2c746934d418305f1c5",
+    "profile-targets.R": "295c50812a571f6fe97965fe9e42f41731c31f1f4bb5b078392d01b4beec093b",
+    "rotate-loadings.R": "c10c9dbdbfe974bbda0e2280ac1f3ef30759a3db5b2fd175215676c024ff41e7",
+    "simulate-site-trait.R": "628e19204ba973a03cf5e32cee05113ca93a8997affdadb051d7b39b28a20aab",
+    "simulate-unit-trait.R": "af2c47dedd3977c15141d75731398c581f5996b5916bc300c99afb8f9db494ef",
+    "slope-sd-ci.R": "31eb6a3e404fa1917714ea543e4929ff7a74f77e28548ac9142fa4a5882f565f",
+    "standard-errors.R": "b15e59b969f3b9225c9056b8caae579cbaa696eead9626708a917504a4c7fb44",
+    "vcov-coef.R": "7092603b1d86e5fcaf030e2e0d2c39a27febb08ffea9f46a5390954f116b4a04"
+  },
+  "source_pins_root_note": "sha256 of each pinned R source file under .unlazy/core070-aghq/oracle-source/readback/R, checked fresh by tools/core070_postfit_2_batch.R at run time against argv[1] (the same directory in this repo layout).",
+  "loading_technique": "No R execution: every one of the 39 rows' r_call requires an actual fitted gllvmTMB_multi object as its first argument (not a bare helper function the way data.R/offset.R's miss_control()/normalise_weights() were), and since no case in this batch has a Julia counterpart to compare a fit against, building and fitting a model would produce no comparand to check. tools/core070_postfit_2_batch.R therefore only regex-confirms each row's r_function_name is genuinely defined (top-level `<-`/`=` function assignment, backtick-name-aware) in its pinned oracle source file, grounding the manifest's R-side claims rather than trusting them blindly. tools/core070_postfit_2_batch.jl is the Julia-side counterpart: isdefined()/kwarg_decl() checks plus live functional probes against a real fit.",
+  "julia_surface_status": "See each row's `missing_julia_surface` field below and the full runtime evidence in tools/core070_postfit_2_batch.jl's receipt (rows[<key>]).",
+  "tolerances": {
+    "comparison": "not_applicable_no_julia_comparand_exists",
+    "numeric_tolerance": null
+  },
+  "health_checks": {
+    "r_runtime": "Rscript available, exit 0",
+    "source_freshness": "every file in source_pins sha256-matches the source root at run time",
+    "r_admission": "all 39 rows' r_function_name regex-confirmed defined in their pinned r_source_file",
+    "r_negative_controls": ">=2 fabricated/mismatched names confirmed NOT found",
+    "r_rejected_mutations": ">=4 corrupted copies of a real definition confirmed NOT found",
+    "julia_introspection": "tools/core070_postfit_2_batch.jl confirms, for every one of the 39 rows, that the required Julia surface is absent -- by isdefined() for wholly-absent names, by live functional probe (kwarg_decl / try-catch / return-type check) against a real fit_gaussian_gllvm(...) fit for same-named-but-narrower functions",
+    "contract_freshness": "contract sha256 recorded in both runners' receipts for tamper detection",
+    "reference_commit_pin": "both receipts' reference_commit must equal this contract's reference_commit"
+  },
+  "runtime_budget_seconds": 900,
+  "failure_action": "Retain the complete attempt (R: attempt.rds + result.json; Julia: the introspection JSON). Do not relax the exact-regex R admission check to a substring/heuristic match, do not drop a row from expected_row_count, and do not reclassify a row from NEEDS_NEW_JULIA_SURFACE to EXECUTABLE_NOW without re-grepping the current Julia source and updating source_pins.",
+  "claim_boundary": "Passing this batch establishes that (1) all 39 native/bridge/readback R functions named in the postfit-2 manifest genuinely exist, by name, in the pinned oracle R source at the reference commit, and (2) no Julia surface currently exists to compare any of the 65 corresponding cases against -- a fact about this branch's current state, verified live against the loaded GLLVM module, not an assumption. It does NOT establish any Julia native/bridge fit, any numeric R-vs-Julia parity, or that the 11 compatibility_adapter rows' Julia display adapters exist or render correctly. The postfit-2 manifest area cannot close on this evidence alone; it closes only once the 39 missing Julia surfaces above are implemented and a follow-up batch replaces every NEEDS_NEW_JULIA_SURFACE verdict with a real R-vs-Julia value comparison, and once the 11 compatibility_adapter rows' Julia adapters are independently confirmed to exist (out of scope here, since they carry no numeric contract).",
+  "rows": {
+    "loading_profile": {
+      "source_id": "postfit/POSTFIT-SURFACE-loading_profile",
+      "case_ids": [
+        "CORE070-POSTFIT2-LOADING-PROFILE-NATIVE",
+        "CORE070-POSTFIT2-LOADING-PROFILE-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "loading-profile.R",
+      "r_function_name": "loading_profile",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-LOADING-PROFILE-NATIVE",
+          "r_call": "loading_profile(fit, level=\"unit\", entries=NULL, n_grid=11L, grid_extent=6, conf_level=0.95)",
+          "julia_surface": "loading_profile(fit; level=:unit, entries=nothing, n_grid=11, grid_extent=6, conf_level=0.95) grid-profile over free (unpinned, non-strict-upper-triangle) Lambda entries",
+          "comparands": [
+            "per-entry profile_value/delta_deviance grid points and pinned-entry exclusion mask, against tmbprofile_wrapper on the same Lambda coordinate"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-LOADING-PROFILE-PUBLIC-R-BRIDGE",
+          "r_call": "loading_profile(fit, level=\"unit\", entries=NULL, n_grid=11L, grid_extent=6, conf_level=0.95)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "loading_profile(fit; level=:unit, entries=nothing, n_grid=11, grid_extent=6, conf_level=0.95) grid-profile over free (unpinned, non-strict-upper-triangle) Lambda entries reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "per-entry profile_value/delta_deviance grid points and pinned-entry exclusion mask, against tmbprofile_wrapper on the same Lambda coordinate (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `loading_profile` symbol anywhere in GLLVM (grep-confirmed 0 hits); tmbprofile_wrapper-based grid-profile over free Lambda entries does not exist"
+    },
+    "logLik.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-logLik.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-LOGLIK-GLLVMTMB-MULTI-NATIVE",
+        "CORE070-POSTFIT2-LOGLIK-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "logLik.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-LOGLIK-GLLVMTMB-MULTI-NATIVE",
+          "r_call": "logLik(fit)  # errors for estimator='mspl' or active likelihood_weights; else -objective, df attribute, nobs attribute",
+          "julia_surface": "loglikelihood(fit) / loglik(fit) returning value with df and nobs attached (or explicit throws matching R's two guard classes)",
+          "comparands": [
+            "log-likelihood value, df (opt$par length + REML fixed-effect count), estimator label, and the two rejection classes (mspl fit, weighted objective)"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-LOGLIK-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE",
+          "r_call": "logLik(fit)  # errors for estimator='mspl' or active likelihood_weights; else -objective, df attribute, nobs attribute  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "loglikelihood(fit) / loglik(fit) returning value with df and nobs attached (or explicit throws matching R's two guard classes) reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "log-likelihood value, df (opt$par length + REML fixed-effect count), estimator label, and the two rejection classes (mspl fit, weighted objective) (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "StatsAPI.loglikelihood(fit) exists and returns a value, but GLLVM has no mspl-estimator or likelihood_weights concept anywhere (no matching symbol, no matching fit-struct field) to reproduce the two required rejection classes"
+    },
+    "nobs.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-nobs.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-NOBS-GLLVMTMB-MULTI-NATIVE",
+        "CORE070-POSTFIT2-NOBS-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "nobs.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-NOBS-GLLVMTMB-MULTI-NATIVE",
+          "r_call": "nobs(fit)  # missing_data$counts$likelihood_rows, else sum(is_y_observed==1), else length(y)",
+          "julia_surface": "nobs(fit) using the equivalent likelihood-row count precedence (missing-data aware, then observed-mask, then raw length)",
+          "comparands": [
+            "integer observed-row count under complete data and under a masked/missing-response fixture, exercising all three precedence branches"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-NOBS-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE",
+          "r_call": "nobs(fit)  # missing_data$counts$likelihood_rows, else sum(is_y_observed==1), else length(y)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "nobs(fit) using the equivalent likelihood-row count precedence (missing-data aware, then observed-mask, then raw length) reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "integer observed-row count under complete data and under a masked/missing-response fixture, exercising all three precedence branches (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "StatsAPI.nobs(fit) exists but returns a site/level count via hasfield dispatch, not a missing-data-aware likelihood-row-count with 3-way precedence (likelihood_rows / is_y_observed / raw length); no such precedence symbol exists"
+    },
+    "ordiplot.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-ordiplot.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-ORDIPLOT-GLLVMTMB-MULTI-NATIVE",
+        "CORE070-POSTFIT2-ORDIPLOT-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "output-methods.R",
+      "r_function_name": "ordiplot.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-ORDIPLOT-GLLVMTMB-MULTI-NATIVE",
+          "r_call": "ordiplot(fit, level=\"unit\", axes=c(1,2), biplot=TRUE, rotate=\"none\")",
+          "julia_surface": "ordiplot(fit; level=:unit, axes=(1,2), biplot=true, rotate=:none) returning (scores, loadings) with Julia-idiomatic rendering",
+          "comparands": [
+            "invisibly-returned scores/loadings matrices (getLV/getLoadings at the requested level+rotation) and, for biplot=TRUE, the arrow-scaling factor sc"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-ORDIPLOT-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE",
+          "r_call": "ordiplot(fit, level=\"unit\", axes=c(1,2), biplot=TRUE, rotate=\"none\")  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "ordiplot(fit; level=:unit, axes=(1,2), biplot=true, rotate=:none) returning (scores, loadings) with Julia-idiomatic rendering reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "invisibly-returned scores/loadings matrices (getLV/getLoadings at the requested level+rotation) and, for biplot=TRUE, the arrow-scaling factor sc (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "ordiplot(fit, Y; rotate::Bool, biplot, site_labels, species_labels) exists but has no `level` or `axes` keyword and returns (sites, species, site_labels, species_labels, axis_prop), not (scores, loadings, sc) at a requested level+axes+rotation method"
+    },
+    "plot.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-GLLVMTMB-MULTI-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "plot-gllvmTMB.R",
+      "r_function_name": "plot.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-GLLVMTMB-MULTI-DATA-READBACK",
+          "r_call": "plot(fit, type=c(\"correlation\",\"correlation_ellipse\",\"loadings\",\"integration\",\"communality\",\"variance\",\"ordination\"), level=c(\"unit\",\"unit_obs\"), boot=NULL, axes=c(1,2), rotation=\"varimax\", order_axes=TRUE, sign_anchor=\"auto\")",
+          "julia_surface": "plot(fit; type=:correlation|...|:ordination, level=..., rotation=...) dispatching to the per-type Julia data builders",
+          "comparands": [
+            "per-type underlying numeric table/matrix that seeds the ggplot object (correlation matrix, loadings, integration/communality summary, variance decomposition, ordination scores) rather than rendered pixels"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no generic `plot(fit; type=...)` dispatcher exists in GLLVM, and none of its 7 required per-type numeric substrates (rotate_loadings, plot_correlations, Sigma family) exist either"
+    },
+    "plot.profile_derived": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.profile_derived",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-PROFILE-DERIVED-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "profile-derived-curves.R",
+      "r_function_name": "plot.profile_derived",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-PROFILE-DERIVED-DATA-READBACK",
+          "r_call": "plot(profile_ci_total_variance(fit, tier=...) # or profile_ci_phylo_signal(...) result, interval=TRUE)",
+          "julia_surface": "plot(profile_derived_result; interval=true) reusing the same delta_deviance/profile_value columns and .invert_profile_derived crossing logic",
+          "comparands": [
+            "the CI-crossing bounds (lower/upper) computed by .invert_profile_derived from the delta_deviance grid at qchisq(conf_level, df=1), not rendered pixels"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `plot` method for a profile-derived result exists; depends on profile_ci_total_variance / profile_ci_phylo_signal, both absent"
+    },
+    "plot.profile_loadings": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.profile_loadings",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-PROFILE-LOADINGS-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "loading-profile.R",
+      "r_function_name": "plot.profile_loadings",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-PROFILE-LOADINGS-DATA-READBACK",
+          "r_call": "plot(loading_profile(fit, ...), interval=TRUE)",
+          "julia_surface": "plot(loading_profile_result; interval=true) reusing .invert_profile_loadings bound computation",
+          "comparands": [
+            "per (trait,axis) CI-crossing lower/upper bounds from the delta_deviance grid, not rendered pixels"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `plot` method for a loading-profile result exists; depends on loading_profile, absent"
+    },
+    "plot_Sigma_comparison": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_comparison",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-SIGMA-COMPARISON-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "plot-covariance-tables.R",
+      "r_function_name": "plot_Sigma_comparison",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-SIGMA-COMPARISON-DATA-READBACK",
+          "r_call": "plot_Sigma_comparison(fit, ...)",
+          "julia_surface": "plot_Sigma_comparison(fit; ...) built on the same extract_Sigma comparison table",
+          "comparands": [
+            "the underlying Sigma comparison table values (covariance-programme Sigma extraction, already required by the covariance annex), not rendered pixels"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `plot_Sigma_comparison` or `extract_Sigma`-comparison-table symbol exists in GLLVM"
+    },
+    "plot_Sigma_heatmap": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_heatmap",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-SIGMA-HEATMAP-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "plot-covariance-tables.R",
+      "r_function_name": "plot_Sigma_heatmap",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-SIGMA-HEATMAP-DATA-READBACK",
+          "r_call": "plot_Sigma_heatmap(fit, ...)",
+          "julia_surface": "plot_Sigma_heatmap(fit; ...) built on the same Sigma matrix",
+          "comparands": [
+            "the Sigma matrix cells being color-mapped, not rendered pixels"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `plot_Sigma_heatmap` symbol exists in GLLVM"
+    },
+    "plot_Sigma_table": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_Sigma_table",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-SIGMA-TABLE-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "plot-covariance-tables.R",
+      "r_function_name": "plot_Sigma_table",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-SIGMA-TABLE-DATA-READBACK",
+          "r_call": "plot_Sigma_table(fit, ...)",
+          "julia_surface": "plot_Sigma_table(fit; ...) built on the same Sigma table",
+          "comparands": [
+            "the tabulated Sigma values shown, not rendered pixels"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `plot_Sigma_table` symbol exists in GLLVM"
+    },
+    "plot_anisotropy": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_anisotropy",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-ANISOTROPY-NATIVE",
+        "CORE070-POSTFIT2-PLOT-ANISOTROPY-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "plot.R",
+      "r_function_name": "plot_anisotropy",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-ANISOTROPY-NATIVE",
+          "r_call": "plot_anisotropy(object, return_data=TRUE)  # bypasses ggplot2, returns .gllvm_spatial_range_geometry(object) directly",
+          "julia_surface": "plot_anisotropy(object; return_data=true) returning the same isotropic-range geometry data (x,y path, practical range = sqrt(8)/kappa)",
+          "comparands": [
+            "range_data$x/$y path coordinates, $range (practical range), $kappa, under return_data=TRUE \u2014 a genuine numeric contract independent of the ggplot rendering branch"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-ANISOTROPY-PUBLIC-R-BRIDGE",
+          "r_call": "plot_anisotropy(object, return_data=TRUE)  # bypasses ggplot2, returns .gllvm_spatial_range_geometry(object) directly  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "plot_anisotropy(object; return_data=true) returning the same isotropic-range geometry data (x,y path, practical range = sqrt(8)/kappa) reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "range_data$x/$y path coordinates, $range (practical range), $kappa, under return_data=TRUE \u2014 a genuine numeric contract independent of the ggplot rendering branch (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `plot_anisotropy` symbol exists in GLLVM (grep-confirmed 0 hits); no return_data=TRUE geometry bundle (x/y path, range, kappa) to compare"
+    },
+    "plot_anisotropy2": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_anisotropy2",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-ANISOTROPY2-NATIVE",
+        "CORE070-POSTFIT2-PLOT-ANISOTROPY2-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "plot.R",
+      "r_function_name": "plot_anisotropy2",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-ANISOTROPY2-NATIVE",
+          "r_call": "plot_anisotropy2(object, model=1L)  # base-graphics plot, then invisible(list(data=range_data, range=..., kappa=..., H=diag(2), anisotropy_estimated=FALSE))",
+          "julia_surface": "plot_anisotropy2(object; model=1) returning the same invisible bundle",
+          "comparands": [
+            "invisibly-returned range, kappa, H (fixed identity(2), since gllvmTMB estimates one shared isotropic range only), and anisotropy_estimated=false; and the model!=1 rejection"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-ANISOTROPY2-PUBLIC-R-BRIDGE",
+          "r_call": "plot_anisotropy2(object, model=1L)  # base-graphics plot, then invisible(list(data=range_data, range=..., kappa=..., H=diag(2), anisotropy_estimated=FALSE))  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "plot_anisotropy2(object; model=1) returning the same invisible bundle reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "invisibly-returned range, kappa, H (fixed identity(2), since gllvmTMB estimates one shared isotropic range only), and anisotropy_estimated=false; and the model!=1 rejection (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `plot_anisotropy2` symbol exists in GLLVM (grep-confirmed 0 hits); no invisible (range,kappa,H,anisotropy_estimated) bundle or model!=1 rejection to compare"
+    },
+    "plot_correlations": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_correlations",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-CORRELATIONS-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "plot-covariance-tables.R",
+      "r_function_name": "plot_correlations",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-CORRELATIONS-DATA-READBACK",
+          "r_call": "plot_correlations(fit, ...)",
+          "julia_surface": "plot_correlations(fit; ...) built on the same correlation table",
+          "comparands": [
+            "the correlation matrix/table values shown, not rendered pixels"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `plot_correlations` or `extract_correlations` symbol exists in GLLVM"
+    },
+    "plot_loadings_confidence_eye": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_loadings_confidence_eye",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-LOADINGS-CONFIDENCE-EYE-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "plot-loadings-confidence-eye.R",
+      "r_function_name": "plot_loadings_confidence_eye",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-LOADINGS-CONFIDENCE-EYE-DATA-READBACK",
+          "r_call": "plot_loadings_confidence_eye(fit, ...)",
+          "julia_surface": "plot_loadings_confidence_eye(fit; ...) using the CairoMakie.jl Confidence Eye contract already pinned in AGENTS.md (pale CI region + darker outline + darker center mark + hollow point-estimate circle)",
+          "comparands": [
+            "the CI bounds and point estimates the eye glyph encodes (loading_profile / bootstrap CI values, required numerically above), not pixel-identical rendering"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `plot_loadings_confidence_eye` symbol exists in GLLVM; depends on loading_profile, absent"
+    },
+    "plot_rotated_loadings": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot_rotated_loadings",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-ROTATED-LOADINGS-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "plot-rotated-loadings.R",
+      "r_function_name": "plot_rotated_loadings",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PLOT-ROTATED-LOADINGS-DATA-READBACK",
+          "r_call": "plot_rotated_loadings(fit, ...)",
+          "julia_surface": "plot_rotated_loadings(fit; ...) over the same rotate_loadings() output",
+          "comparands": [
+            "rotate_loadings()'s Lambda_rot/scores/axis_order/axis_sign (required numerically above), not rendered pixels"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `plot_rotated_loadings` symbol exists in GLLVM; depends on rotate_loadings, absent"
+    },
+    "predict.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-predict.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-PREDICT-GLLVMTMB-MULTI-NATIVE",
+        "CORE070-POSTFIT2-PREDICT-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "predict.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PREDICT-GLLVMTMB-MULTI-NATIVE",
+          "r_call": "predict(object, newdata=NULL, type=c(\"link\",\"response\"), re_form=~., se.fit=FALSE)",
+          "julia_surface": "predict(fit; newdata=nothing, type=:link|:response, re_form=:full|:zero, se_fit=false); repo note: native Julia predict currently defaults to response scale, an intentional documented divergence from R's link default",
+          "comparands": [
+            "fitted eta/response vectors under re_form=~. vs ~0 (with vs without random effects), training vs newdata, and the explicit multinomial-newdata and se.fit-without-support rejections"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PREDICT-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE",
+          "r_call": "predict(object, newdata=NULL, type=c(\"link\",\"response\"), re_form=~., se.fit=FALSE)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "predict(fit; newdata=nothing, type=:link|:response, re_form=:full|:zero, se_fit=false); repo note: native Julia predict currently defaults to response scale, an intentional documented divergence from R's link default reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "fitted eta/response vectors under re_form=~. vs ~0 (with vs without random effects), training vs newdata, and the explicit multinomial-newdata and se.fit-without-support rejections (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "predict(fit, y; type=:response|:link, X=, X_lv=, mask=, offset=) exists but is in-sample-only: no `newdata` or `re_form` keyword on any method, so out-of-sample prediction and the fixed-vs-conditional re_form axis cannot be expressed"
+    },
+    "predict_cross_covariance": {
+      "source_id": "postfit/POSTFIT-SURFACE-predict_cross_covariance",
+      "case_ids": [
+        "CORE070-POSTFIT2-PREDICT-CROSS-COVARIANCE-NATIVE",
+        "CORE070-POSTFIT2-PREDICT-CROSS-COVARIANCE-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "extract-sigma.R",
+      "r_function_name": "predict_cross_covariance",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PREDICT-CROSS-COVARIANCE-NATIVE",
+          "r_call": "predict_cross_covariance(fit, level, row_levels=NULL, col_levels=NULL, row_traits, col_traits)",
+          "julia_surface": "predict_cross_covariance(fit; level=..., row_levels=nothing, col_levels=nothing, row_traits, col_traits) over the same cross-kernel K",
+          "comparands": [
+            "the extracted cross-covariance block K[row_levels, col_levels] for the requested trait pair, and the missing-level-pair rejection"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PREDICT-CROSS-COVARIANCE-PUBLIC-R-BRIDGE",
+          "r_call": "predict_cross_covariance(fit, level, row_levels=NULL, col_levels=NULL, row_traits, col_traits)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "predict_cross_covariance(fit; level=..., row_levels=nothing, col_levels=nothing, row_traits, col_traits) over the same cross-kernel K reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "the extracted cross-covariance block K[row_levels, col_levels] for the requested trait pair, and the missing-level-pair rejection (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `predict_cross_covariance` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "predict_missing": {
+      "source_id": "postfit/POSTFIT-SURFACE-predict_missing",
+      "case_ids": [
+        "CORE070-POSTFIT2-PREDICT-MISSING-NATIVE",
+        "CORE070-POSTFIT2-PREDICT-MISSING-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "predict_missing",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PREDICT-MISSING-NATIVE",
+          "r_call": "predict_missing(object, type=c(\"link\",\"response\"), se=FALSE, se_route=c(\"quad\",\"joint\",\"joint_load\",\"sim\",\"boot\"))",
+          "julia_surface": "predict_missing(fit; type=:link|:response, se=false, se_route=:quad|...) restricted to masked (is_y_observed==0) rows",
+          "comparands": [
+            "predictions on masked rows only, aligned back to original_row (accounting for the multinomial pre-expansion .multinom_group_ override), against the full predict() vector restricted to the same rows"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PREDICT-MISSING-PUBLIC-R-BRIDGE",
+          "r_call": "predict_missing(object, type=c(\"link\",\"response\"), se=FALSE, se_route=c(\"quad\",\"joint\",\"joint_load\",\"sim\",\"boot\"))  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "predict_missing(fit; type=:link|:response, se=false, se_route=:quad|...) restricted to masked (is_y_observed==0) rows reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "predictions on masked rows only, aligned back to original_row (accounting for the multinomial pre-expansion .multinom_group_ override), against the full predict() vector restricted to the same rows (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `predict_missing` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "predictive_check": {
+      "source_id": "postfit/POSTFIT-SURFACE-predictive_check",
+      "case_ids": [
+        "CORE070-POSTFIT2-PREDICTIVE-CHECK-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "predictive-diagnostics.R",
+      "r_function_name": "predictive_check",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PREDICTIVE-CHECK-DATA-READBACK",
+          "r_call": "predictive_check(object, type=c(\"rq_qq\",\"rootogram\",\"stat_grouped\",\"dens_overlay\"), nsim=NULL, seed=NULL, condition_on_RE=TRUE)",
+          "julia_surface": "predictive_check(fit; type=..., nsim=..., seed=..., condition_on_RE=true) building the diagnostic plot from residuals()/simulated draws",
+          "comparands": [
+            "for type=rq_qq: the residuals.gllvmTMB_multi() output it plots (required separately above); for the simulation-based types: the .gllvmTMB_predictive_draws() draws, not rendered ggplot pixels"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `predictive_check` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "print.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-PRINT-GLLVMTMB-MULTI-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "print.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PRINT-GLLVMTMB-MULTI-DATA-READBACK",
+          "r_call": "print(fit)",
+          "julia_surface": "Base.show(io, fit) / show(fit) printing the equivalent structural summary",
+          "comparands": [
+            "the structural fields shown: n_traits, unit count (+ site_species count only when a W-tier covstruct is active), used covstruct labels, fixed-effect count (+ per-trait link table when mixed-family), estimator/engine/convergence line"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "sprint(show, MIME(\"text/plain\"), fit) live-probed: prints only p/K/integration/logLik/AIC/converged/iterations; the fit struct carries none of n_traits/covstruct/estimator/engine/mspl as fields, so the required structural-summary fields have no Julia representation to print"
+    },
+    "print.summary.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-print.summary.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-PRINT-SUMMARY-GLLVMTMB-MULTI-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "print.summary.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PRINT-SUMMARY-GLLVMTMB-MULTI-DATA-READBACK",
+          "r_call": "print(summary(fit), digits=3)",
+          "julia_surface": "Base.show(io, summary(fit)) / show(summary(fit)) printing the equivalent structural summary",
+          "comparands": [
+            "the structural fields shown: header dims/covstructs, objective-label + logLik + convergence + engine line (with the mspl/weighted/penalised note variants), and the fixed-effects table (Estimate/Std.Err, +link column when mixed-family)"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "depends entirely on summary.gllvmTMB_multi's structured object, which does not exist (summary(fit) returns a plain String; see that row) -- nothing structured to render"
+    },
+    "profile_ci_phylo_signal": {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_ci_phylo_signal",
+      "case_ids": [
+        "CORE070-POSTFIT2-PROFILE-CI-PHYLO-SIGNAL-NATIVE",
+        "CORE070-POSTFIT2-PROFILE-CI-PHYLO-SIGNAL-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "profile-derived.R",
+      "r_function_name": "profile_ci_phylo_signal",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-CI-PHYLO-SIGNAL-NATIVE",
+          "r_call": "profile_ci_phylo_signal(fit, trait_idx=NULL, level=0.95)",
+          "julia_surface": "profile_ci_phylo_signal(fit; trait_idx=nothing, level=0.95) via the same 2-component (log_sd_phy_diag, theta_diag_species) lincomb through tmbprofile_wrapper",
+          "comparands": [
+            "per-trait H2 estimate/lower/upper from the plogis(2*(phy-non)) lincomb profile, plus the 3+-component not-yet-implemented rejection and the mismatched-dimension point-estimate-only fallback"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-CI-PHYLO-SIGNAL-PUBLIC-R-BRIDGE",
+          "r_call": "profile_ci_phylo_signal(fit, trait_idx=NULL, level=0.95)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "profile_ci_phylo_signal(fit; trait_idx=nothing, level=0.95) via the same 2-component (log_sd_phy_diag, theta_diag_species) lincomb through tmbprofile_wrapper reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "per-trait H2 estimate/lower/upper from the plogis(2*(phy-non)) lincomb profile, plus the 3+-component not-yet-implemented rejection and the mismatched-dimension point-estimate-only fallback (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `profile_ci_phylo_signal` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "profile_ci_total_variance": {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_ci_total_variance",
+      "case_ids": [
+        "CORE070-POSTFIT2-PROFILE-CI-TOTAL-VARIANCE-NATIVE",
+        "CORE070-POSTFIT2-PROFILE-CI-TOTAL-VARIANCE-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "profile-derived.R",
+      "r_function_name": "profile_ci_total_variance",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-CI-TOTAL-VARIANCE-NATIVE",
+          "r_call": "profile_ci_total_variance(fit, tier=c(\"unit\",\"unit_obs\",\"phy\",\"B\",\"W\"), trait_idx=NULL, level=0.95)",
+          "julia_surface": "profile_ci_total_variance(fit; tier=..., trait_idx=nothing, level=0.95) reusing .canonical_level_name and .total_variance_interval_status",
+          "comparands": [
+            "per-trait total-variance estimate/lower/upper at the given tier, and interval_status classification"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-CI-TOTAL-VARIANCE-PUBLIC-R-BRIDGE",
+          "r_call": "profile_ci_total_variance(fit, tier=c(\"unit\",\"unit_obs\",\"phy\",\"B\",\"W\"), trait_idx=NULL, level=0.95)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "profile_ci_total_variance(fit; tier=..., trait_idx=nothing, level=0.95) reusing .canonical_level_name and .total_variance_interval_status reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "per-trait total-variance estimate/lower/upper at the given tier, and interval_status classification (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `profile_ci_total_variance` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "profile_cross_rho": {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_cross_rho",
+      "case_ids": [
+        "CORE070-POSTFIT2-PROFILE-CROSS-RHO-NATIVE",
+        "CORE070-POSTFIT2-PROFILE-CROSS-RHO-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "kernel-helpers.R",
+      "r_function_name": "profile_cross_rho",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-CROSS-RHO-NATIVE",
+          "r_call": "profile_cross_rho(A_H, A_P, W, rho, refit, metrics=NULL, eps=1e-8, keep_fits=FALSE)",
+          "julia_surface": "profile_cross_rho(A_H, A_P, W, rho; refit, metrics=nothing, eps=1e-8, keep_fits=false) building make_cross_kernel(rho_i) per grid point and calling the user refit callback",
+          "comparands": [
+            "per-rho logLik/convergence/pd_hessian/status rows, relative_logLik/delta_deviance/is_best derived columns, and refit-error rows recorded as status=\"error\" rather than aborting the grid"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-CROSS-RHO-PUBLIC-R-BRIDGE",
+          "r_call": "profile_cross_rho(A_H, A_P, W, rho, refit, metrics=NULL, eps=1e-8, keep_fits=FALSE)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "profile_cross_rho(A_H, A_P, W, rho; refit, metrics=nothing, eps=1e-8, keep_fits=false) building make_cross_kernel(rho_i) per grid point and calling the user refit callback reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "per-rho logLik/convergence/pd_hessian/status rows, relative_logLik/delta_deviance/is_best derived columns, and refit-error rows recorded as status=\"error\" rather than aborting the grid (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `profile_cross_rho` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "profile_cross_rho_ci": {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_cross_rho_ci",
+      "case_ids": [
+        "CORE070-POSTFIT2-PROFILE-CROSS-RHO-CI-NATIVE",
+        "CORE070-POSTFIT2-PROFILE-CROSS-RHO-CI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "kernel-helpers.R",
+      "r_function_name": "profile_cross_rho_ci",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-CROSS-RHO-CI-NATIVE",
+          "r_call": "profile_cross_rho_ci(profile, level=0.95)  # pure numeric interpolation, no fit or family dependence",
+          "julia_surface": "profile_cross_rho_ci(profile; level=0.95) with the identical nearest-crossing linear-interpolation search",
+          "comparands": [
+            "estimate (best rho), lower/upper bounds (linearly interpolated qchisq(level,1) crossings, clamped to [-1,1]), lower_bounded/upper_bounded flags, on both an interior-crossing profile and a profile with no crossing on one side"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-CROSS-RHO-CI-PUBLIC-R-BRIDGE",
+          "r_call": "profile_cross_rho_ci(profile, level=0.95)  # pure numeric interpolation, no fit or family dependence  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "profile_cross_rho_ci(profile; level=0.95) with the identical nearest-crossing linear-interpolation search reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "estimate (best rho), lower/upper bounds (linearly interpolated qchisq(level,1) crossings, clamped to [-1,1]), lower_bounded/upper_bounded flags, on both an interior-crossing profile and a profile with no crossing on one side (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `profile_cross_rho_ci` symbol exists in GLLVM (grep-confirmed 0 hits) -- flagged in the manifest as a pure numeric algorithm with no fit dependence (an easy future port), but it does not exist today"
+    },
+    "profile_phylo_signal": {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_phylo_signal",
+      "case_ids": [
+        "CORE070-POSTFIT2-PROFILE-PHYLO-SIGNAL-NATIVE",
+        "CORE070-POSTFIT2-PROFILE-PHYLO-SIGNAL-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "profile-derived-curves.R",
+      "r_function_name": "profile_phylo_signal",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-PHYLO-SIGNAL-NATIVE",
+          "r_call": "profile_phylo_signal(fit, trait_idx=NULL, n_grid=21L, grid_extent=4, conf_level=0.95)",
+          "julia_surface": "profile_phylo_signal(fit; trait_idx=nothing, n_grid=21, grid_extent=4, conf_level=0.95) over the same 2-component lincomb grid",
+          "comparands": [
+            "per-trait grid of profile_value/delta_deviance points (via .tmbprofile_curve_grid on the same lincomb as profile_ci_phylo_signal), and the multi-component-not-implemented rejection"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-PHYLO-SIGNAL-PUBLIC-R-BRIDGE",
+          "r_call": "profile_phylo_signal(fit, trait_idx=NULL, n_grid=21L, grid_extent=4, conf_level=0.95)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "profile_phylo_signal(fit; trait_idx=nothing, n_grid=21, grid_extent=4, conf_level=0.95) over the same 2-component lincomb grid reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "per-trait grid of profile_value/delta_deviance points (via .tmbprofile_curve_grid on the same lincomb as profile_ci_phylo_signal), and the multi-component-not-implemented rejection (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `profile_phylo_signal` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "profile_targets": {
+      "source_id": "postfit/POSTFIT-SURFACE-profile_targets",
+      "case_ids": [
+        "CORE070-POSTFIT2-PROFILE-TARGETS-NATIVE",
+        "CORE070-POSTFIT2-PROFILE-TARGETS-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "profile-targets.R",
+      "r_function_name": "profile_targets",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-TARGETS-NATIVE",
+          "r_call": "profile_targets(object, ready_only=FALSE)",
+          "julia_surface": "profile_targets(fit; ready_only=false) walking opt$par blocks against the same profile-target registry",
+          "comparands": [
+            "the returned registry table: parm label, target_class, tmb_parameter, index, estimate, link_estimate, scale (link vs natural), transformation, profile_ready/profile_note"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-PROFILE-TARGETS-PUBLIC-R-BRIDGE",
+          "r_call": "profile_targets(object, ready_only=FALSE)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "profile_targets(fit; ready_only=false) walking opt$par blocks against the same profile-target registry reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "the returned registry table: parm label, target_class, tmb_parameter, index, estimate, link_estimate, scale (link vs natural), transformation, profile_ready/profile_note (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `profile_targets` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "residuals.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-residuals.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-RESIDUALS-GLLVMTMB-MULTI-NATIVE",
+        "CORE070-POSTFIT2-RESIDUALS-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "predictive-diagnostics.R",
+      "r_function_name": "residuals.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-RESIDUALS-GLLVMTMB-MULTI-NATIVE",
+          "r_call": "residuals(object, type=c(\"randomized_quantile\",\"simulation_rank\"), scale=c(\"normal\",\"uniform\"), nsim=NULL, seed=NULL, condition_on_RE=TRUE)",
+          "julia_surface": "residuals(fit; type=:randomized_quantile|:simulation_rank, scale=:normal|:uniform, nsim=nothing, seed=nothing, condition_on_RE=true)",
+          "comparands": [
+            "exact-family-CDF randomized-quantile residuals (deterministic given seed) vs simulation-rank residuals (nsim-dependent), on both normal and uniform scale, with the metadata (method, seed, nsim, condition_on_RE) attached"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-RESIDUALS-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE",
+          "r_call": "residuals(object, type=c(\"randomized_quantile\",\"simulation_rank\"), scale=c(\"normal\",\"uniform\"), nsim=NULL, seed=NULL, condition_on_RE=TRUE)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "residuals(fit; type=:randomized_quantile|:simulation_rank, scale=:normal|:uniform, nsim=nothing, seed=nothing, condition_on_RE=true) reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "exact-family-CDF randomized-quantile residuals (deterministic given seed) vs simulation-rank residuals (nsim-dependent), on both normal and uniform scale, with the metadata (method, seed, nsim, condition_on_RE) attached (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "residuals(fit, y; type=:dunnsmyth|:pearson, ...) exists but live-probing type=:simulation_rank throws ArgumentError (the R-required type value is rejected), and no nsim/condition_on_RE keyword exists"
+    },
+    "rotate_loadings": {
+      "source_id": "postfit/POSTFIT-SURFACE-rotate_loadings",
+      "case_ids": [
+        "CORE070-POSTFIT2-ROTATE-LOADINGS-NATIVE",
+        "CORE070-POSTFIT2-ROTATE-LOADINGS-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "rotate-loadings.R",
+      "r_function_name": "rotate_loadings",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-ROTATE-LOADINGS-NATIVE",
+          "r_call": "rotate_loadings(fit, level=\"unit\", method=c(\"varimax\",\"promax\",\"none\"), order_axes=TRUE, sign_anchor=c(\"auto\",\"none\"), anchor_traits=NULL)",
+          "julia_surface": "rotate_loadings(fit; level=:unit, method=:varimax|:promax|:none, order_axes=true, sign_anchor=:auto|:none, anchor_traits=nothing) via stats::varimax/promax equivalents",
+          "comparands": [
+            "Lambda_rot, scores (Z_rot, using solve(t(T)) for the oblique promax complementary transform), rotation matrix T, axis_order, axis_sign, anchor_traits used"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-ROTATE-LOADINGS-PUBLIC-R-BRIDGE",
+          "r_call": "rotate_loadings(fit, level=\"unit\", method=c(\"varimax\",\"promax\",\"none\"), order_axes=TRUE, sign_anchor=c(\"auto\",\"none\"), anchor_traits=NULL)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "rotate_loadings(fit; level=:unit, method=:varimax|:promax|:none, order_axes=true, sign_anchor=:auto|:none, anchor_traits=nothing) via stats::varimax/promax equivalents reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "Lambda_rot, scores (Z_rot, using solve(t(T)) for the oblique promax complementary transform), rotation matrix T, axis_order, axis_sign, anchor_traits used (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "`rotate_loadings` is not isdefined, and the only rotation entry point (GLLVM.rotation(fit)) is principal/SVD-only with no `method` keyword -- no varimax/promax rotation surface exists under any name"
+    },
+    "sanity_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-sanity_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-SANITY-MULTI-DATA-READBACK"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": true,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "sanity_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-SANITY-MULTI-DATA-READBACK",
+          "r_call": "sanity_multi(object, gradient_thresh=1e-2, se_thresh=100)",
+          "julia_surface": "sanity_multi(fit; gradient_thresh=1e-2, se_thresh=100) computing the same four flags",
+          "comparands": [
+            "converged (opt$convergence==0), max_gradient (penalised-objective-aware via .gllvmTMB_penalised_gradient when ridged), pd_hessian (withheld for mspl), max_se, as booleans/numbers rather than the cat()-formatted PASS/WARN text"
+          ],
+          "evidence_kind": "postfit-readback"
+        }
+      ],
+      "missing_julia_surface": "no `sanity_multi` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "simulate.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-simulate.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-SIMULATE-GLLVMTMB-MULTI-NATIVE",
+        "CORE070-POSTFIT2-SIMULATE-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "simulate.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-SIMULATE-GLLVMTMB-MULTI-NATIVE",
+          "r_call": "simulate(object, nsim=1, seed=NULL, newdata=NULL, condition_on_RE=FALSE)",
+          "julia_surface": "simulate(fit; nsim=1, seed=nothing, newdata=nothing, condition_on_RE=false) covering both the conditional-eta path and the default parametric-bootstrap (redraw-REs) path",
+          "comparands": [
+            "conditional draws (newdata or condition_on_RE=TRUE, using fitted eta and .draw_y_per_family) vs the default unconditional parametric-bootstrap path (redraw REs at each tier, rebuild eta, add residual noise); and the documented Gaussian-on-link-scale newdata fallback with its one-shot warning"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-SIMULATE-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE",
+          "r_call": "simulate(object, nsim=1, seed=NULL, newdata=NULL, condition_on_RE=FALSE)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "simulate(fit; nsim=1, seed=nothing, newdata=nothing, condition_on_RE=false) covering both the conditional-eta path and the default parametric-bootstrap (redraw-REs) path reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "conditional draws (newdata or condition_on_RE=TRUE, using fitted eta and .draw_y_per_family) vs the default unconditional parametric-bootstrap path (redraw REs at each tier, rebuild eta, add residual noise); and the documented Gaussian-on-link-scale newdata fallback with its one-shot warning (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "simulate(fit, n::Integer; rng=) exists (positional draw-count, RNG-object seeding) but has no `newdata` or `condition_on_RE` keyword"
+    },
+    "simulate_site_trait": {
+      "source_id": "postfit/POSTFIT-SURFACE-simulate_site_trait",
+      "case_ids": [
+        "CORE070-POSTFIT2-SIMULATE-SITE-TRAIT-NATIVE",
+        "CORE070-POSTFIT2-SIMULATE-SITE-TRAIT-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "simulate-site-trait.R",
+      "r_function_name": "simulate_site_trait",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-SIMULATE-SITE-TRAIT-NATIVE",
+          "r_call": "simulate_site_trait(n_sites=50, n_species=20, n_traits=3, ..., seed=NULL)",
+          "julia_surface": "simulate_site_trait(; n_sites=50, n_species=20, n_traits=3, ..., seed=nothing) reproducing the same site-level DGP (fixed alpha/beta/Lambda_B/Lambda_W/psi truth, optional spatial r_st via exp(-D/range) kernel)",
+          "comparands": [
+            "generated site-level predictor matrix X, spatial covariance draws r_mat (when spatial_range+sigma2_spa supplied), and resulting simulated data given identical seed and truth parameters"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-SIMULATE-SITE-TRAIT-PUBLIC-R-BRIDGE",
+          "r_call": "simulate_site_trait(n_sites=50, n_species=20, n_traits=3, ..., seed=NULL)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "simulate_site_trait(; n_sites=50, n_species=20, n_traits=3, ..., seed=nothing) reproducing the same site-level DGP (fixed alpha/beta/Lambda_B/Lambda_W/psi truth, optional spatial r_st via exp(-D/range) kernel) reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "generated site-level predictor matrix X, spatial covariance draws r_mat (when spatial_range+sigma2_spa supplied), and resulting simulated data given identical seed and truth parameters (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `simulate_site_trait` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "simulate_unit_trait": {
+      "source_id": "postfit/POSTFIT-SURFACE-simulate_unit_trait",
+      "case_ids": [
+        "CORE070-POSTFIT2-SIMULATE-UNIT-TRAIT-NATIVE",
+        "CORE070-POSTFIT2-SIMULATE-UNIT-TRAIT-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "simulate-unit-trait.R",
+      "r_function_name": "simulate_unit_trait",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-SIMULATE-UNIT-TRAIT-NATIVE",
+          "r_call": "simulate_unit_trait(n_units=50L, n_obs_per_unit=3L, n_traits=5L, ..., seed=NULL)",
+          "julia_surface": "simulate_unit_trait(; n_units=50, n_obs_per_unit=3, n_traits=5, ..., seed=nothing) reproducing the between-unit (Lambda_B+psi_B) / within-unit (Lambda_W+psi_W) reduced-rank-plus-diagonal DGP",
+          "comparands": [
+            "generated between-unit b_mat and within-unit w_uot components, and the resulting long-format Gaussian response eta = alpha + b_mat[u,t] + w_uot[t]"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-SIMULATE-UNIT-TRAIT-PUBLIC-R-BRIDGE",
+          "r_call": "simulate_unit_trait(n_units=50L, n_obs_per_unit=3L, n_traits=5L, ..., seed=NULL)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "simulate_unit_trait(; n_units=50, n_obs_per_unit=3, n_traits=5, ..., seed=nothing) reproducing the between-unit (Lambda_B+psi_B) / within-unit (Lambda_W+psi_W) reduced-rank-plus-diagonal DGP reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "generated between-unit b_mat and within-unit w_uot components, and the resulting long-format Gaussian response eta = alpha + b_mat[u,t] + w_uot[t] (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `simulate_unit_trait` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "slope_sd_ci": {
+      "source_id": "postfit/POSTFIT-SURFACE-slope_sd_ci",
+      "case_ids": [
+        "CORE070-POSTFIT2-SLOPE-SD-CI-NATIVE",
+        "CORE070-POSTFIT2-SLOPE-SD-CI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "slope-sd-ci.R",
+      "r_function_name": "slope_sd_ci",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-SLOPE-SD-CI-NATIVE",
+          "r_call": "slope_sd_ci(fit, level=0.95, scale=c(\"sd\",\"variance\"))",
+          "julia_surface": "slope_sd_ci(fit; level=0.95, scale=:sd|:variance) via the matching route dispatch (phylo_dep_slope / diag_B_slope / rr_B_slope-only)",
+          "comparands": [
+            "per-route CI table (phylo_dep, ordinary augmented diagonal Psi, or loadings-only), the sdreport-required and phylo_column_slope-unsupported rejections, and the rr_B_slope-present total_sd/total_lower/total_upper columns when present"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-SLOPE-SD-CI-PUBLIC-R-BRIDGE",
+          "r_call": "slope_sd_ci(fit, level=0.95, scale=c(\"sd\",\"variance\"))  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "slope_sd_ci(fit; level=0.95, scale=:sd|:variance) via the matching route dispatch (phylo_dep_slope / diag_B_slope / rr_B_slope-only) reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "per-route CI table (phylo_dep, ordinary augmented diagonal Psi, or loadings-only), the sdreport-required and phylo_column_slope-unsupported rejections, and the rr_B_slope-present total_sd/total_lower/total_upper columns when present (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `slope_sd_ci` symbol exists in GLLVM (grep-confirmed 0 hits)"
+    },
+    "standard_errors": {
+      "source_id": "postfit/POSTFIT-SURFACE-standard_errors",
+      "case_ids": [
+        "CORE070-POSTFIT2-STANDARD-ERRORS-NATIVE",
+        "CORE070-POSTFIT2-STANDARD-ERRORS-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "standard-errors.R",
+      "r_function_name": "standard_errors",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-STANDARD-ERRORS-NATIVE",
+          "r_call": "standard_errors(fit)  # idempotent: returns fit unchanged if fit$sd_report already populated; else re-evaluates obj$fn(opt$par) and calls TMB::sdreport",
+          "julia_surface": "standard_errors(fit) computing/attaching the equivalent sdreport-style covariance at the converged point, idempotent if already populated",
+          "comparands": [
+            "the populated sd_report/covariance object's presence and idempotency (second call is a no-op), and the dead-TMB-object rejection after save/reload"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-STANDARD-ERRORS-PUBLIC-R-BRIDGE",
+          "r_call": "standard_errors(fit)  # idempotent: returns fit unchanged if fit$sd_report already populated; else re-evaluates obj$fn(opt$par) and calls TMB::sdreport  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "standard_errors(fit) computing/attaching the equivalent sdreport-style covariance at the converged point, idempotent if already populated reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "the populated sd_report/covariance object's presence and idempotency (second call is a no-op), and the dead-TMB-object rejection after save/reload (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `standard_errors` symbol exists in GLLVM (grep-confirmed 0 hits); note GLLVM does have `stderror`/`vcov` computing SEs directly rather than an idempotent attach-sdreport-to-fit step, a different design"
+    },
+    "summary.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-summary.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-SUMMARY-GLLVMTMB-MULTI-NATIVE",
+        "CORE070-POSTFIT2-SUMMARY-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "summary.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-SUMMARY-GLLVMTMB-MULTI-NATIVE",
+          "r_call": "summary(fit)",
+          "julia_surface": "StatsBase.summarystats-style summary(fit) building the equivalent header + fixef table + Sigma_B struct",
+          "comparands": [
+            "header list (n_traits, n_sites, use, estimator, logLik, objective_label branch, weighted_objective, penalised, convergence, engine, mspl), the fixef table (with link column added for mixed-family fits and Std.Err suppressed for weighted objectives), and the Sigma_B payload"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-SUMMARY-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE",
+          "r_call": "summary(fit)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "StatsBase.summarystats-style summary(fit) building the equivalent header + fixef table + Sigma_B struct reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "header list (n_traits, n_sites, use, estimator, logLik, objective_label branch, weighted_objective, penalised, convergence, engine, mspl), the fixef table (with link column added for mixed-family fits and Std.Err suppressed for weighted objectives), and the Sigma_B payload (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "Base.summary(fit) exists and is live-probed: returns a plain String (one-line fit description), not the required structured header-list + fixef-table + Sigma_B object"
+    },
+    "tidy.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-tidy.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-TIDY-GLLVMTMB-MULTI-NATIVE",
+        "CORE070-POSTFIT2-TIDY-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "methods-gllvmTMB.R",
+      "r_function_name": "tidy.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-TIDY-GLLVMTMB-MULTI-NATIVE",
+          "r_call": "tidy(x, effects=c(\"fixed\",\"ran_pars\",\"cutpoint\"), conf.int=FALSE, conf.level=0.95)",
+          "julia_surface": "tidy(fit; effects=:fixed|:ran_pars|:cutpoint, conf_int=false, conf_level=0.95) broom-style tibble/DataFrame",
+          "comparands": [
+            "effects=\"fixed\" table (term/estimate/std.error/link[/status]/[conf.low/conf.high]), and effects=\"cutpoint\" (ordinal_probit-only, family_id==14, returns empty frame when absent) \u2014 ran_pars not yet inspected in this row"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-TIDY-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE",
+          "r_call": "tidy(x, effects=c(\"fixed\",\"ran_pars\",\"cutpoint\"), conf.int=FALSE, conf.level=0.95)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "tidy(fit; effects=:fixed|:ran_pars|:cutpoint, conf_int=false, conf_level=0.95) broom-style tibble/DataFrame reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "effects=\"fixed\" table (term/estimate/std.error/link[/status]/[conf.low/conf.high]), and effects=\"cutpoint\" (ordinal_probit-only, family_id==14, returns empty frame when absent) \u2014 ran_pars not yet inspected in this row (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `tidy` symbol exists in GLLVM (grep-confirmed 0 hits; only comments referencing a future 'tidy' table)"
+    },
+    "tmbprofile_wrapper": {
+      "source_id": "postfit/POSTFIT-SURFACE-tmbprofile_wrapper",
+      "case_ids": [
+        "CORE070-POSTFIT2-TMBPROFILE-WRAPPER-NATIVE",
+        "CORE070-POSTFIT2-TMBPROFILE-WRAPPER-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "profile-ci.R",
+      "r_function_name": "tmbprofile_wrapper",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-TMBPROFILE-WRAPPER-NATIVE",
+          "r_call": "tmbprofile_wrapper(fit, name=NULL, which=1L, lincomb=NULL, level=0.95, transform=identity, ystep=0.5, ytol=NULL, parm.range=c(-Inf,Inf))",
+          "julia_surface": "tmbprofile_wrapper(fit; name=nothing, which=1, lincomb=nothing, level=0.95, transform=identity, ystep=0.5, ytol=nothing, parm_range=(-Inf,Inf)) via TMB::tmbprofile equivalent",
+          "comparands": [
+            "estimate/lower/upper for both the by-index (name/which) profile path and the lincomb path, the qchisq-derived crit and default ytol(level), and the <3-row profile-failure fallback returning NA bounds"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-TMBPROFILE-WRAPPER-PUBLIC-R-BRIDGE",
+          "r_call": "tmbprofile_wrapper(fit, name=NULL, which=1L, lincomb=NULL, level=0.95, transform=identity, ystep=0.5, ytol=NULL, parm.range=c(-Inf,Inf))  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "tmbprofile_wrapper(fit; name=nothing, which=1, lincomb=nothing, level=0.95, transform=identity, ystep=0.5, ytol=nothing, parm_range=(-Inf,Inf)) via TMB::tmbprofile equivalent reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "estimate/lower/upper for both the by-index (name/which) profile path and the lincomb path, the qchisq-derived crit and default ytol(level), and the <3-row profile-failure fallback returning NA bounds (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "no `tmbprofile_wrapper` symbol exists in GLLVM (grep-confirmed 0 hits) -- the low-level primitive several profile_* rows above build on"
+    },
+    "vcov.gllvmTMB_multi": {
+      "source_id": "postfit/POSTFIT-SURFACE-vcov.gllvmTMB_multi",
+      "case_ids": [
+        "CORE070-POSTFIT2-VCOV-GLLVMTMB-MULTI-NATIVE",
+        "CORE070-POSTFIT2-VCOV-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE"
+      ],
+      "bucket": "NEEDS_NEW_JULIA_SURFACE",
+      "uncertain_in_manifest": false,
+      "r_source_file": "vcov-coef.R",
+      "r_function_name": "vcov.gllvmTMB_multi",
+      "case_specs": [
+        {
+          "case_id": "CORE070-POSTFIT2-VCOV-GLLVMTMB-MULTI-NATIVE",
+          "r_call": "vcov(object)",
+          "julia_surface": "vcov(fit) returning the named fixed-effect covariance matrix, aligned on free (non-fixed) coefficients",
+          "comparands": [
+            "named p x p covariance matrix (X_fix_names dimnames), the empty-0x0-matrix case when no fixed effects, and the free-coefficient alignment against Xcoef_fixed-held-fixed coefficients (cov.fixed block can be shorter than nm)"
+          ],
+          "evidence_kind": "native"
+        },
+        {
+          "case_id": "CORE070-POSTFIT2-VCOV-GLLVMTMB-MULTI-PUBLIC-R-BRIDGE",
+          "r_call": "vcov(object)  # via engine=\"julia\" bridge dispatch",
+          "julia_surface": "vcov(fit) returning the named fixed-effect covariance matrix, aligned on free (non-fixed) coefficients reached through the public R<->Julia bridge boundary",
+          "comparands": [
+            "named p x p covariance matrix (X_fix_names dimnames), the empty-0x0-matrix case when no fixed effects, and the free-coefficient alignment against Xcoef_fixed-held-fixed coefficients (cov.fixed block can be shorter than nm) (bridge-boundary parity or documented bridge-model-change divergence)"
+          ],
+          "evidence_kind": "bridge"
+        }
+      ],
+      "missing_julia_surface": "vcov(fit) alone (no y/Y) throws ArgumentError -- R's zero-extra-argument vcov(object) contract cannot be expressed -- and vcov(fit, Y) live-probed returns a Diagonal (SE^2 only), not a named dense p x p covariance matrix aligned to a free/fixed coefficient mask"
+    }
+  },
+  "spec_defect_rows": {
+    "ordiplot": {
+      "source_id": "postfit/POSTFIT-SURFACE-ordiplot",
+      "case_ids": [
+        "CORE070-POSTFIT2-ORDIPLOT-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "Bare S3 generic (`UseMethod(\"ordiplot\")`), no computation of its own. Dispatch only; behavior is entirely in ordiplot.gllvmTMB_multi, planned separately below."
+      }
+    },
+    "plot.gllvmTMBmesh": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.gllvmTMBmesh",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-GLLVMTMBMESH-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "Pure graphics::plot() of x$mesh/x$loc_xy/x$loc_centers with no new derived numeric payload; the mesh geometry itself is a spatial-mesh construction contract owned elsewhere, not this print method. Reclassify: Julia needs an idiomatic mesh-plot recipe (e.g. Makie), not a pixel-identical port; no independent numeric quantity originates here."
+      }
+    },
+    "plot.sdmTMBmesh": {
+      "source_id": "postfit/POSTFIT-SURFACE-plot.sdmTMBmesh",
+      "case_ids": [
+        "CORE070-POSTFIT2-PLOT-SDMTMBMESH-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "Deprecated forwarding alias: lifecycle::deprecate_warn() then calls plot.gllvmTMBmesh(x, ...) directly. No independent behavior; compatibility_adapter alongside plot.gllvmTMBmesh. A Julia alias only needs to exist if the legacy name is part of the public compatibility surface."
+      }
+    },
+    "print.gllvmTMB_Sigma_phy_slope": {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_Sigma_phy_slope",
+      "case_ids": [
+        "CORE070-POSTFIT2-PRINT-GLLVMTMB-SIGMA-PHY-SLOPE-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "17-line cat()/print() console formatter over an intercept/slope Sigma-block payload (predict_cross_covariance / extract-sigma family); no computation of its own. The payload's own numeric contract belongs to the Sigma extraction case (extract-sigma.R), not this print dispatcher."
+      }
+    },
+    "print.gllvmTMB_check_consistency": {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_check_consistency",
+      "case_ids": [
+        "CORE070-POSTFIT2-PRINT-GLLVMTMB-CHECK-CONSISTENCY-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "cli:: console formatter over the Laplace-consistency-check payload (n_sim, marginal/joint p-values, flagged_parameters, marginal_bias); no computation of its own. Payload's own numeric contract (check_consistency()) is a separate required source not in this row set; this dispatcher only needs a Julia display method, console text need not match R."
+      }
+    },
+    "print.gllvmTMB_confint_inspect": {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_confint_inspect",
+      "case_ids": [
+        "CORE070-POSTFIT2-PRINT-GLLVMTMB-CONFINT-INSPECT-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "cli:: console formatter over confint_inspect()'s bounds/diagnostics payload; no computation of its own. Payload's own numeric contract (confint_inspect()) is a separate required source; this print method only needs a Julia display adapter."
+      }
+    },
+    "print.gllvmTMB_coverage_study": {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_coverage_study",
+      "case_ids": [
+        "CORE070-POSTFIT2-PRINT-GLLVMTMB-COVERAGE-STUDY-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "cli:: console formatter over a coverage_study() replicate table; no computation of its own. Payload's own numeric contract (coverage_study()) is a separate required source; this print method only needs a Julia display adapter."
+      }
+    },
+    "print.gllvmTMB_identifiability": {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_identifiability",
+      "case_ids": [
+        "CORE070-POSTFIT2-PRINT-GLLVMTMB-IDENTIFIABILITY-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "cli:: console formatter over an identifiability-check replicate/recovery/hessian payload; no computation of its own. Payload's own numeric contract (check_identifiability()) is a separate required source; this print method only needs a Julia display adapter."
+      }
+    },
+    "print.gllvmTMB_reportable_table": {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_reportable_table",
+      "case_ids": [
+        "CORE070-POSTFIT2-PRINT-GLLVMTMB-REPORTABLE-TABLE-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "4-line formatter that strips internal columns (.reportable_internal_cols) and calls print.data.frame(); no computation of its own. The reportable_table object's own construction is a separate required source (R/reportable-table.R); this print method only needs a Julia display adapter that hides the same internal columns."
+      }
+    },
+    "print.gllvmTMB_slope_ci": {
+      "source_id": "postfit/POSTFIT-SURFACE-print.gllvmTMB_slope_ci",
+      "case_ids": [
+        "CORE070-POSTFIT2-PRINT-GLLVMTMB-SLOPE-CI-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "cat()-header formatter (uncalibrated-interval caveat text) around print.data.frame(x); the numeric payload is slope_sd_ci(), required separately above. This print method only needs a Julia display adapter carrying the same caveat message, not text-identical console output."
+      }
+    },
+    "tidy": {
+      "source_id": "postfit/POSTFIT-SURFACE-tidy",
+      "case_ids": [
+        "CORE070-POSTFIT2-TIDY-COMPATIBILITY-ADAPTER"
+      ],
+      "bucket": "SPEC_DEFECT",
+      "reason": "case has null r_call and empty comparands by design (evidence_kind=compatibility_adapter); there is no numeric contract for a receipts-producing batch to execute or compare -- not an error in the manifest's own reclassification (it correctly identifies these as dispatch-only), but structurally out of scope for this batch: nothing to build or run.",
+      "manifest_reclassify": {
+        "to": "compatibility_adapter",
+        "reason": "NAMESPACE-level `export(tidy)` re-exporting `generics::tidy`; no gllvmTMB-specific code (file: NAMESPACE, not an R/*.R definition). Bare re-export/generic, same pattern as the ordiplot generic; the actual computation is tidy.gllvmTMB_multi, planned separately below."
+      }
+    }
+  }
+}

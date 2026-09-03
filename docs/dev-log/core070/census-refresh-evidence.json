@@ -1,0 +1,55 @@
+{
+  "scope": "BOUNDED_REGISTERED_AND_KNOWN_PARENT_CENSUS_NOT_WHOLE_FILESYSTEM",
+  "observed_utc": "2026-08-30T21:06:37.129788+00:00",
+  "registered": {
+    "julia": {
+      "total": 103,
+      "functional": 103,
+      "dirty": 31,
+      "stashes": 5
+    },
+    "r": {
+      "total": 211,
+      "functional": 43,
+      "dirty": 9,
+      "missing": 122,
+      "broken": 46,
+      "stashes": 16
+    }
+  },
+  "additional": {
+    "archive": "/Users/z3437171/local-scratch/preservation/core070-additional-paths-20260830T212209Z",
+    "manifest_sha256": "5a05021de8a9ed6dc8f48aa89ab4261db3b2212be476019a5afcbdd9d375c49c",
+    "paths": 18,
+    "functional_clones": 5,
+    "broken_remnants": 13,
+    "verified_file_entries": 19314,
+    "history_readback": true,
+    "source_mutations": false,
+    "disposition": "PRESERVED_AVAILABLE_CONTENTS; BROKEN_GIT_REMAINS_UNRESOLVED",
+    "receipt_sha256": "2b656c81e0b15f3cfc207273040b2ec6a62b9eee4352aaf1c0cfc12d9089cc14"
+  },
+  "new_refs_archive": "/Users/z3437171/local-scratch/preservation/core070-new-refs-20260830T211206Z",
+  "dirty_delta": {
+    "worktrees": 40,
+    "git_visible_paths": 5914,
+    "patches_compared": 80,
+    "new_changed_dirty_bytes": 0,
+    "ignored_generated_bytes_rescanned": false
+  },
+  "policy": "ALL_FOREIGN_PATHS_PROTECTED_NO_CLEANUP",
+  "limitations": [
+    "Known parent discovery only; no whole filesystem completeness claim",
+    "168 registered R paths missing or broken remain unresolved",
+    "13 additional broken Git remnants remain unresolved",
+    "Named refs/stash tips/HEAD preserved, not unreachable reflog-only history"
+  ],
+  "artifacts": {
+    ".unlazy/core070-aghq/inventory-refresh-20260830T2107.json": "bbc7a519119f8a257b38b0dcd6f146bf1981d7b124e837d69135e67930f11057",
+    ".unlazy/core070-aghq/inventory-refresh-20260830T2107-delta.json": "b88c9ec22c709be0727bd9d07d82c4920ccd284b0b9e459233b7eef1fb3b3127",
+    ".unlazy/core070-aghq/census-2107/dirty-delta-final.json": "034c5c3a11d1a35b3c1c7f9f4ce32bfc9ffef85fa5af26063cf43bb0ae5667bd",
+    ".unlazy/core070-aghq/census-2107/additional-paths.json": "83ba0d3f85ead1fcc60883507666f9b50b929f9b7b97f3494cf94010164e8e1e",
+    ".unlazy/core070-aghq/census-2107/additional-preservation.json": "e78df8be4e155a46657f371b8b567545a6f04be1835d1a1f3afbe1f7f89d9c09",
+    ".unlazy/core070-aghq/census-2107/new-refs-preservation.json": "d5955f0a2ce0a7d1ec021d44ec9a391cc595a7c6a44ffbc7959fa259d83bfff4"
+  }
+}

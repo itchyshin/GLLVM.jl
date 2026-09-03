@@ -1,0 +1,69 @@
+{
+  "status": "NINE_COVARIANCE_FORMULA_INTERFACES_PASS_NOT_PROGRAMME",
+  "native_cases": 9,
+  "formula_cases": 9,
+  "formula_routes": 18,
+  "assertions": 450,
+  "negative_controls": 98,
+  "elapsed_seconds": 64.0396696832031,
+  "max_formula_absolute_delta_loglik": 2.560085476943641e-11,
+  "process_sha256": "fd920a0433a531af4b02f7468bc5cbdd04da1dce92112bc1d0ecdfaaf6563424",
+  "created_utc": "2026-08-31T21:15:17.578966+00:00",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "manifest_status": "DRAFT_INCOMPLETE_NOT_FROZEN",
+  "programme": "ACTIVE_M1_PARTIAL",
+  "draft_integrity": {
+    "source_facts": 769,
+    "nonexcluded_unmapped": 703,
+    "executable_bindings": 33,
+    "classification_counts": {
+      "compatibility_adapter": 86,
+      "intentionally_excluded": 54,
+      "rejected": 182,
+      "required_core": 447
+    },
+    "status": "CURRENT_DRAFT_INTEGRITY_VERIFIED_NOT_PARITY_COMPLETE",
+    "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "verified_at": "2026-08-31T21:14:04.341271+00:00",
+    "test_count": 90
+  },
+  "mission_control": {
+    "status": "PASS",
+    "http_status": 200,
+    "commit": "0ce5a2a6240becd54e3320e35ec45305c78c41bd",
+    "before_sha256": "fa60c4b9bd65799f3148c8b6e330527f164fbc51dbb2265f48699ddc2fdaa8e1",
+    "after_sha256": "516f4042fddd84b21ed670e561525dd53f4878921ae33ec1fa2c94e0d3a3ea0f",
+    "changed_fields": [
+      "now.next_safe_action"
+    ],
+    "r_fields_unchanged": true
+  },
+  "review": {
+    "requested_model": "gpt-5.6-terra",
+    "requested_effort": "high",
+    "role": "Noether",
+    "findings": [
+      "transient stale helper hash",
+      "verifier R-health field schema mismatch"
+    ],
+    "resolution": "Parent corrected both; immutable replay and independent verifier pass. Not a full programme panel."
+  },
+  "unlazy": {
+    "leaf_met": 1,
+    "total": 2,
+    "programme": "UNPAID"
+  },
+  "artifacts": {
+    "tools/core070_verify_covariance_formulas.py": "ac01e84e994cceb5d8f54b60fa418587e3b6d9e29f125824dfa63fadc8fd8672",
+    "tools/core070_verify_covariance_programme.py": "22267ed1e81d68ceccf9eba92d940df628eb22309c3c4320be0809f441fdaa10",
+    "tools/core070_covariance_formula_programme.py": "843358f0b9cb65e387687e5dd36238e8c90b7356f8f5ac9c3e5dad1597cbb2e7",
+    "test/parity/covariance_formula_cases.jl": "8e3b0b4d18c2bbac52b539bf9563b263dedc85f23fe1c1d631d3a28cd7b96755",
+    "docs/dev-log/core070/covariance-formula-programme-contract.json": "f3afe9852d88ed1b3de10f320184dae2cc4631fd8c7d5ebdc9ccbfebf8625c9a",
+    "docs/dev-log/core070/frozen-r070-contract.toml": "7d9fb95e6d580179dbf1d0cb38c0a43afc41ac3760acb5ec9f475e1b3be77505",
+    ".unlazy/core070-aghq/covariance-formulas-02/draft-sealed.json": "3d20a07950f9bbfd64f9bcb99f4ae3ba8d4633e273b531b3e53994ab238ad3f5",
+    ".unlazy/core070-aghq/covariance-formulas-02/verified-final.log": "2b6015b6eff635ca270eb139e89bf64dbbede792f5091c281f9b732f6f027a76",
+    ".unlazy/core070-aghq/covariance-formulas-02/mission-update.json": "ae2c864633a7340991520cfc815a50e65a61898e879e0834244cbaafc6241d48",
+    ".unlazy/core070-aghq/covariance-formulas-02/unlazy-final.log": "bb65d11ae30c63bdd788295d8ac2c3c15b50155e918da5e4f31e3589802372e2",
+    ".unlazy/core070-aghq/covariance-formulas-02/attempt1/process/process-receipt.json": "fd920a0433a531af4b02f7468bc5cbdd04da1dce92112bc1d0ecdfaaf6563424"
+  }
+}

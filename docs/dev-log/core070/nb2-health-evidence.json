@@ -1,0 +1,90 @@
+{
+  "scope": "FAILED_ORIGINAL_NB2_HEALTH_AND_SCALAR_PRECISION_DIAGNOSIS_NOT_REPAIR",
+  "source": {
+    "source_marker_sha256": "e14983b7d0bb423cecb4b5db3767bd5c664beb02f185ba61b3b2bd6bd5022dfe",
+    "julia_package_root": "/home/snakagaw/core070-aghq-20260830/nb2-health-01",
+    "tmb_version": "1.9.21",
+    "oracle_build_receipt_sha256": "5c686e222fd8f56c35b2ccbec2b013a304aee862d0f964792cb5388e369483d4",
+    "matrix_version": "1.7.6",
+    "julia_machine": "x86_64-linux-gnu",
+    "julia_source_tree_sha256": "c8048849d5c94bae8f274d8180a3497f1c5d5ebd8420db264fcbda9505149be3",
+    "source_tree_sha256": "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7",
+    "julia_version": "1.12.6",
+    "oracle_source_receipt_sha256": "6b6cce9742e0c984c1bf4c93fba3759acb820fa81e509dd90dbe43b75638a997",
+    "julia_project_sha256": "505afcac9fd3c52052f5e1043d655ef91c53223fb870084707468b04885327dc",
+    "blas_threads": 1,
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc",
+    "namespace_sha256": "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c",
+    "installed_tree_sha256": "b25f5b8838d1d476a95f4e79133a5c72fad2496d648ef97cd9422acd39bc5bb5",
+    "julia_project_path": "/home/snakagaw/core070-aghq-20260830/nb2-health-01/test/parity/Project.toml",
+    "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "rcall_version": "0.14.13",
+    "r_library_path": "/home/snakagaw/core070-aghq-20260830/oracle-build-01/library/gllvmTMB",
+    "julia_threads": 1,
+    "julia_package_path": "/home/snakagaw/core070-aghq-20260830/nb2-health-01/src/GLLVM.jl",
+    "r_version": "R version 4.5.3 (2026-03-11)",
+    "r_home": "/usr/lib/R",
+    "julia_manifest_sha256": "28bcbc2c4317dfa2e49f1be44be2fb656bdfc89a47b51aeaf4e90548603a1451"
+  },
+  "health_metrics": {
+    "data_sha256": "7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9",
+    "loglik_delta": 0.0008639110201329459,
+    "native_gradient_max": 0.05142752104532243,
+    "fd_stability": 0.05957165640240427,
+    "r_gradient_max": 6.509060474424455e-05,
+    "r_code": 0,
+    "samepoint_delta": 5.152454605195089e-07,
+    "native_r": [
+      664216145.8603292,
+      2.6918269234404133,
+      4315.482806502814,
+      2.4325636930207737,
+      2.3558020218406828
+    ],
+    "r_dispersion": [
+      2695508420.582252,
+      2.6887997311717036,
+      1068383.7110798247,
+      2.4366570513578645,
+      2.359182408383559
+    ]
+  },
+  "scalar_metrics": {
+    "max_current_error": 0.015983955825419116,
+    "max_candidate_error": 2.842170943040401e-14,
+    "max_current_score_error": 19.9899999999998,
+    "max_candidate_score_error": 1.3317773550625134e-09
+  },
+  "source_files": {
+    "tools/core070_nb2_health.jl": "9811a6a1c839afb29862a0c40f0932466917c222988d5594ff6199dee1519e83",
+    "tools/core070_nb2_precision.jl": "e43f85d128f971eeed302470232eaae46890b699d1d1f5b3e7c7f85470a3de1d",
+    "tools/core070_verify_nb2_health.py": "8937a5f81d4c8e86d641f298a4c6fdff64b005e5f10ddb1ecc28a903ea9603b7"
+  },
+  "raw_sha256": {
+    ".unlazy/core070-aghq/nb2-health-01/plan.json": "647ea0cf5c69398ca05174df166ce50f1156f19ef0c575863d53469fb85db749",
+    ".unlazy/core070-aghq/nb2-health-01/source.tar": "f1b6d47af5061f4cf25c34e9ebcb05ba9572ef7eb1feda76b7aeab9aec33c029",
+    ".unlazy/core070-aghq/nb2-health-01/attempt1/health/data.toml": "9e1a2566f736315f651854b32fa20807f975a21fdeb3c33d681a466a667306c4",
+    ".unlazy/core070-aghq/nb2-health-01/attempt1/health/whole-fit.rds": "f06e3aa91fe16b49f0d50409501e1facbb8a0d0720159e78c2f83274a6f9275a",
+    ".unlazy/core070-aghq/nb2-health-01/attempt1/health/result.toml": "e1d7b6c18a37cd5d59b5d2d76765f0a7585a06b2b5ed33b5edea8d97369d1fd1",
+    ".unlazy/core070-aghq/nb2-health-01/attempt1/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/nb2-health-01/attempt1/process/01.log": "35e0ec13499583d746a01d73fa0e3d884650183fef863f28baacaf740d111f8d",
+    ".unlazy/core070-aghq/nb2-health-01/attempt1/process/02.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/nb2-health-01/attempt1/process/process-receipt.json": "f063a8933ddf5785793ffe2967cc0c3e8cfcd841738bb92ebca67a1bba2955b0",
+    ".unlazy/core070-aghq/nb2-precision-01/plan.json": "839a81bd3f1d8221244d27552c84a6132e11c588d87ce560b09a8d76ffdacc71",
+    ".unlazy/core070-aghq/nb2-precision-01/source.tar": "b408483291f4e3c1b7bab433047f4cae86a21f02a85ed985d6d6834973c81db9",
+    ".unlazy/core070-aghq/nb2-precision-01/attempt1/precision/result.toml": "50142ded34e29c679a66698a8a43a8f14b7aed4dd1d7de0c3c51fb1f573756da",
+    ".unlazy/core070-aghq/nb2-precision-01/attempt1/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/nb2-precision-01/attempt1/process/01.log": "22429291322d7b2aa68b7ebafe6529327e05df7969c13fc5232a34be2714fc4a",
+    ".unlazy/core070-aghq/nb2-precision-01/attempt1/process/02.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/nb2-precision-01/attempt1/process/process-receipt.json": "7503fa958d231f20f7e3a6f62d654feef8c9c034c4d0d7dca048e82dac77b6de"
+  },
+  "health_checks": {
+    "pass_count": 11,
+    "fail_count": 3
+  },
+  "scalar_cells": 96,
+  "scalar_assertions": 5,
+  "negative_controls": 8,
+  "full_manifest": "DRAFT_INCOMPLETE_NOT_FROZEN",
+  "independent_review": "NOT_RUN"
+}

@@ -1,15 +1,18 @@
 # Student-t (heavy-tailed continuous) family pieces for the generic Laplace core
 # (src/families/laplace.jl). y_t ∈ ℝ; location η (IDENTITY link, so μ = η), scale
-# σ > 0, with FIXED degrees of freedom ν: the per-observation law is the
-# location–scale t, (y − η)/σ ~ t_ν. The scale σ is the dispersion (carried on a
-# log scale as the single scalar auxiliary). The conditional density is
+# σ > 0 and finite fixed degrees of freedom ν > 0 (estimated ν > 1): the law is the
+# location–scale t, (y − η)/σ ~ t_ν. A numeric `nu` fixes ν; `nu = nothing`
+# estimates it. The scale σ is always estimated on a log scale, and
+# `disp_group = :species` estimates one scale and (when ν is free) one ν per
+# trait. This implementation lives in this file, not `grouped_dispersion.jl`.
+# The conditional density is
 #
 #   p(y | η) = Γ((ν+1)/2) / (Γ(ν/2) √(νπ) σ) · (1 + (y−η)²/(ν σ²))^{−(ν+1)/2},
 #
 # i.e. a Gaussian-tailed model robustified against outliers; as ν → ∞ it tends to
-# Normal(η, σ²). For v1 ν is FIXED (a fitter kwarg, default ν = 4); estimating ν
-# jointly is a follow-up (it would need a SECOND auxiliary, breaking the scalar-aux
-# implicit path used here). The marker `StudentTFamily(ν, σ)` stores both.
+# Normal(η, σ²). The marker `StudentTFamily(ν, σ)` carries a fixed numerical ν
+# for an individual likelihood evaluation; the fitter supplies the estimated
+# value when `nu = nothing`.
 #
 # Score/weight wrt η (identity link ⇒ dμ/dη = me = 1). The robust t-score is
 #   r = y − η,   s_η = (ν+1) r / (ν σ² + r²)
@@ -24,41 +27,44 @@
 #   _glm_score  = s_η · me = (ν+1) r / (ν σ² + r²)        (me = 1)
 #   _glm_weight = I_η · me² = (ν+1) / ((ν+3) σ²)          (me = 1, ⇒ W ≥ 0)
 #
-# `_glm_logpdf` is written in CLOSED FORM via `loggamma` so ForwardDiff Duals flow
+# `_glm_logpdf` uses a stable normalizer so ForwardDiff Duals flow
 # cleanly through both η (via the residual r = y − η) and log σ (via σ in the aux),
 # which is what makes the generic scalar-aux implicit-gradient path AD-clean.
 
 """
-    StudentTFamily(ν = 4.0, σ = 1.0)
+    StudentTFamily(ν = nothing, σ = 1.0)
 
-Student-t (heavy-tailed continuous) family marker: location–scale t with FIXED
-degrees of freedom `ν > 0` and scale `σ > 0`, identity link (location `μ = η`),
+Student-t (heavy-tailed continuous) family marker: location–scale t with
+finite degrees of freedom `ν > 0` (or `nothing` before fitting) and scale `σ > 0`,
+identity link (location `μ = η`),
 so `(y − η)/σ ~ t_ν`. Used as the family argument to the generic Laplace core and
 to [`fit_gllvm`](@ref):
 
 ```julia
-fit_gllvm(Y; family = StudentTFamily(), K = 2)      # ν = 4 (default tail weight)
-fit_gllvm(Y; family = StudentTFamily(7.0), K = 2)   # lighter tail
+fit_gllvm(Y; family = StudentTFamily(), K = 2)      # estimate ν (default)
+fit_gllvm(Y; family = StudentTFamily(7.0), K = 2)   # fix a lighter tail
 ```
 
 The two fields play **different** roles on the public route. `ν` is structural: it
-defines the likelihood, is held fixed rather than estimated, and travels on the
-marker (`fit_gllvm` forwards it as the fitter's `nu`). `σ` is a **tag payload** —
+defines the likelihood and a numeric value fixes it, while `ν = nothing` asks the
+fitter to estimate it. `σ` is a **tag payload** —
 the scale is always estimated, so `StudentTFamily(4.0, 1.0)` and
 `StudentTFamily(4.0, 9.0)` give the same fit; pass `σ_init` to
 [`fit_studentt_gllvm`](@ref) to seed it. Internally the Laplace kernels construct
 their own per-iteration `StudentTFamily(ν, σ)` markers, which is what the `σ`
 field is for. As `ν → ∞` the family tends to `Normal(η, σ²)`.
 """
-struct StudentTFamily{T<:Real}
-    ν::T
+struct StudentTFamily{N<:Union{Real,Nothing}, T<:Real}
+    ν::N
     σ::T
 end
-StudentTFamily(ν::Real, σ::Real) = (νσ = promote(float(ν), float(σ)); StudentTFamily(νσ[1], νσ[2]))
-# Public-call convenience (mirrors `NB1()`): σ is never read on the `fit_gllvm`
-# route, and ν defaults to the same 4.0 as `fit_studentt_gllvm`'s `nu`.
+StudentTFamily(ν::Real, σ::Real) = (νσ = promote(float(ν), float(σ)); StudentTFamily{typeof(νσ[1]), typeof(νσ[2])}(νσ[1], νσ[2]))
+StudentTFamily(ν::Nothing, σ::Real) = StudentTFamily{Nothing, typeof(float(σ))}(nothing, float(σ))
 StudentTFamily(ν::Real) = StudentTFamily(float(ν), 1.0)
-StudentTFamily() = StudentTFamily(4.0, 1.0)
+StudentTFamily(::Nothing) = StudentTFamily(nothing, 1.0)
+StudentTFamily() = StudentTFamily(nothing, 1.0)
+
+const StudentT = StudentTFamily
 
 default_link(::StudentTFamily) = IdentityLink()
 
@@ -77,13 +83,33 @@ _glm_weight(f::StudentTFamily, μ, n, me) =
 
 # Closed-form location–scale t log-density:
 #   ℓ = logΓ((ν+1)/2) − logΓ(ν/2) − ½log(νπ) − log σ − (ν+1)/2 · log(1 + r²/(ν σ²)).
+# Limit the fixed-order series to Float64, including nested ForwardDiff Duals.
+# BigFloat and BigFloat-backed Duals retain their caller-selected precision.
+@inline _studentt_float64_backed(::Any) = false
+@inline _studentt_float64_backed(::Float64) = true
+@inline _studentt_float64_backed(x::ForwardDiff.Dual) = _studentt_float64_backed(ForwardDiff.value(x))
+
+function _studentt_log_normalizer(ν)
+    if _studentt_float64_backed(ν) && ν >= 64
+        # DLMF 5.11.8, subtracting h=1/2 and h=0 at z=ν/2.
+        # First omitted term is 691/(88ν^11), about 1.1e-19 at ν=64.
+        # Direct differentiation of this expression avoids digamma cancellation.
+        u = inv(ν)
+        u2 = u*u
+        o = one(ν)
+        correction = u * (-o/4 + u2*(o/24 + u2*(-o/20 + u2*(17o/112 - u2*31o/36))))
+        return -log(2*oftype(ν, π))/2 + correction
+    end
+    half = (ν + one(ν))/2
+    return loggamma(half) - loggamma(ν/2) - log(ν*oftype(half, π))/2
+end
+
 function _glm_logpdf(f::StudentTFamily, μ, n, y)
     ν = f.ν
     σ = f.σ
     r = y - μ
     half = (ν + one(ν)) / 2
-    return loggamma(half) - loggamma(ν / 2) -
-           0.5 * log(ν * convert(typeof(half), π)) - log(σ) -
+    return _studentt_log_normalizer(ν) - log(σ) -
            half * log1p(r^2 / (ν * σ^2))
 end
 
@@ -91,14 +117,45 @@ end
     studentt_marginal_loglik_laplace(Y, Λ, β, σ; ν=4.0, link=IdentityLink(), kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a Student-t GLLVM with
-FIXED degrees of freedom `ν` and scale `σ` (`(y − η)/σ ~ t_ν`, identity link) — a
-thin wrapper over the family-generic `marginal_loglik_laplace` with the
-`StudentTFamily(ν, σ)` marker. `Y` is the p×n response matrix; `Λ` p×K; `β`
-length-p. As `ν → ∞` this tends to the Gaussian marginal.
+degrees of freedom `ν` and scale `σ` (`(y − η)/σ ~ t_ν`, identity link) — a
+thin wrapper over the family-generic `marginal_loglik_laplace` or grouped site
+evaluator. `Y` is the p×n response matrix; `Λ` p×K; `β` length-p. `σ` and `ν`
+may each be a scalar `Real` or a length-p `AbstractVector`. As `ν → ∞` this tends
+to the Gaussian marginal.
 """
 studentt_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
         σ::Real; ν::Real = 4.0, link::Link = IdentityLink(), kwargs...) =
     marginal_loglik_laplace(StudentTFamily(ν, σ), Y, ones(Int, size(Y)), Λ, β, link; kwargs...)
+
+function studentt_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
+        σ::Union{Real, AbstractVector}; ν::Union{Real, AbstractVector} = 4.0, link::Link = IdentityLink(),
+        mask = nothing, offset = nothing, kwargs...)
+    p = size(Λ, 1)
+    if σ isa AbstractVector
+        length(σ) == p || throw(ArgumentError("length(σ)=$(length(σ)) must equal p=$p"))
+    end
+    if ν isa AbstractVector
+        length(ν) == p || throw(ArgumentError("length(ν)=$(length(ν)) must equal p=$p"))
+    end
+    fams = if σ isa AbstractVector && ν isa AbstractVector
+        [StudentTFamily(ν[t], σ[t]) for t in 1:p]
+    elseif σ isa AbstractVector
+        [StudentTFamily(ν, σ[t]) for t in 1:p]
+    elseif ν isa AbstractVector
+        [StudentTFamily(ν[t], σ) for t in 1:p]
+    else
+        [StudentTFamily(ν, σ) for t in 1:p]
+    end
+    N = ones(Int, size(Y))
+    acc = 0.0
+    @inbounds for i in axes(Y, 2)
+        mi = mask   === nothing ? nothing : view(mask, :, i)
+        oi = offset === nothing ? nothing : view(offset, :, i)
+        acc += _studentt_grouped_loglik_site(fams, view(Y, :, i), view(N, :, i), Λ, β, link;
+                                             mask = mi, offset = oi, kwargs...)
+    end
+    return acc
+end
 
 # ---------------------------------------------------------------------------
 # Per-trait dispersion substrate (2026-08-28, gllvmTMB.cpp:1184 `log_sigma_student`,
@@ -176,33 +233,6 @@ function _studentt_grouped_loglik_site(fams::AbstractVector{<:StudentTFamily}, y
     return ℓ - 0.5 * dot(z, z) - 0.5 * logdet(A)
 end
 
-"""
-    studentt_marginal_loglik_laplace(Y, Λ, β, σ::AbstractVector; ν=4.0, link=IdentityLink(), kwargs...) -> Float64
-
-Per-trait-dispersion variant (`length(σ) == p`, gllvmTMB's `log_sigma_student`,
-`gllvmTMB.cpp:1184`, length `n_traits`): species `t` gets its own scale `σ[t]`
-(same fixed `ν` for every species) rather than one shared scalar. With a
-constant `σ` this equals the shared-scalar method above to machine precision
-(same `_glm_score`/`_glm_weight`/`_glm_logpdf` pieces, only the dispersion
-lookup changes).
-"""
-function studentt_marginal_loglik_laplace(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector,
-        σ::AbstractVector; ν::Real = 4.0, link::Link = IdentityLink(), mask = nothing,
-        offset = nothing, kwargs...)
-    p = size(Λ, 1)
-    length(σ) == p || throw(ArgumentError("length(σ)=$(length(σ)) must equal p=$p"))
-    fams = StudentTFamily.(ν, float.(σ))
-    N = ones(Int, size(Y))
-    acc = 0.0
-    @inbounds for i in axes(Y, 2)
-        mi = mask   === nothing ? nothing : view(mask, :, i)
-        oi = offset === nothing ? nothing : view(offset, :, i)
-        acc += _studentt_grouped_loglik_site(fams, view(Y, :, i), view(N, :, i), Λ, β, link;
-                                             mask = mi, offset = oi, kwargs...)
-    end
-    return acc
-end
-
 # ---------------------------------------------------------------------------
 # Fit driver.
 # ---------------------------------------------------------------------------
@@ -211,8 +241,9 @@ end
     StudentTFit
 
 Result of [`fit_studentt_gllvm`](@ref): intercepts `β` (length p), loadings `Λ`
-(p×K), the FIXED degrees of freedom `ν`, the estimated scale `σ` (`(y − η)/σ ~
-t_ν`; a `Float64` under `disp_group == :shared`, or a length-p `Vector{Float64}`
+(p×K), degrees of freedom `ν` (`Float64` or length-p `Vector{Float64}`), whether
+`ν` was estimated (`estimated_nu`), and estimated scale `σ`
+(`(y − η)/σ ~ t_ν`; a `Float64` under `disp_group == :shared`, or a length-p `Vector{Float64}`
 under `disp_group == :species`), the `link` (always `IdentityLink()`), the
 maximised Laplace `loglik`, the optimiser `converged` flag, `iterations`, the
 `hessian` curvature selector, and `disp_group` (`:shared` default or
@@ -221,7 +252,7 @@ maximised Laplace `loglik`, the optimiser `converged` flag, `iterations`, the
 struct StudentTFit
     β::Vector{Float64}
     Λ::Matrix{Float64}
-    ν::Float64
+    ν::Union{Float64, Vector{Float64}}
     σ::Union{Float64, Vector{Float64}}
     link::Link
     loglik::Float64
@@ -229,7 +260,15 @@ struct StudentTFit
     iterations::Int
     hessian::Symbol   # the Laplace log-det curvature this fit's objective used
     disp_group::Symbol
+    estimated_nu::Bool
+    # Flat Gaussian-limit boundary honesty (panel 2026-09-01): true when an
+    # ESTIMATED ν reached the ν→∞ boundary (any ν > 1e6, the same rule the
+    # parity fixture diagnoses). Additive; `converged` semantics unchanged.
+    nu_boundary::Bool
 end
+
+_studentt_nu_boundary(estimated::Bool, ν) =
+    estimated && any(>(1e6), ν isa Real ? (ν,) : ν)
 
 # Positional compatibility constructors (2026-08-28): every pre-existing
 # construction site builds a default-curvature, shared-dispersion fit; the
@@ -239,17 +278,29 @@ end
 # precedent (`DeltaLogNormalFit`).
 StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations) =
     StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations,
-               _default_hessian(StudentTFamily(4.0, 1.0), link), :shared)
+               _default_hessian(StudentTFamily(4.0, 1.0), link), :shared, false)
 StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian::Symbol) =
-    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian, :shared)
+    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian, :shared, false)
+StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian::Symbol,
+            disp_group::Symbol) =
+    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian,
+                disp_group, false)
+# 11-positional compatibility (pre-nu_boundary sites): derive the flag.
+StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian::Symbol,
+            disp_group::Symbol, estimated_nu::Bool) =
+    StudentTFit(β, Λ, ν, σ, link, loglik, converged, iterations, hessian,
+                disp_group, estimated_nu, _studentt_nu_boundary(estimated_nu, ν))
 
 function Base.show(io::IO, f::StudentTFit)
     p, K = size(f.Λ)
     σstr = f.σ isa Real ? string(round(f.σ; sigdigits = 4)) : "per-trait"
-    print(io, "StudentTFit(p=", p, ", K=", K, ", ν=", round(f.ν; sigdigits = 4),
-          " (fixed), σ=", σstr,
+    νstr = f.ν isa Real ? string(round(f.ν; sigdigits = 4)) : "per-trait"
+    print(io, "StudentTFit(p=", p, ", K=", K, ", ν=", νstr,
+          f.estimated_nu ? " (estimated)" : " (fixed)",
+          ", σ=", σstr,
           ", link=", nameof(typeof(f.link)),
           ", loglik=", round(f.loglik; sigdigits = 7),
+          f.nu_boundary ? ", ν at Gaussian-limit boundary" : "",
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
@@ -268,46 +319,38 @@ end
 _default_hessian(::StudentTFamily, ::IdentityLink) = :observed
 
 """
-    fit_studentt_gllvm(Y; K, nu=4.0, link=IdentityLink(), σ_init=nothing, …) -> StudentTFit
+    fit_studentt_gllvm(Y; K, nu=nothing, link=IdentityLink(), σ_init=nothing, nu_init=nothing, …) -> StudentTFit
 
-Fit a Student-t GLLVM by L-BFGS over `[β; vec(Λ); log σ]` on the Laplace marginal
-(`studentt_marginal_loglik_laplace`), jointly estimating the scale `σ` while
-holding the degrees of freedom `nu` FIXED (default `nu = 4.0`). `Y` is a p×n
-response matrix; `K` the latent dimension. The L-BFGS gradient uses the generic
-scalar-auxiliary implicit dense-Laplace gradient
-(`marginal_loglik_laplace_aux_value_grad`): the per-site latent mode is found once
-by Fisher scoring, then each observation is differentiated only with respect to
-`(η, log σ)` via ForwardDiff through the closed-form `_glm_logpdf`, and the packed
-implicit-gradient chain rule is applied. Warm start = empirical column-mean
-intercepts + an SVD loadings init + a robust scale `σ₀` from the residual MAD.
+Fit a Student-t GLLVM by L-BFGS over `[β; vec(Λ); log σ; log(ν-1)]` on the Laplace
+marginal (`studentt_marginal_loglik_laplace`). When `nu === nothing` (default),
+the degrees of freedom `ν` are estimated jointly per-trait (`ν_j = 1 + exp(θ_{ν,j}) > 1`),
+matching `gllvmTMB`. A finite positive number (e.g. `nu = 4.0`) or a length-`p`
+vector of finite positive values fixes `nu`. Nonfinite values are rejected before
+reading responses. Fixed values `0 < nu <= 1` are a Julia extension; the frozen
+R 0.7.0 constructor requires `df > 1`. The Gaussian limit does not admit `nu = Inf`.
+`Y` is a p×n response matrix; `K` the latent dimension.
 
-Estimating `nu` jointly is a follow-up (it requires a second auxiliary, which the
-scalar-aux path does not support); pass `nu` to change the fixed tail weight.
-
-`hessian` selects the Laplace log-det curvature only (`:fisher` expected /
-`:observed` joint — TMB's choice); the inner mode search is always
-Fisher-scored. Default: Student-t default `:fisher`. Omitting it is exactly the pre-kwarg
-behaviour.
-
-`disp_group` selects the dispersion parameterisation (`:shared` default, or
-`:species`), following the repo's `disp_group` convention for grouped /
-per-trait dispersion (`grouped_dispersion.jl`, the delta fitters). Under
-`:species`, `σ` is a length-p vector (`StudentTFamily`'s scale `σ[t]`; `ν`
-stays a single shared scalar for every trait — per-trait `ν` is a further
-step, not attempted here) — this matches gllvmTMB's `log_sigma_student`
-(`gllvmTMB.cpp:1184`, length `n_traits`). `:shared` (the default) is
-BIT-IDENTICAL to the pre-`disp_group` fitter: it routes through the
-byte-for-byte unchanged scalar-σ code path.
+Initial values: `σ₀ = 1.0`, `ν₀ = 3.0` (`log(ν₀ - 1) = log(2.0)`), matching gllvmTMB.
+`hessian` selects the Laplace log-det curvature (`:observed` default / `:fisher`).
+`disp_group` selects `:species` (per-trait dispersion) or `:shared`.
 """
 function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
-        nu::Real = 4.0, link::Link = IdentityLink(),
+        nu::Union{Nothing, Real, AbstractVector{<:Real}} = nothing,
+        link::Link = IdentityLink(),
         hessian::Symbol = _default_hessian(StudentTFamily(4.0, 1.0), link),
         disp_group::Symbol = :shared,
-        β_init = nothing, Λ_init = nothing, σ_init = nothing,
+        β_init = nothing, Λ_init = nothing, σ_init = nothing, nu_init = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 500,
         newton_maxiter::Integer = 100, newton_tol::Real = 1e-9)
     p, n = size(Y)
-    nu > 0 || throw(ArgumentError("Student-t degrees of freedom nu must be > 0; got $nu"))
+    if nu !== nothing
+        if nu isa Real
+            isfinite(nu) && nu > 0 || throw(ArgumentError("Student-t degrees of freedom nu must be finite and > 0; got $nu"))
+        else
+            length(nu) == p || throw(ArgumentError("length(nu)=$(length(nu)) must equal p=$p"))
+            all(x -> isfinite(x) && x > 0, nu) || throw(ArgumentError("All Student-t degrees of freedom nu must be finite and > 0"))
+        end
+    end
     hessian in (:fisher, :observed) || throw(ArgumentError(
         "fit_studentt_gllvm: hessian must be :fisher or :observed; got :$hessian"))
     disp_group in (:shared, :species) || throw(ArgumentError(
@@ -328,38 +371,44 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     else
         collect(float.(Λ_init))
     end
-    # Robust σ₀ from the residual MAD (1.4826·MAD ≈ Gaussian SD; for a t the scale
-    # σ < SD, but MAD is a stable, outlier-resistant starting point).
-    R = Zemp .- β0
-    σ0 = if σ_init === nothing
-        s = 1.4826 * median(abs.(R .- median(R)))
-        max(s, 1e-3)
-    else
-        float(σ_init)
-    end
-    # Per-trait warm start (disp_group == :species): per-species MAD, falling
-    # back to the pooled σ0 for any species whose per-species MAD is ~0 (a
-    # near-constant trait), mirroring the delta fitters' fallback-to-pooled
-    # convention.
-    σ0vec = [max(1.4826 * median(abs.(view(R, t, :) .- median(view(R, t, :)))), 0.1 * σ0) for t in 1:p]
+    # Initial values: σ_0 = 1.0, ν_0 = 3.0 (matching gllvmTMB).
+    σ0 = σ_init === nothing ? 1.0 : float(σ_init)
+    σ0vec = σ_init === nothing ? fill(1.0, p) : (σ_init isa AbstractVector ? float.(σ_init) : fill(float(σ_init), p))
     ndisp = disp_group === :shared ? 1 : p
     logσ0 = disp_group === :shared ? [log(σ0)] : log.(σ0vec)
-    ν0 = float(nu)
 
-    θ0 = vcat(β0, pack_lambda(Λ0), logσ0)
-    # Negative Laplace marginal log-likelihood over [β; vec(Λ); log σ (1 or p
-    # entries)], ν fixed. Mirrors the current scalar-aux fitters
-    # (fit_beta_gllvm / fit_gamma_gllvm); disp_group threading mirrors the
-    # delta fitters (twopart.jl). (The old
-    # marginal_loglik_laplace_aux_value_grad implicit path was retired in the
-    # engine refactor; a studentt_laplace_grad analytic gradient is a
-    # follow-up, see issue #105.)
+    log_nu_minus_1_0 = if nu === nothing
+        if nu_init === nothing
+            fill(log(2.0), ndisp)
+        else
+            if disp_group === :shared
+                [log(float(nu_init) - 1.0)]
+            else
+                nu_init isa AbstractVector ? log.(float.(nu_init) .- 1.0) : fill(log(float(nu_init) - 1.0), p)
+            end
+        end
+    else
+        Float64[]
+    end
+    ν_fixed = nu === nothing ? nothing : (nu isa Real ? float(nu) : float.(nu))
+
+    θ0 = if nu === nothing
+        vcat(β0, pack_lambda(Λ0), logσ0, log_nu_minus_1_0)
+    else
+        vcat(β0, pack_lambda(Λ0), logσ0)
+    end
+
     function negll(θ)
         β = θ[1:p]
         Λ = unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         σ = disp_group === :shared ? exp(θ[p + rr + 1]) : exp.(θ[(p + rr + 1):(p + rr + ndisp)])
+        ν = if nu === nothing
+            disp_group === :shared ? (1.0 + exp(θ[p + rr + ndisp + 1])) : (1.0 .+ exp.(θ[(p + rr + ndisp + 1):(p + rr + 2 * ndisp)]))
+        else
+            ν_fixed
+        end
         v = try
-            -studentt_marginal_loglik_laplace(Y, Λ, β, σ; ν = ν0, link = link,
+            -studentt_marginal_loglik_laplace(Y, Λ, β, σ; ν = ν, link = link,
                                               hessian = hessian,
                                               maxiter = newton_maxiter, tol = newton_tol)
         catch
@@ -374,5 +423,24 @@ function fit_studentt_gllvm(Y::AbstractMatrix{<:Real}; K::Integer,
     β̂ = θ̂[1:p]
     Λ̂ = unpack_lambda(θ̂[(p + 1):(p + rr)], p, K)
     σ̂ = disp_group === :shared ? exp(θ̂[p + rr + 1]) : exp.(θ̂[(p + rr + 1):(p + rr + ndisp)])
-    return StudentTFit(β̂, Λ̂, ν0, σ̂, link, _fit_verdict(res)..., hessian, disp_group)
+    ν̂ = if nu === nothing
+        disp_group === :shared ? (1.0 + exp(θ̂[p + rr + ndisp + 1])) : (1.0 .+ exp.(θ̂[(p + rr + ndisp + 1):(p + rr + 2 * ndisp)]))
+    else
+        ν_fixed
+    end
+    estimated = nu === nothing
+    boundary = _studentt_nu_boundary(estimated, ν̂)
+    boundary && @warn "Student-t estimated ν reached the flat Gaussian-limit boundary (ν > 1e6); the Student model is not distinguishable from Gaussian on this data, and optimizer convergence flags are unreliable at this boundary. Consider a fixed ν or the Gaussian family." maxlog=1
+    loglik, conv, iters = _fit_verdict(res)
+    # Boundary honesty wiring (mirrors `_tweedie_verdict`'s `:power_at_boundary` rule,
+    # families/tweedie.jl: a family parameter that has run to the edge of its domain
+    # forces `converged = false` regardless of what Optim itself reported — Optim
+    # cannot tell a stationary point from a flat plateau by gradient alone). Forcing
+    # `converged` here — rather than leaving it `true` alongside `nu_boundary` — is
+    # what makes the fit fail the GENERIC `sanity_multi`/`gllvmTMB_diagnose` gate
+    # (diagnostics.jl), which reads `fit.converged` and nothing family-specific: no
+    # diagnostics.jl edit needed, and no existing gate is weakened, only tightened.
+    conv = conv && !boundary
+    return StudentTFit(β̂, Λ̂, ν̂, σ̂, link, loglik, conv, iters, hessian,
+                       disp_group, estimated, boundary)
 end

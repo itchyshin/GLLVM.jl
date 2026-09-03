@@ -1,0 +1,36 @@
+{
+  "status": "SCOPED_SUPERVISOR_CHECKS_PASS",
+  "scope": "OBSERVER_PIPE_FAILURE_NOT_MODEL_PARITY",
+  "local_tests": 24,
+  "remote_tests": 6,
+  "remote_receipt": {
+    "scope": "PROCESS_SUPERVISOR_ONLY_NO_FITS",
+    "host": "totoro",
+    "remote": "/home/snakagaw/core070-aghq-20260830/supervisor-disconnect-02",
+    "command": "cd /home/snakagaw/core070-aghq-20260830/supervisor-disconnect-02 && hostname && python3 --version && python3 -m unittest discover -s tools -p test_core070_targeted_run.py && python3 tools/core070_targeted_run.py --self-test",
+    "exit_code": 0,
+    "elapsed_seconds": 1.2670958328526467,
+    "source_pins": {
+      "tools/core070_targeted_run.py": "5fa42ff7efc3b0f6cf2b5d770a7e205bf3f64c9d3e467b1927c30de2d7a327d2",
+      "tools/test_core070_targeted_run.py": "7f733e39c5aa3ac49eed33a6cca739215820f23a7dd3f2c955914671e894c005"
+    },
+    "remote_source_hashes_verified": true,
+    "log_sha256": "c5bcd27bf905baaa0136d7e5280c8d5ec2f9fc5c12fc28a916929384735c5933"
+  },
+  "source_pins": {
+    "tools/core070_targeted_run.py": "5fa42ff7efc3b0f6cf2b5d770a7e205bf3f64c9d3e467b1927c30de2d7a327d2",
+    "tools/test_core070_targeted_run.py": "7f733e39c5aa3ac49eed33a6cca739215820f23a7dd3f2c955914671e894c005"
+  },
+  "artifacts": {
+    ".unlazy/core070-aghq/supervisor-disconnect/red.log": "941b22faff474a0452dd7c5ef1d2c2fe0dd40ab79686a40b73c2c9d78c79962f",
+    ".unlazy/core070-aghq/supervisor-disconnect/terminal-red.log": "2a803acded8348d0f3cb126d876f3cc3ab3e0abaf587fc4c4ed32700787f28c9",
+    ".unlazy/core070-aghq/supervisor-disconnect/green-final24.log": "657657788cc5a0356f8a8c3ad4028cf53c55b51947f08161fa1130cefe69ea2a",
+    ".unlazy/core070-aghq/supervisor-disconnect/totoro-final.log": "c5bcd27bf905baaa0136d7e5280c8d5ec2f9fc5c12fc28a916929384735c5933",
+    ".unlazy/core070-aghq/supervisor-disconnect/totoro-final-receipt.json": "c921b41ef16a9f79dee57bd0ea64f4507eece05e785c756a6c36ea93fdd6ad00"
+  },
+  "limits": [
+    "Does not survive host/process termination or SIGHUP by itself",
+    "Does not repair duplicated fixture assertion counting",
+    "No new fits, full package check, parity or independent review"
+  ]
+}

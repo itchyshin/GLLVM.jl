@@ -1,0 +1,872 @@
+{
+ "schema": "core070-required-case-plan/v1",
+ "status": "DRAFT_V2_PLANNED_PENDING_MAINTAINER_SIGNOFF",
+ "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+ "generated": "2026-09-01 manifest-freeze fan-out (adversarially verified drafts)",
+ "rows": [
+  {
+   "source_id": "namespace/S3method/coef,gllvmTMB_julia",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-COEF-JULIA-BRIDGE-COMPARE",
+     "r_call": "coef.gllvmTMB_julia(object, ...) on an R6/list bridge object returned by julia-bridge.R fit_gllvmTMB_julia()",
+     "julia_surface": "GLLVM.jl native postfit accessor exercised through R/JuliaCall (e.g. StatsAPI.coef on the fitted GllvmFit)",
+     "comparands": [
+      "R bridge method output",
+      "direct Julia call via JuliaCall on the same fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "coef.gllvmTMB_julia is the R-side readback of a live Julia GLLVM.jl fit (julia-bridge.R); its numeric output must match calling the equivalent Julia accessor directly on the same fitted object."
+  },
+  {
+   "source_id": "namespace/S3method/confint,gllvmTMB_julia",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-CONFINT-JULIA-BRIDGE-COMPARE",
+     "r_call": "confint.gllvmTMB_julia(object, ...) on an R6/list bridge object returned by julia-bridge.R fit_gllvmTMB_julia()",
+     "julia_surface": "GLLVM.jl native postfit accessor exercised through R/JuliaCall (e.g. StatsAPI.confint on the fitted GllvmFit)",
+     "comparands": [
+      "R bridge method output",
+      "direct Julia call via JuliaCall on the same fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "confint.gllvmTMB_julia is the R-side readback of a live Julia GLLVM.jl fit (julia-bridge.R); its numeric output must match calling the equivalent Julia accessor directly on the same fitted object."
+  },
+  {
+   "source_id": "namespace/S3method/fitted,gllvmTMB_julia",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-FITTED-JULIA-BRIDGE-COMPARE",
+     "r_call": "fitted.gllvmTMB_julia(object, ...) on an R6/list bridge object returned by julia-bridge.R fit_gllvmTMB_julia()",
+     "julia_surface": "GLLVM.jl native postfit accessor exercised through R/JuliaCall (e.g. StatsAPI.fitted on the fitted GllvmFit)",
+     "comparands": [
+      "R bridge method output",
+      "direct Julia call via JuliaCall on the same fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "fitted.gllvmTMB_julia is the R-side readback of a live Julia GLLVM.jl fit (julia-bridge.R); its numeric output must match calling the equivalent Julia accessor directly on the same fitted object."
+  },
+  {
+   "source_id": "namespace/S3method/logLik,gllvmTMB_julia",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-LOGLIK-JULIA-BRIDGE-COMPARE",
+     "r_call": "logLik.gllvmTMB_julia(object, ...) on an R6/list bridge object returned by julia-bridge.R fit_gllvmTMB_julia()",
+     "julia_surface": "GLLVM.jl native postfit accessor exercised through R/JuliaCall (e.g. StatsAPI.loglikelihood on the fitted GllvmFit)",
+     "comparands": [
+      "R bridge method output",
+      "direct Julia call via JuliaCall on the same fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "logLik.gllvmTMB_julia is the R-side readback of a live Julia GLLVM.jl fit (julia-bridge.R); its numeric output must match calling the equivalent Julia accessor directly on the same fitted object."
+  },
+  {
+   "source_id": "namespace/S3method/predict,gllvmTMB_julia",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-PREDICT-JULIA-BRIDGE-COMPARE",
+     "r_call": "predict.gllvmTMB_julia(object, ...) on an R6/list bridge object returned by julia-bridge.R fit_gllvmTMB_julia()",
+     "julia_surface": "GLLVM.jl native postfit accessor exercised through R/JuliaCall (e.g. StatsAPI.predict on the fitted GllvmFit)",
+     "comparands": [
+      "R bridge method output",
+      "direct Julia call via JuliaCall on the same fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "predict.gllvmTMB_julia is the R-side readback of a live Julia GLLVM.jl fit (julia-bridge.R); its numeric output must match calling the equivalent Julia accessor directly on the same fitted object."
+  },
+  {
+   "source_id": "namespace/S3method/residuals,gllvmTMB_julia",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-RESIDUALS-JULIA-BRIDGE-COMPARE",
+     "r_call": "residuals.gllvmTMB_julia(object, ...) on an R6/list bridge object returned by julia-bridge.R fit_gllvmTMB_julia()",
+     "julia_surface": "GLLVM.jl native postfit accessor exercised through R/JuliaCall (e.g. StatsAPI.residuals on the fitted GllvmFit)",
+     "comparands": [
+      "R bridge method output",
+      "direct Julia call via JuliaCall on the same fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "residuals.gllvmTMB_julia is the R-side readback of a live Julia GLLVM.jl fit (julia-bridge.R); its numeric output must match calling the equivalent Julia accessor directly on the same fitted object."
+  },
+  {
+   "source_id": "namespace/S3method/simulate,gllvmTMB_julia",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-SIMULATE-JULIA-BRIDGE-COMPARE",
+     "r_call": "simulate.gllvmTMB_julia(object, ...) on an R6/list bridge object returned by julia-bridge.R fit_gllvmTMB_julia()",
+     "julia_surface": "GLLVM.jl native postfit accessor exercised through R/JuliaCall (e.g. StatsAPI.simulate on the fitted GllvmFit)",
+     "comparands": [
+      "R bridge method output",
+      "direct Julia call via JuliaCall on the same fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "simulate.gllvmTMB_julia is the R-side readback of a live Julia GLLVM.jl fit (julia-bridge.R); its numeric output must match calling the equivalent Julia accessor directly on the same fitted object."
+  },
+  {
+   "source_id": "namespace/S3method/summary,gllvmTMB_julia",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-SUMMARY-JULIA-BRIDGE-COMPARE",
+     "r_call": "summary.gllvmTMB_julia(object, ...) (julia-bridge.R:3417), which assembles a summary.gllvmTMB_julia list from the bridge object's coef/SE/loadings fields",
+     "julia_surface": "GLLVM.jl postfit summary content (coef table, SEs) assembled from the same GllvmFit via postfit.jl accessors",
+     "comparands": [
+      "fields of the R summary.gllvmTMB_julia object",
+      "the underlying Julia accessor outputs it is built from"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "summary.gllvmTMB_julia computes a numeric summary object (not just prints it); its content must match the Julia postfit accessors it is assembled from."
+  },
+  {
+   "source_id": "namespace/S3method/coef,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-COEF-MULTI-NATIVE",
+     "r_call": "coef.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "coef.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/confint,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-CONFINT-MULTI-NATIVE",
+     "r_call": "confint.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "confint.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/deviance,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-DEVIANCE-MULTI-NATIVE",
+     "r_call": "deviance.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "deviance.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/fitted,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-FITTED-MULTI-NATIVE",
+     "r_call": "fitted.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "fitted.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/logLik,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-LOGLIK-MULTI-NATIVE",
+     "r_call": "logLik.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "logLik.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/predict,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-PREDICT-MULTI-NATIVE",
+     "r_call": "predict.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "predict.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/residuals,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-RESIDUALS-MULTI-NATIVE",
+     "r_call": "residuals.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "residuals.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/simulate,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-SIMULATE-MULTI-NATIVE",
+     "r_call": "simulate.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "simulate.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/summary,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-SUMMARY-MULTI-NATIVE",
+     "r_call": "summary.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "summary.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/tidy,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-TIDY-MULTI-NATIVE",
+     "r_call": "tidy.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "tidy.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/vcov,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-VCOV-MULTI-NATIVE",
+     "r_call": "vcov.gllvmTMB_multi(object, ...) on a native R multi-response gllvmTMB fit (methods-gllvmTMB.R / vcov-coef.R / z-confint-gllvmTMB.R)",
+     "julia_surface": "GLLVM.jl equivalent postfit accessor on the corresponding multi-response GllvmFit",
+     "comparands": [
+      "R native gllvmTMB_multi method output",
+      "GLLVM.jl postfit accessor on a formula-equivalent fit"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "vcov.gllvmTMB_multi is a required accessor on the native multi-response fit object; its numeric output is the R-side comparand for the matching GLLVM.jl postfit accessor."
+  },
+  {
+   "source_id": "namespace/S3method/stats::nobs,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-NOBS-MULTI-NATIVE",
+     "r_call": "nobs.gllvmTMB_multi(object, ...) (methods-gllvmTMB.R), the stats::nobs S3 method",
+     "julia_surface": "number of observations recoverable from a GLLVM.jl GllvmFit's stored design (size(fit.y, 1) or equivalent)",
+     "comparands": [
+      "R nobs() value",
+      "Julia fit's observation count"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "nobs.gllvmTMB_multi reports sample size used in the fit; trivial but required for interface parity checks that key off n."
+  },
+  {
+   "source_id": "namespace/S3method/ordiplot,gllvmTMB_multi",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-ORDIPLOT-MULTI-SCORES",
+     "r_call": "ordiplot.gllvmTMB_multi(x, ...) (output-methods.R:384), which computes/extracts ordination scores and loadings before rendering",
+     "julia_surface": "GLLVM.jl ordiplot()/ordination() (src/ordination.jl), which returns the same rotated latent-variable score matrix",
+     "comparands": [
+      "ordination scores/loadings feeding the R plot",
+      "GLLVM.jl ordination() score matrix on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "GLLVM.jl has its own ordiplot()/ordination() (src/ordination.jl) returning rotated LV scores; the required case compares the underlying score/loading data the R plot consumes, not the rendered pixels."
+  },
+  {
+   "source_id": "namespace/S3method/imputed,gllvmTMB",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-IMPUTED-MISSING-PREDICTOR",
+     "r_call": "imputed.gllvmTMB(object, ...) (missing-predictor.R), returning FIML-style imputed predictor values from a fit with missing covariates",
+     "julia_surface": "GLLVM.jl missing-predictor imputation (src/missing_predictor_fiml.jl / missing_predictor_multi.jl / missing_predictor_phylo.jl)",
+     "comparands": [
+      "R imputed predictor values",
+      "Julia missing-predictor imputed values on the same design"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "imputed.gllvmTMB exposes the FIML imputed-covariate values; GLLVM.jl has a dedicated missing-predictor family of modules that must reproduce the same imputed values."
+  },
+  {
+   "source_id": "namespace/export/.proportions_bootstrap_ci",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-PROPORTIONS-BOOTSTRAP-CI",
+     "r_call": ".proportions_bootstrap_ci(...) (proportions-ci.R:423), the parametric-bootstrap CI for extract_proportions() shared/unique variance splits",
+     "julia_surface": "GLLVM.jl src/confint_derived.jl bootstrap_ci_derived() applied to proportions(fit; component=...)",
+     "comparands": [
+      "R bootstrap CI bounds for a proportions component",
+      "Julia bootstrap_ci_derived on proportions()"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Internal-but-exported bootstrap CI helper behind extract_proportions(); its bounds must match GLLVM.jl's bootstrap_ci_derived applied to the Julia proportions() function."
+  },
+  {
+   "source_id": "namespace/export/.proportions_wald_ci",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-PROPORTIONS-WALD-CI",
+     "r_call": ".proportions_wald_ci(...) (proportions-ci.R:247), the transformed-scale Wald CI for a proportions/ICC-like component",
+     "julia_surface": "GLLVM.jl src/confint_derived_wald.jl icc_wald_ci() / transformed_wald_ci_derived() (logit-transformed for [0,1] quantities per CLAUDE.md)",
+     "comparands": [
+      "R Wald CI bounds",
+      "Julia icc_wald_ci / transformed_wald_ci_derived bounds on the same fit"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Matches GLLVM.jl's documented logit-transformed Wald CI for bounded derived quantities (confint_derived_wald.jl)."
+  },
+  {
+   "source_id": "namespace/export/Beta",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-BETA-FAMILY-NATIVE-MODEL",
+     "r_call": "Beta(link = \"logit\") (families.R:213) used as a family= argument in gllvmTMB()",
+     "julia_surface": "GLLVM.jl families/beta.jl Beta-family fit driver",
+     "comparands": [
+      "R Beta-family fit log-likelihood/estimates",
+      "GLLVM.jl Beta-family fit on the same simulated data"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "GLLVM.jl already implements a dense-Laplace Beta family (families/beta.jl); the R Beta() constructor's fitted output is a direct required parity target."
+  },
+  {
+   "source_id": "namespace/export/animal_scalar",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-ANIMAL-SCALAR-FIT",
+     "r_call": "gllvmTMB(value ~ 0 + trait + animal_scalar(species, pedigree = ped), df, family = gaussian()) -- single-shared-variance animal-model random intercept (animal-keyword.R:85), parser-rewritten to the canonical phylo_scalar() path with A derived from pedigree via Henderson's formula.",
+     "julia_surface": "GLLVM.jl phylo_scalar-equivalent single-shared-variance random-intercept path exercised via the R formula grammar rewrite",
+     "comparands": [
+      "R gllvmTMB fit with animal_scalar() grammar",
+      "GLLVM.jl native fit on the identical A / data"
+     ],
+     "evidence_kind": "fit"
+    }
+   ],
+   "rationale": "animal_scalar(id, pedigree=...) (animal-keyword.R:85) builds a single-shared-variance (per-trait) animal-model random intercept. Its own docstring states it is 'Mathematical parallel to phylo_scalar() -- same engine path', and the file header comment (animal-keyword.R:1-22) confirms all animal_* keywords route internally to the same canonical-rewrite path as phylo_* (pure grammar sugar, A/Ainv/pedigree standing in for phylo_*'s tree/vcv). Unlike animal_unique(), animal_scalar() carries no lifecycle-deprecated badge. No existing SLOPE-ANIMAL-SCALAR-* case is defined in slopes-required-case-plan.json, so a new fit-parity case is drafted here rather than reused."
+  },
+  {
+   "source_id": "namespace/export/animal_slope",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-ANIMAL-SLOPE-FIT",
+     "r_call": "gllvmTMB(value ~ 0 + trait + animal_slope(x | species, A = A), df, unit = 'species', cluster = 'species') -- additive-genetic random-regression slope on a continuous covariate x (animal-keyword.R:343), reusing the same A^-1 prepared for animal_scalar()/animal_latent().",
+     "julia_surface": "GLLVM.jl phylo_slope-equivalent random-regression path exercised via the R formula grammar rewrite",
+     "comparands": [
+      "R gllvmTMB fit with animal_slope() grammar",
+      "GLLVM.jl native fit on the identical A / data"
+     ],
+     "evidence_kind": "fit"
+    }
+   ],
+   "rationale": "animal_slope(formula) (animal-keyword.R:343) adds a per-individual random slope on a continuous covariate, with slopes correlated by the additive-genetic relatedness matrix A (random-regression / reaction-norm model). Its docstring states it is 'Mathematical parallel to phylo_slope()', consistent with the file-header API-parallel table (animal-keyword.R:17: animal_slope(formula) <-> phylo_slope). It carries no lifecycle-deprecated badge and is a distinct grammar path from animal_dep/animal_indep/animal_latent (slope-only bar form, not an intercept term). No existing SLOPE-ANIMAL-SLOPE-* case is defined in slopes-required-case-plan.json, so a new fit-parity case is drafted here."
+  },
+  {
+   "source_id": "namespace/export/bootstrap_Sigma",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-BOOTSTRAP-SIGMA-NATIVE",
+     "r_call": "bootstrap_Sigma(...) (bootstrap-sigma.R:196), the parametric-bootstrap CI for the fitted Sigma_y covariance",
+     "julia_surface": "GLLVM.jl src/confint_bootstrap.jl parametric-bootstrap CI applied to sigma_y_site() (src/confint_derived.jl)",
+     "comparands": [
+      "R bootstrap Sigma CI bounds",
+      "Julia confint_bootstrap.jl bounds on sigma_y_site()"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Directly maps to GLLVM.jl's confint_bootstrap.jl bootstrap-CI machinery applied to the Sigma_y accessor."
+  },
+  {
+   "source_id": "namespace/export/check_gllvmTMB",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-CHECK-GLLVMTMB-DIAGNOSTIC",
+     "r_call": "check_gllvmTMB(...) (diagnose.R:1548), the top-level post-fit diagnostic wrapper (convergence, gradient, Hessian, identifiability checks)",
+     "julia_surface": "GLLVM.jl src/fit_verdict.jl / src/postfit.jl convergence and identifiability diagnostics on the same fit",
+     "comparands": [
+      "R check_gllvmTMB() verdict fields",
+      "Julia fit_verdict.jl verdict on the same fit"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "check_gllvmTMB is the primary R diagnostic wrapper; GLLVM.jl has an analogous fit_verdict.jl/postfit.jl diagnostic surface that must agree on convergence/identifiability verdicts for matched fits."
+  },
+  {
+   "source_id": "namespace/export/confint_inspect",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-CONFINT-INSPECT-NATIVE",
+     "r_call": "confint_inspect(...) (confint-inspect.R:128), a diagnostic that inspects CI construction (bracket search, convergence) for a fit",
+     "julia_surface": "GLLVM.jl src/confint_profile.jl bracket-then-bisect diagnostics on the same fit",
+     "comparands": [
+      "R confint_inspect() diagnostic fields",
+      "Julia confint_profile.jl bracket/bisect trace on the same fit"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "confint_inspect exercises the profile-CI bracket search machinery that GLLVM.jl's confint_profile.jl also implements; required for CI-construction parity, distinct from the printed report (print,gllvmTMB_confint_inspect is separately reclassified compatibility_adapter)."
+  },
+  {
+   "source_id": "namespace/export/dep",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-DEP-FORMULA-KEYWORD",
+     "r_call": "dep(formula) (brms-sugar.R:1756), the formula-grammar keyword marking a dependent (correlated) latent-variable covariance structure",
+     "julia_surface": "GLLVM.jl src/formula.jl covariance-structure keyword parsing for the dependent-structure path",
+     "comparands": [
+      "R-parsed covariance structure from dep(...)",
+      "GLLVM.jl formula.jl parsed structure on an equivalent formula"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "dep() is core formula grammar selecting the dependent-covariance code path; GLLVM.jl's formula.jl must parse the equivalent structure identically for formula-interface parity."
+  },
+  {
+   "source_id": "namespace/export/extract_Gamma",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-GAMMA-BLOCK",
+     "r_call": "extract_Gamma(fit, level, row_traits, col_traits, scale = c('shape','effect')) (extract-sigma.R:1662) -- extracts the Sigma[row_traits, col_traits] cross-trait block from extract_Sigma(fit, level, part='shared'), optionally scaled by the level's fixed rho (.gamma_level_rho) when scale='effect'.",
+     "julia_surface": "GLLVM.jl Sigma-block extraction (row/col subset of the same shared covariance matrix returned by the extract_Sigma case) with the equivalent rho scaling applied on the 'effect' scale",
+     "comparands": [
+      "R extract_Gamma() output (both scale='shape' and scale='effect')",
+      "GLLVM.jl Sigma block subset + rho scaling on the same fit"
+     ],
+     "evidence_kind": "derived"
+    }
+   ],
+   "rationale": "extract_Gamma(fit, level, row_traits, col_traits, scale) (extract-sigma.R:1662) is a real numeric transform, not display formatting: it subsets Sigma <- extract_Sigma(fit, level, part='shared')$Sigma to Sigma[row_traits, col_traits], and on scale='effect' further multiplies by a fixed per-level rho (.gamma_level_rho). Since extract_Sigma is already required_core (CORE070-NAMESPACE-EXTRACT-SIGMA-NATIVE), extract_Gamma needs its own case covering the block-subset + rho-scaling step, distinct from extract_Sigma_table's pure display-wrapper reclassification."
+  },
+  {
+   "source_id": "namespace/export/extract_ICC_site",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-ICC-SITE",
+     "r_call": "extract_ICC_site(fit, link_residual=c(\"auto\",\"none\")) (extractors.R:101), site-level intraclass correlation",
+     "julia_surface": "GLLVM.jl src/confint_derived_wald.jl icc_wald_ci() point estimate on the same fit",
+     "comparands": [
+      "R extract_ICC_site() point estimate",
+      "Julia icc_wald_ci() point estimate"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "GLLVM.jl's confint_derived_wald.jl implements icc_wald_ci(), a plausible direct comparand for the site-ICC point estimate; confidence is moderate given the R function also branches on link_residual."
+  },
+  {
+   "source_id": "namespace/export/extract_Omega",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-OMEGA-SUM",
+     "r_call": "extract_Omega(fit, tiers = c('phy','B','W'), link_residual = c('auto','none')) (extract-omega.R:189) -- sums extract_Sigma(fit, level=tier, part='total') across the requested tiers into a single T x T Omega, adding a family-aware link residual once (not per tier) when link_residual='auto'.",
+     "julia_surface": "GLLVM.jl equivalent tier-summed covariance (sum of the same per-tier Sigma outputs already required via extract_Sigma) plus the single link-residual addition",
+     "comparands": [
+      "R extract_Omega()$Omega and $R_Omega for a multi-tier fit (e.g. tiers=c('phy','B'))",
+      "GLLVM.jl per-tier Sigma sum + link residual on the same fit"
+     ],
+     "evidence_kind": "derived"
+    }
+   ],
+   "rationale": "extract_Omega(fit, tiers, link_residual) (extract-omega.R:189) is a real numeric aggregate: it sums extract_Sigma(fit, level=tier, part='total') over the auto-detected or user-supplied tiers (phy/B/W) to produce the summed phenotypic-style covariance Omega = Sigma_phy + Sigma_B (+ Sigma_W), then adds a per-trait link-specific residual once to avoid double-counting across tiers. This is genuine cross-tier math built on top of the already-required extract_Sigma case, not a display wrapper, so it needs its own case."
+  },
+  {
+   "source_id": "namespace/export/extract_Sigma",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-SIGMA-NATIVE",
+     "r_call": "extract_Sigma(...) (extract-sigma.R:686), the fitted Sigma_y (species covariance) matrix",
+     "julia_surface": "GLLVM.jl src/confint_derived.jl sigma_y_site()",
+     "comparands": [
+      "R extract_Sigma() matrix",
+      "Julia sigma_y_site() matrix on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Direct match: GLLVM.jl's confint_derived.jl exports sigma_y_site(), the Sigma_y entries referenced in CLAUDE.md's confint_derived.jl description."
+  },
+  {
+   "source_id": "namespace/export/extract_Sigma_B",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-SIGMA-B-TWOLEVEL",
+     "r_call": "extract_Sigma_B(fit) (extractors.R:31), the between-group covariance in a two-level model",
+     "julia_surface": "GLLVM.jl src/twolevel.jl between-group covariance underlying communality_B()",
+     "comparands": [
+      "R extract_Sigma_B() matrix",
+      "Julia twolevel.jl between-group Sigma_B on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "GLLVM.jl's twolevel.jl computes communality_B()/repeatability() from an internal between-group covariance; the required case compares that underlying Sigma_B matrix."
+  },
+  {
+   "source_id": "namespace/export/extract_Sigma_W",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-SIGMA-W-TWOLEVEL",
+     "r_call": "extract_Sigma_W(fit) (extractors.R:66), the within-group covariance in a two-level model",
+     "julia_surface": "GLLVM.jl src/twolevel.jl within-group covariance underlying communality_W()",
+     "comparands": [
+      "R extract_Sigma_W() matrix",
+      "Julia twolevel.jl within-group Sigma_W on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Mirrors extract_Sigma_B; GLLVM.jl's twolevel.jl computes the within-group covariance internally for communality_W()."
+  },
+  {
+   "source_id": "namespace/export/extract_coevolution_modules",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-COEVOLUTION-MODULES-SVD",
+     "r_call": "extract_coevolution_modules(fit, level, row_traits, col_traits, scale, n_modules, tol) (extract-sigma.R:2146) -- builds R = Sigma_row^{-1/2} Gamma Sigma_col^{-1/2} from the extract_Sigma/extract_Gamma blocks, then takes svd(R) to report per-module singular values and squared variance shares.",
+     "julia_surface": "GLLVM.jl equivalent whitened cross-covariance R built from the same Sigma_row/Sigma_col/Gamma blocks, and its SVD singular values / squared shares",
+     "comparands": [
+      "R extract_coevolution_modules()$modules (singular_value, squared_share)",
+      "GLLVM.jl svd() of the equivalently constructed R matrix on the same fit"
+     ],
+     "evidence_kind": "derived"
+    }
+   ],
+   "rationale": "extract_coevolution_modules(fit, level, row_traits, col_traits, scale, n_modules, tol) (extract-sigma.R:2146) computes a genuine new numeric quantity beyond extract_Gamma: it whitens the cross-trait Gamma block by the inverse matrix square roots of the row/col Sigma diagonal blocks (R = Sigma_row^{-1/2} Gamma Sigma_col^{-1/2}) and runs svd(R) to report per-module singular values and their squared variance shares. This SVD decomposition is distinct math from extract_Gamma and needs its own case."
+  },
+  {
+   "source_id": "namespace/export/extract_communality",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-COMMUNALITY-NATIVE",
+     "r_call": "extract_communality(...) (extractors.R:212), per-species communality c^2",
+     "julia_surface": "GLLVM.jl src/confint_derived.jl communality()",
+     "comparands": [
+      "R extract_communality() vector",
+      "Julia communality() vector on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Direct match: GLLVM.jl's confint_derived.jl exports communality(), matching CLAUDE.md's documented c^2 derived quantity."
+  },
+  {
+   "source_id": "namespace/export/extract_correlations",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-CORRELATIONS-NATIVE",
+     "r_call": "extract_correlations(...) (extract-correlations.R:392), the fitted trait-correlation matrix",
+     "julia_surface": "GLLVM.jl src/confint_derived.jl correlation()",
+     "comparands": [
+      "R extract_correlations() matrix",
+      "Julia correlation() matrix on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Direct match: GLLVM.jl's confint_derived.jl exports correlation()."
+  },
+  {
+   "source_id": "namespace/export/extract_cross_correlations",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-CROSS-CORRELATIONS-NATIVE",
+     "r_call": "extract_cross_correlations(fit, level=\"unit\", contrasts=FALSE, ...) (extract-correlations.R:884)",
+     "julia_surface": "GLLVM.jl src/confint_derived.jl correlation() restricted/contrasted to the cross-trait subset",
+     "comparands": [
+      "R extract_cross_correlations() matrix",
+      "Julia correlation()-derived cross-trait entries"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Matches CLAUDE.md's documented cross-trait correlation derived quantity, built on the same correlation() primitive as extract_correlations."
+  },
+  {
+   "source_id": "namespace/export/extract_cutpoints",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-CUTPOINTS-ORDINAL",
+     "r_call": "extract_cutpoints(fit, quiet=FALSE) (extract-cutpoints.R:66), the fitted ordinal cutpoints",
+     "julia_surface": "GLLVM.jl families/ordinal.jl fitted cutpoints tau (OrdinalFit / OrdinalPerTraitFit)",
+     "comparands": [
+      "R extract_cutpoints() tau vector/matrix",
+      "Julia OrdinalFit tau on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Direct match: GLLVM.jl's Ordinal family (families/ordinal.jl) stores fitted cutpoints tau (shared or per-trait), the natural comparand."
+  },
+  {
+   "source_id": "namespace/export/extract_loadings",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-LOADINGS-NATIVE",
+     "r_call": "extract_loadings(...) (output-methods.R:87), the fitted Lambda loadings matrix",
+     "julia_surface": "GLLVM.jl src/packing.jl Lambda unpack on the same fit",
+     "comparands": [
+      "R extract_loadings() matrix",
+      "Julia unpacked Lambda on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Loadings are GLLVM.jl's core packed parameter (src/packing.jl); extract_loadings is a required parity target for every fitted model."
+  },
+  {
+   "source_id": "namespace/export/extract_lv_effects",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-LV-EFFECTS-NATIVE",
+     "r_call": "extract_lv_effects(...) (extractors.R:641), fitted latent-variable site scores",
+     "julia_surface": "GLLVM.jl postfit.jl / ordination.jl latent-variable score matrix",
+     "comparands": [
+      "R extract_lv_effects() score matrix",
+      "Julia LV score matrix on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Latent-variable scores are a core postfit quantity; GLLVM.jl's postfit.jl/ordination.jl expose the equivalent score matrix."
+  },
+  {
+   "source_id": "namespace/export/extract_ordination",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-ORDINATION-NATIVE",
+     "r_call": "extract_ordination(...) (extractors.R:482), rotated ordination scores/loadings for plotting",
+     "julia_surface": "GLLVM.jl src/ordination.jl ordination(fit, Y; rotate=true)",
+     "comparands": [
+      "R extract_ordination() scores/loadings",
+      "Julia ordination() scores/loadings on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Direct match: GLLVM.jl's ordination.jl exports ordination(), including the rotate option mirrored in extract_ordination."
+  },
+  {
+   "source_id": "namespace/export/extract_phylo_signal",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-PHYLO-SIGNAL-NATIVE",
+     "r_call": "extract_phylo_signal(...) (extract-omega.R:463), per-trait phylogenetic signal H^2",
+     "julia_surface": "GLLVM.jl src/confint_derived.jl phylo_signal()",
+     "comparands": [
+      "R extract_phylo_signal() H^2 vector",
+      "Julia phylo_signal() H^2 vector on the same phylogenetic fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Direct match: GLLVM.jl's confint_derived.jl exports phylo_signal(), matching CLAUDE.md's documented H^2 derived quantity."
+  },
+  {
+   "source_id": "namespace/export/extract_proportions",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-PROPORTIONS-NATIVE",
+     "r_call": "extract_proportions(...) (extract-omega.R:725), shared/unique variance-proportion decomposition",
+     "julia_surface": "GLLVM.jl src/confint_derived.jl proportions(fit; component=:shared)",
+     "comparands": [
+      "R extract_proportions() values",
+      "Julia proportions() values on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Direct match: GLLVM.jl's confint_derived.jl exports proportions(component=...), the natural comparand."
+  },
+  {
+   "source_id": "namespace/export/extract_repeatability",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-REPEATABILITY-TWOLEVEL",
+     "r_call": "extract_repeatability(...) (extract-repeatability.R:83), the two-level repeatability estimate",
+     "julia_surface": "GLLVM.jl src/twolevel.jl repeatability(fit::TwoLevelFit)",
+     "comparands": [
+      "R extract_repeatability() value",
+      "Julia repeatability() value on the same two-level fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Direct match: GLLVM.jl's twolevel.jl exports repeatability() for a TwoLevelFit."
+  },
+  {
+   "source_id": "namespace/export/extract_residual_cor",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-RESIDUAL-COR-NATIVE",
+     "r_call": "extract_residual_cor(fit, level=\"unit\") (output-methods.R:342)",
+     "julia_surface": "GLLVM.jl src/link_residual.jl residual correlation on the same fit",
+     "comparands": [
+      "R extract_residual_cor() matrix",
+      "Julia link_residual.jl residual correlation matrix"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "GLLVM.jl's link_residual.jl computes family-specific residual covariance/correlation, the natural comparand."
+  },
+  {
+   "source_id": "namespace/export/extract_residual_cov",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-RESIDUAL-COV-NATIVE",
+     "r_call": "extract_residual_cov(fit, level=\"unit\") (output-methods.R:336)",
+     "julia_surface": "GLLVM.jl src/link_residual.jl residual covariance on the same fit",
+     "comparands": [
+      "R extract_residual_cov() matrix",
+      "Julia link_residual.jl residual covariance matrix"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Companion to extract_residual_cor; same Julia comparand family (link_residual.jl)."
+  },
+  {
+   "source_id": "namespace/export/extract_residual_split",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-RESIDUAL-SPLIT-NATIVE",
+     "r_call": "extract_residual_split(fit) (extract-omega.R:95), shared-vs-unique residual variance split",
+     "julia_surface": "GLLVM.jl src/confint_derived.jl proportions(fit; component=:shared/:unique)",
+     "comparands": [
+      "R extract_residual_split() values",
+      "Julia proportions() component values on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Same underlying shared/unique variance decomposition as extract_proportions; comparand is GLLVM.jl's proportions() with the matching component."
+  },
+  {
+   "source_id": "namespace/export/extract_rotated_loadings_table",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-EXTRACT-ROTATED-LOADINGS-NATIVE",
+     "r_call": "extract_rotated_loadings_table(...) (rotate-loadings.R:281), rotated loadings assembled into a table",
+     "julia_surface": "GLLVM.jl src/ordination.jl ordination(fit, Y; rotate=true) rotated loadings",
+     "comparands": [
+      "R rotated-loadings values",
+      "Julia ordination(rotate=true) rotated loadings on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "The rotation itself is numeric content (not just table formatting) and GLLVM.jl's ordination.jl performs an equivalent rotation via its rotate= option, so this is kept required_core rather than reclassified purely as a table formatter."
+  },
+  {
+   "source_id": "namespace/export/flag_unreliable_loadings",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-FLAG-UNRELIABLE-LOADINGS-NATIVE",
+     "r_call": "flag_unreliable_loadings(fit, ...) (loading-ci.R:363), flags loadings whose CI crosses zero / is unstable",
+     "julia_surface": "GLLVM.jl loading CIs from src/confint.jl / src/confint_profile.jl applied to unpacked Lambda entries",
+     "comparands": [
+      "R flagged-loading indices/reliability",
+      "Julia CI-crossing-zero flags on the same Lambda entries"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Reliability flags follow directly from the per-loading CI bounds, which GLLVM.jl already computes via confint.jl/confint_profile.jl on packed Lambda entries."
+  },
+  {
+   "source_id": "namespace/export/getLV",
+   "cases": [
+    {
+     "case_id": "CORE070-NAMESPACE-GETLV-NATIVE",
+     "r_call": "getLV(...) (output-methods.R:169), the fitted latent-variable score matrix accessor",
+     "julia_surface": "GLLVM.jl postfit.jl / ordination.jl latent-variable score matrix (same target as extract_lv_effects)",
+     "comparands": [
+      "R getLV() score matrix",
+      "Julia LV score matrix on the same fit"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "getLV is the primary LV-score accessor (extract_lv_effects wraps/derives from it); same Julia comparand."
+  }
+ ]
+}

@@ -317,3 +317,300 @@ Within-individual cross-trait correlation `C_W = D_W^{-1/2} Σ_W D_W^{-1/2}` (th
 observation-level / state correlation matrix), `Σ_W = Λ_W Λ_Wᵀ + diag(σ²_W)`.
 """
 correlation_W(fit::TwoLevelFit) = _to_correlation(fit.Σ_W)
+
+# ---------------------------------------------------------------------------
+# Confidence intervals for the two-level repeatability / ICC
+#   R_t = Σ_B[t,t] / (Σ_B[t,t] + Σ_W[t,t]),
+# mirroring R gllvmTMB's `extract_repeatability()`
+# (.unlazy/core070-aghq/oracle-source/readback/R/extract-repeatability.R).
+#
+# R's Wald route runs the delta method on `log_v[t] = log(vB[t]) - log(vW[t])`
+# and back-transforms with `plogis`; since `plogis(log(a) - log(b)) ==
+# a / (a + b)`, that is EXACTLY this repo's established logit-transformed-Wald
+# convention for [0,1] ICC-type quantities (src/confint_derived_wald.jl
+# header). We reuse `_tw_link(:logit)` and the same delta-method shape, built
+# on the packed-θ closure `g(θ) = log(Σ_B[t,t](θ)) - log(Σ_W[t,t](θ))`.
+#
+# R's `method = "profile"` is a WITHDRAWN feature: it aborts with class
+# `gllvmTMB_repeatability_profile_withdrawn` rather than silently falling
+# back to a different estimand or method. `repeatability_ci(method =
+# :profile)` mirrors that refusal with a named Julia exception instead of
+# inventing a profile route.
+# ---------------------------------------------------------------------------
+
+"""
+    TwoLevelRepeatabilityProfileWithdrawn
+
+Thrown by [`repeatability_ci`](@ref) when `method = :profile` is requested.
+Mirrors R gllvmTMB's `extract_repeatability(method = "profile")`, which
+aborts with class `gllvmTMB_repeatability_profile_withdrawn`: a defensible
+profile interval for canonical full-covariance repeatability is not
+available (the former profile route estimated only a diagonal-companion
+ratio and omitted the shared-latent variance). Request `method = :wald` or
+`method = :bootstrap` instead.
+"""
+struct TwoLevelRepeatabilityProfileWithdrawn <: Exception
+    msg::String
+end
+TwoLevelRepeatabilityProfileWithdrawn() = TwoLevelRepeatabilityProfileWithdrawn(
+    "A profile interval for canonical full-covariance two-level " *
+    "repeatability is not currently available. The former profile route " *
+    "estimated only a diagonal-companion ratio and omitted shared latent " *
+    "variance. Request method = :wald or method = :bootstrap instead.")
+Base.showerror(io::IO, e::TwoLevelRepeatabilityProfileWithdrawn) = print(io, e.msg)
+
+# Repack fit's (Λ_B, σ²_B, Λ_W, σ²_W) into the same packed-θ layout
+# fit_twolevel_gaussian optimises: [θ_rr_B; log σ²_B; θ_rr_W; log σ²_W].
+function _twolevel_theta_at_mle(fit::TwoLevelFit)
+    return vcat(pack_lambda(fit.Λ_B), log.(fit.σ²_B),
+                pack_lambda(fit.Λ_W), log.(fit.σ²_W))
+end
+
+# log(Σ_B[t,t]) - log(Σ_W[t,t]) from the packed θ. AD-friendly (unpack_lambda,
+# exp, and _dense_sigma all propagate ForwardDiff Duals).
+function _repeatability_log_odds_packed(θ::AbstractVector, p::Integer,
+                                        K_B::Integer, K_W::Integer, t::Integer)
+    Λ_B, σ²_B, Λ_W, σ²_W = _twolevel_unpack(θ, p, K_B, K_W)
+    Σ_B = _dense_sigma(Λ_B, σ²_B)
+    Σ_W = _dense_sigma(Λ_W, σ²_W)
+    return log(Σ_B[t, t]) - log(Σ_W[t, t])
+end
+
+"""
+    repeatability_wald_ci(fit::TwoLevelFit, y, individual; level=0.95,
+                          center=true) -> Vector{NamedTuple}
+
+Logit transformed-Wald CI for the per-trait two-level repeatability `R_t =
+Σ_B[t,t] / (Σ_B[t,t] + Σ_W[t,t])`, mirroring R's
+`extract_repeatability(method = "wald")`. Delta method on `log_v[t] =
+log(Σ_B[t,t]) - log(Σ_W[t,t])`, back-transformed with the logistic — bounds
+are guaranteed to lie in `(0, 1)`. The observed information is the
+ForwardDiff Hessian of the packed two-level NLL reconstructed from `y` and
+`individual`, evaluated at `fit`'s converged `[θ_rr_B; log σ²_B; θ_rr_W;
+log σ²_W]` — the same objective `fit_twolevel_gaussian` optimised.
+
+`y`, `individual` must be the arrays passed to `fit_twolevel_gaussian`
+(this struct does not retain them), and `center` must match the `center`
+flag used at fit time.
+
+Returns a `NamedTuple` per trait with fields `estimate` (`R_t`), `lower`,
+`upper`, `se_transformed` (SE on the log-odds scale), `transform = :logit`,
+`pd_hessian`, `method`.
+"""
+function repeatability_wald_ci(fit::TwoLevelFit, y::AbstractMatrix,
+                               individual::AbstractVector;
+                               level::Real = 0.95, center::Bool = true)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    p, ntot = size(y)
+    K_B = size(fit.Λ_B, 2)
+    K_W = size(fit.Λ_W, 2)
+    length(individual) == ntot ||
+        throw(DimensionMismatch("individual length must equal n_obs = $ntot"))
+
+    yf = Matrix{Float64}(y)
+    if center
+        μ = vec(sum(yf, dims = 2)) ./ ntot
+        yf = yf .- reshape(μ, p, 1)
+    end
+    codes, _ = _code_grouping(individual)
+    L = maximum(codes)
+    ind_idx = [findall(==(g), codes) for g in 1:L]
+
+    θ̂ = _twolevel_theta_at_mle(fit)
+    nll = θ -> begin
+        Λ_B, σ²_B, Λ_W, σ²_W = _twolevel_unpack(θ, p, K_B, K_W)
+        -_twolevel_loglik(yf, ind_idx, Λ_B, σ²_B, Λ_W, σ²_W)
+    end
+    H = try
+        ForwardDiff.hessian(nll, θ̂)
+    catch
+        nothing
+    end
+    Σcov, pd = if H !== nothing && all(isfinite, H)
+        try
+            (inv((H .+ H') ./ 2), true)
+        catch
+            (nothing, false)
+        end
+    else
+        (nothing, false)
+    end
+
+    h, back, _ = _tw_link(:logit)
+    z = quantile(Normal(), 0.5 + level / 2)
+    R = repeatability(fit)
+    out = Vector{NamedTuple}(undef, p)
+    for t in 1:p
+        g = θ -> _repeatability_log_odds_packed(θ, p, K_B, K_W, t)
+        failed = (; estimate = R[t], lower = NaN, upper = NaN,
+                  se_transformed = NaN, transform = :logit,
+                  pd_hessian = false, method = :failed)
+        if Σcov === nothing || !pd
+            out[t] = failed
+            continue
+        end
+        grad = try
+            ForwardDiff.gradient(g, θ̂)
+        catch
+            nothing
+        end
+        if grad === nothing || !all(isfinite, grad)
+            out[t] = merge(failed, (; pd_hessian = true))
+            continue
+        end
+        var_h = dot(grad, Σcov * grad)
+        if !isfinite(var_h) || var_h < 0
+            out[t] = merge(failed, (; pd_hessian = true))
+            continue
+        end
+        se_h = sqrt(var_h)
+        h_hat = g(θ̂)
+        out[t] = (; estimate = back(h_hat), lower = back(h_hat - z * se_h),
+                  upper = back(h_hat + z * se_h), se_transformed = se_h,
+                  transform = :logit, pd_hessian = true, method = :transformed_wald)
+    end
+    return out
+end
+
+"""
+    _psd_sqrt_factor(Σ::AbstractMatrix) -> Matrix
+
+A PSD-safe square-root factor `L` with `L*L' ≈ Σ`, for simulating
+`N(0, Σ)` draws (`L * randn(size(Σ,1))`) when `Σ` is only positive
+SEMI-definite (e.g. a boundary two-level fit with `σ²_B == 0` and
+`K_B < p`, where `Σ_B = Λ_B Λ_Bᵀ + diag(σ²_B)` is rank-deficient and
+plain `cholesky` throws `PosDefException`). Uses the eigendecomposition
+of the symmetrized `Σ` with tiny/negative eigenvalues clamped to `0`
+(never a jitter term added to the diagonal) — any orthonormal-basis
+square root works for simulation, `L` need not be lower-triangular.
+"""
+function _psd_sqrt_factor(Σ::AbstractMatrix)
+    Σs = Symmetric((Σ .+ Σ') ./ 2)
+    ev = eigen(Σs)
+    λ = clamp.(ev.values, 0.0, Inf)
+    return Matrix(ev.vectors) * Diagonal(sqrt.(λ))
+end
+
+"""
+    repeatability_bootstrap_ci(fit::TwoLevelFit, individual; nsim=200,
+                               level=0.95, seed=nothing, center=true)
+        -> Vector{NamedTuple}
+
+Parametric-bootstrap CI for the per-trait two-level repeatability `R_t`,
+mirroring R's `extract_repeatability(method = "bootstrap")` /
+`bootstrap_Sigma(what = "ICC")`. Simulates `nsim` two-level datasets from
+`fit`'s fitted `(Λ_B, σ²_B, Λ_W, σ²_W)` — same per-individual group sizes as
+`individual` — refits [`fit_twolevel_gaussian`](@ref) at each replicate
+(warm-started at `fit`'s own converged `K_B`/`K_W`), computes
+[`repeatability`](@ref) on each successful refit, and takes the
+`(1-level)/2`, `1-(1-level)/2` empirical percentiles (linear-interpolation,
+matching `_derived_percentile` / R `type = 7`).
+
+Returns a `NamedTuple` per trait with fields `estimate` (`R_t` on the
+ORIGINAL fit), `lower`, `upper`, `n_boot` (successful replicates), `method
+= :bootstrap`.
+
+`Σ_B = Λ_B Λ_Bᵀ + diag(σ²_B)` is only positive SEMI-definite at a boundary
+fit (e.g. `σ²_B == 0` with `K_B < p`); this simulates from it via the
+PSD-safe [`_psd_sqrt_factor`](@ref) (eigendecomposition, tiny/negative
+eigenvalues clamped to `0` — never a jitter term) rather than a plain
+`cholesky`, which throws `PosDefException` and would otherwise abort the
+whole call. If even that safe factorisation is not possible (non-finite
+`Σ_B`/`Σ_W`), every trait's row falls back to the standard NaN-row
+convention used elsewhere in this file (`lower = upper = NaN`, `n_boot =
+0`) instead of raising.
+"""
+function repeatability_bootstrap_ci(fit::TwoLevelFit, individual::AbstractVector;
+                                    nsim::Integer = 200, level::Real = 0.95,
+                                    seed::Union{Nothing, Integer} = nothing,
+                                    center::Bool = true)
+    0 < level < 1 || throw(ArgumentError("level must be in (0, 1); got $level"))
+    p = size(fit.Λ_B, 1)
+    K_B = size(fit.Λ_B, 2)
+    K_W = size(fit.Λ_W, 2)
+    codes, _ = _code_grouping(individual)
+    L = maximum(codes)
+    ind_idx = [findall(==(g), codes) for g in 1:L]
+    ntot = length(individual)
+
+    rng = seed === nothing ? Random.default_rng() : Random.MersenneTwister(seed)
+    R_hat = repeatability(fit)
+    LB, LW = try
+        (_psd_sqrt_factor(fit.Σ_B), _psd_sqrt_factor(fit.Σ_W))
+    catch
+        # Σ_B / Σ_W is boundary-degenerate in a way even the PSD-safe
+        # eigendecomposition cannot simulate from (e.g. non-finite entries).
+        # Never abort the whole call — report the standard NaN-row convention.
+        return [(; estimate = R_hat[t], lower = NaN, upper = NaN,
+                 n_boot = 0, method = :bootstrap) for t in 1:p]
+    end
+
+    R_reps = [Float64[] for _ in 1:p]
+    n_boot = 0
+    for _ in 1:nsim
+        y_sim = Matrix{Float64}(undef, p, ntot)
+        for idx in ind_idx
+            b_i = LB * randn(rng, p)
+            for j in idx
+                y_sim[:, j] = b_i .+ LW * randn(rng, p)
+            end
+        end
+        rep = try
+            fit_twolevel_gaussian(y_sim, individual; K_B = K_B, K_W = K_W,
+                                  center = center)
+        catch
+            nothing
+        end
+        (rep === nothing || !rep.converged) && continue
+        n_boot += 1
+        Rrep = repeatability(rep)
+        for t in 1:p
+            push!(R_reps[t], Rrep[t])
+        end
+    end
+
+    α = 1 - level
+    out = Vector{NamedTuple}(undef, p)
+    for t in 1:p
+        if length(R_reps[t]) < 2
+            out[t] = (; estimate = R_hat[t], lower = NaN, upper = NaN,
+                      n_boot = length(R_reps[t]), method = :bootstrap)
+        else
+            out[t] = (; estimate = R_hat[t],
+                      lower = _derived_percentile(R_reps[t], α / 2),
+                      upper = _derived_percentile(R_reps[t], 1 - α / 2),
+                      n_boot = length(R_reps[t]), method = :bootstrap)
+        end
+    end
+    return out
+end
+
+"""
+    repeatability_ci(fit::TwoLevelFit, y, individual; method=:wald,
+                     level=0.95, kwargs...)
+
+Dispatcher over the two-level repeatability CI routes, matching R's
+`extract_repeatability(method = ...)` argument surface:
+
+  - `:wald` (default) — [`repeatability_wald_ci`](@ref); forwards
+    `center` via `kwargs`.
+  - `:bootstrap` — [`repeatability_bootstrap_ci`](@ref); forwards `nsim`,
+    `seed`, `center` via `kwargs` (`y` is accepted but unused — the
+    bootstrap simulates its own data from `fit`).
+  - `:profile` — throws [`TwoLevelRepeatabilityProfileWithdrawn`](@ref),
+    mirroring R's withdrawn-feature abort
+    (`gllvmTMB_repeatability_profile_withdrawn`); it does NOT fall back to
+    a different method or estimand.
+"""
+function repeatability_ci(fit::TwoLevelFit, y::AbstractMatrix, individual::AbstractVector;
+                          method::Symbol = :wald, level::Real = 0.95, kwargs...)
+    if method === :wald
+        return repeatability_wald_ci(fit, y, individual; level = level, kwargs...)
+    elseif method === :bootstrap
+        return repeatability_bootstrap_ci(fit, individual; level = level, kwargs...)
+    elseif method === :profile
+        throw(TwoLevelRepeatabilityProfileWithdrawn())
+    else
+        throw(ArgumentError("method must be :wald, :bootstrap, or :profile; got $(method)"))
+    end
+end

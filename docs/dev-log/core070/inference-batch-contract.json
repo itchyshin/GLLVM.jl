@@ -1,0 +1,568 @@
+{
+ "schema": "core070-inference-batch-contract/v1",
+ "status": "FROZEN_INFERENCE_BATCH_CONTRACT",
+ "area": "inference",
+ "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+ "manifest_source": "docs/dev-log/core070/manifest-freeze-work/drafts/inference.json",
+ "case_plan_annex": "docs/dev-log/core070/inference-required-case-plan.json",
+ "r_route_comparand": {
+  "description": "This batch does not re-run the R route probe: docs/dev-log/core070/inference-routing-subset.json already retains a verified PASS run of tools/core070_inference_routes.R against test/parity/fixtures/core070_inference_routes.tsv (all 98 CI-ROUTE-* rows, frozen source, no installed package, no numerical intervals -- a control-flow-only probe of which internal R function+method the top-level confint.gllvmTMB_multi dispatches to). tools/core070_inference_batch.R re-hashes those pinned artifacts and extracts the subset of rows this batch's 19 case_ids reference, as a retained crosscheck, rather than duplicating the R run.",
+  "pins": {
+   "test/parity/fixtures/core070_inference_routes.tsv": "5f75af28288781a5cc516bb94d38e5fdc5107b1712be54fbaabe9d0e79035db0",
+   "tools/core070_inference_routes.R": "e431cc701717d9196cec1943e7d354ab9cdbf342b80559e6298dc724de0588eb",
+   "docs/dev-log/core070/inference-routing-subset.json": "8b5459fab69b66d358cd79862a5f3879d68bc762d063c9e02aa5c8b228c77dfd"
+  }
+ },
+ "julia_runner": "tools/core070_inference_batch.jl",
+ "julia_runner_sha256": "d0884be6b210cef1cc4656d2759f1310be824b2a67331448a55af64f3da116e8",
+ "verifier": "tools/core070_verify_inference_batch.py",
+ "r_crosscheck_runner": "tools/core070_inference_batch.R",
+ "expected_executable_case_count": 45,
+ "expected_needs_new_julia_surface_count": 8,
+ "expected_spec_defect_count": 11,
+ "expected_total_row_count": 64,
+ "negative_control_count": 2,
+ "runtime_budget_seconds": 900,
+ "tolerances": {
+  "note": "This batch is a ROUTING probe (which Julia solver ran), not a numerical-parity check, so no numeric tolerance applies to any case's point estimate or CI bound -- the pass/fail criterion is solver identity (route_tag) or, for the two LAMBDA-CI-UNSUPPORTED-METHOD-REJECT rows, whether an ArgumentError was raised."
+ },
+ "known_findings": {
+  "lambda_reject_validation_boundary": "Empirically verified (see tools/core070_inference_batch.jl, CI-ROUTE-006/007): confint(fit, y; parm=..., method=<bad Symbol>) DOES raise ArgumentError('method must be :wald, :profile or :bootstrap') when the fit is an AGHQ Gaussian record (_has_gaussian_record(fit) == true; the validating branch is src/families/aghq_gaussian_fit.jl:202-221, reached via src/confint.jl:359-370). This validation is NOT reached for the plain (non-AGHQ) Gaussian fitter used by the sigma_B/sigma_W/sigma_phy buckets: src/families/aghq_gaussian_fit.jl:33-46 sets integration.data=nothing on the has_diag/K_W/K_phy/has_phy_unique (\"structured\") branch even when aghq is requested, so _has_gaussian_record is always false there and confint(fit,y;method=<anything>) silently falls through to the always-Wald 1-arg confint (src/confint.jl:369), ignoring `method` entirely. The manifest's LAMBDA-CI-UNSUPPORTED-METHOD-REJECT case happens to land on the validated (AGHQ-record) path because Lambda routing in this batch uses fixture A, so it is bucketed EXECUTABLE_NOW and passes; a hypothetical structured-fit reject case would not have found a validating call site. Recorded here so the boundary is not mistaken for a universal guarantee.",
+  "derived_quantity_reject_spec_defect_reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+ },
+ "rows": [
+  {
+   "source_id": "inference/CI-ROUTE-001",
+   "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitA,YA;parm=\"Lambda_B[1,1]\") [default]",
+   "expected_route_tag": "wald_packed",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-002",
+   "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitA,\"Lambda_B[1,1]\";y=YA)",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-003",
+   "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitA,YA;parm=\"Lambda_B[1,1]\",method=:wald)",
+   "expected_route_tag": "wald_packed",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-004",
+   "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "bootstrap_ci(fitA;parms=\"Lambda_B[1,1]\",y=YA)",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-006",
+   "case_id": "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitA,YA;parm=\"Lambda_B[1,1]\",method=:fisher_z)",
+   "expected_route_tag": "reject",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-007",
+   "case_id": "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitA,YA;parm=\"Lambda_B[1,1]\",method=:bogus)",
+   "expected_route_tag": "reject",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-065",
+   "case_id": "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitA,\"beta[1]\";y=YA) [default]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-066",
+   "case_id": "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitA,YA;parm=\"beta[1]\",method=:wald)",
+   "expected_route_tag": "wald_packed",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-081",
+   "case_id": "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitA,\"beta[1]\";y=YA) [no cached vcov]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-067",
+   "case_id": "CORE070-INFERENCE-BETA-BOOTSTRAP-FALLBACK-DIVERGENCE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "bootstrap_ci(fitA;parms=\"beta[1]\",y=YA) [real bootstrap, not a wald fallback]",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-068",
+   "case_id": "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitA,\"sigma_eps\";y=YA) [default]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-069",
+   "case_id": "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitA,YA;parm=\"sigma_eps\",method=:wald)",
+   "expected_route_tag": "wald_packed",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-084",
+   "case_id": "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitA,\"sigma_eps\";y=YA) [no cached vcov]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-070",
+   "case_id": "CORE070-INFERENCE-SIGMA-EPS-BOOTSTRAP-FALLBACK-DIVERGENCE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "bootstrap_ci(fitA;parms=\"sigma_eps\",y=YA) [real bootstrap, not a wald fallback]",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-043",
+   "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitS,\"sigma_B[1]\";y=YS,Σ_phy=Σ_phy) [default]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-055",
+   "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitS,\"sigma_B[1]\";y=YS,Σ_phy=Σ_phy) [Sigma_B alias, default]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-044",
+   "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitS,YS;parm=\"sigma_B[1]\",method=:wald,Σ_phy=Σ_phy)",
+   "expected_route_tag": "wald_packed",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-056",
+   "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitS,YS;parm=\"sigma_B[1]\",method=:wald,Σ_phy=Σ_phy) [Sigma_B alias]",
+   "expected_route_tag": "wald_packed",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-045",
+   "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "bootstrap_ci(fitS;parms=\"sigma_B[1]\",y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-057",
+   "case_id": "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "bootstrap_ci(fitS;parms=\"sigma_B[1]\",y=YS,Σ_phy=Σ_phy) [Sigma_B alias]",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-046",
+   "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitS,\"sigma_W[1]\";y=YS,Σ_phy=Σ_phy) [default]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-058",
+   "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitS,\"sigma_W[1]\";y=YS,Σ_phy=Σ_phy) [Sigma_W alias, default]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-047",
+   "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitS,YS;parm=\"sigma_W[1]\",method=:wald,Σ_phy=Σ_phy)",
+   "expected_route_tag": "wald_packed",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-059",
+   "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitS,YS;parm=\"sigma_W[1]\",method=:wald,Σ_phy=Σ_phy) [Sigma_W alias]",
+   "expected_route_tag": "wald_packed",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-048",
+   "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "bootstrap_ci(fitS;parms=\"sigma_W[1]\",y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-060",
+   "case_id": "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "bootstrap_ci(fitS;parms=\"sigma_W[1]\",y=YS,Σ_phy=Σ_phy) [Sigma_W alias]",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-061",
+   "case_id": "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "profile_ci(fitS,\"sigma_phy[1]\";y=YS,Σ_phy=Σ_phy) [default]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-062",
+   "case_id": "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "confint(fitS,YS;parm=\"sigma_phy[1]\",method=:wald,Σ_phy=Σ_phy)",
+   "expected_route_tag": "wald_packed",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-063",
+   "case_id": "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "bootstrap_ci(fitS;parms=\"sigma_phy[1]\",y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-022",
+   "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "communality_wald_ci(fitS,1;y=YS,Σ_phy=Σ_phy) [default]",
+   "expected_route_tag": "wald_derived",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-023",
+   "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "GLLVM.profile_ci_derived(fitS, communality_packed_1; y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-024",
+   "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "communality_wald_ci(fitS,1;y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "wald_derived",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-025",
+   "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "GLLVM.bootstrap_ci_derived(fitS, f->communality(f)[1]; y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-029",
+   "case_id": "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "correlation_wald_ci(fitS,1,2;y=YS,Σ_phy=Σ_phy) [default]",
+   "expected_route_tag": "wald_derived",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-030",
+   "case_id": "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "GLLVM.profile_ci_derived(fitS, correlation_closure_12; y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-032",
+   "case_id": "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "GLLVM.bootstrap_ci_derived(fitS, f->correlation(f)[1,2]; y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-034",
+   "case_id": "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "correlation_wald_ci(fitS,1,2;y=YS,Σ_phy=Σ_phy) [explicit fisher-z]",
+   "expected_route_tag": "wald_derived",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-015",
+   "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "GLLVM.profile_ci_derived(fitS, phylo_signal_closure_1; y=YS,Σ_phy=Σ_phy) [default]",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-016",
+   "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "GLLVM.profile_ci_derived(fitS, phylo_signal_closure_1; y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-017",
+   "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "phylo_signal_wald_ci(fitS,1;y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "wald_derived",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-018",
+   "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "GLLVM.bootstrap_ci_derived(fitS, f->phylo_signal(f)[1]; y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-036",
+   "case_id": "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "icc_wald_ci(fitS, communality_packed_1; y=YS,Σ_phy=Σ_phy) [default, :shared component]",
+   "expected_route_tag": "wald_derived",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-037",
+   "case_id": "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "GLLVM.profile_ci_derived(fitS, communality_packed_1; y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "profile",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-038",
+   "case_id": "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "icc_wald_ci(fitS, communality_packed_1; y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "wald_derived",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-039",
+   "case_id": "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
+   "bucket": "EXECUTABLE_NOW",
+   "julia_call": "GLLVM.bootstrap_ci_derived(fitS, f->GLLVM.proportions(f;component=:shared)[1]; y=YS,Σ_phy=Σ_phy)",
+   "expected_route_tag": "bootstrap",
+   "reason": null
+  },
+  {
+   "source_id": "inference/CI-ROUTE-005",
+   "case_id": "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+   "bucket": "NEEDS_NEW_JULIA_SURFACE",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R method='wald_asym' routes to loading_ci(method='wald_asym', loading_scale='standardized') with rho[trait,axis] parameter labels (a Fisher-z-flavoured *standardized*-loading Wald CI, distinct from the raw-scale wald route already covered by CI-ROUTE-003). GLLVM.jl has no standardized-loading/rho Wald CI entry point; confint()/profile_ci()/bootstrap_ci() only ever report Lambda_B on its raw (unstandardized) scale. Building this would require a new packed-theta closure for the standardized loading plus wiring it through the existing Fisher-z transformed-Wald machinery (src/confint_derived_wald.jl) -- that is new engine-adjacent surface, not something this batch's test code can supply on its own the way the communality/correlation/phylo_signal closures do (those already have an existing natural-scale analogue; standardized Lambda does not)."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-008",
+   "case_id": "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE",
+   "bucket": "NEEDS_NEW_JULIA_SURFACE",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "No `icc(fit)` point-estimate function exists in GLLVM.jl (grep of src/confint_derived.jl confirms only communality/proportions/correlation/phylo_signal are defined), and R's `extract_repeatability()` computes a specific combination of variance components (shared + unique-B over total, per z-confint-gllvmTMB.R's .confint_icc) that has no verified Julia formula to anchor a derived_fn closure on. Inventing one for this batch would be constructing a new, unverified quantity rather than exercising an existing surface -- exactly the engine-code line this task says not to cross. icc_wald_ci/profile_ci_derived/bootstrap_ci_derived exist and would ROUTE correctly once a grounded icc point-estimate is supplied; only that grounding is missing."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-009",
+   "case_id": "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE",
+   "bucket": "NEEDS_NEW_JULIA_SURFACE",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "same gap as CI-ROUTE-008 (profile variant)."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-010",
+   "case_id": "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE",
+   "bucket": "NEEDS_NEW_JULIA_SURFACE",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "same gap as CI-ROUTE-008 (wald variant)."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-011",
+   "case_id": "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE",
+   "bucket": "NEEDS_NEW_JULIA_SURFACE",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "same gap as CI-ROUTE-008 (bootstrap variant)."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-012",
+   "case_id": "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "NEEDS_NEW_JULIA_SURFACE",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "depends on the same missing icc point-estimate grounding as CI-ROUTE-008-011; without a real icc call site there is no route to probe rejection against."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-013",
+   "case_id": "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "NEEDS_NEW_JULIA_SURFACE",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "same gap (fisher-z variant)."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-014",
+   "case_id": "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "NEEDS_NEW_JULIA_SURFACE",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "same gap (bogus variant)."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-019",
+   "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-020",
+   "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-021",
+   "case_id": "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-026",
+   "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-027",
+   "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-028",
+   "case_id": "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-033",
+   "case_id": "CORE070-INFERENCE-RHO-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-035",
+   "case_id": "CORE070-INFERENCE-RHO-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-040",
+   "case_id": "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-041",
+   "case_id": "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  },
+  {
+   "source_id": "inference/CI-ROUTE-042",
+   "case_id": "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT",
+   "bucket": "SPEC_DEFECT",
+   "julia_call": null,
+   "expected_route_tag": null,
+   "reason": "R's confint.gllvmTMB_multi validates the base method set with a single match.arg(method) call (z-confint-gllvmTMB.R:1716) AFTER intercepting icc/phylo_signal/communality/rho/proportion tokens, so an unsupported string like 'wald_asym' or 'bogus' reaches .confint_icc/.confint_phylo_signal/.confint_communality/.confint_rho/.confint_proportion as a literal method argument, which those functions individually reject with cli_abort. GLLVM.jl has no equivalent single call site: a caller selects the derived-quantity solver by which FUNCTION they call (communality_wald_ci vs GLLVM.profile_ci_derived vs GLLVM.bootstrap_ci_derived), not by passing a method string/symbol into one dispatcher. There is therefore no Julia call this case's own comparand (\"a bogus method Symbol must raise a clear error\") can be run against for these five quantities: the failure mode the R fixture is probing does not exist in Julia's function-per-method API design, by construction rather than by omission. This is a spec/comparand mismatch in the manifest row, not a defect in GLLVM.jl -- see LAMBDA-CI-UNSUPPORTED-METHOD-REJECT (CI-ROUTE-006/007) for the one case in this batch where a real method::Symbol call site (confint(fit,y;method=...)) does exist and is genuinely exercised."
+  }
+ ],
+ "case_ids": [
+  "CORE070-INFERENCE-BETA-BOOTSTRAP-FALLBACK-DIVERGENCE",
+  "CORE070-INFERENCE-BETA-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT",
+  "CORE070-INFERENCE-ICC-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT",
+  "CORE070-INFERENCE-LAMBDA-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-LAMBDA-CI-UNSUPPORTED-METHOD-REJECT",
+  "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT",
+  "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT",
+  "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-RHO-CI-UNSUPPORTED-METHOD-REJECT",
+  "CORE070-INFERENCE-SIGMA-B-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-SIGMA-EPS-BOOTSTRAP-FALLBACK-DIVERGENCE",
+  "CORE070-INFERENCE-SIGMA-EPS-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE",
+  "CORE070-INFERENCE-SIGMA-W-CI-METHOD-ROUTE"
+ ]
+}

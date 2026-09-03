@@ -10,9 +10,7 @@ Generalised Linear Latent Variable Model, built as a digital twin of R's
   missing-data, structural-dependence, and bridge capability is present, but
   release/tag signoff remains gated by the issue ledger, R bridge parity, docs,
   and Rose audit.
-- Headline result: ~340× per-fit median speedup over R/`gllvmTMB` on
-  Gaussian fits, with log-likelihoods and point estimates matching R to
-  machine precision.
+- Headline result: median 265.1× (range 161–698×) on the published Gaussian closed-form profile grid over R/`gllvmTMB`, with log-likelihoods and point estimates matching R to machine precision.
 - Phylogenetic representations: sparse (CHOLMOD), contrasts, edge-incidence;
   all return identical log-likelihoods to machine precision.
 - Next milestone: finish-gap hardening for the R-Julia twin: reconcile #95/#94,
@@ -89,6 +87,21 @@ canonical names in status updates; do not rename them.
 Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
+
+- **Core 0.7.0 + AGHQ: M2 complete + decision day executed (2026-09-02).**
+  Branch `codex/core070-aghq-20260830`, DRAFT PR #277 (Julia) + gllvmTMB DRAFT
+  PR #1236 (R bridge, green). Ledger 505 required = 285 bound + 220
+  dispositioned, 0 free (Rose-audited over 3 rounds; required set honestly
+  resized from 533 by maintainer-approved bulk triage). ~100 new surfaces
+  across 8 receipted conversion waves; all 12 maintainer decisions executed —
+  incl. the CLOGLOG parity defect resolved as OURS (Fisher-vs-observed
+  curvature; identity 2.099 -> 7.4e-12) and Student-t paired green at pinned
+  df. FIRST FULLY-GREEN SUITE: 13325 pass / 0 fail / 0 error. Compute: 10,000-fit
+  DRAC recovery campaign + Wald coverage 0.932-0.958 across 20 cells.
+  CARRIED-OVER: merge (maintainer must press), DRAC MFA re-auth (ZI campaign
+  queued), phylo-transport design awaiting review, frozen-R CI smoke advisory
+  (documented build-reproducibility finding), 8 prior-cycle acceptance ledgers
+  unmet. START HERE: docs/dev-log/handover/2026-09-02-claude-handover.md
 
 - **Full-parity campaign day (2026-08-28).** PR #273 (12 commits,
   branch `claude/lane-beyond-20260824`): the Fisher-vs-observed curvature
@@ -210,6 +223,21 @@ Full responsibility detail lives in §2 of the reference plan.
 - **Phase 1.1 — O(p) node-frame gradient (complete, 2026-05-30).** PR #2.
 - **Phase 1.0 — RCall.jl parity suite (live on catch-up branch, 2026-08-01).**
   Light logLik oracles green on named routes; still not “full family parity.”
+
+- **Core 0.7.0 + AGHQ M2 ledger — COMPLETE (2026-09-01, lane codex/core070-aghq-20260830).**
+  533/533 required manifest rows accounted: 222 bound on verified Totoro batch
+  receipts + 311 receipted dispositions (142 needs-Julia-surface, 44 spec-defect,
+  125 pending maintainer decision incl. the confirmed nobs and binomial-cloglog
+  cross-engine defects). Rose audit round-1 blockers fixed. Unpushed; see
+  docs/dev-log/after-task/2026-09-01-m2-ledger-complete.md.
+
+- **Core 0.7.0 + AGHQ lane (2026-09-02, Claude).** First uncancelled CI run on
+  `codex/core070-aghq-20260830` (33622687447): both Julia jobs red for test-side
+  reasons (deprecation-shim wording vs `@test_deprecated`; a 1e8-offset fixture at
+  rtol 1e-9) plus one open NB2 Wald NaN on 1.12.7 — fixes applied, one push approved.
+  ZI-trio ADEMP campaign done on Totoro (6000 fits). True-parity decision map at
+  `docs/dev-log/core070/true-parity-decision-map.md`; maintainer: one-directional
+  claim, oracle stays 0.7.0, second-order scope SE + vcov block + Wald endpoints.
 
 Update this snapshot after every after-task report.
 

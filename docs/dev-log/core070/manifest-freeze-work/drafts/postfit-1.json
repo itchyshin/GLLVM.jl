@@ -1,0 +1,1121 @@
+{
+ "area": "postfit-1",
+ "rows": [
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-.proportions_bootstrap_ci",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "`.proportions_bootstrap_ci()` (R/proportions-ci.R:423) is an unexported, dot-prefixed internal helper reached only through `confint.gllvmTMB_multi(parm = \"proportions\", method = \"bootstrap\")`; it has no independent call surface. The public entry point is already a required row (postfit/POSTFIT-SURFACE-confint.gllvmTMB_multi), whose planned bootstrap-method case exercises this code path.",
+   "reclassify": {
+    "to": "compatibility_adapter",
+    "reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"bootstrap\"); no standalone public surface for GLLVM.jl to twin beyond what the confint.gllvmTMB_multi row already covers."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-.proportions_wald_ci",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "`.proportions_wald_ci()` (R/proportions-ci.R:247) is an unexported, dot-prefixed internal helper reached only through `confint.gllvmTMB_multi(parm = \"proportions\", method = \"wald\")`; no independent call surface. Covered by the confint.gllvmTMB_multi row.",
+   "reclassify": {
+    "to": "compatibility_adapter",
+    "reason": "Unexported R-internal helper (leading dot, no @export) invoked only via confint.gllvmTMB_multi(parm=\"proportions\", method=\"wald\"); no standalone public surface beyond the confint.gllvmTMB_multi row."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-bootstrap_Sigma",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-BOOTSTRAP-SIGMA-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-BOOTSTRAP-SIGMA-BRIDGE",
+     "r_call": "bootstrap_Sigma(fit, n_boot = 999, level = \"unit\", what = \"Sigma\", seed = 1, progress = FALSE) on a gllvmTMB_multi Gaussian latent(0+trait|site,d=1) fit (R/bootstrap-sigma.R:196)",
+     "julia_surface": "GLLVM.jl parametric-bootstrap Sigma CI routine (to be added under confint_bootstrap.jl / confint_derived.jl), called on the paired native fit with the same seed and n_boot",
+     "comparands": [
+      "R bootstrap_Sigma() point estimate + CI bounds",
+      "GLLVM.jl bootstrap Sigma CI bounds"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported public function (R/bootstrap-sigma.R:196) computing a parametric-bootstrap CI for Sigma/R/communality/ICC/cross_corr at a chosen level. GLLVM.jl already has confint_bootstrap.jl / confint_derived.jl machinery for Sigma-derived quantities; a paired-seed R vs Julia bootstrap-CI comparison on a common fixture is the natural parity check.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-check_auto_residual",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-CHECK-AUTO-RESIDUAL-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-CHECK-AUTO-RESIDUAL-READBACK",
+     "r_call": "check_auto_residual(fit) on canonical multi-trait fits with and without an implicit observation-level residual term (R/check-auto-residual.R:60)",
+     "julia_surface": "GLLVM.jl equivalent double-counting guard over family_id_vec / trait_id metadata on the packed fit",
+     "comparands": [
+      "R status ('ok'/'warn') + messages",
+      "GLLVM.jl status + messages on the same fixtures"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported guard (R/check-auto-residual.R:60) that inspects a fit's per-row family/trait vectors to flag double-counted observation-level residual variance. Deterministic classification read off already-fitted metadata, not a fresh numeric computation -- postfit-readback evidence on paired fixtures (with/without the double-count condition) suffices.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-check_gllvmTMB",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-CHECK-GLLVMTMB-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-CHECK-GLLVMTMB-READBACK",
+     "r_call": "check_gllvmTMB(object, gradient_thresh=1e-2, se_thresh=100, ...) on canonical fits spanning healthy, near-boundary, and degenerate cases (R/diagnose.R:1548)",
+     "julia_surface": "GLLVM.jl diagnostic-table equivalent producing the same component/status/value/threshold/message/action rows",
+     "comparands": [
+      "R data frame of PASS/WARN/FAIL rows",
+      "GLLVM.jl diagnostic rows on the same fixtures"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported diagnostic dashboard (R/diagnose.R:1548) with ~15 named threshold arguments producing a PASS/WARN/FAIL table over gradient, SE, loading, and family-specific pathologies. Several thresholds are explicitly documented as provisional/disarmed pending R-side calibration (multinomial/ordinal arms); the Julia twin case should match on the currently-calibrated arms (gradient, se, psi, weak-axis, cross-loading, binary-saturation) and can defer the disarmed (Inf-threshold) arms.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-coef.gllvmTMB_multi",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-COEF-MULTI-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-COEF-MULTI-READBACK",
+     "r_call": "coef(fit) on canonical multi-trait fits (R/vcov-coef.R:59)",
+     "julia_surface": "GLLVM.jl fixed-effect coefficient accessor (named vector keyed the same way as X_fix_names)",
+     "comparands": [
+      "R named numeric vector from coef.gllvmTMB_multi",
+      "GLLVM.jl fixed-effect vector, same names/order"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported S3 method (R/vcov-coef.R:59) returning the named fixed-effect coefficient vector straight off the fit object (`b_fix` values against `X_fix_names`). Pure readback of already-optimised state -- no new computation.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-compare_Sigma_table",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-COMPARE-SIGMA-TABLE-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-COMPARE-SIGMA-TABLE-READBACK",
+     "r_call": "compare_Sigma_table(rows, truth, level=\"unit\", measure=\"correlation\") called on extract_Sigma_table() output against a known-truth R/Sigma matrix (R/extract-sigma-table.R:494)",
+     "julia_surface": "GLLVM.jl equivalent table-vs-truth comparison over the (already-required) extract_Sigma_table output",
+     "comparands": [
+      "R bias/coverage comparison rows",
+      "GLLVM.jl comparison rows on the same truth + fitted-table fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported recovery-diagnostic utility (R/extract-sigma-table.R:494) that scores an extract_Sigma_table()-shaped data frame against a known-truth matrix. It is public (@export) and used as an ADEMP-style recovery check, so GLLVM.jl needs a matching comparison utility once its own extract_Sigma_table equivalent lands; the numeric surface under test is shared with the extract_Sigma_table row.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-compare_dep_vs_two_psi",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-COMPARE-DEP-TWO-PSI-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-COMPARE-DEP-TWO-PSI-BRIDGE",
+     "r_call": "compare_dep_vs_two_psi(fit_two_psi, threshold=0.10) on a phylo_latent(unique=TRUE)+indep(0+trait|species) two-psi fit, which internally refits the full dependent-Sigma model via .refit_inputs() (R/extract-two-psi-cross-check.R:488)",
+     "julia_surface": "GLLVM.jl equivalent that refits the dependent-covariance phylogenetic model from the two-psi fixture and reports the same $flag/$agreement diagnostic",
+     "comparands": [
+      "R $flag, $agreement, refit Sigma",
+      "GLLVM.jl flag/agreement on the paired refit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported phylogenetic-signal diagnostic (R/extract-two-psi-cross-check.R:488) that performs an internal refit (via `.refit_inputs()`) to the fully-dependent-Sigma model and compares it against the cheaper two-psi decomposition. Because it triggers a second live fit, this needs a bridge-style paired-refit comparison rather than a pure readback.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-compare_indep_vs_two_psi",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-COMPARE-INDEP-TWO-PSI-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-COMPARE-INDEP-TWO-PSI-BRIDGE",
+     "r_call": "compare_indep_vs_two_psi(fit_two_psi, threshold=0.10) on the same two-psi fixture, refitting the cheap diagonal-Sigma model (R/extract-two-psi-cross-check.R:616)",
+     "julia_surface": "GLLVM.jl equivalent diagonal-Sigma refit + agreement diagnostic",
+     "comparands": [
+      "R $flag, $agreement",
+      "GLLVM.jl flag/agreement on the paired refit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported companion to compare_dep_vs_two_psi (R/extract-two-psi-cross-check.R:616): the cheap diagonal-fallback diagnostic for large T. Same refit-then-compare structure, so also needs bridge evidence.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-compare_loadings",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-COMPARE-LOADINGS-NATIVE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-COMPARE-LOADINGS-NATIVE",
+     "r_call": "compare_loadings(Lambda_a, Lambda_b) on fixed numeric n_traits x d matrix pairs, incl. a case built from fitted loadings vs a hand-rotated copy (R/rotate-loadings.R:428)",
+     "julia_surface": "GLLVM.jl orthogonal-Procrustes loading-alignment helper (SVD of crossprod(Lambda_b, Lambda_a))",
+     "comparands": [
+      "R rotation R, Lambda_a_rot, Frobenius distance",
+      "GLLVM.jl equivalent outputs on identical input matrices"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Exported pure-linear-algebra utility (R/rotate-loadings.R:428): SVD-based orthogonal Procrustes alignment of two loading matrices. Takes plain numeric matrices, not a fit object, so it can be verified as a native Julia numeric routine against fixed matrix fixtures without needing a live R fit -- cross-checked once against R's svd()-based result for the identical inputs.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-confint.gllvmTMB_multi",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-CONFINT-MULTI-WALD-READBACK",
+    "CORE070-POSTFIT-CONFINT-MULTI-PROFILE-BRIDGE",
+    "CORE070-POSTFIT-CONFINT-MULTI-BOOTSTRAP-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-CONFINT-MULTI-WALD-READBACK",
+     "r_call": "confint(fit) (default method=\"wald\") on canonical fixed-effect coefficients (R/z-confint-gllvmTMB.R:1608)",
+     "julia_surface": "GLLVM.jl Wald CI via observed-information Hessian (confint.jl)",
+     "comparands": [
+      "R Wald fixed-effect CI bounds",
+      "GLLVM.jl Wald CI bounds"
+     ],
+     "evidence_kind": "postfit-readback"
+    },
+    {
+     "case_id": "CORE070-POSTFIT-CONFINT-MULTI-PROFILE-BRIDGE",
+     "r_call": "confint(fit, parm = \"Sigma_unit\", method = \"profile\") on a canonical latent(0+trait|site,d=1) fit",
+     "julia_surface": "GLLVM.jl profile-likelihood CI (confint_profile.jl)",
+     "comparands": [
+      "R profile CI bounds",
+      "GLLVM.jl profile CI bounds"
+     ],
+     "evidence_kind": "bridge"
+    },
+    {
+     "case_id": "CORE070-POSTFIT-CONFINT-MULTI-BOOTSTRAP-BRIDGE",
+     "r_call": "confint(fit, parm = \"Sigma_unit\", method = \"bootstrap\", nsim = 200, seed = 42) on the same fit",
+     "julia_surface": "GLLVM.jl parametric-bootstrap CI (confint_bootstrap.jl) with matched seed/nsim",
+     "comparands": [
+      "R bootstrap CI bounds",
+      "GLLVM.jl bootstrap CI bounds"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported S3 CI method (R/z-confint-gllvmTMB.R:1608) dispatching over wald (readback of the sdreport Hessian), profile (LRT inversion), and bootstrap (resampled refits) methods, plus a Lambda-entry sub-route. GLLVM.jl already has parallel confint.jl / confint_profile.jl / confint_bootstrap.jl modules; each method needs its own comparand since the evidence mechanism differs (readback vs live re-solve).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-confint_inspect",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-CONFINT-INSPECT-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-CONFINT-INSPECT-READBACK",
+     "r_call": "confint_inspect(fit, parm = \"sigma_eps\") on a canonical Gaussian fit (R/confint-inspect.R:128)",
+     "julia_surface": "GLLVM.jl profile-shape diagnostic returning bounds + shape flag over the same profile_targets vocabulary",
+     "comparands": [
+      "R $bounds, $diagnostics shape flag",
+      "GLLVM.jl bounds + shape flag on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported profile-shape diagnostic (R/confint-inspect.R:128) built on the same profile machinery as confint(method=\"profile\") -- reports Wald-vs-profile agreement and pathology flags (asymmetric, flat_at_mle, boundary hits). Requires GLLVM.jl's profile machinery (confint_profile.jl) to expose the same shape classification.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-deviance.gllvmTMB_multi",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-DEVIANCE-MULTI-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-DEVIANCE-MULTI-READBACK",
+     "r_call": "deviance(fit) on canonical fits, including a ridged (aghq_ridge finite) fit that carries the MAP-point logLik caveat (R/methods-gllvmTMB.R:2862)",
+     "julia_surface": "GLLVM.jl deviance = -2*loglik(fit), delegating to the existing logLik accessor",
+     "comparands": [
+      "R -2*logLik(fit)",
+      "GLLVM.jl -2*loglik(fit)"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported S3 method (R/methods-gllvmTMB.R:2862), trivially `-2 * logLik(object)` with no independent computation. Parity reduces to whatever the already-required logLik surface reports; include the ridged-fit case so the MAP-point caveat is exercised identically.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-diagnose_kernel_separability",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-KERNEL-SEPARABILITY-NATIVE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-KERNEL-SEPARABILITY-NATIVE",
+     "r_call": "diagnose_kernel_separability(phy = K_phy, tip = K_tip, thresholds = c(near_orthogonal=0.25, high=0.70)) on fixed named kernel matrices (R/kernel-helpers.R:581)",
+     "julia_surface": "GLLVM.jl kernel-similarity diagnostic over the same pairwise kernel-matrix inputs",
+     "comparands": [
+      "R $similarity, $pairs, $thresholds",
+      "GLLVM.jl equivalent outputs on identical kernel matrices"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Exported utility (R/kernel-helpers.R:581) taking two or more named kernel matrices directly (not a fit object) and reporting pairwise similarity/overlap classification. Pure numeric routine over user-supplied matrices, verifiable as a native Julia computation cross-checked once against R on identical inputs -- relevant wherever GLLVM.jl exposes multi-kernel structured-dependence diagnostics.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-diagnostic_table",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-DIAGNOSTIC-TABLE-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-DIAGNOSTIC-TABLE-READBACK",
+     "r_call": "diagnostic_table(p, table = \"row_status\"/\"fit_health_status\"/\"data\"/\"check_gllvmTMB\") on predictive_check()/residuals() output from a canonical Poisson fit (R/diagnostic-tables.R:53)",
+     "julia_surface": "GLLVM.jl equivalent table formatter reading the `gllvmTMB_diagnostic`-style attribute off predictive_check/residuals output",
+     "comparands": [
+      "R data frame per `table=` value",
+      "GLLVM.jl data frame per table kind on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported formatter (R/diagnostic-tables.R:53) that reshapes attached diagnostic metadata from predictive_check()/residuals() into tidy tables. Depends on GLLVM.jl already carrying the equivalent diagnostic metadata after those calls; readback evidence over the four `table=` values on one canonical fixture.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_Gamma",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-GAMMA-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-GAMMA-READBACK",
+     "r_call": "extract_Gamma(fit, level, row_traits, col_traits, scale = \"shape\") on a canonical multi-trait covariance fit (R/extract-sigma.R:1719)",
+     "julia_surface": "GLLVM.jl equivalent cross-block Gamma (coevolutionary-effect) extractor",
+     "comparands": [
+      "R Gamma matrix/table",
+      "GLLVM.jl Gamma matrix/table on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-sigma.R:1719) for the cross-trait Gamma (evolutionary-rate coupling) block at a chosen level/trait subset/scale. Readback off already-fitted Sigma components.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_ICC_site",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-ICC-SITE-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-ICC-SITE-READBACK",
+     "r_call": "extract_ICC_site(fit, link_residual = \"auto\") on a canonical multi-trait fit with both unit and unit_obs Sigma blocks (R/extractors.R:101)",
+     "julia_surface": "GLLVM.jl site-level ICC extractor built from extract_Sigma(level=\"unit\"/\"unit_obs\")",
+     "comparands": [
+      "R ICC values",
+      "GLLVM.jl ICC values on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/extractors.R:101) computing between-site ICC from the ratio of unit (B) to unit+unit_obs (B+W) variance; built entirely on top of the already-required extract_Sigma row.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_Omega",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-OMEGA-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-OMEGA-READBACK",
+     "r_call": "extract_Omega(fit, tiers = NULL, link_residual = \"auto\") on a canonical multi-tier (phylo + unit) fit (R/extract-omega.R:189)",
+     "julia_surface": "GLLVM.jl Omega (total decomposed variance) extractor over the same tier vocabulary",
+     "comparands": [
+      "R Omega list per tier",
+      "GLLVM.jl Omega per tier on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-omega.R:189) decomposing total variance into named tiers (phylo/unit/unit_obs/residual). Readback of fitted variance components.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-SIGMA-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-SIGMA-READBACK",
+     "r_call": "extract_Sigma(fit, level = \"unit\"/\"unit_obs\"/\"phy\"/\"unit_slope\"/\"phy_slope\"/\"column_slope\") across the documented level vocabulary on canonical fixtures for each covariance mode (R/extract-sigma.R:686)",
+     "julia_surface": "GLLVM.jl equivalent Sigma extractor over the same level vocabulary",
+     "comparands": [
+      "R Sigma matrix per level",
+      "GLLVM.jl Sigma matrix per level on matched fixtures"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported core covariance extractor (R/extract-sigma.R:686) -- the most-referenced building block in this family (extract_Sigma_B/W, extract_ICC_site, compare_Sigma_table, extract_Sigma_table all delegate to it). Required across all supported `level=` values GLLVM.jl's covariance modes cover (unit, unit_obs, phy, and slope variants once implemented).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_B",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "`extract_Sigma_B()` (R/extractors.R:31) is soft-deprecated (`lifecycle::deprecate_soft(\"0.7.0\", ...)`) and delegates entirely to `extract_Sigma(level = \"unit\")` via `.extract_Sigma_legacy_payload()`. No independent numeric surface beyond the already-required extract_Sigma row.",
+   "reclassify": {
+    "to": "compatibility_adapter",
+    "reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit\"); the numeric surface is fully covered by the extract_Sigma required row. A Julia twin need only keep an alias, not an independent verified case."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_W",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "`extract_Sigma_W()` (R/extractors.R:66) is soft-deprecated and delegates to `extract_Sigma(level = \"unit_obs\")`. Same reasoning as extract_Sigma_B.",
+   "reclassify": {
+    "to": "compatibility_adapter",
+    "reason": "Soft-deprecated legacy alias (lifecycle::deprecate_soft since 0.7.0) that only calls extract_Sigma(level=\"unit_obs\"); covered by the extract_Sigma required row."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_Sigma_table",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-SIGMA-TABLE-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-SIGMA-TABLE-READBACK",
+     "r_call": "extract_Sigma_table(fit, level=\"unit\", part=\"total\", measure=\"covariance\", entries=\"unique\") on a canonical multi-trait fit (R/extract-sigma-table.R:310)",
+     "julia_surface": "GLLVM.jl tidy long-format Sigma table with matching estimand/trait_i/trait_j/estimate columns",
+     "comparands": [
+      "R tidy Sigma table rows",
+      "GLLVM.jl tidy Sigma table rows on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported tidy-table wrapper (R/extract-sigma-table.R:310) around extract_Sigma() producing the long-format estimand/trait_i/trait_j/estimate/CI schema consumed by compare_Sigma_table(). Needed as its own row since the column schema, not just the numbers, is part of the public contract.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_coevolution_modules",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-COEVOLUTION-MODULES-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-COEVOLUTION-MODULES-READBACK",
+     "r_call": "extract_coevolution_modules(fit, level, row_traits, col_traits, scale=\"shape\", n_modules=NULL) on a canonical multi-trait Gamma-bearing fit (R/extract-sigma.R:2203)",
+     "julia_surface": "GLLVM.jl module-detection extractor over the same Gamma block",
+     "comparands": [
+      "R module assignment / summary",
+      "GLLVM.jl module assignment on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-sigma.R:2203) clustering the extract_Gamma() cross-trait block into coevolutionary modules. Built on the extract_Gamma row's numeric surface plus its own module-detection logic.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_communality",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-COMMUNALITY-READBACK",
+    "CORE070-POSTFIT-EXTRACT-COMMUNALITY-CI-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-COMMUNALITY-READBACK",
+     "r_call": "extract_communality(fit, level=\"unit\", ci=FALSE) on a canonical multi-trait fit (R/extractors.R:212)",
+     "julia_surface": "GLLVM.jl point-estimate communality (c^2) extractor",
+     "comparands": [
+      "R communality values",
+      "GLLVM.jl communality values on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    },
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-COMMUNALITY-CI-BRIDGE",
+     "r_call": "extract_communality(fit, ci=TRUE, method=\"wald\") on the same fixture, using the logit-transformed-Wald route already documented for GLLVM.jl's confint_derived_wald.jl",
+     "julia_surface": "GLLVM.jl logit-Wald communality CI (confint_derived_wald.jl)",
+     "comparands": [
+      "R communality CI bounds",
+      "GLLVM.jl communality CI bounds"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported extractor (R/extractors.R:212) for trait communality (c^2) with optional wald/bootstrap/profile CIs. GLLVM.jl's confint_derived_wald.jl already implements a logit-Wald CI for communality per AGENTS.md, so split point-estimate (readback) from CI (bridge) evidence.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_correlations",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-CORRELATIONS-POINT-READBACK",
+    "CORE070-POSTFIT-EXTRACT-CORRELATIONS-CI-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-CORRELATIONS-POINT-READBACK",
+     "r_call": "extract_correlations(fit, tier=\"all\", method=\"none\") on a canonical multi-trait fit (R/extract-correlations.R:392)",
+     "julia_surface": "GLLVM.jl point-estimate correlation extractor over the same tier vocabulary",
+     "comparands": [
+      "R correlation table",
+      "GLLVM.jl correlation table on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    },
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-CORRELATIONS-CI-BRIDGE",
+     "r_call": "extract_correlations(fit, method=\"fisher-z\") on the same fixture, matching GLLVM.jl's Fisher-z Wald route for [-1,1]-bounded correlations (confint_derived_wald.jl)",
+     "julia_surface": "GLLVM.jl Fisher-z correlation CI",
+     "comparands": [
+      "R correlation CI bounds",
+      "GLLVM.jl correlation CI bounds"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-correlations.R:392) for trait-pair correlations with none/fisher-z/profile/wald/bootstrap CI methods. Split point-estimate readback from CI bridge evidence as with extract_communality.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_cross_correlations",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-CROSS-CORRELATIONS-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-CROSS-CORRELATIONS-READBACK",
+     "r_call": "extract_cross_correlations(fit, level=\"unit\", contrasts=FALSE, method=\"point\") on a canonical multi-tier fit (R/extract-correlations.R:884)",
+     "julia_surface": "GLLVM.jl equivalent cross-tier correlation extractor",
+     "comparands": [
+      "R cross-correlation table",
+      "GLLVM.jl cross-correlation table on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-correlations.R:884) for correlations across covariance tiers (e.g. phy vs unit). Point-estimate case first; CI methods (bootstrap/profile/wald) can be added once the point surface is frozen -- flagged in rationale rather than pre-committing untested CI case IDs.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_cutpoints",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-CUTPOINTS-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-CUTPOINTS-READBACK",
+     "r_call": "extract_cutpoints(fit) on a canonical Ordinal-family fit (R/extract-cutpoints.R:66)",
+     "julia_surface": "GLLVM.jl ordinal cutpoint (tau) extractor -- GLLVM.jl already ships an Ordinal family",
+     "comparands": [
+      "R tau_estimate/tau_se table",
+      "GLLVM.jl cutpoint table on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-cutpoints.R:66) for ordinal-family cutpoints/thresholds with SEs. GLLVM.jl's Ordinal family (src/families/ordinal.jl) already produces cutpoint estimates via the implicit cumulative-logit gradient, so this is a direct readback parity check.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_loadings",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-LOADINGS-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-LOADINGS-READBACK",
+     "r_call": "extract_loadings(fit, level=\"unit\", rotate=\"none\") on a canonical latent-factor fit (R/output-methods.R:87; thin wrapper over getLoadings())",
+     "julia_surface": "GLLVM.jl Lambda pack/unpack loadings accessor (packing.jl)",
+     "comparands": [
+      "R loading matrix",
+      "GLLVM.jl loading matrix on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported thin alias (R/output-methods.R:87) delegating to getLoadings(); tracked as its own row since it is the documented public name. Numeric surface is shared with the getLoadings row.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_lv_effects",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-LV-EFFECTS-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-LV-EFFECTS-BRIDGE",
+     "r_call": "extract_lv_effects(fit, level=\"unit\", type=\"axis_effect\", method=\"wald\") called on a `gllvmTMB_julia` bridge fit, which R dispatches to `.gllvm_julia_extract_lv_effects()` (R/extractors.R:641, R/julia-bridge.R:1651)",
+     "julia_surface": "GLLVM.jl native latent-axis-effect extractor that the R bridge's `.gllvm_julia_extract_lv_effects()` currently calls into over RCall/JuliaCall",
+     "comparands": [
+      "R extract_lv_effects() output on a gllvmTMB_julia fit",
+      "GLLVM.jl native extractor output on the paired native fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported extractor (R/extractors.R:641) with an explicit `inherits(fit, \"gllvmTMB_julia\")` dispatch to `.gllvm_julia_extract_lv_effects()` (R/julia-bridge.R:1651) -- i.e. the R package already round-trips this call through the Julia bridge. This is exactly the surface the bridge-capabilities work should verify: R-side call, Julia-side native computation, values must agree.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_ordination",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-ORDINATION-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-ORDINATION-BRIDGE",
+     "r_call": "extract_ordination(fit, level=\"unit\", component=\"total\") called on a `gllvmTMB_julia` bridge fit, dispatching to `.gllvm_julia_extract_ordination()` (R/extractors.R:482, R/julia-bridge.R:1538)",
+     "julia_surface": "GLLVM.jl native ordination (latent-score) extractor already backing the R bridge call",
+     "comparands": [
+      "R extract_ordination() output on a gllvmTMB_julia fit",
+      "GLLVM.jl native extractor output on the paired native fit"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported extractor (R/extractors.R:482) with the same `gllvmTMB_julia` dispatch pattern as extract_lv_effects, routing to `.gllvm_julia_extract_ordination()` (R/julia-bridge.R:1538). Bridge evidence directly exercises the JuliaCall round-trip this capability work is about.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_phylo_signal",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-PHYLO-SIGNAL-READBACK",
+    "CORE070-POSTFIT-EXTRACT-PHYLO-SIGNAL-CI-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-PHYLO-SIGNAL-READBACK",
+     "r_call": "extract_phylo_signal(fit, ci=FALSE) on a canonical sparse-phylogenetic fit (R/extract-omega.R:463)",
+     "julia_surface": "GLLVM.jl phylogenetic-signal (H^2) point-estimate extractor",
+     "comparands": [
+      "R H^2 point estimate",
+      "GLLVM.jl H^2 point estimate on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    },
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-PHYLO-SIGNAL-CI-BRIDGE",
+     "r_call": "extract_phylo_signal(fit, ci=TRUE, method=\"profile\") on the same fixture",
+     "julia_surface": "GLLVM.jl H^2 profile CI (confint_derived.jl already documents phylogenetic signal H^2 profile+bootstrap CIs)",
+     "comparands": [
+      "R H^2 profile CI bounds",
+      "GLLVM.jl H^2 profile CI bounds"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-omega.R:463) for phylogenetic signal H^2 with profile/wald/bootstrap CI options. AGENTS.md/CLAUDE.md confirm confint_derived.jl already implements H^2 profile+bootstrap CIs, so this is a direct parity target; point estimate vs CI split as with extract_communality.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_proportions",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-PROPORTIONS-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-PROPORTIONS-READBACK",
+     "r_call": "extract_proportions(fit, link_residual=\"auto\", format=\"long\") on a canonical multi-tier fit (R/extract-omega.R:725)",
+     "julia_surface": "GLLVM.jl variance-proportion extractor over the same tier vocabulary as extract_Omega",
+     "comparands": [
+      "R proportion table (long)",
+      "GLLVM.jl proportion table on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-omega.R:725) normalising extract_Omega()'s tier variances into proportions. Built on the extract_Omega row's numeric surface.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_repeatability",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-REPEATABILITY-READBACK",
+    "CORE070-POSTFIT-EXTRACT-REPEATABILITY-CI-BRIDGE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-REPEATABILITY-READBACK",
+     "r_call": "extract_repeatability(fit) point estimate on a canonical repeated-measures multi-trait fit (R/extract-repeatability.R:83)",
+     "julia_surface": "GLLVM.jl repeatability point-estimate extractor",
+     "comparands": [
+      "R repeatability estimate",
+      "GLLVM.jl repeatability estimate on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    },
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-REPEATABILITY-CI-BRIDGE",
+     "r_call": "extract_repeatability(fit, method=\"wald\") CI on the same fixture",
+     "julia_surface": "GLLVM.jl repeatability Wald CI",
+     "comparands": [
+      "R repeatability CI bounds",
+      "GLLVM.jl repeatability CI bounds"
+     ],
+     "evidence_kind": "bridge"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-repeatability.R:83) for repeatability (R) with wald/profile/bootstrap CI options. Split point/CI as with the other CI-bearing extractors.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cor",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-RESIDUAL-COR-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-RESIDUAL-COR-READBACK",
+     "r_call": "extract_residual_cor(fit, level=\"unit\") on a canonical multi-trait fit (R/output-methods.R:342; thin wrapper over getResidualCor())",
+     "julia_surface": "GLLVM.jl residual-correlation accessor",
+     "comparands": [
+      "R residual correlation matrix",
+      "GLLVM.jl residual correlation matrix on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported alias (R/output-methods.R:342) delegating to getResidualCor(); tracked separately as the documented public name. Numeric surface shared with the getResidualCor row.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_residual_cov",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-RESIDUAL-COV-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-RESIDUAL-COV-READBACK",
+     "r_call": "extract_residual_cov(fit, level=\"unit\") on the same fixture (R/output-methods.R:336; thin wrapper over getResidualCov())",
+     "julia_surface": "GLLVM.jl residual-covariance accessor",
+     "comparands": [
+      "R residual covariance matrix",
+      "GLLVM.jl residual covariance matrix on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported alias (R/output-methods.R:336) delegating to getResidualCov(); numeric surface shared with the getResidualCov row.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_residual_split",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-RESIDUAL-SPLIT-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-RESIDUAL-SPLIT-READBACK",
+     "r_call": "extract_residual_split(fit) on canonical fits with and without an explicit observation-level diagonal term (R/extract-omega.R:95)",
+     "julia_surface": "GLLVM.jl equivalent split of implicit-vs-explicit residual variance",
+     "comparands": [
+      "R residual-split classification/values",
+      "GLLVM.jl residual-split output on the same fixtures"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/extract-omega.R:95) distinguishing implicit vs explicit observation-level residual variance -- the same distinction check_auto_residual() guards against. Readback of fitted metadata plus Sigma components.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-extract_rotated_loadings_table",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-EXTRACT-ROTATED-LOADINGS-TABLE-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-EXTRACT-ROTATED-LOADINGS-TABLE-READBACK",
+     "r_call": "extract_rotated_loadings_table(fit, level=\"unit\", method=\"varimax\", order_axes=TRUE, sign_anchor=\"auto\") on a canonical d>=2 latent-factor fit (R/rotate-loadings.R:281)",
+     "julia_surface": "GLLVM.jl varimax/promax rotation + tidy-table formatter over the same loading matrix",
+     "comparands": [
+      "R rotated-loadings tidy table",
+      "GLLVM.jl rotated-loadings tidy table on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported tidy-table wrapper (R/rotate-loadings.R:281) combining rotation (varimax/promax), axis-ordering, and sign-anchoring on top of extract_loadings(). Needs its own case because the rotation/ordering/sign-anchor conventions, not just raw loadings, are part of the public contract.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-fitted.gllvmTMB_multi",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-FITTED-MULTI-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-FITTED-MULTI-READBACK",
+     "r_call": "fitted(fit, type=\"response\") on canonical fits, incl. a multinomial() fit (K rows per observation) (R/methods-gllvmTMB.R, thin wrapper: `predict(object, newdata=NULL, type=type, ...)`)",
+     "julia_surface": "GLLVM.jl fitted-values accessor delegating to the existing predict surface",
+     "comparands": [
+      "R fitted-value data frame",
+      "GLLVM.jl fitted-value output on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported S3 method delegating entirely to predict(object, newdata=NULL, ...); no independent computation. Case reduces to whichever predict() parity case already exists, plus the multinomial K-rows-per-observation shape noted in the docstring.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-flag_unreliable_loadings",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-FLAG-UNRELIABLE-LOADINGS-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-FLAG-UNRELIABLE-LOADINGS-READBACK",
+     "r_call": "flag_unreliable_loadings(fit, null_region=c(-0.1,0.1), level=\"unit\", method=\"wald\") on a canonical latent-factor fit (R/loading-ci.R:363)",
+     "julia_surface": "GLLVM.jl loading-reliability flag built on the loading_ci Wald route",
+     "comparands": [
+      "R flagged-loading indices/table",
+      "GLLVM.jl flagged-loading output on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported diagnostic (R/loading-ci.R:363) flagging loadings whose Wald CI falls inside a null region. Built directly on loading_ci()'s numeric surface (also a row in this manifest).",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-getLV",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-GETLV-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-GETLV-READBACK",
+     "r_call": "getLV(fit, level=\"unit\", rotate=\"none\", se=FALSE) on a canonical latent-factor fit, including the `se=TRUE` branch (R/output-methods.R:169)",
+     "julia_surface": "GLLVM.jl latent-score accessor, with an SE branch if implemented",
+     "comparands": [
+      "R latent scores (+ SE when se=TRUE)",
+      "GLLVM.jl latent scores on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported latent-variable-score accessor (R/output-methods.R:169), the core postfit read of the fitted random effects. Case should probe both se=FALSE and se=TRUE if GLLVM.jl exposes conditional-mode SEs.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-getLoadings",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-GETLOADINGS-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-GETLOADINGS-READBACK",
+     "r_call": "getLoadings(fit, level=\"unit\", rotate=\"none\") on a canonical latent-factor fit, including a `gllvmTMB_julia` bridge fit (which R special-cases when rotate != \"none\") (R/output-methods.R:33)",
+     "julia_surface": "GLLVM.jl native loadings accessor (packing.jl / unpack_Lambda)",
+     "comparands": [
+      "R loading matrix",
+      "GLLVM.jl loading matrix on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported loadings accessor (R/output-methods.R:33) with a documented `inherits(fit, \"gllvmTMB_julia\")` special case for non-`none` rotation -- add a bridge sub-case if `rotate != \"none\"` behaves differently on a Julia-backed fit than on a native R fit; the base `rotate=\"none\"` case is a straight readback.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-getREsd",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-GETRESD-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-GETRESD-READBACK",
+     "r_call": "getREsd(fit, block=\"diag_unit\"/\"diag_unit_obs\"/\"diag_species\"/\"phylo\"/\"re_int\"/\"equalto\") on fits covering each block type (R/re-uncertainty.R:99)",
+     "julia_surface": "GLLVM.jl equivalent random-effect-SD accessor over the same block vocabulary",
+     "comparands": [
+      "R RE-SD values per block",
+      "GLLVM.jl RE-SD values per block"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/re-uncertainty.R:99) for random-effect standard deviations across six named block types; one case per block type the corresponding GLLVM.jl covariance mode already supports.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-getResidualCor",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-GETRESIDUALCOR-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-GETRESIDUALCOR-READBACK",
+     "r_call": "getResidualCor(fit, level=\"unit\") on a canonical multi-trait fit (R/output-methods.R:311)",
+     "julia_surface": "GLLVM.jl residual-correlation accessor",
+     "comparands": [
+      "R residual correlation matrix",
+      "GLLVM.jl residual correlation matrix on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/output-methods.R:311), the underlying implementation extract_residual_cor() aliases to.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-getResidualCov",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-GETRESIDUALCOV-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-GETRESIDUALCOV-READBACK",
+     "r_call": "getResidualCov(fit, level=\"unit\") on the same fixture (R/output-methods.R:295)",
+     "julia_surface": "GLLVM.jl residual-covariance accessor",
+     "comparands": [
+      "R residual covariance matrix",
+      "GLLVM.jl residual covariance matrix on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/output-methods.R:295), the underlying implementation extract_residual_cov() aliases to.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-get_crs",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-GET-CRS-NATIVE"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-GET-CRS-NATIVE",
+     "r_call": "get_crs(dat, ll_names = c(\"longitude\",\"latitude\")) on a data frame with valid finite lon/lat columns (R/crs.R:71)",
+     "julia_surface": "GLLVM.jl coordinate-validation helper for spatial/kernel workflows, if/when GLLVM.jl exposes a spatial coordinate entry point",
+     "comparands": [
+      "R validated coordinate object / error behaviour",
+      "GLLVM.jl validated coordinate output on the same data"
+     ],
+     "evidence_kind": "native"
+    }
+   ],
+   "rationale": "Exported helper (R/crs.R:71) validating that two named columns are finite numeric longitude/latitude and building a CRS-aware coordinate object -- this is data-prep tooling for spatial-kernel workflows, not a fitted-model extractor, and does not appear to have an obvious GLLVM.jl analogue in the currently-shipped source layout (no CRS/sf-equivalent module in src/). Flagging uncertain rather than silently reclassifying: unclear whether GLLVM.jl's structured-dependence roadmap needs its own coordinate-validation surface or whether this stays R-side-only tooling that Julia callers never touch directly.",
+   "reclassify": null,
+   "uncertain": true
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-gllvmTMB_diagnose",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-GLLVMTMB-DIAGNOSE-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-GLLVMTMB-DIAGNOSE-READBACK",
+     "r_call": "gllvmTMB_diagnose(object, gradient_thresh=1e-2, se_thresh=100, big_corr_thresh=0.5, verbose=TRUE) on canonical fits (R/diagnose.R:2005)",
+     "julia_surface": "GLLVM.jl equivalent lighter-weight diagnostic (gradient/SE/correlation checks)",
+     "comparands": [
+      "R diagnostic messages/verdict",
+      "GLLVM.jl diagnostic messages/verdict on the same fixtures"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported diagnostic (R/diagnose.R:2005), a smaller sibling of check_gllvmTMB() with only 3 thresholds (gradient, se, big_corr) vs check_gllvmTMB's ~15. Tracked as its own row since it is separately exported and separately documented, even though it overlaps check_gllvmTMB's gradient/SE arms; the Julia twin case can share the underlying gradient/SE computation with the check_gllvmTMB case.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-impute_model",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-IMPUTE-MODEL-FORMULA"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-IMPUTE-MODEL-FORMULA",
+     "r_call": "impute_model(x ~ z, family = gaussian()) constructing an imputation-model spec object, and its error path on a one-sided or non-formula input (R/missing-predictor.R:62)",
+     "julia_surface": "GLLVM.jl imputation-model spec constructor, if/when GLLVM.jl exposes missing-predictor imputation formulas",
+     "comparands": [
+      "R impute_model spec object fields (formula, family_type)",
+      "GLLVM.jl spec object fields on the same formula"
+     ],
+     "evidence_kind": "formula"
+    }
+   ],
+   "rationale": "Exported formula-grammar constructor (R/missing-predictor.R:62) registering an imputation sub-model for a missing predictor; validates a two-sided formula and family. This is formula-interface surface (Boole's area per AGENTS.md roster), not a numeric extractor -- evidence_kind formula rather than postfit-readback.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-imputed",
+   "planned_case_ids": [],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [],
+   "rationale": "`imputed()` (R/missing-predictor.R:2597) is the bare `UseMethod(\"imputed\")` S3 generic stub with no computational body of its own; all behavior lives in the `imputed.gllvmTMB` method, which is already a separate required row in this input set.",
+   "reclassify": {
+    "to": "compatibility_adapter",
+    "reason": "Pure S3 generic dispatcher (`UseMethod(\"imputed\")`) with zero independent logic; the numeric surface is entirely in imputed.gllvmTMB, already a required row. A Julia twin needs only a matching function name/dispatch, not a separately verified numeric case."
+   },
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-imputed.gllvmTMB",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-IMPUTED-GLLVMTMB-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-IMPUTED-GLLVMTMB-READBACK",
+     "r_call": "imputed(fit, variable = NULL, rows = \"missing\", se = TRUE) on a canonical fit built with impute_model() and missing predictor values (R/missing-predictor.R:2603)",
+     "julia_surface": "GLLVM.jl imputed-value + SE accessor for the missing-predictor imputation sub-model",
+     "comparands": [
+      "R imputed values + SEs",
+      "GLLVM.jl imputed values + SEs on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported S3 method (R/missing-predictor.R:2603) reading off reconstructed predictor values (and optional SEs) for missing-predictor imputation. Depends on GLLVM.jl having an equivalent missing-predictor imputation path (see impute_model row); genuinely required once that lands.",
+   "reclassify": null,
+   "uncertain": false
+  },
+  {
+   "source_id": "postfit/POSTFIT-SURFACE-loading_ci",
+   "planned_case_ids": [
+    "CORE070-POSTFIT-LOADING-CI-READBACK"
+   ],
+   "case_plan_annex": "docs/dev-log/core070/postfit-1-required-case-plan.json",
+   "case_specs": [
+    {
+     "case_id": "CORE070-POSTFIT-LOADING-CI-READBACK",
+     "r_call": "loading_ci(fit, level=\"unit\", method=\"wald\") on a canonical latent-factor fit (R/loading-ci.R:112)",
+     "julia_surface": "GLLVM.jl loading-entry Wald CI (the confint.jl Wald route already covers signed loadings on the identity/log-scale distinction noted in CLAUDE.md)",
+     "comparands": [
+      "R loading CI bounds",
+      "GLLVM.jl loading CI bounds on the same fixture"
+     ],
+     "evidence_kind": "postfit-readback"
+    }
+   ],
+   "rationale": "Exported extractor (R/loading-ci.R:112) computing per-entry loading CIs (wald/wald_asym/profile). GLLVM.jl's confint.jl already documents identity-scale Wald CIs for signed loadings, making the wald method a direct near-term parity target; wald_asym/profile can extend the case set once frozen.",
+   "reclassify": null,
+   "uncertain": false
+  }
+ ]
+}

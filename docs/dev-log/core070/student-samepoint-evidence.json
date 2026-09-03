@@ -1,0 +1,66 @@
+{
+  "status": "SAME_POINT_REFERENCE_DENSITY_DISCREPANCY_PARITY_UNPAID",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "julia_version": "1.12.6",
+  "r_version": "4.5.3",
+  "tmb_version": "1.9.21",
+  "negative_controls": 6,
+  "scalar_checks": 15,
+  "points": [
+    {
+      "id": "original-r",
+      "joint_delta": 0.0030935925315134227,
+      "native_marginal_delta": 0.0030935925324229174,
+      "r_reconstruction_delta": 0.0,
+      "hzz_relative_delta_max": 6.327526225358335e-16,
+      "r_mode_gradient_max": 5.933720181872104e-10
+    },
+    {
+      "id": "retained-tighter-r",
+      "joint_delta": 0.0030987866765599392,
+      "native_marginal_delta": 0.0030987866769009997,
+      "r_reconstruction_delta": 0.0,
+      "hzz_relative_delta_max": 6.334308564344266e-16,
+      "r_mode_gradient_max": 7.238654120556021e-14
+    },
+    {
+      "id": "retained-native",
+      "joint_delta": 119.46200976081457,
+      "native_marginal_delta": 119.46200976081502,
+      "r_reconstruction_delta": 0.0,
+      "hzz_relative_delta_max": 3.7517847794364087e-16,
+      "r_mode_gradient_max": 7.99106043558595e-08
+    }
+  ],
+  "artifacts": {
+    "tools/core070_student_samepoint.jl": "db613e8e0ba618817f3e8c427dbf40c250d69dc5363f8cd706155bd59a10ba9e",
+    "tools/core070_verify_student_samepoint.py": "3171695d7d5cabba140062a37674aac99ce68ad2cd039351689134b43ae41128",
+    "tools/core070_student_density_reference.R": "7b5939f1ef8df200cae4e42c721584f01b554ae2d375e48fb7dd3bf5b236896c",
+    ".unlazy/core070-aghq/student-samepoint-01/plan.json": "da7d79b67cda454e0cec43ab73eaab66b3e87bcdc8d06fc99ede09b3dc8f3e32",
+    ".unlazy/core070-aghq/student-samepoint-01/launch.log": "b88ee7f57c7dd68803c93ee5d93ea9067ea268c9071dfbf18d24de52fa8bfc58",
+    ".unlazy/core070-aghq/student-samepoint-01/source.tar": "14ced0d362fb277bd258ee7f01868a3a7ab827ef1d4f32f455a1771a0209f7f2",
+    ".unlazy/core070-aghq/student-samepoint-01/attempt1/process/process-receipt.json": "9c018420678b7b704a37bfd5bbc8fa3a3313af8a2f9308df47cb82d85d190295",
+    ".unlazy/core070-aghq/student-samepoint-01/attempt1/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/student-samepoint-01/attempt1/process/01.log": "9a195094baa130d86506c0155cec82ca1ba9022ebec3f87b98acad0cd3528cab",
+    ".unlazy/core070-aghq/student-samepoint-01/attempt1/process/02.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/student-samepoint-02/plan.json": "35991c5d06d6b32f3b6e1bdf2a378b0f121a61139975806346e09e7c4493cf7c",
+    ".unlazy/core070-aghq/student-samepoint-02/launch.log": "b88ee7f57c7dd68803c93ee5d93ea9067ea268c9071dfbf18d24de52fa8bfc58",
+    ".unlazy/core070-aghq/student-samepoint-02/source.tar": "63f83c809e6437cb4b09bcf45a7a535b663394d3db390c7233d282231d65658f",
+    ".unlazy/core070-aghq/student-samepoint-02/attempt1/process/process-receipt.json": "2e02a3f46d2e303bdf01b7ef031afc11934d25d7f2455513376ff4f5cc18965b",
+    ".unlazy/core070-aghq/student-samepoint-02/attempt1/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/student-samepoint-02/attempt1/process/01.log": "ac59c9645c162f1e39e69ce63663bad27536c1fb935f581780c05a055c87dea3",
+    ".unlazy/core070-aghq/student-samepoint-02/attempt1/process/02.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/student-samepoint-03/plan.json": "fe4a08fca9dde3471d9f926f453d5a75689be1dae792909538a48ddf070683ef",
+    ".unlazy/core070-aghq/student-samepoint-03/launch.log": "218c4c64dbcebf596ba9a22a3183f15e1daa5b76f5d8fe73235a950106a096ae",
+    ".unlazy/core070-aghq/student-samepoint-03/source.tar": "3abc52b7ad9e88ca6a2ba5b01d034069b1a6d165745d044713078dba897ac699",
+    ".unlazy/core070-aghq/student-samepoint-03/attempt1/process/process-receipt.json": "cc07dacd99cbab0b1e1ff37dd3571dced79479d4f0985d7225664f758693e481",
+    ".unlazy/core070-aghq/student-samepoint-03/attempt1/process/00.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/student-samepoint-03/attempt1/process/01.log": "06719317e015eae250e180e54bed677c82ec51693fc02bee053fa68ef77772d6",
+    ".unlazy/core070-aghq/student-samepoint-03/attempt1/process/02.log": "f97d64793699248715d8ab2e5d78ac8de2d85d2ba9c07b05491cd4788aff12f5",
+    ".unlazy/core070-aghq/student-samepoint-03/attempt1/diagnostic/points.toml": "da6ef71e71f7536a37469897560da42ac02e40931377586930d7e7827321be5c",
+    ".unlazy/core070-aghq/student-samepoint-03/attempt1/diagnostic/diagnostic.toml": "bcb5e8f8354c83c33a918381178e00fd9eaf90de39a1b9a5e33bb3959b72fa76",
+    ".unlazy/core070-aghq/student-samepoint-03/attempt1/diagnostic/original-model.rds": "ac39065afece6b63ec183188bdc51a3ead24f08b63678668a4e2606a87aae738",
+    ".unlazy/core070-aghq/student-samepoint-03/scalar-source-check.R": "7b5939f1ef8df200cae4e42c721584f01b554ae2d375e48fb7dd3bf5b236896c",
+    ".unlazy/core070-aghq/student-samepoint-03/scalar-source-check.log": "ee77d96cd2487127ed99df62719c16e96407be7d05164a02edb614eeb9323a43"
+  }
+}

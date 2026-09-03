@@ -1,0 +1,65 @@
+{
+  "status": "SCOPED_INTERFACE_VERIFIED_FULL_SUITES_AND_REVIEW_PENDING",
+  "unit_assertions": 29,
+  "paired_registered_cases": {
+    "status": "VERIFIED_SEVEN_REGISTERED_CASES_NOT_FULL_FAMILY_OR_PROGRAMME",
+    "case_ids": [
+      "NATIVE-03-POISSON",
+      "NATIVE-06-NB2",
+      "NATIVE-08-BETA",
+      "NATIVE-12-TRUNCATED-NB2",
+      "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE",
+      "CORE070-FAMILY-00-IDENTITY-NATIVE-MODEL",
+      "CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE"
+    ],
+    "actual_assertions": 121,
+    "executions": 6,
+    "elapsed_seconds": 81.89948007464409,
+    "models": {
+      "NATIVE-03-POISSON": {
+        "loglik_delta": 1.432454155292362e-11,
+        "native_gradient_max": 1.8774286656005279e-06,
+        "r_gradient_max": 3.452676528259424e-05
+      },
+      "NATIVE-08-BETA": {
+        "loglik_delta": 1.98667748918524e-11,
+        "native_gradient_max": 3.44977517304097e-07,
+        "r_gradient_max": 1.3801814040578786e-05
+      },
+      "NATIVE-06-NB2": {
+        "loglik_delta": 3.412827027204912e-06,
+        "native_gradient_max": 9.481014761282667e-07,
+        "r_gradient_max": 6.509060474424455e-05
+      },
+      "CORE070-FAMILY-05-LOG-FORMULA-INTERFACE": {
+        "loglik_delta": 3.412827027204912e-06,
+        "native_gradient_max": 9.481014761282667e-07,
+        "r_gradient_max": 6.509060474424455e-05
+      },
+      "NATIVE-12-TRUNCATED-NB2": {
+        "loglik_delta": 8.67307790031191e-08,
+        "native_gradient_max": 6.536981751954038e-06,
+        "r_gradient_max": 2.746089928674922e-05
+      },
+      "Gaussian native/formula": {
+        "loglik_delta": 3.864101927320007e-09,
+        "native_gradient_max": 1.5420198451465694e-10,
+        "r_gradient_max": 4.445323898038918e-05
+      }
+    },
+    "execution_manifest_sha256": "fae9f9271d46da84ae5c32e3159d801b761372f6592d9fca3aa64ca54f4014f7",
+    "contract_sha256": "c6bf04470a4324cb71df491134d5ca7549e72336848b6f6af6742ca7388925b0",
+    "process_receipt_sha256": "ddeb93657b9bcc36cf1e9a24d961eff066affa1da3decf3e85f5e6b79f40ec2b",
+    "run_sha256": "8fca721db1c87a12289a1e33bb7dee1fc8343d9e7a924bc9f7bf30ecde22194f",
+    "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+  },
+  "baseline_seconds": 21.363100903108716,
+  "candidate_seconds": 39.96465720422566,
+  "docs_seconds": 135.69915808923542,
+  "neighbour_assertions": 35,
+  "neighbour_seconds": 60.1503682192415,
+  "test_sha256": "4b7b36297a04e7402d423ece87731c0559f09ca4856121bee982b83be4f561af",
+  "dispatch_sha256": "f77a7ec901184793cffbaee34cb09155745496df44d0ee0518370bebd204fe7d",
+  "docs_receipt_sha256": "9c28fe13686c05799585a0bb047c39f73b511d4225911cbf1ec9580884cdf64e",
+  "unit_receipt_sha256": "ca6b09592d1cc3b255ffa145e5bf06b4f36be8b35ac75c95edb3bd563c856577"
+}

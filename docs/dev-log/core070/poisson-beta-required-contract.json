@@ -1,0 +1,58 @@
+{
+  "status": "PREDECLARED_ORIGINAL_REQUIRED_RUNNER_CASES",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "cases": [
+    {
+      "id": "NATIVE-03-POISSON",
+      "family": "poisson",
+      "seed": 44,
+      "p": 5,
+      "n": 60,
+      "K": 2,
+      "fixture": "test/parity/test_poisson_parity.jl",
+      "fixture_sha256": "d7ca740f8daa303aae730647af53b1db461ba7c0d44a4341db17e7e3495ed204",
+      "dgp_sha256": "404e19e607362e4682f7348dec0fc5dd127d06114fe1f9197f24001ddf537100",
+      "native_call": "fit_poisson_gllvm(Y; K = K)",
+      "reference_call": "fit_gllvmtmb_parity_loglik(Y, K; family = :poisson)",
+      "parameter_count": 14,
+      "link": "log",
+      "dispersion": "none",
+      "curvature": "canonical Fisher equals observed",
+      "required_fixture": "test/parity/test_poisson_required.jl"
+    },
+    {
+      "id": "NATIVE-08-BETA",
+      "family": "beta",
+      "seed": 45,
+      "p": 5,
+      "n": 60,
+      "K": 1,
+      "fixture": "test/parity/test_beta_parity.jl",
+      "fixture_sha256": "74a045861439b5a6f5a56c2c427c4abd2bfcc1fc143cfe43c392044ca51dbac8",
+      "dgp_sha256": "45c31fe9b8e846681bdabb7f4a8284bc8a1f04ada25c685a34687c617669e1ab",
+      "native_call": "fit_gllvm(Y; family = GLLVM.Beta(), K = K, g_tol = 1e-7, iterations = 800)",
+      "reference_call": "fit_gllvmtmb_parity_loglik(Y, K; family = :beta)",
+      "parameter_count": 15,
+      "link": "logit",
+      "dispersion": "five free per-trait precision parameters",
+      "curvature": "observed",
+      "required_fixture": "test/parity/test_beta_required.jl"
+    }
+  ],
+  "controls": "Original native fit unchanged. Retain default R fit, then public start_from with nlminb rel.tol=1e-12,eval.max=2000,iter.max=1500. Identical data/map/free parameter names required.",
+  "acceptance": {
+    "loglik_rtol": 1e-06,
+    "gradient_max": 0.0001,
+    "fd_stability": 0.0001,
+    "reevaluation_atol": 1e-08,
+    "samepoint_atol": 1e-06
+  },
+  "scope": "Original no-X ordinary loadings-only unique=false complete-data models; no recovery, formula, bridge or full-family verdict",
+  "original_contract_sha256": "52dd4e64714c02aa49f5402f0f02dca967fae52647de10f232e15f4ea11b045d",
+  "policy": "public_start_from_refinement_v1",
+  "predecessor_contract_sha256": "4579c13599c9c1b08bb808e42efa68c1542eb1a37d5e3578c689210975547234",
+  "original_qualification_helper_pin": {
+    "test/parity/parity_helpers.jl": "5d4a839a79029e9968f1263eac631217fe8e6f2d0b01c49a2116935f783b8595"
+  },
+  "required_helper": "test/parity/poisson_beta_health.jl"
+}

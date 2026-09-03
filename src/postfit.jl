@@ -6,9 +6,39 @@
 # decreasing singular value. Rotating loadings (Λ → Λ V) and scores
 # (Z → Z V) by the same V leaves Λ Zᵀ — hence Σ_y — unchanged.
 
-# Loadings accessor — dispatches over the two fitted types.
+const AnyGllvmFit = Union{
+    GllvmFit, GllvmCovFit, GllvmSpeciesCovFit, FourthCornerFit, RRRFit,
+    ConstrainedOrdinationFit, RowEffectFit, RowRandomFit, PoissonRandomSlopeFit,
+    GaussianRandomSlopeFit, TwoLevelFit, GaussianREMLFit, PhyloGaussianFit,
+    GaussianPerVarFit, SPDEGaussianFit, SPDELatentFit, PhyloGLMFit,
+    CoevolutionGLMFit, EMPhyloFit, BranchREFit, RelaxedClockFit, PoissonFit,
+    BinomialFit, NBFit, BetaFit, GammaFit, OrdinalFit, OrdinalPerTraitFit,
+    OrdinalPerTraitCovFit, TweedieFit, StudentTFit, ExponentialFit, LognormalFit,
+    MultinomialFit, TruncatedPoissonFit, TruncatedNegBin2Fit, TruncatedNegBin2PerTraitFit,
+    CensoredPoissonFit, GP1Fit, NB1Fit, COMPoissonFit, BetaBinomialFit,
+    BetaBinomialGroupedFit, BetaBinomialGroupedCovFit, BetaHurdleFit,
+    DeltaLogNormalFit, HurdlePoissonFit, HurdleNBFit, DeltaGammaFit,
+    ZIPFit, ZIPCovFit, ZINBFit, ZINBCovFit, ZIBFit, ZIBCovFit,
+    NBGroupedFit, NBGroupedCovFit, BetaGroupedFit, BetaGroupedCovFit,
+    GammaGroupedFit, GammaGroupedCovFit, NB1GroupedFit, NB1GroupedCovFit,
+    TweedieGroupedFit, TweediePerTraitPowerFit
+}
+
+# Loadings accessor — dispatches over the fitted types.
 _loadings(fit::GllvmFit)    = fit.pars.Λ
 _loadings(fit::BinomialFit) = fit.Λ
+
+function _loadings(fit)
+    if hasfield(typeof(fit), :Λ)
+        return fit.Λ
+    elseif hasfield(typeof(fit), :Λc)
+        return fit.Λc
+    elseif hasfield(typeof(fit), :pars) && haskey(fit.pars, :Λ)
+        return fit.pars.Λ
+    else
+        throw(ArgumentError("_loadings not supported for $(typeof(fit))"))
+    end
+end
 
 # Canonical sign-fixed right-singular-vector rotation of Λ (p×K) -> K×K.
 function _svd_rotation(Λ::AbstractMatrix)
@@ -141,9 +171,14 @@ function getLV(fit::GllvmFit, y::AbstractMatrix;
                X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
                X_lv::Union{Nothing, AbstractMatrix} = nothing,
                component::Symbol = :total,
-               rotate::Bool = true)
+               rotate::Bool = true,mask=nothing,offset=nothing)
     component in (:total, :innovation, :mean) ||
         throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
+    if _has_gaussian_record(fit)
+        X_lv===nothing || throw(ArgumentError("ordinary Gaussian integration does not use X_lv"))
+        return _gaussian_record_predict(fit,y;X=X,mask=mask,offset=offset,component=component,rotate=rotate,scores=true)
+    end
+    (mask===nothing && offset===nothing) || throw(ArgumentError("mask/offset postfit requires retained Gaussian integration data"))
     Λ = fit.pars.Λ
     K = size(Λ, 2)
     Σ = sigma_y_site(fit)
@@ -174,13 +209,23 @@ For fits with `X_lv`, `component` chooses which latent-score layer to return:
 `:total` is their sum. `rotate=true` applies the canonical [`rotation`](@ref)
 to whichever component is returned.
 """
-function getLV(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::BinomialFit, Y::AbstractMatrix;
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                X_lv::Union{Nothing, AbstractMatrix} = nothing,
                component::Symbol = :total,
-               rotate::Bool = true, mask = nothing)
+               rotate::Bool = true, mask = nothing,offset=nothing)
     component in (:total, :innovation, :mean) ||
         throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
+    if _is_binomial_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only prediction does not use X_lv"))
+        if component===:mean
+            _binomial_aghq_problem(fit,Y;N=N,mask=mask,offset=offset)
+            return zeros(size(Y,2),size(fit.Λ,2))
+        end
+        return _binomial_aghq_scores(fit,Y;N=N,rotate=rotate,mask=mask,offset=offset)
+    end
+    offset===nothing || throw(ArgumentError("explicit offset currently requires AGHQ metadata"))
+    eltype(Y)<:Integer || throw(ArgumentError("Laplace binomial getLV requires integer responses"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
@@ -213,9 +258,14 @@ match the fit.
 function predict(fit::GllvmFit, y::AbstractMatrix;
                  type::Symbol = :response,
                  X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
-                 X_lv::Union{Nothing, AbstractMatrix} = nothing)
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing,mask=nothing,offset=nothing)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
+    if _has_gaussian_record(fit)
+        X_lv===nothing || throw(ArgumentError("ordinary Gaussian integration does not use X_lv"))
+        return _gaussian_record_predict(fit,y;X=X,mask=mask,offset=offset)
+    end
+    (mask===nothing && offset===nothing) || throw(ArgumentError("mask/offset postfit requires retained Gaussian integration data"))
     Z = getLV(fit, y; X = X, X_lv = X_lv, component = :total, rotate = false) # n×K
     η = _fitted_mean(fit, y, X) .+ fit.pars.Λ * Z'   # p×n
     return η                                          # identity link
@@ -228,14 +278,21 @@ In-sample fitted values at the Laplace conditional mode `ẑ` (see [`getLV`](@re
 `type=:link` returns `η = β + Λ ẑ`; `type=:response` returns the inverse-link
 fitted probabilities `linkinv(link, η)`.
 """
-function predict(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::BinomialFit, Y::AbstractMatrix;
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
-                 X_lv::Union{Nothing, AbstractMatrix} = nothing)
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing,mask=nothing,offset=nothing)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
+    if _is_binomial_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only prediction does not use X_lv"))
+        z=_binomial_aghq_scores(fit,Y;N=N,rotate=false,mask=mask,offset=offset)
+        eta=fit.β .+ fit.Λ*z' .+ _aghq_prediction_offset(fit,Y,offset)
+        return type===:link ? eta : _binomial_aghq_probability.(eta,Ref(fit.link))
+    end
+    offset===nothing || throw(ArgumentError("explicit offset currently requires AGHQ metadata"))
     Z = getLV(fit, Y; N = N, X_lv = X_lv, component = :total,
-              rotate = false)                       # n×K
+              rotate = false,mask=mask)                       # n×K
     η = fit.β .+ fit.Λ * Z'                           # p×n
     type === :link && return η
     return linkinv.(Ref(fit.link), η)
@@ -246,7 +303,7 @@ end
 
 Response-scale in-sample fitted values — `predict(fit, data; type=:response, kwargs...)`.
 """
-fitted(fit, data; kwargs...) = predict(fit, data; type = :response, kwargs...)
+StatsAPI.fitted(fit::AnyGllvmFit, data; kwargs...) = predict(fit, data; type = :response, kwargs...)
 
 """
     residuals(fit::GllvmFit, y; type=:dunnsmyth, X=nothing, X_lv=nothing) -> p×n matrix
@@ -259,9 +316,15 @@ residual. `μ` is the conditional fitted mean (see [`predict`](@ref)).
 function residuals(fit::GllvmFit, y::AbstractMatrix;
                    type::Symbol = :dunnsmyth,
                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
-                   X_lv::Union{Nothing, AbstractMatrix} = nothing)
+                   X_lv::Union{Nothing, AbstractMatrix} = nothing,mask=nothing,offset=nothing)
     type in (:dunnsmyth, :pearson) ||
         throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    if _has_gaussian_record(fit)
+        q,_=_gaussian_record_problem(fit,y;X=X,mask=mask,offset=offset)
+        mu=predict(fit,y;X=X,X_lv=X_lv,mask=mask,offset=offset)
+        return ifelse.(q.data.mask,(q.data.responses.-mu)./fit.pars.σ_eps,NaN)
+    end
+    (mask===nothing && offset===nothing) || throw(ArgumentError("mask/offset postfit requires retained Gaussian integration data"))
     μ = predict(fit, y; type = :response, X = X, X_lv = X_lv)
     return (y .- μ) ./ fit.pars.σ_eps
 end
@@ -373,16 +436,34 @@ Smyth randomized quantile residuals — `Φ⁻¹(u)`, `u` uniform on `[F(y−1),
 under `Binomial(N, μ)` — ≈ N(0,1) under a correct model (pass a fixed `rng` for
 reproducibility). `:pearson` returns `(Y − Nμ) / √(Nμ(1−μ))`.
 """
-function residuals(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
+function residuals(fit::BinomialFit, Y::AbstractMatrix;
                    type::Symbol = :dunnsmyth,
                    N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                    X_lv::Union{Nothing, AbstractMatrix} = nothing,
-                   rng::AbstractRNG = Random.default_rng())
+                   rng::AbstractRNG = Random.default_rng(),mask=nothing,offset=nothing)
     type in (:dunnsmyth, :pearson) ||
         throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
+    if _is_binomial_aghq(fit)
+        q,_=_binomial_aghq_problem(fit,Y;N=N,mask=mask,offset=offset)
+        mu=predict(fit,Y;N=N,X_lv=X_lv,mask=mask,offset=offset)
+        result=fill(NaN,size(Y))
+        for j in eachindex(result)
+            q.data.mask[j] || continue
+            nt=q.data.trials[j];y=q.data.responses[j];prob=mu[j]
+            if type===:pearson
+                variance=nt*prob*(1-prob)
+                result[j]=variance>0 ? (y-nt*prob)/sqrt(variance) : NaN
+            else
+                d=Binomial(Int(nt),prob);lo=cdf(d,y-1);hi=cdf(d,y)
+                result[j]=quantile(Normal(),clamp(lo+(hi-lo)*rand(rng),1e-12,1-1e-12))
+            end
+        end
+        return result
+    end
+    offset===nothing || throw(ArgumentError("explicit offset currently requires AGHQ metadata"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
-    μ = predict(fit, Y; type = :response, N = N, X_lv = X_lv)
+    μ = predict(fit, Y; type = :response, N = N, X_lv = X_lv,mask=mask)
     if type === :pearson
         return (Y .- Nm .* μ) ./ sqrt.(Nm .* μ .* (1 .- μ))
     end
@@ -398,11 +479,27 @@ function residuals(fit::BinomialFit, Y::AbstractMatrix{<:Integer};
 end
 
 # ---------------------------------------------------------------------------
-# Model-selection criteria + display.
+# Model-selection criteria + display + StatsAPI extractors.
 # ---------------------------------------------------------------------------
 
-_loglik(fit::GllvmFit)    = fit.logLik
-_loglik(fit::BinomialFit) = fit.loglik
+_loglik(fit::GllvmFit)         = fit.logLik
+_loglik(fit::GaussianREMLFit)  = fit.reml_loglik
+_loglik(fit::PhyloGaussianFit) = -fit.negll
+_loglik(fit::BinomialFit)      = fit.loglik
+
+function _loglik(fit)
+    if hasfield(typeof(fit), :loglik)
+        return fit.loglik
+    elseif hasfield(typeof(fit), :logLik)
+        return fit.logLik
+    elseif hasfield(typeof(fit), :reml_loglik)
+        return fit.reml_loglik
+    elseif hasfield(typeof(fit), :negll)
+        return -fit.negll
+    else
+        throw(ArgumentError("_loglik not defined for $(typeof(fit))"))
+    end
+end
 
 # Free-parameter count k (loadings counted modulo the K(K−1)/2 rotational df).
 function _nparams(fit::GllvmFit)
@@ -432,27 +529,250 @@ function _nparams(fit::BinomialFit)
     return k
 end
 
+_nparams(f::CensoredPoissonFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); p + (p * K - div(K * (K - 1), 2)))
+_nparams(f::CoevolutionGLMFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + 1 + length(f.dispersion))
+_nparams(f::GaussianREMLFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); (f.β === nothing ? 0 : length(f.β)) + 1 + (p * K - div(K * (K - 1), 2)))
+_nparams(f::GaussianRandomSlopeFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); (p * K - div(K * (K - 1), 2)) + 1 + div(f.q * (f.q + 1), 2))
+_nparams(f::LognormalFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); (p * K - div(K * (K - 1), 2)) + length(f.β) + length(f.σ))
+_nparams(f::MultinomialFit) = length(f.β) + (f.γ === nothing ? 0 : length(f.γ))
+_nparams(f::PhyloGLMFit) = length(f.β) + 1 + length(f.dispersion)
+_nparams(f::PhyloGaussianFit) = 3
+_nparams(f::PoissonRandomSlopeFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + div(f.q * (f.q + 1), 2))
+_nparams(f::SPDEGaussianFit) = 4
+_nparams(f::StudentTFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + length(f.σ) + (f.estimated_nu ? length(f.ν) : 0))
+_nparams(f::TruncatedNegBin2Fit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + length(f.r))
+_nparams(f::TruncatedNegBin2PerTraitFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)) + length(f.r))
+_nparams(f::TruncatedPoissonFit) = (p = size(f.Λ, 1); K = size(f.Λ, 2); length(f.β) + (p * K - div(K * (K - 1), 2)))
+_nparams(f::TwoLevelFit) = (p = size(f.Λ_B, 1); K_B = size(f.Λ_B, 2); K_W = size(f.Λ_W, 2); p * K_B - div(K_B * (K_B - 1), 2) + p * K_W - div(K_W * (K_W - 1), 2) + length(f.σ²_B) + length(f.σ²_W))
+
+function _nparams(fit)
+    k = 0
+    if hasfield(typeof(fit), :β) && fit.β !== nothing
+        k += length(fit.β)
+    elseif hasfield(typeof(fit), :βc) && hasfield(typeof(fit), :βz)
+        k += length(fit.βc) + length(fit.βz)
+    end
+    if hasfield(typeof(fit), :γ) && fit.γ !== nothing
+        k += length(fit.γ)
+    end
+    if hasfield(typeof(fit), :Λ) && fit.Λ !== nothing
+        p, K = size(fit.Λ)
+        k += p * K - div(K * (K - 1), 2)
+    elseif hasfield(typeof(fit), :Λc) && fit.Λc !== nothing
+        p, K = size(fit.Λc)
+        k += p * K - div(K * (K - 1), 2)
+    end
+    return max(k, 1)
+end
+
+"""
+    dof(fit) -> Integer
+
+Return the degrees of freedom (number of free estimated parameters) of `fit`.
+"""
+StatsAPI.dof(fit::AnyGllvmFit) = _nparams(fit)
+
+"""
+    loglikelihood(fit) -> Float64
+
+Return the maximized marginal log-likelihood of `fit`.
+"""
+StatsAPI.loglikelihood(fit::AnyGllvmFit) = _loglik(fit)
+
 """
     aic(fit) -> Float64
 
-Akaike information criterion `2k − 2ℓ`: `k` the free-parameter count (loadings
-counted modulo the `K(K−1)/2` rotational identifiability), `ℓ` the maximised
-marginal log-likelihood.
+Akaike information criterion `2k − 2ℓ`: `k` the free-parameter count (`dof(fit)`),
+`ℓ` the maximised marginal log-likelihood (`loglikelihood(fit)`).
 """
-aic(fit) = 2 * _nparams(fit) - 2 * _loglik(fit)
+StatsAPI.aic(fit::AnyGllvmFit) = 2 * StatsAPI.dof(fit) - 2 * StatsAPI.loglikelihood(fit)
 
 """
-    bic(fit, n_sites) -> Float64
+    bic(fit, n) -> Float64
+    bic(fit, Y; mask = nothing) -> Float64
 
-Bayesian information criterion `k·log(n_sites) − 2ℓ`. `n_sites` (the number of
-independent sites/rows) is passed explicitly because the fit does not store the
-data.
+Bayesian information criterion `k·log(n) − 2ℓ`. `n` is a directly supplied
+observation count (pass [`nobs`](@ref) explicitly if a non-default count is
+wanted); the `bic(fit, Y)` form infers it as `nobs(fit, Y; mask)` — R's p·n
+cell-count convention (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md
+#1), not the number of sites.
 """
-bic(fit, n_sites::Integer) = _nparams(fit) * log(n_sites) - 2 * _loglik(fit)
+StatsAPI.bic(fit::AnyGllvmFit, n::Integer) = StatsAPI.dof(fit) * log(n) - 2 * StatsAPI.loglikelihood(fit)
+StatsAPI.bic(fit::AnyGllvmFit, Y::AbstractMatrix; mask = nothing) =
+    StatsAPI.bic(fit, StatsAPI.nobs(fit, Y; mask = mask))
+
+"""
+    nobs(fit, [Y]; mask = nothing) -> Integer
+
+Number of observed response cells: R's `p·n` cell-count convention
+(docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md #1), i.e.
+`length(Y)` minus any missing/masked cells — matching `nobs.gllvmTMB_multi`,
+which counts `is_y_observed == 1` cells rather than the number of sites.
+
+If `Y` is provided, returns `count(mask)` when `mask` is given, otherwise
+`count(!ismissing, Y)` when `Y`'s eltype allows `missing`, otherwise
+`length(Y)` (== `p * n`, complete data). `mask` is `p×n` with `true` meaning
+*observed* (the same convention as `fit_*_gllvm(...; mask)`); a fit struct
+does not retain the mask it was fitted with, so pass it explicitly here for a
+masked fit.
+
+For fit structs that store observation/level counts instead of a response
+matrix (e.g. two-level, random-slope, SPDE), `nobs(fit)` returns the
+cell-count analogue (`p` times the stored unit count) so the convention holds
+without requiring `Y`.
+"""
+function StatsAPI.nobs(fit::AnyGllvmFit, Y::AbstractMatrix; mask = nothing)
+    mask !== nothing && return count(mask)
+    Missing <: eltype(Y) && return count(!ismissing, Y)
+    return length(Y)
+end
+StatsAPI.nobs(fit::TwoLevelFit) = size(fit.Λ_B, 1) * fit.nindiv
+StatsAPI.nobs(fit::GaussianRandomSlopeFit) = size(fit.Λ, 1) * fit.nlevels
+StatsAPI.nobs(fit::PoissonRandomSlopeFit) = size(fit.Λ, 1) * fit.nlevels
+StatsAPI.nobs(fit::RowEffectFit) = size(fit.Λ, 1) * length(fit.ρ)
+StatsAPI.nobs(fit::SPDEGaussianFit) = size(fit.nodes, 1)   # univariate spatial GP (p = 1); unchanged
+StatsAPI.nobs(fit::SPDELatentFit) = size(fit.Λ, 1) * size(fit.nodes, 1)
+function StatsAPI.nobs(fit::AnyGllvmFit)
+    if hasfield(typeof(fit), :nindiv)
+        return fit.nindiv
+    elseif hasfield(typeof(fit), :nlevels)
+        return fit.nlevels
+    elseif hasfield(typeof(fit), :nodes)
+        return size(fit.nodes, 1)
+    elseif hasfield(typeof(fit), :ρ)
+        return length(fit.ρ)
+    else
+        throw(ArgumentError("nobs for $(typeof(fit)) requires the response matrix Y: nobs(fit, Y)"))
+    end
+end
+
+"""
+    coef(fit) -> Vector{Float64}
+
+Return the estimated regression coefficients (fixed effects or primary parameter vector) of `fit`.
+"""
+StatsAPI.coef(fit::GllvmFit) = fit.pars.β === nothing ? Float64[] : copy(fit.pars.β)
+StatsAPI.coef(fit::GllvmCovFit) = copy(fit.γ)
+StatsAPI.coef(fit::GllvmSpeciesCovFit) = copy(fit.B)
+StatsAPI.coef(fit::FourthCornerFit) = copy(fit.C)
+StatsAPI.coef(fit::RRRFit) = copy(fit.B)
+StatsAPI.coef(fit::ConstrainedOrdinationFit) = copy(fit.B)
+StatsAPI.coef(fit::GammaGroupedCovFit) = copy(fit.γ)
+StatsAPI.coef(fit::NBGroupedCovFit) = copy(fit.γ)
+StatsAPI.coef(fit::BetaGroupedCovFit) = copy(fit.γ)
+StatsAPI.coef(fit::NB1GroupedCovFit) = copy(fit.γ)
+StatsAPI.coef(fit::BetaBinomialGroupedCovFit) = copy(fit.γ)
+StatsAPI.coef(fit::OrdinalPerTraitCovFit) = copy(fit.γ)
+StatsAPI.coef(fit::ZIPCovFit) = vcat(fit.γz, fit.γc)
+StatsAPI.coef(fit::ZINBCovFit) = vcat(fit.γz, fit.γc)
+StatsAPI.coef(fit::ZIBCovFit) = vcat(fit.γz, fit.γc)
+StatsAPI.coef(fit::DeltaLogNormalFit) = vcat(fit.βz, fit.βc)
+StatsAPI.coef(fit::DeltaGammaFit) = vcat(fit.βz, fit.βc)
+StatsAPI.coef(fit::HurdlePoissonFit) = vcat(fit.βz, fit.βc)
+StatsAPI.coef(fit::HurdleNBFit) = vcat(fit.βz, fit.βc)
+StatsAPI.coef(fit::BetaHurdleFit) = vcat(fit.βz, fit.βc)
+StatsAPI.coef(fit::ZIPFit) = vcat(fit.βz, fit.βc)
+StatsAPI.coef(fit::ZINBFit) = vcat(fit.βz, fit.βc)
+StatsAPI.coef(fit::ZIBFit) = vcat(fit.βz, fit.βc)
+StatsAPI.coef(fit::OrdinalFit) = copy(fit.τ)
+StatsAPI.coef(fit::PhyloGaussianFit) = [fit.μ]
+StatsAPI.coef(fit::SPDEGaussianFit) = [fit.μ]
+StatsAPI.coef(fit::TwoLevelFit) = Float64[]
+StatsAPI.coef(fit::GaussianRandomSlopeFit) = Float64[]
+function StatsAPI.coef(fit::AnyGllvmFit)
+    if hasfield(typeof(fit), :γ) && fit.γ !== nothing
+        return copy(fit.γ)
+    elseif hasfield(typeof(fit), :β) && fit.β !== nothing
+        return copy(fit.β)
+    elseif hasfield(typeof(fit), :μ)
+        return [fit.μ]
+    else
+        return Float64[]
+    end
+end
+
+"""
+    vcov(fit, [Y]; kwargs...) -> AbstractMatrix
+
+Return the asymptotic variance-covariance matrix of estimated parameters for `fit`
+via observed information.
+"""
+function StatsAPI.vcov(fit::GllvmFit; y = nothing, kwargs...)
+    y_mat = y !== nothing ? y : (hasproperty(fit, :y) ? fit.y : nothing)
+    y_mat === nothing && throw(ArgumentError("`y` matrix must be supplied to compute vcov for GllvmFit: vcov(fit, y)"))
+    _has_gaussian_record(fit) && return _gaussian_record_vcov(fit,y_mat;kwargs...)
+    ci = confint(fit; y = y_mat, kwargs...)
+    return Diagonal(ci.se .^ 2)
+end
+
+function StatsAPI.vcov(fit::GllvmFit, Y::AbstractMatrix; kwargs...)
+    _has_gaussian_record(fit) && return _gaussian_record_vcov(fit,Y;kwargs...)
+    ci = confint(fit; y = Y, kwargs...)
+    return Diagonal(ci.se .^ 2)
+end
+
+function StatsAPI.vcov(fit::AnyGllvmFit, Y::AbstractMatrix; kwargs...)
+    ci = confint(fit, Y; method = :wald, kwargs...)
+    return Diagonal(ci.se .^ 2)
+end
+
+"""
+    stderror(fit, [Y]; kwargs...) -> Vector{Float64}
+
+Return the standard errors of estimated parameters for `fit`.
+"""
+function StatsAPI.stderror(fit::GllvmFit; y = nothing, kwargs...)
+    y_mat = y !== nothing ? y : (hasproperty(fit, :y) ? fit.y : nothing)
+    y_mat === nothing && throw(ArgumentError("`y` matrix must be supplied to compute stderror for GllvmFit: stderror(fit, y)"))
+    ci = confint(fit; y = y_mat, kwargs...)
+    return copy(ci.se)
+end
+
+function StatsAPI.stderror(fit::GllvmFit, Y::AbstractMatrix; kwargs...)
+    ci = confint(fit; y = Y, kwargs...)
+    return copy(ci.se)
+end
+
+function StatsAPI.stderror(fit::AnyGllvmFit, Y::AbstractMatrix; kwargs...)
+    ci = confint(fit, Y; method = :wald, kwargs...)
+    return copy(ci.se)
+end
+
+"""
+    coeftable(fit, Y; kwargs...) -> GllvmCoefTable
+
+Return a tidy coefficient table for `fit` at response matrix `Y`.
+"""
+StatsAPI.coeftable(fit::AnyGllvmFit, Y::AbstractMatrix; kwargs...) = coef_table(fit, Y; kwargs...)
+
+"""
+    summary(fit) -> String
+
+Return a concise string summary of a fitted GLLVM model.
+"""
+Base.summary(fit::GllvmFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "exact Gaussian/Laplace ($(fit.integration.reason)) ") * "Gaussian GLLVM fit (p=$(fit.model.p), K=$(fit.model.K), logLik=$(round(fit.logLik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::BinomialFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Binomial GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::PoissonFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Poisson GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::NBFit) = "NegativeBinomial GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::NB1Fit) = "NB1 GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::GP1Fit) = "GP1 GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::BetaFit) = "Beta GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::GammaFit) = "Gamma GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::OrdinalFit) = "Ordinal GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::TweedieFit) = "Tweedie GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::GaussianREMLFit) = "Gaussian REML fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), reml_loglik=$(round(fit.reml_loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::PhyloGaussianFit) = "PhyloGaussian fit (logLik=$(round(-fit.negll; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::GllvmCovFit) = "GLLVM Covariates fit (logLik=$(round(fit.loglik; sigdigits=5)), dof=$(_nparams(fit)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::TwoLevelFit) = "TwoLevel GLLVM fit (p=$(size(fit.Λ_B, 1)), K_B=$(size(fit.Λ_B, 2)), K_W=$(size(fit.Λ_W, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+
 
 # Rich REPL display (the idiomatic "summary").
 function Base.show(io::IO, ::MIME"text/plain", fit::GllvmFit)
     println(io, "Gaussian GLLVM fit")
+    if fit.integration!==nothing
+        i=fit.integration
+        println(io,"  integration = ",i.actual===:aghq ? "AGHQ(k=$(i.k), observed, unpenalized)" : "exact Gaussian/Laplace ($(i.reason))")
+    end
     println(io, "  responses p = ", fit.model.p, ", latent factors K = ", fit.model.K)
     println(io, "  logLik = ", round(fit.logLik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
@@ -461,7 +781,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::BinomialFit)
     p, K = size(fit.Λ)
-    println(io, "Binomial GLLVM fit")
+    println(io, summary(fit))
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -500,13 +820,23 @@ For fits with `X_lv`, `component` chooses which latent-score layer to return:
 `:mean` is `X_lv * alpha_lv`, `:innovation` is the zero-mean Laplace mode, and
 `:total` is their sum.
 """
-function getLV(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
+function getLV(fit::PoissonFit, Y::AbstractMatrix;
                N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
                X_lv::Union{Nothing, AbstractMatrix} = nothing,
                component::Symbol = :total,
-               rotate::Bool = true, mask = nothing)
+               rotate::Bool = true, mask = nothing, offset=nothing)
     component in (:total, :innovation, :mean) ||
         throw(ArgumentError("component must be :total, :innovation, or :mean; got :$component"))
+    if _is_poisson_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only prediction does not use X_lv"))
+        if component===:mean
+            _poisson_aghq_problem(fit,Y;mask=mask,offset=offset)
+            return zeros(size(Y,2),size(fit.Λ,2))
+        end
+        return _poisson_aghq_scores(fit,Y;rotate=rotate,mask=mask,offset=offset)
+    end
+    offset===nothing || throw(ArgumentError("explicit offset in getLV is currently carried by AGHQ fits only"))
+    eltype(Y)<:Integer || throw(ArgumentError("Laplace Poisson getLV currently requires integer responses"))
     p, n = size(Y)
     Nm = N === nothing ? fill(1, p, n) : N
     K = size(fit.Λ, 2)
@@ -534,13 +864,21 @@ In-sample fitted values at the Laplace mode: `type=:link` returns `η = β + Λ 
 `type=:response` the inverse-link fitted rates `linkinv(link, η) = exp(η)`. For
 fits that used `X_lv`, pass the same predictor matrix.
 """
-function predict(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
+function predict(fit::PoissonFit, Y::AbstractMatrix;
                  type::Symbol = :response,
                  N::Union{Nothing, AbstractMatrix{<:Integer}} = nothing,
-                 X_lv::Union{Nothing, AbstractMatrix} = nothing)
+                 X_lv::Union{Nothing, AbstractMatrix} = nothing, mask=nothing,offset=nothing)
     type in (:link, :response) ||
         throw(ArgumentError("type must be :link or :response; got :$type"))
-    Z = getLV(fit, Y; N = N, X_lv = X_lv, component = :total, rotate = false)
+    if _is_poisson_aghq(fit)
+        X_lv===nothing || throw(ArgumentError("AGHQ loadings-only prediction does not use X_lv"))
+        q,_=_poisson_aghq_problem(fit,Y;mask=mask,offset=offset)
+        z=_poisson_aghq_scores(fit,Y;rotate=false,mask=mask,offset=offset)
+        eta=fit.β .+ fit.Λ*z' .+ _aghq_prediction_offset(fit,Y,offset)
+        return type===:link ? eta : exp.(eta)
+    end
+    offset===nothing || throw(ArgumentError("explicit prediction offset currently requires AGHQ metadata"))
+    Z = getLV(fit, Y; N = N, X_lv = X_lv, component = :total, rotate = false,mask=mask)
     η = fit.β .+ fit.Λ * Z'
     type === :link && return η
     return linkinv.(Ref(fit.link), η)
@@ -554,14 +892,29 @@ randomized quantile residuals — `Φ⁻¹(u)`, `u` uniform on `[F(y−1), F(y)]
 `Poisson(μ)` — ≈ N(0,1) under a correct model (pass a fixed `rng` to reproduce).
 `:pearson` returns `(Y − μ) / √μ`.
 """
-function residuals(fit::PoissonFit, Y::AbstractMatrix{<:Integer};
+function residuals(fit::PoissonFit, Y::AbstractMatrix;
                    type::Symbol = :dunnsmyth,
                    X_lv::Union{Nothing, AbstractMatrix} = nothing,
-                   rng::AbstractRNG = Random.default_rng())
+                   rng::AbstractRNG = Random.default_rng(),mask=nothing,offset=nothing)
     type in (:dunnsmyth, :pearson) ||
         throw(ArgumentError("type must be :dunnsmyth or :pearson; got :$type"))
     p, n = size(Y)
-    μ = predict(fit, Y; type = :response, X_lv = X_lv)
+    μ = predict(fit,Y;type=:response,X_lv=X_lv,mask=mask,offset=offset)
+    if _is_poisson_aghq(fit)
+        q,_=_poisson_aghq_problem(fit,Y;mask=mask,offset=offset)
+        result=fill(NaN,size(Y))
+        for s in 1:n,t in 1:p
+            q.data.mask[t,s] || continue
+            y=q.data.responses[t,s];mu=μ[t,s]
+            if type===:pearson
+                result[t,s]=(y-mu)/sqrt(mu)
+            else
+                d=Poisson(mu);lo=cdf(d,y-1);hi=cdf(d,y)
+                result[t,s]=quantile(Normal(),clamp(lo+(hi-lo)*rand(rng),1e-12,1-1e-12))
+            end
+        end
+        return result
+    end
     if type === :pearson
         return (Y .- μ) ./ sqrt.(μ)
     end
@@ -579,6 +932,10 @@ end
 function Base.show(io::IO, ::MIME"text/plain", fit::PoissonFit)
     p, K = size(fit.Λ)
     println(io, "Poisson GLLVM fit")
+    if fit.integration!==nothing
+        i=fit.integration
+        println(io,"  integration = ",i.actual===:aghq ? "AGHQ(k=$(i.k), observed, unpenalized)" : "Laplace ($(i.reason))")
+    end
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),

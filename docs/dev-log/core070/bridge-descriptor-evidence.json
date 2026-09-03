@@ -1,0 +1,37 @@
+{
+  "status": "VERIFIED_DESCRIPTOR_OBSERVATIONS_NOT_MODEL_PARITY",
+  "reference_commit": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "contract_sha256": "8311e9c5499f8911ffcd57ccb3210c139f582b0fb86373ab3feb22c81d16c3cc",
+  "result_sha256": "e8e8ed4d2008d39aa9ebd3b17f11964a08848ae0b145fec8481c7ecd34554350",
+  "process_sha256": "500ab9834bbadbfd0dd0d449b47290912e67dc37d8638b1bbf91b0e923a03e0f",
+  "counts": {
+    "DESCRIPTOR_ERROR": 12,
+    "EXCLUDED_NOT_EVALUATED": 14,
+    "MAPPED_KEY_NOT_MODEL_PROOF": 18,
+    "MAPPER_REJECTED": 25
+  },
+  "seconds": 0.41552792489528656,
+  "public_rejection_pairs": 25,
+  "required_native_descriptors_rejected_by_bridge": [
+    "family/FAMILY-03-LOG",
+    "family/FAMILY-06-LOG",
+    "family/FAMILY-08-LOGIT",
+    "family/FAMILY-09-IDENTITY",
+    "family/FAMILY-10-LOG",
+    "family/FAMILY-11-LOG",
+    "family/FAMILY-12-LOGIT-LOG",
+    "family/FAMILY-13-LOGIT-LOG",
+    "family/FAMILY-16-LOGIT",
+    "family/FAMILY-06-FIXED-SHAPE",
+    "family/FAMILY-09-FIXED-SHAPE"
+  ],
+  "native_rejected_descriptors_mapping_to_bridge_keys": [
+    "family/FAMILY-00-REJECT-LINK",
+    "family/FAMILY-02-REJECT-LINK",
+    "family/FAMILY-04-REJECT-LINK",
+    "family/FAMILY-05-REJECT-LINK",
+    "family/FAMILY-07-REJECT-LINK",
+    "family/FAMILY-15-REJECT-LINK",
+    "family/FAMILY-14-MUTATED-DESCRIPTOR-REJECT"
+  ]
+}
