@@ -17267,3 +17267,15 @@ absorbs that trait's overdispersion), which T14 F1 now reports as `dispersion_bo
 still holds; its proxy assertion `fh.converged` is replaced by `fh.loglik != -Inf` and
 `fh.converged == !any(fh.dispersion_boundary)`. Re-run: 25 pass / 1 broken on Julia 1.12.6 and
 1.10.12. Full suite re-run queued on Totoro (suite-run-03) at the fixed HEAD for the record.
+
+## 2026-09-03 — CI facts for PR #277: a fully green run exists at d4c6b44a; push #1's PR event was not delivered
+
+Run 33661544679 (pull_request at d4c6b44a, 17:30Z–20:37Z): `Julia 1 - ubuntu-latest` (1.12.7)
+**success**, `Julia 1.10 - ubuntu-latest` **success** — the first fully green Julia pair on this
+branch. The NB2 grouped-cov Wald cell passed there, consistent with the T14 diagnosis (a
+knife-edge fixture that flips regime between environments), before the F1–F3 fix set landed.
+Push #1 (bba953df, 00:09Z) produced **no workflow run for any workflow** (CI or Documenter;
+`actions/runs?head_sha=` returned 0; GitHub status all operational) — the pull_request event was
+simply not delivered. A manual `gh workflow run CI.yml --ref codex/core070-aghq-20260830`
+(workflow_dispatch, not a push) started run 33699239628 at 00:22Z, which also proves the
+sharded workflow file parses; its verdict is recorded below when it lands.
