@@ -17413,3 +17413,12 @@ rel ΔSE (β) 2.19e-05-1.32e-04, cond(H) up to 2103.16 (R, idx14) — first
 cell over 1e3, unscaled/scaled tolerance both hold (266x/559x margin).
 idx24 (`nb2_p50_n2000_K2`) timed out at 2h, resubmitted (21059449, 5h/4G,
 pending). idx9/idx17 stay excluded (R seed-mismatch, owed re-run).
+
+## 2026-09-03 — push #2 CI (run 33705916094, 789bd97e, sharded): 6/8 shards green; the 2 red = one bit-literal test
+
+Julia 1.10.12 shards 1–3 and Julia 1.12.7 shards 1–3: success — the T14 F1 follow-up passes on both
+versions on x64 (shard 1 holds `test_confint_family.jl`). Shard 4/4 on both versions: 4269 pass / 1
+fail — `test_sparse_phy.jl:297` "correlation=false is bit-identical to pre-S2 behaviour" asserted
+`==` against an aarch64 literal; x64 differs in the last ulp (-208.89116988490585 vs …82). Fixed in
+df109411 (asserted at rtol 1e-12; 43/1 broken on both versions locally). Advisory R smoke failed as
+documented. Push #3 carries df109411 and the close-out docs.

@@ -22,7 +22,7 @@ The maintainer's four answers (recorded in `docs/dev-log/decisions/2026-09-02-ma
 | A7 docs | Fisher list fixed; "what parity does NOT mean"; ZI-trio note; `mi()` → implemented on a 57/57 receipt | 0fe1c622, ffce3f3c, 82bc1760 |
 | A8 design notes | T12 grouping levels (unit/unit_obs partial; cluster/cluster2 missing); T8 AGHQ rows (14 bindable, 8 reclassify) | 622f4001 |
 
-Final state lines (filled at close): **CLOSE_PLACEHOLDER**.
+Final state (close, ~03:10Z): pushes used **3 of 3** (bba953df 00:09Z; 789bd97e ~01:45Z; the close push = HEAD of this commit's successor, see `git log origin/codex/core070-aghq-20260830 -1`). CI: run 33699239628 (bba953df) 7/8 shards green; run 33705916094 (789bd97e) 6/8 green, the reds being one bit-literal test fixed in df109411 — **the close push's run is the one to read in the morning** (if GitHub drops the PR event again, dispatch it). Totoro suite-run-03 at bba953df fully green (13327/0/0/8). Ledgers: `.unlazy/core070-overnight/` leaves A1–A8 ALL MET, A10 verified after the close push. Rose: 3 blockers repaired. Melissa: 6 adaptive / 3 drift / 1 unclear. K9 mechanical verify: ALL OK. Nibi job 21059449 (last grid cell) pending.
 
 ## Owed next (in order)
 
