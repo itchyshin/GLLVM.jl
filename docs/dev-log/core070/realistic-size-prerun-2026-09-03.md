@@ -213,3 +213,17 @@ ssh -o ControlPath=$HOME/.ssh/cm-snakagaw@totoro.biology.ualberta.ca:22 -o Batch
 - `tools/core070_realistic_size.sbatch` — the Nibi array job.
 - `tools/core070_realistic_size_collect.py` — pairs Julia/R outputs by
   cell tag, prints/writes the receipt table (no gating).
+
+## Ada addendum (2026-09-03 ~00:50Z) — Nibi ran early; array resubmitted with a measured-class time limit
+
+The Nibi maintenance reservation did **not** hold jobs back: array 21053142 started within
+minutes of submission. Its `--time=00:10:00` had been sized from the smallest pre-run cell, the
+exact mistake the vault's WHAT-WORKS entry of the same day warns against (size from the most
+expensive cell class). Ada cancelled the array to resize it — after it had already started —
+interrupting tasks 14, 15, 16 and 20 at 8m44s. `sacct` shows tasks 1–13, 17, 18, 19 COMPLETED
+(38 s – 8 m 03 s; the p=20 and p=50/n=500 cells), tasks 14–16 and 20–24 CANCELLED. Those eight
+(the p=50/n=2000 cells and their K=2 siblings) were resubmitted as array **21053691**
+(`--array=14-16,20-24 --time=02:00:00 --mem=6G`, no dependency — the instantiate job 21053139
+COMPLETED in 53 s). Nothing was lost: completed outputs sit in `out/` per cell
+(`<family>_p<p>_n<n>_K<K>_julia_{summary.txt,terms.csv,vcov_*.csv}`). Lesson recorded: read
+`squeue` before `scancel`; a queued array can already be running.
