@@ -159,12 +159,19 @@ pid recorded at launch). Reads the 24 byte-identical CSVs already written
 under `.../realsize-01/repo/data/` (generated once via
 `tools/core070_realistic_size_cell.jl <family> <p> <n> <K> <seed>
 data-only`, the same DGP code path the fitting run uses — not a
-re-implementation). **At the time this doc was written, 23/24 cells had completed** (all
-gaussian, poisson, and 7/8 nb2 cells; the last cell, `nb2_p50_n2000_K2`,
-the single largest in the grid, was still running — started 18:52 MDT,
-still in progress at 18:55:31 MDT). All 23 completed cells returned
-`converged=TRUE`, `has_sd_report=TRUE`, finite SEs (`cond_H` recorded for
-every one). The driver continues unattended. Finish it with:
+re-implementation). **The R-side grid finished all 24 cells** (`R_GRID_ALL_DONE` at
+19:01:08 MDT, started 18:42:02 MDT — 19 minutes wall for the whole
+sequential 24-cell run). Every cell returned `converged=TRUE`,
+`has_sd_report=TRUE`, finite SEs. The single largest cell,
+`nb2_p50_n2000_K2`, took **498.0 s** to fit (vs 13.0 s for the smallest
+NB2 cell, p=20/n=500/K=1 — a ~38x increase, inside the D-139 estimate's
+10-40x scaling range above) and returned `cond_H=14137.7` (vs 99.5 at the
+smallest size — a real, expected rise in curvature ill-conditioning at
+higher p/K, not chased further here). Re-run
+`tools/core070_realistic_size_collect.py .../realsize-01/repo/out
+.../realsize-01/repo/out --csv realsize-r-only.csv` (Julia-side columns
+will be empty until the Nibi array lands) to inspect the full R-only
+table. To watch a re-run of the driver:
 
 ```sh
 ssh -o ControlPath=$HOME/.ssh/cm-snakagaw@totoro.biology.ualberta.ca:22 -o BatchMode=yes \
@@ -183,15 +190,16 @@ ssh -o ControlPath=$HOME/.ssh/cm-snakagaw@totoro.biology.ualberta.ca:22 -o Batch
   section above — the empty library tree and from-scratch TMB dependency
   chain made a same-commit-verified build a same-night risk this ticket's
   time box does not cover.
-- **The Nibi array had not executed by the time this doc was written**
-  (maintenance lifts 08:00 EDT 2026-09-03; both jobs are queued, not yet
-  running — no Julia-side realistic-size receipts exist yet beyond the
-  3-cell Totoro pre-run above).
-- **The 24-cell R-side Totoro background grid was still in progress**
-  (23/24 done) when this doc was written; only the single largest cell
-  (`nb2_p50_n2000_K2`) was still running. Collect and append the full R
-  logLik/SE/cond(H) table once `r_grid_driver.log` reports
-  `R_GRID_ALL_DONE` (expected within minutes of this doc landing).
+- **The Nibi array had not executed by the time this bullet was first
+  written** (assumed gated on the 08:00 EDT maintenance lift) — since
+  superseded: see the "Ada addendum" below, which found the reservation
+  did not hold the array back after all, sized `--time` too tight against
+  the largest cells exactly as flagged above, and resubmitted the
+  affected indices. Julia-side realistic-size receipts DO now exist for
+  16/24 cells (see the addendum); 8 remain pending on array 21053691.
+- **The 24-cell R-side Totoro background grid completed** (all 24,
+  19 min total wall) before this doc was finalised — see the updated
+  paragraph above.
 - **No matched-coordinates comparison** (same caveat as every prior
   second-order pre-run in this programme) — each engine converges
   independently; Julia's Hessian is not re-evaluated at R's θ̂.

@@ -17356,8 +17356,10 @@ wall: NB2 Julia 122 s, R 13 s — no cell exceeded 30 min, no STOP triggered. R 
 NOT installed on Nibi (`~/projects/def-snakagaw/snakagaw/R` library tree is empty; R itself IS
 available as a module) — grid split: Julia side (fits + SEs + cond(H)) queued as a Nibi SLURM array
 (jobs 21053139 instantiate → 21053142 array, `--dependency=afterok`, both queued for Nibi's
-maintenance lift at 08:00 EDT 2026-09-03); R side (se=TRUE) runs on Totoro in the background, ≤3
-cores/task, sequential, reading byte-identical CSVs the Julia data-only mode wrote. New
+maintenance lift at 08:00 EDT 2026-09-03); R side (se=TRUE) ran on Totoro in the background, ≤3
+cores/task, sequential (all 24 cells done, 19 min total wall; the largest cell, nb2
+p=50/n=2000/K=2, took 498 s vs 13 s at the smallest size — a ~38x increase, inside the
+estimate's 10-40x range, cond(H) rising from 99.5 to 14137.7). New
 `tools/core070_realistic_size_cell.{jl,R}`, `tools/core070_realistic_size_cells.tsv` (24-cell
 table), `tools/core070_realistic_size.sbatch`, `tools/core070_realistic_size_collect.py` (pairing
 stub, no gating). `--time`/`--mem` sized from the pre-run measurement (D-201) — flagged as likely
