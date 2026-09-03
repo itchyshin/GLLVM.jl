@@ -4,34 +4,75 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      full_matrix:
+        description: 'Run macOS + Windows too (use before a release)'
+        type: boolean
+        default: false
+      coverage:
+        description: 'Collect and upload coverage (use before a release)'
+        type: boolean
+        default: false
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel superseded PR runs, but NEVER a run on main. A cancelled run on the
+  # default branch leaves the merge with no completed evidence, and GitHub logs
+  # it with the same "cancelled" string as a timeout -- which is how a merge
+  # sequence can read green BY ABSENCE. PR runs are safe to cancel: the next
+  # push to that PR re-runs them.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }}
+    # Shard suffix only on the routine ubuntu combos (matrix.shard is set there);
+    # the full_matrix-only macOS/Windows combos below have no `shard` and run
+    # the whole suite in one job, as before.
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }}${{ matrix.shard && format(' shard {0}/4', matrix.shard) || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        # Routine runs are Linux-only (LTS + current stable). Measured 2026-09-03
+        # on this repo's own history: a single ubuntu job ran 186 min (Julia 1)
+        # and 138 min (1.10), so a 4-OS matrix on every push rarely finished at
+        # all before the next push cancelled it. macOS/Windows coverage runs on
+        # demand via workflow_dispatch with full_matrix=true, which is what a
+        # release needs.
+        #
+        # `shard` splits each routine (version, os) combo 4 ways via
+        # GLLVM_TEST_SHARD (see test/runtests.jl), so 2 versions x 1 os x 4
+        # shards = 8 Julia jobs each covering ~1/4 of the suite instead of one
+        # multi-hour job. test_shard_selection.jl proves the 4 shards partition
+        # the file list exactly -- disjoint AND complete -- so this cannot
+        # silently drop a test file.
         version: ['1.10', '1']     # LTS + current stable
         os: [ubuntu-latest]
-        include:
-          - version: '1'
-            os: macOS-latest
-          - version: '1'
-            os: windows-latest
+        shard: [1, 2, 3, 4]
+        include: ${{ (github.event_name == 'workflow_dispatch' && inputs.full_matrix) && fromJSON('[{"version":"1","os":"macOS-latest"},{"version":"1","os":"windows-latest"}]') || fromJSON('[]') }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: julia-actions/setup-julia@v3
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
+        env:
+          # Empty (not "k/4") on the shard-less full_matrix combos above, which
+          # runs the whole suite there unchanged; test/runtests.jl treats an
+          # unset/empty GLLVM_TEST_SHARD as "no sharding".
+          GLLVM_TEST_SHARD: ${{ matrix.shard && format('{0}/4', matrix.shard) || '' }}
+        with:
+          # Coverage is off on routine (push/PR) runs -- instrumentation cost
+          # across 8 sharded jobs adds up for no benefit most pushes need; turn
+          # it on with workflow_dispatch's `coverage` input before a release.
+          coverage: ${{ github.event_name == 'workflow_dispatch' && inputs.coverage }}
       - uses: julia-actions/julia-processcoverage@v1
-      - uses: codecov/codecov-action@v6
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.coverage }}
+      - uses: codecov/codecov-action@v4
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.coverage }}
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
-        if: always()
+          fail_ci_if_error: false
+        continue-on-error: true
