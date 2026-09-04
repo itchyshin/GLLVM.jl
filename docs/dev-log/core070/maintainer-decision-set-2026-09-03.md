@@ -75,6 +75,38 @@ no batch exercises R's accessor, because our fixture is exploratory.
 the gap visible in the API instead of hiding it behind a matching signature.
 Default if unanswered: (c), recorded as a named exclusion, revisitable.
 
+### ✅ DECIDED 2026-09-04 (Shinichi): **(b) — rename ours to `loading_profile_exploratory`.**
+
+Implementation belongs to the **combined Cursor lane**, which holds both repos. The closing Julia
+lane recorded the decision but did not execute it: the rename is a user-facing API change touching
+**123 occurrences** across `src/`, `test/`, the docs and — the part that matters — the **ledger**,
+which is a joint-contract artifact.
+
+**Convention-change cascade (AGENTS.md: all of it in ONE PR; a partial cascade is a Rose blocker):**
+
+1. `src/confint_derived.jl:1134-1171` — rename the function. Its docstring must state the estimand
+   plainly: this profiles an **exploratory (unpinned)** fit, whereas R's `loading_profile()` targets
+   a **confirmatory (pinned-loadings)** fit gated on `fit$lambda_constraint`. Same name, different
+   estimand — that is the entire reason for the rename.
+2. `src/GLLVM.jl:196` — the export list.
+3. `src/confint_derived_wald.jl` — call sites.
+4. `test/test_derived_ci_surfaces.jl` — tests.
+5. **A deprecation shim** for `loading_profile`, since it is exported and may already be in use.
+   NOTE the trap this repo has already paid for once: `@test_deprecated` matches on the word
+   *"deprecated"*, and six shims here once said only *"renamed"*, so those tests silently **skipped**
+   rather than passed. Write "is deprecated:" in the message, and run with `--depwarn=yes`.
+6. README, `docs/src/`, and any status table naming the old symbol.
+
+**Ledger consequence — do not skip it, and treat it as a seam decision.** The row
+`namespace/export/loading_profile` is the **last** of the eight estimand-defect rows still carrying
+`PARTIAL_PARITY_DEFECT_PENDING_DECISION` (the other seven re-bound; BOUND 285 → 292). After the
+rename, R's confirmatory `loading_profile()` has **no Julia counterpart**, so that row becomes a
+`needs-surface` row rather than a defect, and our exploratory surface is a Julia-beyond capability
+recorded in the reverse direction. Update `required-source-case-map.json`, then re-run
+`tools/core070_ledger_counts.py`: **REQUIRED must stay 505 and no row may become free.** Because the
+ledger is a joint-contract artifact, put the reclassification wording to Shinichi rather than
+settling it inside the lane.
+
 ---
 
 ## D4 — T8: reclassify 8 AGHQ policy rows?
