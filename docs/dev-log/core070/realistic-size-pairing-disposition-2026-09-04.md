@@ -1,32 +1,33 @@
 # Realistic-size idx 9 & 17 — pairing disposition (2026-09-04)
 
-## Finding
+## Original finding (archived Totoro tree)
 
-Archived Totoro R summaries for two cells do **not** match the Julia (Nibi) seed in
-`tools/core070_realistic_size_cells.tsv`:
+R summaries embedded **wrong seeds** (1002 / 1003) for tags `poisson_p20_n500_K1` and
+`nb2_p20_n500_K1` while Julia used grid seeds **1009 / 1017**. Large |ΔlogLik| was a
+**pairing artifact**, not divergent optima.
 
-| idx | family | grid seed | Julia summary seed | R summary seed | |ΔlogLik| |
-|---|---|---:|---:|---:|---:|
-| 9 | poisson | 1009 | 1009 | **1002** | 287.6 |
-| 17 | nb2 | 1017 | 1017 | **1003** | 241.4 |
+## Repair (2026-09-04, local)
 
-Collector (`core070_realistic_size_collect.py`) now sets `seed_match=false` and
-`pairing_disposition=wrong_r_seed_in_archive_not_optima_divergence`.
+1. Regenerated authoritative Y CSV via Julia `core070_realistic_size_cell.jl … data-only`
+   (seeds 1009, 1017).
+2. Re-ran `Rscript tools/core070_realistic_size_cell.R` with matching argv; outputs in
+   `realistic-size-out/totoro-repair-20260904/`.
+3. Merged repair over archived Totoro outputs →
+   `realistic-size-paired-20260904-merged.csv` via `core070_realistic_size_collect.py`.
 
-## Interpretation
+## Post-repair counts (D1 each-own, object-level)
 
-This is **not** evidence of divergent local optima on the same dataset. The R-side
-artifact filenames (`poisson_p20_n500_K1`, `nb2_p20_n500_K1`) were paired with Julia
-outputs, but the embedded R run used the wrong seed label and (by logLik) a different
-response matrix than Julia's authoritative CSV for that idx.
+| Check | Count |
+|---|---|
+| `seed_match` | **24/24** |
+| First-order paired (`|ΔlogLik| < 1e-4`) | **24/24** |
+| idx 9 `max_rel_dSE_beta` | 4.99e-06 |
+| idx 17 `max_rel_dSE_beta` | 1.89e-05 |
+| SE D1 pass/fail/skip (cells with β metrics) | **16/0/8** (8 = gaussian estimand gap) |
 
-## Remediation
+**R package note:** local `gllvmTMB` 0.7.1 (R 4.6.0); logLik matches Julia to ~1e-8.
+Frozen oracle pin `b4d5fee6` re-run optional if maintainer requires exact oracle build.
 
-- **Do not** count idx 9/17 in second-order pass/fail tallies until R is re-run with the
-  Julia-written `data/<tag>.csv` for seeds 1009 and 1017.
-- Re-run locally or on Totoro when CM socket available; no laptop R oracle rebuild in this slice.
+## Claim boundary
 
-## Counting rule (2026-09-04)
-
-Realistic grid second-order gate uses **22/24** first-order paired cells excluding idx 9 & 17
-(seed mismatch), not "22/24 with two optima failures."
+Repair fixes **pairing** for idx 9/17 only; it does not close contract §7 or §6 holdouts.

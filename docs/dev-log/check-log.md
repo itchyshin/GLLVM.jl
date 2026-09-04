@@ -17667,3 +17667,10 @@ gaussian estimand note.
 **Matched-coordinates:** not implemented; `second-order-matched-coordinates-2026-09-04.md`.
 
 **Holdouts:** `second-order-holdouts-2026-09-04.md` (contract §6).
+
+## 2026-09-04 — Realistic idx 9/17 R re-run (local)
+
+Julia data-only CSV (seeds 1009/1017) + `core070_realistic_size_cell.R` locally (gllvmTMB 0.7.1).
+Repair artifacts: `realistic-size-out/totoro-repair-20260904/`; merged CSV
+`realistic-size-paired-20260904-merged.csv` → seed_match 24/24, first-order 24/24,
+idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
