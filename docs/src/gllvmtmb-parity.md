@@ -41,7 +41,7 @@ Julia, at the frozen `gllvmTMB` 0.7.0 oracle
 (`docs/dev-log/decisions/2026-09-02-maintainer-decisions-true-parity.md`).
 **Capabilities are tracked both ways**: what Julia has that R lacks is a
 written, tool-produced list (`tools/parity_ledger.py`; **FORWARD = 77**
-R exports with no Julia twin, **REVERSE = 82** Julia exports with no R
+R exports with no Julia twin, **REVERSE = 85** Julia exports with no R
 twin, at the frozen oracle) — a record, not an obligation owed by this repo.
 
 ### Ledger accounting ≠ true parity

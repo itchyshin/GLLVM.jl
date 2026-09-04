@@ -214,10 +214,10 @@ Concrete end state:
 |---|---|---|---|
 | S1 | Sign + commit second-order contract | `second-order-parity-contract.md` DEFAULTED | **done** 2026-09-04 |
 | S2 | Implement `--r-ref` | R `parity_ledger.R` + CLOSURE receipt | **done** 2026-09-04 |
-| S3 | D4 AGHQ disposition batch | 8 reclassify receipt; 14 bind plan | **partial** — reclassify done; bind owed |
+| S3 | D4 AGHQ disposition batch | 8 reclassify + 14 bind receipts | **done** 2026-09-04 (`t8-aghq-public-policy-bind-receipt-2026-09-04.md`) |
 | S4 | D5/D6 grouping design doc | `t12-grouping-levels-design.md` D5 defaulted | **partial** — D6 relay OPEN |
 | S5 | Real-data workflow cell #1 | One Ayumi-scale repo via bridge | **blocked** — repo pick + #1236 |
-| S6 | Rose scan + parity page update | boundary + export-gap honesty | **partial** 2026-09-04 |
+| S6 | Rose scan + parity page update | boundary + export-gap honesty | **done** 2026-09-04 (REVERSE count corrected in audit) |
 | S7 | arcG results land | `dev/gapclose/arcG/` + PR | **separate arc** — not parity proof |
 
 Original blockers column preserved below for audit.
