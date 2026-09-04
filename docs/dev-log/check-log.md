@@ -17606,15 +17606,13 @@ python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86
 
 **Not claiming:** 14 AGHQ binds; true parity; D6 confirmed.
 
-## 2026-09-04 — Option A `/goal` audit receipt
+## 2026-09-04 — Option A `/goal` audit receipt (D6 closeout)
 
-Audited five goal deliverables against files/PR objects. Receipt:
+Re-audited five goal deliverables after D6 Ada defaults (`d2f9b5b3`). Receipt:
 `docs/dev-log/recovery-checkpoints/2026-09-04-option-a-goal-audit.md`.
 
-**Checklist:** (1) `--r-ref` DONE (2) D6 blocks decision set MISSING (3) boundary docs DONE
-(4) `.unlazy` leaf gates evidenced DONE (5) push+PR PARTIAL — CI pending.
-
-**Rose:** `gllvmtmb-parity.md` REVERSE 82→85 aligned with tool output.
+**Checklist:** (1) `--r-ref` DONE (2) D1–D6 decision set DONE (3) boundary docs DONE
+(4) `.unlazy` leaf gates DONE (5) push+PR DONE — CI pending OK per objective.
 
 **Verify:**
 ```sh
@@ -17623,7 +17621,7 @@ Rscript tools/parity_ledger.R --ref origin/main --r-ref origin/main \
   --julia-repo "/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904"
 ```
 
-**Not claiming:** goal complete until D6 closed; true parity; CI green on #280/#1268.
+**Not claiming:** true parity complete; grouping built; CI green (pending noted).
 
 ## 2026-09-04 — D6 Ada defaults (A+defaults authorization)
 
