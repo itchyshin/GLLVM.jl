@@ -25,9 +25,9 @@ Numbered by importance for **this milestone** — campaign is authorized; do not
 | # | What | Why it ranks here | Blocks what | Effort |
 |---|---|---|---|---|
 | **1** | **R:** `git merge origin/main` in twin worktree | **DONE** 2026-09-04 → `5784dab65` (#1264–#1267) | Harness, Cell-1, campaign script | — |
-| **2** | **R:** **Coverage harness design** — reach latent scores for coverage comparison (`ordination_uncertainty()` returns uncertainty but **not scores** in the form the harness needs; prior lane spent **>15 min local prep, zero fits**, reading source) | **The harness is the work, not the fits**; Totoro ~5 core-h is fit compute only; campaign script is useless until harness can see scores | Cell-1 coverage path, Totoro dispatch | **hours local** (unbounded; prior lane >15 min with no fits) |
-| **3** | **R:** Cell-1 proof — clean worktree → `devtools::load_all(".")` (DLL compile) → **one real arcG fit cell** through the harness (not a skip, not installed package) | D-220 proof-first is **inside this arc**; runs **after** harness can extract/compare scores; Totoro dispatch unsafe until real fit receipted | Totoro launch, trustworthy receipts | **minutes–1 h** (compile + one fit) |
-| **4** | **R:** Dispatch full arcG coverage grid to Totoro via existing ControlMaster (`~/.ssh/cm-*`, D-64); ≤150 cores (D-143) | **Re-confirmed GO** to this lane; prior lane prepared locally only — never reached Totoro; clean start; ~**5.0 core-h ceiling for fits** (`coverage-design.md` §9a) — **not** harness/prep time | Evidence for ordination_uncertainty() coverage claim | **~5 core-h** (Totoro fits only; idle should be ≤ ceiling) |
+| **2** | **R:** **Coverage harness design** — reach latent scores for coverage comparison | **DONE** 2026-09-04 — `dev/gapclose/arcG/coverage-harness.R` uses `extract_latent_scores()` | Cell-1, Totoro | — |
+| **3** | **R:** Cell-1 proof — `load_all` + **one real arcG fit cell** through harness | **DONE** 2026-09-04 — Cell-1 PASS (3 seeds, 40×1 dims, cov machinery numeric); receipt `dev/gapclose/arcG/coverage-results.md` | Totoro launch | — |
+| **4** | **R:** Dispatch full arcG coverage grid to Totoro | **NEXT** — `run-grid-totoro.sh` prepared; cm-totoro socket live; await parent "Totoro go" | Evidence for ordination_uncertainty() coverage | **~5 core-h** |
 | **5** | **R:** Land results under `dev/gapclose/arcG/` + append `docs/dev-log/check-log.md` + open **PR** (reporting contract) | Shinichi reads the **repo**, not chat; a PR implies push of a results branch | Maintainer review, register update | **hours** (post-campaign) + **Shinichi:** push-for-PR gate (#2 below) |
 | **6** | **BOTH (later):** `--r-ref` joint contract + Core070 D3 (`loading_profile` estimand) | Ledger integrity gap (R reads working tree; D3 blocks last rebind row) — **does not block harness, Cell-1, or arcG** | Trustworthy joint `CLOSURE: PASS`; final ledger rebind | **hours** + **Shinichi decisions** |
 | **7** | **Inherited mess / foreign lanes** — stay out; report-only | 21 foreign R lanes still live; 633 unpushed / 91 worktrees are triage, not blockers | Nothing on the critical path | **report-only** |
@@ -57,10 +57,10 @@ Everything else waits. Do **not** treat “~5 core-h” as the whole job — har
 
 | Gap | Meaning |
 |---|---|
-| **`devtools::load_all` never proven here** | Trap #1 — tests may have run against installed package, not this worktree |
-| **Coverage harness not built** | `ordination_uncertainty()` does not return latent scores in coverage-comparison form; prior lane **>15 min source archaeology, zero fits** |
-| **Capability proof (step 5)** | **DONE** 2026-09-04 — `load_all` 29.8 s + one `gllvmTMB_wide` fit; receipt `gllvmTMB` twin `docs/dev-log/recovery-checkpoints/2026-09-04-cursor-capability-proof.md` (harness/arcG Cell-1 still pending) |
-| **arcG campaign never dispatched** | Prior lane prepared locally only; **no partial Totoro results** — operational gap, not engine parity gap |
+| **`devtools::load_all` never proven here** | ~~Trap #1~~ **DONE** 2026-09-04 — Cell-1 via `load_all` 3.2 s |
+| **Coverage harness not built** | ~~**DONE** 2026-09-04** — `coverage-harness.R` + Cell-1 PASS |
+| **Capability proof (step 5)** | **DONE** 2026-09-04 — `load_all` + Cell-1 harness end-to-end |
+| **arcG campaign never dispatched** | **NEXT** — Totoro batch prepared (`run-grid-totoro.sh`); not submitted |
 | **Paired R↔Julia cell not run here** | Julia harness exists (`test/parity/`); not required for arcG but still owed for full twin-bridge proof |
 
 ### Joint-contract / estimand debt (does not block arcG)
@@ -76,7 +76,7 @@ Everything else waits. Do **not** treat “~5 core-h” as the whole job — har
 
 The **authorized arcG grid** (9 cells × 500 seeds = 4,500 fits) is **coverage evidence** for `ordination_uncertainty()`, not proof that Core 0.7.0 engine parity was never done. Pre-run resolved cost; campaign is **GO** — do not conflate "campaign not run" with "parity never done."
 
-**Verdict (one sentence):** Engine and ledger parity on both mains are **largely closed** for the Core 0.7.0 path; the closest remaining gap **for this lane** is **operational** — build the coverage harness (latent-score path), prove one real R fit through it, then run the authorized coverage study on Totoro.
+**Verdict (one sentence):** Harness + Cell-1 **DONE** in twin worktree @ `afe161781`; **Totoro 9×500 grid is NEXT** (batch prepared, await "Totoro go").
 
 ---
 
