@@ -94,7 +94,10 @@ Full responsibility detail lives in §2 of the reference plan.
   H² twin pattern (one orchestrator chat, multi-root workspace). Two invariants get WEAKER
   under one lane and need a mechanical guard, not prose: the gllvmTMB read-only-reference
   boundary, and the frozen oracle `b4d5fee6` — see the handover §3/§4 and the verified
-  `parity_ledger.R` ref asymmetry. Six maintainer decisions still open.
+  `parity_ledger.R` ref asymmetry (vault `D-220` caveat 1). Confirmed directly by Shinichi
+  to both lanes as **`D-220`**, which also rules that campaigns move with the lane but keep
+  running on Totoro (ControlMaster socket, 150-core cap, D-139 estimates). Six maintainer
+  decisions still open.
   **START HERE: docs/dev-log/handover/2026-09-04-cursor-handover.md**
   (sibling lane's own handover: gllvmTMB `docs/dev-log/handover/2026-09-03-claude-handover.md`)
 

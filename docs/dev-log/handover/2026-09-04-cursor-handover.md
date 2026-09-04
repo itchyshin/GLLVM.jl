@@ -29,8 +29,21 @@ where things already stall: two owner decisions relayed between the lanes on 202
 four grouping levels; bringing the ZI trio to R) sat unconfirmed for two days because they
 moved by relay. They are D5 and D6 in the decision set below.
 
-**Honest caveat.** The H² one-lane arrangement is days old and no outcome is recorded. You
-are inheriting a design Shinichi chose, not a result anyone has measured.
+**CONFIRMED DIRECTLY — this is no longer a relay.** Shinichi told *both* lanes himself on
+2026-09-04, recorded with his verbatim words as **vault `D-220`** (*"we want to move to Cursor -
+together with GLLVM.jl - and run one lane in Cursor"*). Verified in
+`~/shinichi-brain/memory/DECISIONS.md` by this session.
+
+**D-220 also settles campaigns, which this handover would otherwise have left open.** Simulations
+and campaigns move with the lane — because they never ran *inside* the agent anyway: the heavy work
+runs on **Totoro over SSH** and the session only writes scripts, dispatches, and reads results.
+That is transport, not model capability. Four conditions ride along: reach Totoro through the
+**existing ControlMaster socket** (a fresh login triggers Duo — D-64), keep the core cap at **150**
+(D-143), GitHub Actions stays barred for campaigns (D-50), and D-139 governs (estimate first,
+pre-run anything over 30 minutes).
+
+**Honest caveat.** The H² one-lane arrangement is days old and no outcome is recorded. You are
+inheriting a design Shinichi chose, not a result anyone has measured.
 
 ---
 
@@ -53,17 +66,20 @@ is 100 % landed on `origin/main` in both.
 | Repo | Unlanded | Whose | Disposition |
 |---|---|---|---|
 | GLLVM.jl | 25 uncommitted in the main Dropbox checkout (on branch `claude/jl-bridge-capabilities-20260619`): `.claude/preview/*` modifications and untracked `.claude/agents/*.md` | pre-existing at session start | **CARRIED-OVER** — not mine to commit; triage before that checkout is used |
-| GLLVM.jl | 51 unpushed commits across **27** stale branches (June–August; Claude, Codex and Cursor lanes) | prior lanes | **CARRIED-OVER** — needs an owner-by-owner sweep, not a bulk push |
-| gllvmTMB | 3 uncommitted; **633** unpushed across other branches; 8 open PRs, four dated 2026-08-17, **#1198 CONFLICTING for two weeks** | prior lanes | **CARRIED-OVER** — same |
+| GLLVM.jl | 51 unpushed commits across **27** branches (June–August; Claude, Codex and Cursor lanes) | prior lanes | **CARRIED-OVER** — needs an owner-by-owner sweep, not a bulk push |
+| gllvmTMB | 3 uncommitted | pre-existing, not that lane's | **Untracked cruft, not unlanded work** — two empty worktree-metadata dirs (`.codex/worktrees/`, `.worktrees/`) and one stray `LOOP/README.md` |
+| gllvmTMB | **633** unpushed on old `agent/*` and `tmp/*` branches | prior lanes | **CARRIED-OVER** — local-only, never pushed, and the `agent/*` family's named artifacts are gone from main. That is *"stale by evidence"*, **not** "abandoned" — do not upgrade the phrasing |
+| gllvmTMB | 8 open PRs | various | **Report dates and states; do NOT report liveness.** #981/#1065/#1070/#1077 (2026-08-17) are MSPL work under a **signed PARK — vault `D-157`**: deliberately not moving, which is *not* the same as stale, and calling them ambiguous would misrepresent a decision. #1198 (2026-08-20) is DIRTY/conflicting. #1209 (2026-08-25). **#1236 (2026-09-01) is the julia-bridge expansion — the one that most concerns the Julia side.** #1238 (2026-09-02) is a parked iJSDM handover |
 
 **Do not bulk-push or bulk-delete any of it.** Some `/private/tmp/gllvm*` paths are still
 *registered worktrees* of these repos (confirmed by the gllvmTMB lane), so size is not a
 safe deletion signal. A single lane holding both repos is the first thing well placed to
 triage this properly — but it is a task to be given, not assumed.
 
-**FINDING-OF-RECORD:** the `tools/parity_ledger.R` ref asymmetry (§4). vault-note: **PROPOSED,
-not written** — the brain-write boundary (D-37) forbids writing to the vault without explicit
-approval, so this handover is currently its only durable home. Ask Shinichi to approve a note.
+**FINDING-OF-RECORD:** the `tools/parity_ledger.R` ref asymmetry (§4). vault-note:
+**`D-220` caveat 1**, written by the gllvmTMB lane and verified present by this session. It carries
+the concrete `--r-ref` fix and applies the same reasoning to the frozen oracle, so the finding is no
+longer branch-only and survives both lanes ending.
 
 ---
 
@@ -169,6 +185,10 @@ time; a lane that has not hit them **will report green on nothing**:
   `devtools::load_all()` first.
 - `skip_on_cran()` makes an entire file skip while testthat still prints `DONE`. Set
   `NOT_CRAN=true`.
+- Since the CI sharding change, **a green check may mean `check-r-package` was SKIPPED** via a
+  fast-pass path. On a source change, green proves nothing until you read the step conclusions.
+- **A conflict marker makes an R file unparseable, and the bare-abort counter silently skips it** —
+  so the count comes out *below* its ceiling and reads as a pass. A falling count is not a win.
 
 **Files you must not stage:** `.claude/preview/*`, untracked `.claude/agents/*.md`,
 `.unlazy/**` (git-ignored by design), `test/Project.toml` if a `Pkg.develop(path=".")` in the
