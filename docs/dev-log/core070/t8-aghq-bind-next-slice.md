@@ -1,8 +1,9 @@
 # T8 AGHQ bind — next slice (14 rows, receipts owed)
 
-Status: **PLANNED** — D4 DEFAULTED 2026-09-04; 8 unreachable rows reclassified
-(`t8-aghq-reclassify-receipt-2026-09-04.md`). These 14 stay `BLOCKED_SPEC_DEFECT`
-until public-fit receipts bind them.
+Status: **EXECUTED 2026-09-04** — all 14 rows bound via public `gllvmTMB()` fits.
+Receipt: `aghq-public-policy-bind-receipt-2026-09-04.json` (sha256 in file).
+Runner: `tools/core070_aghq_public_policy_bind.R`; ledger apply:
+`tools/core070_aghq_public_policy_bind_apply.py`.
 
 Oracle: frozen gllvmTMB 0.7.0 `b4d5fee6` for engine; policy reads may use R twin @
 `origin/main` where noted in `t8-aghq-policy-rows-proposal.md`.

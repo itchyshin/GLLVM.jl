@@ -6,113 +6,183 @@
   {
    "source_id": "aghq/AGHQ-AUTO-K-BINOMIAL",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-AUTO-K-BINOMIAL-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-BINOMIAL-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., family=binomial(), latent(..., unique=FALSE), control=gllvmTMBcontrol(aghq='auto', aghq_ridge=Inf))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 5,
+     "reason": "quadrature on z_B (d = 1, k = 5, 5 nodes); 8 adaptation passes, stalled (no honest descent at cap 1 after backtracking); max |grad| = 2.73 (relative 0.0281) against tolerances of 0.0001 / 1e-06; final max |mode shift| = 0.0136",
+     "convergence": 0,
+     "objective": 97.14041690177123
+    }
    }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-DELTA",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-AUTO-K-DELTA-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-DELTA-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., family=delta(), latent(..., unique=FALSE), control=gllvmTMBcontrol(aghq='auto', aghq_ridge=Inf))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 5,
+     "reason": "quadrature on z_B (d = 1, k = 5, 5 nodes); 12 adaptation passes, converged (adaptation mode fixed; gradient below tolerance; max |grad| = 9.21e-05, relative 5.38e-07); final max |mode shift| = 5.43e-06",
+     "convergence": 0,
+     "objective": 171.25659493637312
+    }
    }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-GAUSSIAN",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-AUTO-K-GAUSSIAN-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-GAUSSIAN-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., family=gaussian(), latent(..., unique=FALSE), control=gllvmTMBcontrol(aghq='auto', aghq_ridge=Inf))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 5,
+     "reason": "quadrature on z_B (d = 1, k = 5, 5 nodes); 11 adaptation passes, converged (adaptation mode fixed; gradient below tolerance; max |grad| = 2.37e-05, relative 2.89e-07); final max |mode shift| = 0",
+     "convergence": 0,
+     "objective": 81.96914432402147
+    }
    }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-NB2",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-AUTO-K-NB2-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-NB2-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., family=nb2(), latent(..., unique=FALSE), control=gllvmTMBcontrol(aghq='auto', aghq_ridge=Inf))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 5,
+     "reason": "quadrature on z_B (d = 1, k = 5, 5 nodes); 11 adaptation passes, converged (adaptation mode fixed; gradient below tolerance; max |grad| = 6.21e-05, relative 2.99e-07); final max |mode shift| = 2.67e-05",
+     "convergence": 0,
+     "objective": 207.82819066818323
+    }
    }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-ORDINAL",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-AUTO-K-ORDINAL-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-ORDINAL-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., family=ordinal(), latent(..., unique=FALSE), control=gllvmTMBcontrol(aghq='auto', aghq_ridge=Inf))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 9,
+     "reason": "quadrature on z_B (d = 1, k = 9, 9 nodes); 107 adaptation passes, stalled (no honest descent at cap 1 after backtracking); max |grad| = 0.000434 (relative 2.81e-06) against tolerances of 0.0001 / 1e-06; final max |mode shift| = 1.12e-07",
+     "convergence": 1,
+     "objective": 154.339772495499
+    }
    }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-POISSON",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-AUTO-K-POISSON-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-POISSON-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., family=poisson(), latent(..., unique=FALSE), control=gllvmTMBcontrol(aghq='auto', aghq_ridge=Inf))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 5,
+     "reason": "quadrature on z_B (d = 1, k = 5, 5 nodes); 9 adaptation passes, converged (adaptation mode fixed; gradient below tolerance; max |grad| = 0.0001, relative 5.02e-07); final max |mode shift| = 1.96e-05",
+     "convergence": 0,
+     "objective": 200.06497044229368
+    }
    }
   },
   {
    "source_id": "aghq/AGHQ-AUTO-K-TWEEDIE",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-AUTO-K-TWEEDIE-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-AUTO-K-TWEEDIE-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., family=tweedie(), latent(..., unique=FALSE), control=gllvmTMBcontrol(aghq='auto', aghq_ridge=Inf))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 9,
+     "reason": "quadrature on z_B (d = 1, k = 9, 9 nodes); 9 adaptation passes, converged (adaptation mode fixed; gradient below tolerance; max |grad| = 7.42e-05, relative 3.73e-07); final max |mode shift| = 0",
+     "convergence": 0,
+     "objective": 198.93968140574813
+    }
    }
   },
   {
@@ -258,17 +328,23 @@
   {
    "source_id": "aghq/AGHQ-DEFAULT-OFF",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-DEFAULT-OFF-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-DEFAULT-OFF-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "formals(gllvmTMBcontrol)$aghq",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "default_aghq": false
+    }
    }
   },
   {
@@ -462,17 +538,27 @@
   {
    "source_id": "aghq/AGHQ-POLICY-AUTO-ENFORCE-CUTOFF",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-POLICY-AUTO-ENFORCE-CUTOFF-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-AUTO-ENFORCE-CUTOFF-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., n_traits=20, control=gllvmTMBcontrol(aghq='auto'))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": false,
+     "k": null,
+     "reason": "laplace: auto: n_traits = 20 >= cutoff 20 -- Pinheiro & Chao (2006) measure the AGHQ-over-Laplace gain falling to three-decimal agreement by cluster size ~30 at d=3 (and already small at d=2, n=20); declining to Laplace rather than paying k^(q+1) cost for a near-vanished gain",
+     "convergence": 0,
+     "objective": 529.1723571268384
+    }
    }
   },
   {
@@ -562,33 +648,53 @@
   {
    "source_id": "aghq/AGHQ-POLICY-EXPLICIT",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-POLICY-EXPLICIT-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-EXPLICIT-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., control=gllvmTMBcontrol(aghq=3L))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 3,
+     "reason": "quadrature on z_B (d = 1, k = 3, 3 nodes); 8 adaptation passes, stalled (no honest descent at cap 1 after backtracking); max |grad| = 2.23 (relative 0.0232) against tolerances of 0.0001 / 1e-06; final max |mode shift| = 0.0139",
+     "convergence": 0,
+     "objective": 96.07927326697838
+    }
    }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-EXPLICIT-BYPASS-CUTOFF-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., n_traits=20, control=gllvmTMBcontrol(aghq=9L))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 9,
+     "reason": "quadrature on z_B (d = 1, k = 9, 9 nodes); 11 adaptation passes, converged (adaptation mode fixed; gradient below tolerance; max |grad| = 3.15e-05, relative 5.97e-08); final max |mode shift| = 5.35e-06",
+     "convergence": 0,
+     "objective": 528.6710306093236
+    }
    }
   },
   {
@@ -636,17 +742,27 @@
   {
    "source_id": "aghq/AGHQ-POLICY-OFF",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-POLICY-OFF-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-OFF-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., control=gllvmTMBcontrol(aghq=FALSE))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": false,
+     "k": null,
+     "reason": "aghq not requested",
+     "convergence": 0,
+     "objective": 93.48637950855633
+    }
    }
   },
   {
@@ -673,33 +789,53 @@
   {
    "source_id": "aghq/AGHQ-POLICY-TRAITS19",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-POLICY-TRAITS19-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-TRAITS19-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "gllvmTMB(..., n_traits=19, control=gllvmTMBcontrol(aghq='auto'))",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": true,
+     "k": 5,
+     "reason": "quadrature on z_B (d = 1, k = 5, 5 nodes); 12 adaptation passes, converged (adaptation mode fixed; gradient below tolerance; max |grad| = 9.59e-05, relative 2.19e-07); final max |mode shift| = 0",
+     "convergence": 0,
+     "objective": 437.8817015195864
+    }
    }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-TRAITS20",
    "classification": "required_core",
-   "executable_case_ids": [],
+   "executable_case_ids": [
+    "CORE070-AGHQ-POLICY-TRAITS20-CONTROL-CONTRACT"
+   ],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-TRAITS20-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "bind": "t8-aghq-public-policy-bind",
+    "receipt": "docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json",
+    "receipt_sha256": "8daef1c724396e5791c72343b0ca219938af3a0abb92edce836ba2ffae3c7241",
+    "public_call": "same fixture as AGHQ-POLICY-AUTO-ENFORCE-CUTOFF",
+    "r_engine_git_head": "1005cf12e189dae0bb870556b15b908f0f755459",
+    "observed": {
+     "used": false,
+     "k": null,
+     "reason": "laplace: auto: n_traits = 20 >= cutoff 20 -- Pinheiro & Chao (2006) measure the AGHQ-over-Laplace gain falling to three-decimal agreement by cluster size ~30 at d=3 (and already small at d=2, n=20); declining to Laplace rather than paying k^(q+1) cost for a near-vanished gain",
+     "convergence": 0,
+     "objective": 529.1723571268384
+    }
    }
   },
   {

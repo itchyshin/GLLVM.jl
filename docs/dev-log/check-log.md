@@ -17562,6 +17562,31 @@ Export ledger: FORWARD=77 REVERSE=85 @ b4d5fee6. Receipt:
 
 **Not claiming:** true parity complete; D6 open; S3–S7 (AGHQ batch, grouping build, real-data) not started.
 
+## 2026-09-04 — T8 AGHQ 14-row public-policy bind (Option A S3 closeout)
+
+Bound all 14 rows in `t8-aghq-bind-next-slice.md` with real public `gllvmTMB()`
+fits — no `:::` helpers. Receipt:
+`docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json`;
+summary `t8-aghq-public-policy-bind-receipt-2026-09-04.md`.
+
+**Verify:**
+```sh
+Rscript --vanilla tools/core070_aghq_public_policy_bind.R \
+  /path/to/gllvmTMB-gllvm-twin-20260904 \
+  docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json
+python3 tools/core070_aghq_public_policy_bind_apply.py \
+  --ledger docs/dev-log/core070/required-source-case-map.json \
+  --receipt docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+```
+
+R engine: gllvmTMB twin @ `1005cf12e` via `devtools::load_all`. Ledger:
+REQUIRED=497 **FREE=0**; 14 AGHQ policy rows no longer `BLOCKED_SPEC_DEFECT`.
+
+**Not claiming:** true parity complete; D6/T7/T9/T10/T14; Julia-side AGHQ public adapter.
+Note: AUTO-K-DELTA public k=5 vs frozen helper k=9 (family label mismatch) — documented in receipt.
+
+
 ## 2026-09-04 — Option A S3: D4 AGHQ reclassify + export-gap honesty
 
 Partial S3 after S1–S2. **8 AGHQ policy rows** reclassified
