@@ -180,28 +180,37 @@ is a **new required surface**, not a rename.
 
 ---
 
-## D6 — the two relayed items, still awaiting direct confirmation
+## D6 — the two relayed items (2026-09-02)
 
-Both arrived via the gllvmTMB lane on 2026-09-02, recorded but never confirmed by you
-directly:
+Both arrived via the gllvmTMB lane on 2026-09-02:
 
 - *"Make sure both Julia and R have `unit_obs`, `unit`, `cluster` and `cluster2` — it is
-  important."* → this is what D5 acts on. Confirm or correct the relay.
-- *"Bring zip/zinb/zib to R."* → supersedes decision #12's "no R twin" on the R side.
-  Nothing changes for the Julia fitters or their ADEMP evidence; once R ships them the
-  rows become pairable. **Confirm or correct.**
+  important."*
+- *"Bring zip/zinb/zib to R."*
 
-A relayed instruction is not an instruction until you say it is; the lane has treated
-both as recorded-not-acted-on.
+### ✅ DEFAULTED 2026-09-04 (Option A + Ada defaults; Shinichi authorized Ada defaults)
 
-### 🔴 OPEN — needs Shinichi direct confirmation (not defaulted)
+Shinichi authorized Ada defaults for the remaining OPEN items (A+defaults, 2026-09-04).
 
-| Relay item | What D5/D4 already cover | Still needed from you |
+**1. Grouping-level relay — CONFIRMED (default).** The 2026-09-02 relay stands: all four
+level names (`unit` / `unit_obs` / `cluster` / `cluster2`) remain important ledger keys on
+both engines. D5 engineering default applies unchanged — verbatim R kwargs, diagonal-only
+`cluster`/`cluster2`, alias onto `RowEffectFit`/`RowRandomFit`, sequenced after phylo
+transport S3/S4. Rationale: A+defaults keeps the twin surface aligned with R grammar; the
+relay intent matches what D5 already defaulted.
+
+**2. ZI trio relay — CONFIRMED supersession of decision #12 on the R side only (default).**
+The 2026-09-02 *"Bring zip/zinb/zib to R"* relay is **satisfied by existing R constructors**
+— R Arc D shipped `zi_poisson()` (fid 17), `zi_nbinom2()` (fid 18), and `zi_binomial()`
+(fid 19) in `R/families.R`; no new R build is owed. This supersedes maintainer round2-3
+decision #12's *"no R twin"* **on the R side only**. Julia-forward ZI fitters
+(`zip`/`zinb`/`zib`) remain Julia-beyond until paired; rows become pairable when Julia
+surfaces exist. Do not invent new R code for this relay.
+
+| Relay item | Verdict | Record |
 |---|---|---|
-| Four grouping levels are important | D5 **DEFAULTED** the engineering design if the relay stands | Confirm or correct the 2026-09-02 relay verbatim |
-| Bring zip/zinb/zib to R | R Arc D landed zi_* families; rows are pairable | Confirm the relay supersedes decision #12's "no R twin" on the R side |
-
-Do not treat either relay as signed until this table is closed.
+| Four grouping levels are important | **CONFIRMED** | D5 defaults stand; see `t12-grouping-levels-design.md` |
+| Bring zip/zinb/zib to R | **CONFIRMED — already shipped** | `zi_poisson`/`zi_nbinom2`/`zi_binomial`; supersedes #12 R-side only |
 
 ---
 

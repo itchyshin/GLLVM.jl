@@ -17605,3 +17605,37 @@ python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86
 ```
 
 **Not claiming:** 14 AGHQ binds; true parity; D6 confirmed.
+
+## 2026-09-04 — Option A `/goal` audit receipt
+
+Audited five goal deliverables against files/PR objects. Receipt:
+`docs/dev-log/recovery-checkpoints/2026-09-04-option-a-goal-audit.md`.
+
+**Checklist:** (1) `--r-ref` DONE (2) D6 blocks decision set MISSING (3) boundary docs DONE
+(4) `.unlazy` leaf gates evidenced DONE (5) push+PR PARTIAL — CI pending.
+
+**Rose:** `gllvmtmb-parity.md` REVERSE 82→85 aligned with tool output.
+
+**Verify:**
+```sh
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+Rscript tools/parity_ledger.R --ref origin/main --r-ref origin/main \
+  --julia-repo "/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904"
+```
+
+**Not claiming:** goal complete until D6 closed; true parity; CI green on #280/#1268.
+
+## 2026-09-04 — D6 Ada defaults (A+defaults authorization)
+
+Shinichi authorized Ada defaults for D6 relay items (A+defaults, 2026-09-04).
+
+**D6 grouping relay:** CONFIRMED — four levels (`unit`/`unit_obs`/`cluster`/`cluster2`) remain
+important; D5 engineering default stands.
+
+**D6 ZI trio relay:** CONFIRMED supersession of decision #12 on R side only — satisfied by
+existing `zi_poisson`/`zi_nbinom2`/`zi_binomial` (R Arc D); no new R build.
+
+**Files:** `maintainer-decision-set-2026-09-03.md` §D6, `t12-grouping-levels-design.md` §5,
+`true-parity-decision-map.md` Decisions table, `.unlazy/parity-claim-closeout/leaf-s1-decisions/GATES.md`.
+
+**Not claiming:** true parity complete; grouping levels built; ZI Julia↔R paired.

@@ -130,15 +130,16 @@ Sequence:
 
 ## 5. Open questions for the maintainer
 
-### ✅ DEFAULTED 2026-09-04 (D5 — Option A + Ada defaults; D6 relay still OPEN)
+### ✅ DEFAULTED 2026-09-04 (D5 — Option A + Ada defaults)
 
 1. **Naming:** **verbatim R kwargs** (`unit=`, `unit_obs=`, `cluster=`, `cluster2=`).
 2. **Priority:** **after phylo transport S3/S4** — do not bump ahead unless maintainer reorders.
 3. **`cluster`/`cluster2` scope:** **diagonal-only** on first build (matching R's cluster2 restriction).
 4. **Struct collision:** **alias** onto `RowEffectFit`/`RowRandomFit`; keep existing names as deprecated aliases.
 
-**D6 note:** grouping-level *importance* relay is **not confirmed** — engineering defaults above apply
-*if* the relay stands; see `maintainer-decision-set-2026-09-03.md` §D6 OPEN.
+**D6 note (2026-09-04 Ada defaults):** grouping-level *importance* relay **CONFIRMED** — the four
+names remain important ledger keys; engineering defaults above apply. See
+`maintainer-decision-set-2026-09-03.md` §D6.
 
 ### Original open questions (superseded by defaults above unless Shinichi revises)
 
