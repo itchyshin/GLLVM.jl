@@ -58,6 +58,31 @@ using GLLVM, Test, Random, LinearAlgebra
         @test length(g) == q + 1 + GLLVM.rr_theta_len(p, K)
     end
 
+    @testset "centered Y trait-intercept SE (realistic-size R pairing)" begin
+        # core070 realistic grid row-centres Y then pairs Julia beta SEs with
+        # R's `0 + trait` intercept block; zero-mean fit omits those rows.
+        Random.seed!(1001)
+        p, K, n = 20, 1, 500
+        Λ_true = 0.35 .* randn(p, K)
+        Z = randn(K, n)
+        Y = Λ_true * Z .+ 0.7 .* randn(p, n)
+        Y .-= sum(Y; dims = 2) ./ n
+        X = zeros(p, n, p)
+        for t in 1:p
+            X[t, :, t] .= 1.0
+        end
+        fit0 = fit_gaussian_gllvm(Y; K = K)
+        fit1 = fit_gaussian_gllvm(Y; K = K, X = X)
+        @test fit1.converged
+        @test fit1.logLik ≈ fit0.logLik atol = 1e-9
+        ci = confint(fit1, Y; X = X)
+        beta_idx = findall(startswith.(ci.term, "beta["))
+        @test length(beta_idx) == p
+        @test all(isfinite, ci.se[beta_idx])
+        @test all(>(0), ci.se[beta_idx])
+        @test maximum(abs.(fit1.pars.β)) < 1e-10
+    end
+
     @testset "β_fixed zero constraint equals dropping the design column" begin
         Random.seed!(4)
         p, K, n = 4, 1, 90
