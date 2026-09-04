@@ -1,12 +1,27 @@
 # Handover → Cursor, 2026-09-04 — GLLVM.jl + gllvmTMB as ONE lane
 
 You are **Cursor**, picking up **both** packages in a single orchestrator chat with a
-multi-root workspace. You inherit no chat context. This file, `AGENTS.md`, and the current
-git state are authoritative — in that order of reading, but the repo always wins on facts.
+multi-root workspace. You inherit no chat context.
+
+**This is the GLLVM.jl half of a JOINT handover, and it is not the entry point.** Written at
+Shinichi's instruction as one of a pair, so that neither document pretends to be the start of
+the lane:
+
+| | |
+|---|---|
+| **Entry point** | the start prompt Shinichi pastes — the reusable pattern is `shinichi-brain/docs/dev-log/handover/2026-09-02-h2-twin-one-lane-start-prompt`. It gives the multi-root shape, the two `lane_launch.sh` calls, and the model/push bindings, and it answers "who is the orchestrator" before either repo does |
+| **This file** | the **Julia** side — engine truth, the parity programme, this repo's invariants |
+| **gllvmTMB** | the **R** side — `docs/dev-log/handover/2026-09-03-claude-handover.md` (current as of `72ed68b57`), plus a Cursor-addressed document being added alongside it |
+
+Read the start prompt first, then both halves. On facts, the repo always wins over any of them.
+
+⚠ **Cite the start prompt's spend RULE, not its numbers.** Its figures (Cursor Models / Other
+Models percentages) are dated 2026-09-02 and those bars have historically moved tens of points
+within days. Read the live bars.
 
 Authored by Claude Code (session `GLLVM.jl3`) after closing the Core 0.7.0 + AGHQ parity
-programme. Its twin lane (`gllvmTMB1`, Claude) closed the reverse-parity gap programme the
-same day and wrote its own handover; read both.
+programme. The twin lane (`gllvmTMB1`, Claude) closed the reverse-parity gap programme the
+same day.
 
 ---
 
@@ -235,7 +250,12 @@ named branches, default local-only.
    lane said the same and is right.
 3. **Prove the R/TMB capability before committing any campaign to this lane** (§7): compile the
    TMB DLL from a clean checkout, `devtools::load_all()`, fit one paired cell. Cursor is a lane,
-   not a capability tier (`protocols/welcome-cursor`); holding the lane grants nothing.
+   not a capability tier (`protocols/welcome-cursor`); holding the lane grants nothing. D-220 makes
+   this the **first arc**, explicitly before any campaign.
+   *A concrete candidate that genuinely needs real R/TMB fits:* gllvmTMB
+   `dev/gapclose/arcG/coverage-design.md` (PR #1260) — the coverage study for
+   `ordination_uncertainty()`, design-only, estimated 3.75–12 core-hours and **not approved to
+   run**; it asks for a pre-run first because the cost driver is an untimed sparse solve (D-139).
 4. **Take the §4 `--r-ref` question to Shinichi** before any joint work touches either ledger.
 5. **Bring the six decisions** (§5), starting with D5/D6 — the cross-repo ones the seam dropped.
 
