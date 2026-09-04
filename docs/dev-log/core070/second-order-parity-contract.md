@@ -1,8 +1,11 @@
-# Second-order parity contract — DRAFT for maintainer signature (T3-tolerances)
+# Second-order parity contract — DEFAULTED 2026-09-04 (D1/D2; Option A + Ada defaults)
 
-Status: DRAFT, unsigned. Extends, does not replace, the first-order contract
-in `docs/dev-log/core070/delta-matched-contract.md`. Oracle: frozen
-`gllvmTMB` 0.7.0, commit `b4d5fee64def88bc768dda1f1f77c29b295edd86`.
+Status: **DEFAULTED 2026-09-04** — tolerances per D1; `cond(H)` scaling uses **R's
+number** per D2 with both recorded in every receipt. Extends, does not replace, the
+first-order contract in `docs/dev-log/core070/delta-matched-contract.md`. Oracle:
+frozen `gllvmTMB` 0.7.0 export surface, commit
+`b4d5fee64def88bc768dda1f1f77c29b295edd86` (capability-status join uses
+`origin/main` on both repos — that file post-dates the oracle pin).
 
 ## 1. Scope
 
@@ -156,6 +159,12 @@ and `point_gradient_delta` diagnostics,
 `parity-panel-2026-09-01.md:65-70`); a real user compares two
 independently-fitted models, so each-own-optimum ships, always reported
 alongside its matched-coordinates diagnostic for attribution.
+
+**Conditioning scale (D2, DEFAULTED 2026-09-04):** when `cond(H)>1e3`, the
+each-own-optimum relative tolerances multiply by **`cond(H)_R / 1e3`**, where
+`cond(H)_R` is R's fixed-effect precision condition number from `sdreport()`.
+Julia's `native_condition_number` is recorded alongside for attribution only —
+different parameterisations can yield different condition numbers at the same optimum.
 
 ## 5. Receipt fields
 

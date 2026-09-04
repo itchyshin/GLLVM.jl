@@ -44,6 +44,35 @@ written, tool-produced list (`tools/parity_ledger.py`; **FORWARD = 77**
 R exports with no Julia twin, **REVERSE = 82** Julia exports with no R
 twin, at the frozen oracle) — a record, not an obligation owed by this repo.
 
+### Ledger accounting ≠ true parity
+
+**Core070 FREE=0** means every required ledger row is bound or dispositioned — the
+**spreadsheet programme is closed**, not that true parity is achieved. True parity
+(additional gates: second-order contract, realistic-size cells, real-data workflows,
+grouping-level pairing, signed dispositions) is tracked in
+`docs/dev-log/core070/true-parity-decision-map.md`. Do not read FREE=0 as permission
+to claim "R workflows run identically through Julia."
+
+### Bridge scope (what `engine = "julia"` is)
+
+One-way **R → Julia** only: a subset of cross-sectional reduced-rank models through
+JuliaCall (`JUL-01` / `JUL-01A` = `partial`). Admits 11 families, unit-tier
+`latent(d=K)` and no-latent paths. **Does not** cover phylo/spatial/animal/kernel/iSDM,
+`traits()` formula grammar, mixed-family vectors at full depth, or column_coef / slope
+families. PR #1236 expansion remains open.
+
+### Explicitly OUT of the parity claim
+
+From `true-parity-decision-map.md` §Out of scope (plain language):
+
+- Two-directional qualification (Julia→R as owed work here)
+- Full 0.7.1 surface port (column_coef, slopes, formula grid) without a new arc
+- Spatial/slopes engines before phylo transport completes
+- Interval *coverage* certification as an R↔Julia comparison
+- MSPL programme (D-157 park); foreign R lanes
+- Re-freezing the oracle at 0.7.1 before the second-order contract lands
+- fitted/predict/residuals and recovery-to-truth as parity *gates* (measured separately)
+
 ## Response families
 
 | Family | GLLVM.jl | Notes |

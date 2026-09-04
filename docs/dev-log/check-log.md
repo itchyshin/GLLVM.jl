@@ -17531,3 +17531,33 @@ BLOCKED_NEEDS_JULIA_SURFACE 121→122. Tests: **93/93 pass** (derived-CI surface
 
 **Not run:** full `Pkg.test()` / `test/runtests.jl`. Confirmatory reclassification wording for
 Shinichi per decision doc (joint-contract seam).
+
+## 2026-09-04 — Option A parity-claim closeout: S1 decisions + S2 `--r-ref`
+
+G0 locked: Option A + Ada defaults (Shinichi 2026-09-04). Twin worktrees on
+`cursor/lane-gllvm-twin-20260904`.
+
+**D1–D5:** DEFAULTED in `docs/dev-log/core070/maintainer-decision-set-2026-09-03.md`;
+`second-order-parity-contract.md` header updated (tolerances + R-side cond(H) scaling).
+**D6:** relay items left OPEN (grouping importance + ZI trio) — not faked.
+
+**Boundary doc:** `docs/src/gllvmtmb-parity.md` — ledger ≠ true parity; bridge scope; OUT list.
+
+**Unlazy:** `.unlazy/parity-claim-closeout/` GATES.md + leaf gates (gitignored; LOOP home JL).
+
+**Verify:**
+```sh
+# JL
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86
+
+# R twin — pinned capability join
+Rscript tools/parity_ledger.R --ref origin/main --r-ref origin/main \
+  --julia-repo "/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904"
+```
+
+Ledger: REQUIRED=505 FREE=0. Capability CLOSURE: **PASS** (48 matched, 32+32 only-rows).
+Export ledger: FORWARD=77 REVERSE=85 @ b4d5fee6. Receipt:
+`docs/dev-log/core070/r-ref-closure-receipt-2026-09-04.md`.
+
+**Not claiming:** true parity complete; D6 open; S3–S7 (AGHQ batch, grouping build, real-data) not started.
