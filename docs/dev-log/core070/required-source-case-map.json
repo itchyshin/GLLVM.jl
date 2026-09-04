@@ -8284,12 +8284,12 @@
     "CORE070-NAMESPACE2-LOADING-PROFILE-CI-POSTFIT-READBACK"
    ],
    "case_plan": "docs/dev-log/core070/namespace-2-required-case-plan.json",
-   "disposition": "PARTIAL_PARITY_DEFECT_PENDING_DECISION",
+   "disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
    "evidence": {
-    "batch": "surface-conversion wave5 triage",
-    "reason": "Julia surface exists (loading_profile). R's loading_profile() (loading-profile.R) builds its per-entry pin/profile machinery off fit$lambda_constraint the same way loading_ci() does -- profiling a Lambda entry on an exploratory (unpinned) fit is not the estimand this R function targets. Same confirmatory-fit gap as loading_ci. REPAIR (2026-09-01): moved to deferred[].",
+    "batch": "D3 estimand rename (2026-09-04)",
+    "reason": "DECIDED 2026-09-04 (maintainer-decision-set-2026-09-03.md D3): Julia exploratory surface renamed to loading_profile_exploratory; R's confirmatory loading_profile() (loading-profile.R, gated on fit$lambda_constraint) has no Julia counterpart. Row is needs-surface for a future confirmatory mirror, not a parity defect.",
     "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "estimand-alignment family: Julia surface exists; the two engines compute different estimands (traced to source both sides)"
+    "note": "estimand-alignment resolved by rename (option b); Julia-beyond exploratory capability recorded in reverse direction — confirmatory reclassification wording for Shinichi"
    }
   },
   {

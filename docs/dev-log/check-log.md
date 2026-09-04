@@ -17506,3 +17506,28 @@ docs/make.jl`: **build complete, exit 0**. (Two scripted attempts at the convers
 that matched across block boundaries and commented out the public `AugmentedPhy` struct; caught by
 the load check, files restored from HEAD, redone against verified line ranges. Nothing broken was
 committed.)
+
+## 2026-09-04 — Core070 D3: `loading_profile` → `loading_profile_exploratory`
+
+Maintainer decision (option b) in `docs/dev-log/core070/maintainer-decision-set-2026-09-03.md`
+§DECIDED 2026-09-04. Worktree merged `origin/main` first (merge HEAD `26819554`).
+
+**Cascade:** `src/confint_derived.jl` (rename + estimand docstring + `Base.depwarn` shim with
+"is deprecated:"), `src/GLLVM.jl` exports, `src/confint_derived_wald.jl` call site,
+`test/test_derived_ci_surfaces.jl` (`@test_deprecated` under `--depwarn=yes`),
+`docs/src/derived-confidence-intervals.md`, `tools/core070_surface_conversion_batch.jl`,
+`docs/dev-log/core070/required-source-case-map.json` (`namespace/export/loading_profile`:
+`PARTIAL_PARITY_DEFECT_PENDING_DECISION` → `BLOCKED_NEEDS_JULIA_SURFACE`),
+`docs/dev-log/plans/2026-09-04-gllvm-twin-ultra-plan.md` (D3 gate closed).
+
+**Verify:**
+```sh
+rg 'loading_profile[^_]' src test docs/src   # shim + R refs only
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+~/.juliaup/bin/julialauncher --project=. --depwarn=yes -e 'include("test/test_derived_ci_surfaces.jl")'
+```
+Ledger: REQUIRED=505 FREE=0; DISP PARTIAL_PARITY_DEFECT_PENDING_DECISION 1→0;
+BLOCKED_NEEDS_JULIA_SURFACE 121→122. Tests: **93/93 pass** (derived-CI surfaces).
+
+**Not run:** full `Pkg.test()` / `test/runtests.jl`. Confirmatory reclassification wording for
+Shinichi per decision doc (joint-contract seam).

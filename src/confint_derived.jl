@@ -1131,33 +1131,40 @@ function profile_ci_phylo_signal(fit::GllvmFit, t::Integer;
 end
 
 """
-    loading_profile(fit::GllvmFit, t::Integer, k::Integer; level=0.95,
-                    y=nothing, X=nothing, Σ_phy=nothing, component=:B,
-                    kwargs...)
+    loading_profile_exploratory(fit::GllvmFit, t::Integer, k::Integer; level=0.95,
+                                y=nothing, X=nothing, Σ_phy=nothing, component=:B,
+                                kwargs...)
         -> NamedTuple
 
-Profile-likelihood CI for the RAW reduced-rank loading entry `Λ[t, k]`
-(`component = :B`, default — the shared/between tier; `component = :W` for
-the within tier). This is the `loading_profile()` surface R's `loading_ci(
-method = "profile")` calls (`.unlazy/core070-aghq/oracle-source/readback/R/
-loading-profile.R`) — GLLVM.jl's dense reduced-rank fit has no separate
-grid-search profiler for Λ, so this is a thin wrapper around
-[`profile_ci_derived`](@ref) using the packed-θ closure
-`θ -> Λ_component(θ)[t, k]`; all keyword arguments forward.
+Profile-likelihood CI for the RAW reduced-rank loading entry `Λ[t, k]` on an
+**exploratory (unpinned)** fit (`component = :B`, default — the shared/between
+tier; `component = :W` for the within tier). GLLVM.jl has no separate
+confirmatory fit mode with `lambda_constraint` pins; the lower-triangular
+packing convention (`src/packing.jl`) is this package's built-in identifiability
+device, so this function runs on any fit.
 
-For `k > t` on the lower-triangular reduced-rank packing convention
-(`src/packing.jl`), the entry is structurally pinned at `0`: this returns
-`(lower = 0.0, upper = 0.0, estimate = 0.0, method = :pinned)` without
-running the profiler, matching the `pinned = TRUE` short-circuit in R's
-`loading_ci()`.
+**Estimand scope (Core070 D3, 2026-09-04):** this is **not** R's
+`loading_profile()`, which profiles a Λ entry on a **confirmatory
+(pinned-loadings)** fit gated on R's `fit\$lambda_constraint`
+(`.unlazy/core070-aghq/oracle-source/readback/R/loading-profile.R`). Same
+family of quantity, different estimand — the rename makes that gap visible in
+the API rather than hiding it behind a matching signature.
+
+Implementation: a thin wrapper around [`profile_ci_derived`](@ref) using the
+packed-θ closure `θ -> Λ_component(θ)[t, k]`; all keyword arguments forward.
+
+For `k > t` on the lower-triangular reduced-rank packing convention, the entry
+is structurally pinned at `0`: this returns
+`(lower = 0.0, upper = 0.0, estimate = 0.0, method = :pinned)` without running
+the profiler, matching the `pinned = TRUE` short-circuit in R's `loading_ci()`.
 """
-function loading_profile(fit::GllvmFit, t::Integer, k::Integer;
-                         level::Real = 0.95,
-                         y::Union{Nothing, AbstractMatrix} = nothing,
-                         X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
-                         Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
-                         component::Symbol = :B,
-                         kwargs...)
+function loading_profile_exploratory(fit::GllvmFit, t::Integer, k::Integer;
+                                     level::Real = 0.95,
+                                     y::Union{Nothing, AbstractMatrix} = nothing,
+                                     X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                                     Σ_phy::Union{Nothing, AbstractMatrix} = nothing,
+                                     component::Symbol = :B,
+                                     kwargs...)
     if k > t
         return (lower = 0.0, upper = 0.0, estimate = 0.0, method = :pinned)
     end
@@ -1168,9 +1175,18 @@ function loading_profile(fit::GllvmFit, t::Integer, k::Integer;
             component === :W ? u.Λ_W :
             throw(ArgumentError("component must be :B or :W; got $(component)"))
         Λ === nothing && throw(ArgumentError(
-            "fit has no Λ_$(component) block; loading_profile is undefined"))
+            "fit has no Λ_$(component) block; loading_profile_exploratory is undefined"))
         Λ[t, k]
     end
     return profile_ci_derived(fit, f; level = level, y = y, X = X, Σ_phy = Σ_phy,
                               kwargs...)
+end
+
+function loading_profile(args...; kwargs...)
+    Base.depwarn(
+        "loading_profile is deprecated: renamed to loading_profile_exploratory; " *
+        "the name loading_profile is reserved for a future R-mirroring " *
+        "confirmatory (pinned-loadings) surface",
+        :loading_profile)
+    return loading_profile_exploratory(args...; kwargs...)
 end

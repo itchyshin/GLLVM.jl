@@ -21,13 +21,16 @@ reports. `raw_loading_wald_ci` is the identity-scale analogue on `Λ[t,k]`
 itself. Below the loadings' lower-triangular pin (`k > t`), both return the
 exact structural zero rather than delta-methoding a fixed value.
 `loading_ci` is the full per-entry table wrapping both, plus
-`loading_profile` for the profile-likelihood route.
+`loading_profile_exploratory` for the profile-likelihood route on an
+exploratory (unpinned) fit.
 
-**Scope note**: unlike R, GLLVM.jl has no separate confirmatory/exploratory
-fit mode with `lambda_constraint` pins — the lower-triangular packing
-convention (`src/packing.jl`) is this package's built-in identifiability
-device. `loading_ci`/`loading_profile` therefore run on any fit, where R's
-versions refuse an unpinned exploratory fit.
+**Scope note (Core070 D3, 2026-09-04):** unlike R, GLLVM.jl has no separate
+confirmatory fit mode with `lambda_constraint` pins — the lower-triangular
+packing convention (`src/packing.jl`) is this package's built-in
+identifiability device. `loading_ci`/`loading_profile_exploratory` therefore
+run on any fit, where R's `loading_ci()`/`loading_profile()` refuse an
+unpinned exploratory fit. The deprecated name `loading_profile` forwards here
+but is reserved for a future confirmatory mirror of R's surface.
 
 ## Two-level repeatability and ICC
 
@@ -61,7 +64,7 @@ multi-slope generalisation of R's single-slope `slope_sd_ci()`.
 standardized_loading_wald_ci
 raw_loading_wald_ci
 loading_ci
-loading_profile
+loading_profile_exploratory
 repeatability_wald_ci
 repeatability_bootstrap_ci
 repeatability_ci
