@@ -194,18 +194,21 @@ end
     end
 
     # =======================================================================
-    # 3a. loading_profile — profile-likelihood CI on a raw Λ entry
+    # 3a. loading_profile_exploratory — profile-likelihood CI on a raw Λ entry
     # =======================================================================
-    @testset "loading_profile brackets the raw Λ estimate" begin
-        prof = GLLVM.loading_profile(fit2, 1, 1; y = y2)
+    @testset "loading_profile_exploratory brackets the raw Λ estimate" begin
+        prof = GLLVM.loading_profile_exploratory(fit2, 1, 1; y = y2)
         @test isapprox(prof.estimate, fit2.pars.Λ[1, 1]; rtol = 1e-10)
         if prof.method === :profile
             @test prof.lower <= prof.estimate <= prof.upper
         end
 
-        pinned = GLLVM.loading_profile(fit2, 1, 2; y = y2)  # k > t: structurally 0
+        pinned = GLLVM.loading_profile_exploratory(fit2, 1, 2; y = y2)  # k > t: structurally 0
         @test pinned.method === :pinned
         @test pinned.estimate == 0.0 == pinned.lower == pinned.upper
+
+        prof_old = @test_deprecated GLLVM.loading_profile(fit2, 1, 1; y = y2)
+        @test prof_old == prof
     end
 
     # =======================================================================

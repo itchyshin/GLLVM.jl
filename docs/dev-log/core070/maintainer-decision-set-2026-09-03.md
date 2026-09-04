@@ -29,6 +29,13 @@ tight number that would catch a real curvature-formula divergence.
 failing on optimizer-termination noise the first time a family's convergence criteria
 change. Default if unanswered: sign as drafted.
 
+### ✅ DEFAULTED 2026-09-04 (Option A + Ada defaults; Shinichi G0)
+
+Adopt the drafted tolerances in `second-order-parity-contract.md` §4 unchanged. Measured
+20+22 cells sit two orders inside the each-own-optimum tier; signing loose is the
+recommended direction, not scope-shaving. Record as maintainer-default until explicitly
+revised.
+
 ---
 
 ## D2 — cond(H): which engine's number does the contract's scaling use?
@@ -49,6 +56,14 @@ Record both in every receipt.
 
 **Cost of choosing Julia's instead:** the tolerance would narrow exactly on the cells
 where R's own SEs are least trustworthy. Default if unanswered: R's, both recorded.
+
+### ✅ DEFAULTED 2026-09-04 (Option A + Ada defaults; Shinichi G0)
+
+The each-own-optimum tolerance scaling uses **R's `cond(H)`** (oracle-side reference
+problem hardness). Every receipt records **both** `r_condition_number` and
+`native_condition_number` (`second-order-parity-contract.md` §5). Parameterisation
+differences explain the 16× gap on the largest realistic cell; neither number is wrong
+for its coordinate system.
 
 ---
 
@@ -126,6 +141,12 @@ with parity.
 **Cost:** the reclassification must state that reason in the ledger, or it reads as
 scope-shaving. Default if unanswered: reclassify with the reason recorded.
 
+### ✅ DEFAULTED 2026-09-04 (Option A + Ada defaults; Shinichi G0)
+
+Reclassify the **8** unreachable helper-contract rows out of required parity; bind the
+**14** via public same-model fit receipts (`t8-aghq-policy-rows-proposal.md`). Record
+the reason on each reclassified row (defensive helper contract, not user-fit policy).
+
 ---
 
 ## D5 — T12: are the four level names the ledger keys?
@@ -149,21 +170,47 @@ an owner requirement. Measured: R exposes all four as `gllvmTMB()` arguments. Ju
 **Default if unanswered:** the four names are the ledger keys; `unit_obs` for
 non-Gaussian is a **new required surface**, sequenced after phylo transport.
 
+### ✅ DEFAULTED 2026-09-04 (Option A + Ada defaults; Shinichi G0)
+
+Ledger keys = **`unit` / `unit_obs` / `cluster` / `cluster2`** verbatim (R call
+transfer). Julia kwargs alias onto existing `RowEffectFit`/`RowRandomFit` with deprecated
+old names. `cluster`/`cluster2` **diagonal-only** on first build (matching R's restriction).
+Sequencing: **after phylo transport S3/S4**, not ahead of it. `unit_obs` for non-Gaussian
+is a **new required surface**, not a rename.
+
 ---
 
-## D6 — the two relayed items, still awaiting direct confirmation
+## D6 — the two relayed items (2026-09-02)
 
-Both arrived via the gllvmTMB lane on 2026-09-02, recorded but never confirmed by you
-directly:
+Both arrived via the gllvmTMB lane on 2026-09-02:
 
 - *"Make sure both Julia and R have `unit_obs`, `unit`, `cluster` and `cluster2` — it is
-  important."* → this is what D5 acts on. Confirm or correct the relay.
-- *"Bring zip/zinb/zib to R."* → supersedes decision #12's "no R twin" on the R side.
-  Nothing changes for the Julia fitters or their ADEMP evidence; once R ships them the
-  rows become pairable. **Confirm or correct.**
+  important."*
+- *"Bring zip/zinb/zib to R."*
 
-A relayed instruction is not an instruction until you say it is; the lane has treated
-both as recorded-not-acted-on.
+### ✅ DEFAULTED 2026-09-04 (Option A + Ada defaults; Shinichi authorized Ada defaults)
+
+Shinichi authorized Ada defaults for the remaining OPEN items (A+defaults, 2026-09-04).
+
+**1. Grouping-level relay — CONFIRMED (default).** The 2026-09-02 relay stands: all four
+level names (`unit` / `unit_obs` / `cluster` / `cluster2`) remain important ledger keys on
+both engines. D5 engineering default applies unchanged — verbatim R kwargs, diagonal-only
+`cluster`/`cluster2`, alias onto `RowEffectFit`/`RowRandomFit`, sequenced after phylo
+transport S3/S4. Rationale: A+defaults keeps the twin surface aligned with R grammar; the
+relay intent matches what D5 already defaulted.
+
+**2. ZI trio relay — CONFIRMED supersession of decision #12 on the R side only (default).**
+The 2026-09-02 *"Bring zip/zinb/zib to R"* relay is **satisfied by existing R constructors**
+— R Arc D shipped `zi_poisson()` (fid 17), `zi_nbinom2()` (fid 18), and `zi_binomial()`
+(fid 19) in `R/families.R`; no new R build is owed. This supersedes maintainer round2-3
+decision #12's *"no R twin"* **on the R side only**. Julia-forward ZI fitters
+(`zip`/`zinb`/`zib`) remain Julia-beyond until paired; rows become pairable when Julia
+surfaces exist. Do not invent new R code for this relay.
+
+| Relay item | Verdict | Record |
+|---|---|---|
+| Four grouping levels are important | **CONFIRMED** | D5 defaults stand; see `t12-grouping-levels-design.md` |
+| Bring zip/zinb/zib to R | **CONFIRMED — already shipped** | `zi_poisson`/`zi_nbinom2`/`zi_binomial`; supersedes #12 R-side only |
 
 ---
 

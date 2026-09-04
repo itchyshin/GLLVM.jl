@@ -282,7 +282,7 @@ function julia_quantity(quantity::AbstractString)
         tbl = GLLVM.loading_ci(fit_g, Y_g; method = :wald_asym, conf_level = 0.95)
         return vcat(Float64[r.lower for r in tbl], Float64[r.upper for r in tbl])
     elseif quantity == "loading_profile"
-        r = GLLVM.loading_profile(fit_g, 1, 1; level = 0.95)
+        r = GLLVM.loading_profile_exploratory(fit_g, 1, 1; level = 0.95)
         return Float64[r.lower, r.upper]
     elseif quantity == "profile_ci_total_variance"
         r = GLLVM.profile_ci_total_variance(fit_g, 1; level = 0.95)

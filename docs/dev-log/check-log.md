@@ -17506,3 +17506,134 @@ docs/make.jl`: **build complete, exit 0**. (Two scripted attempts at the convers
 that matched across block boundaries and commented out the public `AugmentedPhy` struct; caught by
 the load check, files restored from HEAD, redone against verified line ranges. Nothing broken was
 committed.)
+
+## 2026-09-04 — Core070 D3: `loading_profile` → `loading_profile_exploratory`
+
+Maintainer decision (option b) in `docs/dev-log/core070/maintainer-decision-set-2026-09-03.md`
+§DECIDED 2026-09-04. Worktree merged `origin/main` first (merge HEAD `26819554`).
+
+**Cascade:** `src/confint_derived.jl` (rename + estimand docstring + `Base.depwarn` shim with
+"is deprecated:"), `src/GLLVM.jl` exports, `src/confint_derived_wald.jl` call site,
+`test/test_derived_ci_surfaces.jl` (`@test_deprecated` under `--depwarn=yes`),
+`docs/src/derived-confidence-intervals.md`, `tools/core070_surface_conversion_batch.jl`,
+`docs/dev-log/core070/required-source-case-map.json` (`namespace/export/loading_profile`:
+`PARTIAL_PARITY_DEFECT_PENDING_DECISION` → `BLOCKED_NEEDS_JULIA_SURFACE`),
+`docs/dev-log/plans/2026-09-04-gllvm-twin-ultra-plan.md` (D3 gate closed).
+
+**Verify:**
+```sh
+rg 'loading_profile[^_]' src test docs/src   # shim + R refs only
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+~/.juliaup/bin/julialauncher --project=. --depwarn=yes -e 'include("test/test_derived_ci_surfaces.jl")'
+```
+Ledger: REQUIRED=505 FREE=0; DISP PARTIAL_PARITY_DEFECT_PENDING_DECISION 1→0;
+BLOCKED_NEEDS_JULIA_SURFACE 121→122. Tests: **93/93 pass** (derived-CI surfaces).
+
+**Not run:** full `Pkg.test()` / `test/runtests.jl`. Confirmatory reclassification wording for
+Shinichi per decision doc (joint-contract seam).
+
+## 2026-09-04 — Option A parity-claim closeout: S1 decisions + S2 `--r-ref`
+
+G0 locked: Option A + Ada defaults (Shinichi 2026-09-04). Twin worktrees on
+`cursor/lane-gllvm-twin-20260904`.
+
+**D1–D5:** DEFAULTED in `docs/dev-log/core070/maintainer-decision-set-2026-09-03.md`;
+`second-order-parity-contract.md` header updated (tolerances + R-side cond(H) scaling).
+**D6:** relay items left OPEN (grouping importance + ZI trio) — not faked.
+
+**Boundary doc:** `docs/src/gllvmtmb-parity.md` — ledger ≠ true parity; bridge scope; OUT list.
+
+**Unlazy:** `.unlazy/parity-claim-closeout/` GATES.md + leaf gates (gitignored; LOOP home JL).
+
+**Verify:**
+```sh
+# JL
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86
+
+# R twin — pinned capability join
+Rscript tools/parity_ledger.R --ref origin/main --r-ref origin/main \
+  --julia-repo "/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904"
+```
+
+Ledger: REQUIRED=505 FREE=0. Capability CLOSURE: **PASS** (48 matched, 32+32 only-rows).
+Export ledger: FORWARD=77 REVERSE=85 @ b4d5fee6. Receipt:
+`docs/dev-log/core070/r-ref-closure-receipt-2026-09-04.md`.
+
+**Not claiming:** true parity complete; D6 open; S3–S7 (AGHQ batch, grouping build, real-data) not started.
+
+## 2026-09-04 — T8 AGHQ 14-row public-policy bind (Option A S3 closeout)
+
+Bound all 14 rows in `t8-aghq-bind-next-slice.md` with real public `gllvmTMB()`
+fits — no `:::` helpers. Receipt:
+`docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json`;
+summary `t8-aghq-public-policy-bind-receipt-2026-09-04.md`.
+
+**Verify:**
+```sh
+Rscript --vanilla tools/core070_aghq_public_policy_bind.R \
+  /path/to/gllvmTMB-gllvm-twin-20260904 \
+  docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json
+python3 tools/core070_aghq_public_policy_bind_apply.py \
+  --ledger docs/dev-log/core070/required-source-case-map.json \
+  --receipt docs/dev-log/core070/aghq-public-policy-bind-receipt-2026-09-04.json
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+```
+
+R engine: gllvmTMB twin @ `1005cf12e` via `devtools::load_all`. Ledger:
+REQUIRED=497 **FREE=0**; 14 AGHQ policy rows no longer `BLOCKED_SPEC_DEFECT`.
+
+**Not claiming:** true parity complete; D6/T7/T9/T10/T14; Julia-side AGHQ public adapter.
+Note: AUTO-K-DELTA public k=5 vs frozen helper k=9 (family label mismatch) — documented in receipt.
+
+
+## 2026-09-04 — Option A S3: D4 AGHQ reclassify + export-gap honesty
+
+Partial S3 after S1–S2. **8 AGHQ policy rows** reclassified
+`required_core` → `intentionally_excluded` per D4 DEFAULTED (`t8-aghq-reclassify-receipt-2026-09-04.md`).
+**14 bindable rows** documented in `t8-aghq-bind-next-slice.md` — **not bound** (no fit receipts).
+
+Also: `export-gap-honesty-2026-09-04.md`; `t12-grouping-levels-design.md` D5 defaults;
+`true-parity-decision-map.md` T8 + row count refresh.
+
+**Verify:**
+```sh
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+# REQUIRED=497 FREE=0; XTAB aghq BLOCKED_SPEC_DEFECT=14
+python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86
+# FORWARD=77 REVERSE=85
+```
+
+**Not claiming:** 14 AGHQ binds; true parity; D6 confirmed.
+
+## 2026-09-04 — Option A `/goal` audit receipt (D6 closeout)
+
+Re-audited five goal deliverables after D6 Ada defaults (`d2f9b5b3`). Receipt:
+`docs/dev-log/recovery-checkpoints/2026-09-04-option-a-goal-audit.md`.
+
+**Checklist:** (1) `--r-ref` DONE (2) D1–D6 decision set DONE (3) boundary docs DONE
+(4) `.unlazy` leaf gates DONE (5) push+PR DONE — CI pending OK per objective.
+
+**Verify:**
+```sh
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+Rscript tools/parity_ledger.R --ref origin/main --r-ref origin/main \
+  --julia-repo "/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904"
+```
+
+**Not claiming:** true parity complete; grouping built; CI green (pending noted).
+
+## 2026-09-04 — D6 Ada defaults (A+defaults authorization)
+
+Shinichi authorized Ada defaults for D6 relay items (A+defaults, 2026-09-04).
+
+**D6 grouping relay:** CONFIRMED — four levels (`unit`/`unit_obs`/`cluster`/`cluster2`) remain
+important; D5 engineering default stands.
+
+**D6 ZI trio relay:** CONFIRMED supersession of decision #12 on R side only — satisfied by
+existing `zi_poisson`/`zi_nbinom2`/`zi_binomial` (R Arc D); no new R build.
+
+**Files:** `maintainer-decision-set-2026-09-03.md` §D6, `t12-grouping-levels-design.md` §5,
+`true-parity-decision-map.md` Decisions table, `.unlazy/parity-claim-closeout/leaf-s1-decisions/GATES.md`.
+
+**Not claiming:** true parity complete; grouping levels built; ZI Julia↔R paired.

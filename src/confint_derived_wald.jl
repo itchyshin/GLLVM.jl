@@ -540,7 +540,7 @@ per `(trait, axis)` — the Julia analogue of R's `loading_ci()`
   - `method`: `:wald` (default) — symmetric Wald on `loading_scale`;
     `:wald_asym` — Fisher-z asymmetric Wald, only defined for
     `loading_scale = :standardized`; `:profile` — profile-likelihood via
-    [`loading_profile`](@ref), only defined for `loading_scale = :raw`
+    [`loading_profile_exploratory`](@ref), only defined for `loading_scale = :raw`
     (mirrors R's refusals for the same scale/method combinations).
   - `loading_scale`: `nothing` (default) resolves to `:standardized` for
     `:wald_asym` and `:raw` otherwise, matching R.
@@ -601,8 +601,8 @@ function loading_ci(fit::GllvmFit, y::AbstractMatrix;
             r = standardized_loading_wald_ci(fit, t, k; level = conf_level, y = y,
                                              X = X, Σ_phy = Σ_phy, component = component)
         else # :profile
-            r = loading_profile(fit, t, k; level = conf_level, y = y, X = X,
-                                Σ_phy = Σ_phy, component = component)
+            r = loading_profile_exploratory(fit, t, k; level = conf_level, y = y, X = X,
+                                            Σ_phy = Σ_phy, component = component)
         end
         out[row] = (; trait = t, axis = k, estimate = r.estimate,
                     se = get(r, :se_transformed, NaN),
@@ -788,7 +788,7 @@ restrict to a subset of entries computed with direct `bootstrap_ci_derived`
 calls instead of the full table.
 
 GAP (honestly recorded, matching the required-source-case-map disposition
-for the sibling `loading_ci` / `loading_profile` rows): R's
+for the sibling `loading_ci` / `loading_profile_exploratory` rows): R's
 `bootstrap_Sigma()` also bootstraps `R` (correlation), `communality`, `ICC`,
 and `cross_corr` in the SAME call, over multiple covariance tiers. This
 driver covers only the `Sigma` entries at the single `:unit` tier GLLVM.jl
