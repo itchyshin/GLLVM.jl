@@ -17674,3 +17674,9 @@ Julia data-only CSV (seeds 1009/1017) + `core070_realistic_size_cell.R` locally 
 Repair artifacts: `realistic-size-out/totoro-repair-20260904/`; merged CSV
 `realistic-size-paired-20260904-merged.csv` → seed_match 24/24, first-order 24/24,
 idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
+
+## 2026-09-04 — Gaussian realistic intercept SE re-run (D1 gate)
+
+- HEAD `5e55a205`; local parallel x8 gaussian realistic cells (~218s); nibi Julia artifacts refreshed.
+- `python3 tools/core070_realistic_size_collect.py` nibi + totoro-merged → `realistic-size-paired-20260904-merged.csv`; SE D1 **24/0/0** (was 16/0/8 skip).
+- Updated `second-order-d1-gate-receipt-2026-09-04.json`.

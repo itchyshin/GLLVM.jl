@@ -2,9 +2,9 @@ family=gaussian
 p=50 n=2000 K=1 seed=1007
 converged=true
 logLik=-108604.41559204827
-wall_fit_sec=12.478605031967163
+wall_fit_sec=10.750473022460938
 pd_hessian=true
-wall_confint_sec=16.220446825027466
+wall_confint_sec=59.11541390419006
 dispersion_boundary=NA (Gaussian has no grouped dispersion)
 boundary_terms=
-cond_H=210.86000483257325
+cond_H=365.81594297551896

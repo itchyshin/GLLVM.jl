@@ -2,7 +2,7 @@
   "receipt_date": "2026-09-04",
   "contract": "docs/dev-log/core070/second-order-parity-contract.md",
   "d1_d2_defaults": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md",
-  "jl_worktree_head": "f873ee69",
+  "jl_worktree_head": "5e55a205",
   "post_merge_smoke": {
     "batch1_cells": [
       "gaussian",
@@ -29,15 +29,14 @@
       "9",
       "17"
     ],
-    "second_order_metrics_present": "14/24 (gaussian beta-block SE/vcov not in collect output)",
-    "se_d1_pass_fail_skip": "14/0/8",
-    "vcov_d1_pass_fail_skip": "14/0/8",
-    "wald_d1_pass_fail_skip": "14/0/8"
+    "second_order_metrics_present": "24/24",
+    "se_d1_pass_fail_skip": "24/0/0",
+    "vcov_d1_pass_fail_skip": "24/0/0",
+    "wald_d1_pass_fail_skip": "24/0/0"
   },
   "totoro_cm_socket": false,
   "remaining": [
     "Matched-coordinates diagnostic tier (\u03b8 packing map)",
-    "Gaussian realistic trait-intercept SE alignment (estimand gap; 8 collector skips)",
     "Contract \u00a76 holdout families (API gaps + disputed defaults)",
     "Programme-level second-order parity claim (contract \u00a77)",
     "Optional: re-run idx 9/17 on frozen 0.7.0 oracle if maintainer requires pin over local 0.7.1"
@@ -80,7 +79,24 @@
   "realistic_24cell_paired_after_repair": {
     "seed_match": "24/24",
     "first_order_paired_loglik_abs_delta_lt_1e-4": "24/24",
-    "se_d1_pass_fail_skip_among_cells_with_beta_metrics": "16/0/8",
-    "note": "8 skips = gaussian trait-intercept SE rows absent in Julia confint (estimand gap)"
+    "se_d1_pass_fail_skip_among_cells_with_beta_metrics": "24/0/0",
+    "note": "Gaussian trait-intercept SE patch (5e55a205); 8 cells re-run local parallel 2026-09-04"
+  },
+  "gaussian_realistic_intercept_se_rerun_2026-09-04": {
+    "driver": "tools/core070_realistic_size_cell.jl @ 5e55a205",
+    "compute": "local laptop parallel x8, OPENBLAS/OMP/JULIA_NUM_THREADS=1, ~218s wall",
+    "cells": "idx 1-8 (8 gaussian realistic-size)",
+    "se_d1_pass_fail_skip": "8/0/0",
+    "per_cell_max_rel_dSE_beta": {
+      "1": 6.73e-06,
+      "2": 1.7e-06,
+      "3": 3.3e-06,
+      "4": 4.2e-07,
+      "5": 3.34e-06,
+      "6": 2.23e-05,
+      "7": 1.96e-06,
+      "8": 1.89e-06
+    },
+    "artifacts": "docs/dev-log/core070/realistic-size-out/nibi/gaussian_* (patched Julia side)"
   }
 }
