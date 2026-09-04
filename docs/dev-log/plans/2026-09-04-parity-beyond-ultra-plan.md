@@ -27,8 +27,8 @@ DISCIPLINE: frozen oracle stays b4d5fee6 (0.7.0) until re-freeze gate · verify 
 
 | Layer | Verdict | Evidence |
 |---|---|---|
-| **Core070 programme (ledger accounting)** | **DONE** | `python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json` → `REQUIRED=505 BOUND=292 DISPOSITIONED=213 FREE=0` (JL scout `083cf7e7`; merged on main `5518d98d`) |
-| **True parity (maintainer definition)** | **NOT DONE** | Six destination gates in `docs/dev-log/core070/true-parity-decision-map.md` unmet: second-order contract unsigned (D1–D2); 122 rows `BLOCKED_NEEDS_JULIA_SURFACE`; real-data workflows not run; grouping levels (`unit`/`unit_obs`/`cluster`/`cluster2`) not paired; AGHQ policy rows 0/39 receipted; `--r-ref` asymmetry unpatched |
+| **Core070 programme (ledger accounting)** | **DONE** | `REQUIRED=497 FREE=0` after D4 AGHQ reclassify (was 505); see `t8-aghq-reclassify-receipt-2026-09-04.md` |
+| **True parity (maintainer definition)** | **NOT DONE** | Gates in `true-parity-decision-map.md`: D1–D2 DEFAULTED; `--r-ref` live; 8 AGHQ reclassified; 14 AGHQ bind owed; 122 `BLOCKED_NEEDS_JULIA_SURFACE`; real-data not run; grouping not built |
 | **Export reconciliation** | **77 forward gaps genuinely owed** | `python3 tools/parity_ledger.py` @ frozen `b4d5fee6` → `FORWARD=77` (0 untracked); 85 Julia-ahead accounted |
 
 **Plain language:** The spreadsheet is closed. The claim "R workflows run identically through Julia against 0.7.0" is not yet defensible.
@@ -209,6 +209,18 @@ Concrete end state:
 ---
 
 ## Phase 2 slice sketch (Option A — activates only after G0-1 = A)
+
+| # | Slice | Output | Status |
+|---|---|---|---|
+| S1 | Sign + commit second-order contract | `second-order-parity-contract.md` DEFAULTED | **done** 2026-09-04 |
+| S2 | Implement `--r-ref` | R `parity_ledger.R` + CLOSURE receipt | **done** 2026-09-04 |
+| S3 | D4 AGHQ disposition batch | 8 reclassify receipt; 14 bind plan | **partial** — reclassify done; bind owed |
+| S4 | D5/D6 grouping design doc | `t12-grouping-levels-design.md` D5 defaulted | **partial** — D6 relay OPEN |
+| S5 | Real-data workflow cell #1 | One Ayumi-scale repo via bridge | **blocked** — repo pick + #1236 |
+| S6 | Rose scan + parity page update | boundary + export-gap honesty | **partial** 2026-09-04 |
+| S7 | arcG results land | `dev/gapclose/arcG/` + PR | **separate arc** — not parity proof |
+
+Original blockers column preserved below for audit.
 
 | # | Slice | Output | Blocked by |
 |---|---|---|---|

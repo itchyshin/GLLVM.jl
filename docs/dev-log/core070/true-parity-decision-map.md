@@ -12,7 +12,8 @@ GLLVM.jl is at true parity with frozen gllvmTMB 0.7.0 (`b4d5fee64def88bc768dda1f
 when all of the following are true and each is backed by a retained receipt:
 
 1. Every **required** ledger row (`classification ∈ {required_core, compatibility_adapter}`;
-   505 rows on 2026-09-02, reproduced by `tools/core070_ledger_counts.py`) is either bound to
+   497 rows after D4 AGHQ reclassify 2026-09-04, was 505; reproduced by
+   `tools/core070_ledger_counts.py`) is either bound to
    a receipt or carries a maintainer-signed disposition; no row is free.
 2. Every paired family × route cell carries **first-order** receipts (log-likelihood at each
    optimum, point estimates, cross-objective identity in *both* directions) **and second-order**
@@ -57,7 +58,9 @@ Each line is a question, with who must be in the room and the default if the ans
 - **T4 Realistic-size grid.** Which (p, n) cells and families first, and on which host? *decide-with-Shinichi after the se=TRUE pre-run timing*; default: Gaussian, Poisson, NB2 at p ∈ {20, 50}, n ∈ {500, 2000} on Totoro, one pre-run cell per family first (D-139).
 - **T5 The 8 PARTIAL_PARITY_DEFECT rows.** Resolved by decisions #1/#3 and merely un-re-bound, or still defective? *task* (`parity-defect-rebind-2026-09-02.md`), then decide; default: re-bind on a passing verifier.
 - **T7 Real-data acceptance runs.** Which of the four repos first, and how is data access granted? Needs gllvmTMB PR #1236 merged. *decide-with-Shinichi*; default: `urbanisation_map` first (an ACC-URBMAP cross-eval receipt already exists), then `avian_trait_scales`.
-- **T8 AGHQ.** 22 policy rows are BLOCKED_SPEC_DEFECT ("name an exact native policy call"); 0/39 AGHQ rows receipted. In the claim or a separate track? *decide-with-Shinichi*; default: in-claim only for rows with an R native anchor; the rest reclassified out with the reason recorded.
+- **T8 AGHQ.** 8 unreachable policy rows **reclassified** 2026-09-04 (D4 DEFAULTED);
+  **14 bindable rows** remain `BLOCKED_SPEC_DEFECT` pending public-fit receipts
+  (`t8-aghq-bind-next-slice.md`). Was 22 BLOCKED_SPEC_DEFECT; 0/14 bind receipts.
 - **T9 Promotion authority.** Is a Rose-scanned draft PR sufficient to flip a row's disposition, or does each need a maintainer sentence? *decide-with-Shinichi*; default: draft PR + Rose = proposal, maintainer merge = sign-off.
 - **T10 Phylo Q1–Q4.** *decide-with-Shinichi*; defaults recorded in the questions note.
 - **T11 Which of the 38 API-alignment collisions are R inconsistencies?** *research*, handed to the gllvmTMB lane with `r-side-defects-2026-09-02.md` (group E).

@@ -78,3 +78,9 @@ stop appearing in any future receipt tally) rather than leaving them permanently
 `BLOCKED_SPEC_DEFECT` — is that the intended disposition, or should they instead be
 kept as a separate, explicitly-labelled "internal-contract, non-parity" bucket so the
 0/39 AGHQ denominator visibly shrinks to 0/31 rather than silently losing 8 rows?
+
+### ✅ EXECUTED 2026-09-04 (D4 DEFAULTED — Option A S3)
+
+Maintainer default applied: **reclassify out of required** with reason recorded on each
+row. Receipt: `t8-aghq-reclassify-receipt-2026-09-04.md`. REQUIRED 505→497; FREE=0
+unchanged. **14 bindable rows** remain for next slice: `t8-aghq-bind-next-slice.md`.

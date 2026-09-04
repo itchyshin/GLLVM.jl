@@ -73,6 +73,8 @@ From `true-parity-decision-map.md` §Out of scope (plain language):
 - Re-freezing the oracle at 0.7.1 before the second-order contract lands
 - fitted/predict/residuals and recovery-to-truth as parity *gates* (measured separately)
 
+Export-level gap honesty (FORWARD=77 @ frozen oracle): `docs/dev-log/core070/export-gap-honesty-2026-09-04.md`.
+
 ## Response families
 
 | Family | GLLVM.jl | Notes |

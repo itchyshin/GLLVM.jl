@@ -17561,3 +17561,22 @@ Export ledger: FORWARD=77 REVERSE=85 @ b4d5fee6. Receipt:
 `docs/dev-log/core070/r-ref-closure-receipt-2026-09-04.md`.
 
 **Not claiming:** true parity complete; D6 open; S3–S7 (AGHQ batch, grouping build, real-data) not started.
+
+## 2026-09-04 — Option A S3: D4 AGHQ reclassify + export-gap honesty
+
+Partial S3 after S1–S2. **8 AGHQ policy rows** reclassified
+`required_core` → `intentionally_excluded` per D4 DEFAULTED (`t8-aghq-reclassify-receipt-2026-09-04.md`).
+**14 bindable rows** documented in `t8-aghq-bind-next-slice.md` — **not bound** (no fit receipts).
+
+Also: `export-gap-honesty-2026-09-04.md`; `t12-grouping-levels-design.md` D5 defaults;
+`true-parity-decision-map.md` T8 + row count refresh.
+
+**Verify:**
+```sh
+python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json
+# REQUIRED=497 FREE=0; XTAB aghq BLOCKED_SPEC_DEFECT=14
+python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86
+# FORWARD=77 REVERSE=85
+```
+
+**Not claiming:** 14 AGHQ binds; true parity; D6 confirmed.

@@ -477,66 +477,86 @@
   },
   {
    "source_id": "aghq/AGHQ-POLICY-BAD-COLUMNS",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-BAD-COLUMNS-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "batch": "Option A S3 \u2014 D4 DEFAULTED 2026-09-04",
+    "action": "reclassified required_core -> intentionally_excluded per t8-aghq-policy-rows-proposal.md; no public R surface",
+    "proposal_reason": "Forces hand-truncated gate columns; .aghq_gate() never returns column-dropped table from real fit (t8-aghq-policy-rows-proposal.md).",
+    "decision": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md \u00a7D4"
+   },
+   "original_classification": "required_core",
+   "reclassify_proposed": {
+    "to": "intentionally_excluded",
+    "reason": "Forces hand-truncated gate columns; .aghq_gate() never returns column-dropped table from real fit (t8-aghq-policy-rows-proposal.md)."
    }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-BAD-DIMENSION",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-BAD-DIMENSION-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "batch": "Option A S3 \u2014 D4 DEFAULTED 2026-09-04",
+    "action": "reclassified required_core -> intentionally_excluded per t8-aghq-policy-rows-proposal.md; no public R surface",
+    "proposal_reason": "Forces q=NA; d_B is always integer at production call site (fit-multi.R).",
+    "decision": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md \u00a7D4"
+   },
+   "original_classification": "required_core",
+   "reclassify_proposed": {
+    "to": "intentionally_excluded",
+    "reason": "Forces q=NA; d_B is always integer at production call site (fit-multi.R)."
    }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-BAD-TRAITS",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-BAD-TRAITS-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "batch": "Option A S3 \u2014 D4 DEFAULTED 2026-09-04",
+    "action": "reclassified required_core -> intentionally_excluded per t8-aghq-policy-rows-proposal.md; no public R surface",
+    "proposal_reason": "Forces n_traits=NA; always a real count in public fit.",
+    "decision": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md \u00a7D4"
+   },
+   "original_classification": "required_core",
+   "reclassify_proposed": {
+    "to": "intentionally_excluded",
+    "reason": "Forces n_traits=NA; always a real count in public fit."
    }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-EMPTY-GATE",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-EMPTY-GATE-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "batch": "Option A S3 \u2014 D4 DEFAULTED 2026-09-04",
+    "action": "reclassified required_core -> intentionally_excluded per t8-aghq-policy-rows-proposal.md; no public R surface",
+    "proposal_reason": "Forces empty gate table; Stage-1a eligible fit always has z_B block.",
+    "decision": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md \u00a7D4"
+   },
+   "original_classification": "required_core",
+   "reclassify_proposed": {
+    "to": "intentionally_excluded",
+    "reason": "Forces empty gate table; Stage-1a eligible fit always has z_B block."
    }
   },
   {
@@ -573,34 +593,44 @@
   },
   {
    "source_id": "aghq/AGHQ-POLICY-MISSING-GATE",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-MISSING-GATE-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "batch": "Option A S3 \u2014 D4 DEFAULTED 2026-09-04",
+    "action": "reclassified required_core -> intentionally_excluded per t8-aghq-policy-rows-proposal.md; no public R surface",
+    "proposal_reason": "Forces gate_table=NULL; not reachable from normal install.",
+    "decision": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md \u00a7D4"
+   },
+   "original_classification": "required_core",
+   "reclassify_proposed": {
+    "to": "intentionally_excluded",
+    "reason": "Forces gate_table=NULL; not reachable from normal install."
    }
   },
   {
    "source_id": "aghq/AGHQ-POLICY-NO-QUADRATURE",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-NO-QUADRATURE-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "batch": "Option A S3 \u2014 D4 DEFAULTED 2026-09-04",
+    "action": "reclassified required_core -> intentionally_excluded per t8-aghq-policy-rows-proposal.md; no public R surface",
+    "proposal_reason": "Forces route=laplace on quadrature gate; excluded by earlier z_B eligibility.",
+    "decision": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md \u00a7D4"
+   },
+   "original_classification": "required_core",
+   "reclassify_proposed": {
+    "to": "intentionally_excluded",
+    "reason": "Forces route=laplace on quadrature gate; excluded by earlier z_B eligibility."
    }
   },
   {
@@ -621,18 +651,23 @@
   },
   {
    "source_id": "aghq/AGHQ-POLICY-SITES-INDEPENDENT",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-SITES-INDEPENDENT-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "batch": "Option A S3 \u2014 D4 DEFAULTED 2026-09-04",
+    "action": "reclassified required_core -> intentionally_excluded per t8-aghq-policy-rows-proposal.md; no public R surface",
+    "proposal_reason": "Exercises n=100000 but production passes n=NA_integer_ (fit-multi.R:6365-6367).",
+    "decision": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md \u00a7D4"
+   },
+   "original_classification": "required_core",
+   "reclassify_proposed": {
+    "to": "intentionally_excluded",
+    "reason": "Exercises n=100000 but production passes n=NA_integer_ (fit-multi.R:6365-6367)."
    }
   },
   {
@@ -669,18 +704,23 @@
   },
   {
    "source_id": "aghq/AGHQ-POLICY-UNRESOLVED-WIDTH",
-   "classification": "required_core",
+   "classification": "intentionally_excluded",
    "executable_case_ids": [],
    "rationale": "AGHQ helper control and public estimator obligations separated in required annex; helper bindings never promote public fitted-model coverage.",
    "planned_case_ids": [
     "CORE070-AGHQ-POLICY-UNRESOLVED-WIDTH-CONTROL-CONTRACT"
    ],
    "case_plan": "docs/dev-log/core070/aghq-required-case-plan.json",
-   "disposition": "BLOCKED_SPEC_DEFECT",
    "evidence": {
-    "batch": "aghq wave4",
-    "contract": "docs/dev-log/core070/aghq-batch-contract.json",
-    "reason": "Name an exact native policy call or same-model public fit; helper source observation alone is insufficient."
+    "batch": "Option A S3 \u2014 D4 DEFAULTED 2026-09-04",
+    "action": "reclassified required_core -> intentionally_excluded per t8-aghq-policy-rows-proposal.md; no public R surface",
+    "proposal_reason": "Forces treewidth=NA; .aghq_treewidth_upper_bound() always returns integer.",
+    "decision": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md \u00a7D4"
+   },
+   "original_classification": "required_core",
+   "reclassify_proposed": {
+    "to": "intentionally_excluded",
+    "reason": "Forces treewidth=NA; .aghq_treewidth_upper_bound() always returns integer."
    }
   },
   {
@@ -8289,7 +8329,7 @@
     "batch": "D3 estimand rename (2026-09-04)",
     "reason": "DECIDED 2026-09-04 (maintainer-decision-set-2026-09-03.md D3): Julia exploratory surface renamed to loading_profile_exploratory; R's confirmatory loading_profile() (loading-profile.R, gated on fit$lambda_constraint) has no Julia counterpart. Row is needs-surface for a future confirmatory mirror, not a parity defect.",
     "contract": "docs/dev-log/core070/surface-conversion-batch-contract.json (deferred)",
-    "note": "estimand-alignment resolved by rename (option b); Julia-beyond exploratory capability recorded in reverse direction — confirmatory reclassification wording for Shinichi"
+    "note": "estimand-alignment resolved by rename (option b); Julia-beyond exploratory capability recorded in reverse direction \u2014 confirmatory reclassification wording for Shinichi"
    }
   },
   {
