@@ -1,9 +1,32 @@
 name: CI
 on:
+  # Markdown-only changes skip the suite: a docs push otherwise costs a full
+  # 8-shard run (~1 h of runners) to re-prove code it did not touch. GitHub
+  # skips the workflow only when EVERY changed file matches, so a mixed
+  # commit still runs.
+  #
+  # Deliberately NOT `docs/**` — tests read data files from there:
+  # docs/dev-log/core070/frozen-r070-contract.toml
+  # (test_core070_interface_registry.jl, test_core070_covariance_registry.jl,
+  # test_core070_covariance_formula_registry.jl) and
+  # docs/dev-log/core070/binomial-paired-contract.toml
+  # (test_binomial_case_contract.jl). Ignoring docs wholesale would skip CI on
+  # a contract edit that can break the suite. No test reads a .md file.
+  # Documenter.yml has no paths-ignore, so docs/src/*.md still rebuild the site.
+  #
+  # The two lists are written out rather than shared via a YAML anchor:
+  # GitHub Actions does not support anchors/aliases, so `&x` / `*x` would not
+  # resolve.
   push:
     branches: [main]
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
   workflow_dispatch:
     inputs:
       full_matrix:
