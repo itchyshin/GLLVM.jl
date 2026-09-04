@@ -17637,3 +17637,18 @@ existing `zi_poisson`/`zi_nbinom2`/`zi_binomial` (R Arc D); no new R build.
 `true-parity-decision-map.md` Decisions table, `.unlazy/parity-claim-closeout/leaf-s1-decisions/GATES.md`.
 
 **Not claiming:** true parity complete; grouping levels built; ZI Julia↔R paired.
+
+## 2026-09-04 — Post-merge second-order D1 gate (PR #280 / #1268 merged)
+
+**Merge:** GLLVM.jl #280 → `b4447e16`; gllvmTMB #1268 → `1e44d8d2` (squash; drafts marked ready first).
+
+**Second-order gate (D1 each-own, R cond scaling):**
+- Toy archive 20 cells: SE 20/0; vcov 15/0/5 skip; CI 20/0.
+- Local batch-1 smoke post-merge: 5/5.
+- Realistic 24 paired: 22/24 first-order paired; second-order metrics 14/0/8 skip where present.
+
+**Commands:** `run_cell.jl` ×5; python gate on `second-order-batch-out/`; `core070_realistic_size_collect.py`.
+
+**Receipt:** `docs/dev-log/core070/second-order-d1-gate-receipt-2026-09-04.json`, after-task `2026-09-04-second-order-d1-verification-tranche.md`.
+
+**Not claiming:** second-order parity complete; matched-coordinates tier; full toy re-run on merged main.

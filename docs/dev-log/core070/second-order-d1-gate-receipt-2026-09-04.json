@@ -1,0 +1,37 @@
+{
+  "receipt_date": "2026-09-04",
+  "contract": "docs/dev-log/core070/second-order-parity-contract.md",
+  "d1_d2_defaults": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md",
+  "jl_worktree_head": "f873ee69",
+  "post_merge_smoke": {
+    "batch1_cells": ["gaussian", "poisson", "binomial_logit", "beta_logit", "nb2_log"],
+    "batch1_d1_each_own_pass": "5/5",
+    "compute": "local laptop, OPENBLAS/OMP/JULIA_NUM_THREADS=1, ~159s wall for 5 cells"
+  },
+  "toy_20cell_archive": {
+    "source": "docs/dev-log/core070/second-order-batch-out/*.json",
+    "se_d1_pass_fail": "20/0",
+    "vcov_d1_pass_fail_skip": "15/0/5",
+    "ci_d1_pass_fail": "20/0",
+    "vcov_skip_reason": "nb2_log private full-block route lacks T14 boundary conditioning (known from 2026-09-03 batch)"
+  },
+  "realistic_24cell_paired": {
+    "source_collect": "tools/core070_realistic_size_collect.py on docs/dev-log/core070/realistic-size-out/{nibi,totoro}",
+    "paired_julia_r": "24/24",
+    "first_order_paired_loglik_abs_delta_lt_1e-4": "22/24",
+    "mismatched_optima_idx": ["9", "17"],
+    "second_order_metrics_present": "14/24 (gaussian beta-block SE/vcov not in collect output)",
+    "se_d1_pass_fail_skip": "14/0/8",
+    "vcov_d1_pass_fail_skip": "14/0/8",
+    "wald_d1_pass_fail_skip": "14/0/8"
+  },
+  "totoro_cm_socket": false,
+  "remaining": [
+    "Full 20-cell toy re-run on merged main (optional refresh; archive already gates clean under D1)",
+    "Realistic grid idx 9 and 17: divergent local optima — first-order pairing failure, not tolerance",
+    "Matched-coordinates diagnostic tier (contract §4) not implemented in drivers",
+    "Contract §6 holdouts: Student-t, GP-1, cloglog/Tweedie disputed defaults, ordinal per-trait CI, delta families",
+    "Realistic-size gaussian second-order β-block pairing in collect script (vcov_rel_frobenius_beta currently NaN)"
+  ],
+  "goal_complete_second_order_objective": false
+}
