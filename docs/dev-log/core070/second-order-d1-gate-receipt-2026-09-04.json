@@ -4,7 +4,13 @@
   "d1_d2_defaults": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md",
   "jl_worktree_head": "f873ee69",
   "post_merge_smoke": {
-    "batch1_cells": ["gaussian", "poisson", "binomial_logit", "beta_logit", "nb2_log"],
+    "batch1_cells": [
+      "gaussian",
+      "poisson",
+      "binomial_logit",
+      "beta_logit",
+      "nb2_log"
+    ],
     "batch1_d1_each_own_pass": "5/5",
     "compute": "local laptop, OPENBLAS/OMP/JULIA_NUM_THREADS=1, ~159s wall for 5 cells"
   },
@@ -19,7 +25,10 @@
     "source_collect": "tools/core070_realistic_size_collect.py on docs/dev-log/core070/realistic-size-out/{nibi,totoro}",
     "paired_julia_r": "24/24",
     "first_order_paired_loglik_abs_delta_lt_1e-4": "22/24",
-    "mismatched_optima_idx": ["9", "17"],
+    "mismatched_optima_idx": [
+      "9",
+      "17"
+    ],
     "second_order_metrics_present": "14/24 (gaussian beta-block SE/vcov not in collect output)",
     "se_d1_pass_fail_skip": "14/0/8",
     "vcov_d1_pass_fail_skip": "14/0/8",
@@ -27,11 +36,32 @@
   },
   "totoro_cm_socket": false,
   "remaining": [
-    "Full 20-cell toy re-run on merged main (optional refresh; archive already gates clean under D1)",
-    "Realistic grid idx 9 and 17: divergent local optima — first-order pairing failure, not tolerance",
-    "Matched-coordinates diagnostic tier (contract §4) not implemented in drivers",
-    "Contract §6 holdouts: Student-t, GP-1, cloglog/Tweedie disputed defaults, ordinal per-trait CI, delta families",
-    "Realistic-size gaussian second-order β-block pairing in collect script (vcov_rel_frobenius_beta currently NaN)"
+    "Re-run R for realistic idx 9/17 with correct Julia CSV",
+    "Matched-coordinates diagnostic tier (\u03b8 packing map)",
+    "Gaussian realistic trait-intercept SE alignment (estimand gap)",
+    "Contract \u00a76 holdout families (API gaps + disputed defaults)",
+    "Programme-level second-order parity claim (contract \u00a77)"
   ],
-  "goal_complete_second_order_objective": false
+  "goal_complete_second_order_objective": false,
+  "merged_tip_refresh_2026-09-04": {
+    "jl_head": "f873ee69",
+    "post_pr280_merge_includes": "b4447e16",
+    "out_dir": "docs/dev-log/core070/second-order-batch-out-20260904-merged-tip",
+    "cells": 20,
+    "se_d1_pass_fail": "20/0",
+    "vcov_d1_pass_fail_skip": "16/0/4",
+    "ci_d1_pass_fail": "20/0",
+    "compute": "local sequential, ~602s wall, OPENBLAS/OMP/JULIA_NUM_THREADS=1"
+  },
+  "realistic_idx_9_17": {
+    "disposition": "wrong_r_seed_in_archive",
+    "doc": "docs/dev-log/core070/realistic-size-pairing-disposition-2026-09-04.md",
+    "first_order_paired_excluding_mismatch": "22/24"
+  },
+  "matched_coordinates_tier": {
+    "status": "not_implemented",
+    "doc": "docs/dev-log/core070/second-order-matched-coordinates-2026-09-04.md"
+  },
+  "holdouts_doc": "docs/dev-log/core070/second-order-holdouts-2026-09-04.md",
+  "collector_patch": "tools/core070_realistic_size_collect.py seed_match + gaussian notes"
 }

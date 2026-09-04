@@ -213,7 +213,7 @@ Concrete end state:
 | # | Slice | Output | Status |
 |---|---|---|---|
 | S1 | Sign + commit second-order contract | `second-order-parity-contract.md` DEFAULTED | **done** 2026-09-04 |
-| S1b | D1 gate existing + post-merge smoke | `second-order-d1-gate-receipt-2026-09-04.json` | **partial** 2026-09-04 — archive+gates pass; full refresh + matched-coords open |
+| S1b | D1 gate + merged-tip 20-cell refresh | `second-order-d1-gate-receipt-2026-09-04.json` + `second-order-batch-out-20260904-merged-tip/` | **partial** 2026-09-04 — 20/0 SE on merged tip; idx 9/17 R seed fix + matched-coords + §6 holdouts open |
 | S2 | Implement `--r-ref` | R `parity_ledger.R` + CLOSURE receipt | **done** 2026-09-04 |
 | S3 | D4 AGHQ disposition batch | 8 reclassify + 14 bind receipts | **done** 2026-09-04 (`t8-aghq-public-policy-bind-receipt-2026-09-04.md`) |
 | S4 | D5/D6 grouping design doc | `t12-grouping-levels-design.md` D5 defaulted | **partial** — D6 relay OPEN |

@@ -17652,3 +17652,18 @@ existing `zi_poisson`/`zi_nbinom2`/`zi_binomial` (R Arc D); no new R build.
 **Receipt:** `docs/dev-log/core070/second-order-d1-gate-receipt-2026-09-04.json`, after-task `2026-09-04-second-order-d1-verification-tranche.md`.
 
 **Not claiming:** second-order parity complete; matched-coordinates tier; full toy re-run on merged main.
+
+## 2026-09-04 — Second-order tranche 2 (merged-tip refresh + dispositions)
+
+**20-cell refresh:** `second-order-batch-out-20260904-merged-tip/` on post-#280 merge;
+D1 gate SE 20/0, vcov 16/0/4 skip, CI 20/0 (~602s local sequential).
+
+**Realistic idx 9/17:** R archive seed mismatch (1002 vs 1009; 1003 vs 1017) — not optima
+divergence; `realistic-size-pairing-disposition-2026-09-04.md`.
+
+**Collector:** `core070_realistic_size_collect.py` adds `seed_match`, pairing disposition,
+gaussian estimand note.
+
+**Matched-coordinates:** not implemented; `second-order-matched-coordinates-2026-09-04.md`.
+
+**Holdouts:** `second-order-holdouts-2026-09-04.md` (contract §6).

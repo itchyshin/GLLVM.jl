@@ -62,3 +62,10 @@ paired optima agree; **not** a programme-level second-order parity claim (contra
 
 - **Fisher:** tolerance tier applied with R-side cond(H) scaling (D2).
 - **Rose:** merge CI caveats recorded; no "second-order parity complete" wording added.
+
+## Addendum (same day, tranche 2)
+
+- Full **20/20** toy cells re-run locally on merged tip → D1 **20/0** SE, **16/0/4** vcov skip, **20/0** CI.
+- idx **9** & **17**: wrong R seed in archived Totoro outputs (disposition doc); exclude from paired tally until R re-run.
+- Matched-coordinates tier documented as **not implemented** (θ-packing map required).
+- §6 holdouts consolidated in `second-order-holdouts-2026-09-04.md`.
