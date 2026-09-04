@@ -59,7 +59,7 @@ Everything else waits. Do **not** treat “~5 core-h” as the whole job — har
 |---|---|
 | **`devtools::load_all` never proven here** | Trap #1 — tests may have run against installed package, not this worktree |
 | **Coverage harness not built** | `ordination_uncertainty()` does not return latent scores in coverage-comparison form; prior lane **>15 min source archaeology, zero fits** |
-| **No real fit executed in this session** | D-220 Cell-1 not yet receipted in LOOP/checkpoint |
+| **Capability proof (step 5)** | **DONE** 2026-09-04 — `load_all` 29.8 s + one `gllvmTMB_wide` fit; receipt `gllvmTMB` twin `docs/dev-log/recovery-checkpoints/2026-09-04-cursor-capability-proof.md` (harness/arcG Cell-1 still pending) |
 | **arcG campaign never dispatched** | Prior lane prepared locally only; **no partial Totoro results** — operational gap, not engine parity gap |
 | **Paired R↔Julia cell not run here** | Julia harness exists (`test/parity/`); not required for arcG but still owed for full twin-bridge proof |
 
@@ -293,10 +293,12 @@ Shinichi G0 on **this plan** unlocks:
 | Action | Allowed | Notes |
 |---|---|---|
 | `git merge origin/main` on R twin | ✅ **DONE** | `5784dab65` (2026-09-04) |
-| `devtools::load_all` + Cell-1 real fit | ✅ | Local laptop OK |
+| `devtools::load_all` + capability proof (step 5) | ✅ **DONE** | 2026-09-04 — 29.8 s compile + 1.0 s fit; conv=0; accessor deferred |
+| `devtools::load_all` + Cell-1 real fit (arcG harness) | ⏳ | After harness slice |
 | Coverage harness design (local) | ✅ | Unbounded local prep; prior lane >15 min, zero fits |
 | Totoro arcG dispatch via ControlMaster | ✅ | **Campaign authorized** — ≤150 cores; ~5.0 core-h ceiling **for fits only** |
-| Public accessor on `ordination_uncertainty()` | ⚠️ | **G0 gate #6 only** — public-API change |
+| Public accessor `extract_latent_scores()` | ✅ **DONE** | 2026-09-04 — Shinichi G0 gate #6; design note implemented |
+| Public accessor on `ordination_uncertainty()` | ✅ **DONE** | Separate export `extract_latent_scores()` (not `ordination_uncertainty()` API change) |
 | Edit `LOOP/*` both repos | ✅ | |
 | Append `docs/dev-log/check-log.md` | ✅ | Stage by path |
 | Write under `dev/gapclose/arcG/` | ✅ | Results contract |
@@ -320,7 +322,7 @@ Shinichi G0 on **this plan** unlocks:
 3. **Foreign R lanes (21 live)** — confirm twin proceeds in worktree without touching them  
 4. **`--r-ref` joint contract** — approve implementation spec **after** campaign (handover §4)  
 5. **Core070 D1–D2, D4–D6** — unsigned; **D3 DONE** (2026-09-04: `loading_profile_exploratory` rename + ledger reclass)  
-6. **Latent-score path: reimplement-local vs public accessor** — `ordination_uncertainty()` does not return scores in coverage-comparison form; reimplementing extraction locally in campaign scripts is the expected default; a small public accessor is cleaner but is a **public-API change** — which route for this lane?
+6. **Latent-score path: reimplement-local vs public accessor** — ✅ **DONE 2026-09-04** — Shinichi locked **accessor — go**; `extract_latent_scores()` implemented in R twin worktree.
 
 ---
 
