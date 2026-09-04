@@ -88,6 +88,19 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **HANDED OVER to a single Cursor lane holding BOTH repos (2026-09-04).** GLLVM.jl `main`
+  `4d57cb29` (CI 8/8 shards + Documenter green, 0 open PRs); gllvmTMB `main` `72ed68b5`
+  (R-CMD-check green). Both lanes reported ready, nothing in flight. The move follows the
+  H² twin pattern (one orchestrator chat, multi-root workspace). Two invariants get WEAKER
+  under one lane and need a mechanical guard, not prose: the gllvmTMB read-only-reference
+  boundary, and the frozen oracle `b4d5fee6` — see the handover §3/§4 and the verified
+  `parity_ledger.R` ref asymmetry (vault `D-220` caveat 1). Confirmed directly by Shinichi
+  to both lanes as **`D-220`**, which also rules that campaigns move with the lane but keep
+  running on Totoro (ControlMaster socket, 150-core cap, D-139 estimates). Six maintainer
+  decisions still open.
+  **START HERE: docs/dev-log/handover/2026-09-04-cursor-handover.md**
+  (sibling lane's own handover: gllvmTMB `docs/dev-log/handover/2026-09-03-claude-handover.md`)
+
 - **Core 0.7.0 + AGHQ: MERGED to `main` (2026-09-03) as `2524b787`.**
   PR #277 merged with a merge commit (history preserved); lane branch
   `codex/core070-aghq-20260830` deleted — resume commands naming it in older
