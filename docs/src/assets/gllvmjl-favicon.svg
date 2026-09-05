@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
   <title id="title">GLLVM.jl favicon</title>
   <desc id="desc">A rounded hexagonal badge with a shared latent curve across a response grid.</desc>
-  <path d="M64 5 113 33Q118 36 118 42V86Q118 92 113 95L69 123Q64 126 59 123L15 95Q10 92 10 86V42Q10 36 15 33L59 5Q64 2 69 5Z" fill="#0B1F3A"/>
-  <path d="M64 10 109 36Q113 38 113 43V85Q113 90 109 92L68 118Q64 120 60 118L19 92Q15 90 15 85V43Q15 38 19 36L60 10Q64 8 68 10Z" fill="none" stroke="#9558B2" stroke-width="3"/>
+  <path d="M64 5 118 36V92L64 123 10 92V36Z" fill="#0B1F3A"/>
+  <path d="M64 10 113 38V90L64 118 15 90V38Z" fill="none" stroke="#9558B2" stroke-linejoin="round" stroke-width="3"/>
   <g stroke="#B8C8E4" stroke-linecap="round" stroke-width="3" opacity=".78"><path d="M38 35V91"/><path d="M64 25V103"/><path d="M90 35V91"/></g>
   <path d="M28 79C47 79 48 49 64 49S80 79 100 79" fill="none" stroke="#9558B2" stroke-linecap="round" stroke-width="7"/>
   <circle cx="38" cy="66" r="5" fill="#CB3C33"/><circle cx="64" cy="49" r="8" fill="#F7F9FC" stroke="#CB3C33" stroke-width="4"/><circle cx="90" cy="66" r="5" fill="#389826"/>

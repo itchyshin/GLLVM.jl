@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
   <title id="title">GLLVM.jl response structure mark</title>
   <desc id="desc">A rounded hexagonal badge containing a response grid and a curved latent axis.</desc>
-  <path d="M256 20 448 132Q464 141 464 160V352Q464 371 448 380L272 492Q256 502 240 492L64 380Q48 371 48 352V160Q48 141 64 132L240 20Q256 10 272 20Z" fill="#0B1F3A"/>
-  <path d="M256 35 435 140Q448 147 448 162V350Q448 365 435 372L269 477Q256 485 243 477L77 372Q64 365 64 350V162Q64 147 77 140L243 35Q256 27 269 35Z" fill="none" stroke="#9558B2" stroke-width="11"/>
+  <path d="M256 20 464 140V372L256 492 48 372V140Z" fill="#0B1F3A"/>
+  <path d="M256 35 448 147V365L256 477 64 365V147Z" fill="none" stroke="#9558B2" stroke-linejoin="round" stroke-width="11"/>
   <g stroke="#B8C8E4" stroke-linecap="round" stroke-width="9" opacity=".72">
     <path d="M154 156V356"/><path d="M222 126V386"/><path d="M290 126V386"/><path d="M358 156V356"/>
   </g>

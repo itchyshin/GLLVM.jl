@@ -54,9 +54,12 @@ rsvg-convert --output /private/tmp/gllvmjl-mark-preview.png --width 512 --height
 julia --project=docs docs/make.jl --local
 ```
 
-The SVGs parse and the 512 px visual render was inspected. The local docs build
-completed successfully, including DocumenterVitepress page rendering. It
-explicitly skipped deployment in the local environment.
+The SVGs parse and the 512 px visual render was inspected. A visible top-point
+artifact in the first GLLVM hex construction was corrected by replacing the
+rounded closure with a continuous six-sided path, then regenerating the PNG and
+ICO derivatives. The local docs build completed successfully, including
+DocumenterVitepress page rendering. It explicitly skipped deployment in the
+local environment.
 
 ## 8. Accessibility and responsive check
 
