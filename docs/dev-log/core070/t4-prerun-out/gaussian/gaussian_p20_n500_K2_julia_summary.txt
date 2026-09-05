@@ -1,0 +1,10 @@
+family=gaussian
+p=20 n=500 K=2 seed=42
+converged=true
+logLik=-11511.897471698081
+wall_fit_sec=10.010921955108643
+pd_hessian=true
+wall_confint_sec=6.548720121383667
+dispersion_boundary=NA (Gaussian has no grouped dispersion)
+boundary_terms=
+cond_H=438.2387363088278

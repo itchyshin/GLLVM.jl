@@ -18,6 +18,29 @@ gh pr view 294 --repo itchyshin/GLLVM.jl --json mergeStateStatus,isDraft
 
 ---
 
+## 2026-09-05 — T4 Totoro pre-run programme (Gaussian cell 1/3)
+
+Multi-day plan + compute-go launch for P6 pre-run cell 1 (Gaussian p=20 n=500 K=2 seed=42).
+**NOT** true-parity claim; **NOT** 12-cell grid.
+
+**Deliverables:**
+- `docs/dev-log/plans/2026-09-05-totoro-t4-prerun-programme.md`
+- `.unlazy/totoro-t4-prerun/GATES.md`
+- `tools/t4_totoro_gaussian_prerun.sh` (on main via #295)
+- `docs/dev-log/after-task/2026-09-05-totoro-t4-prerun.md`
+
+**Sync:** main @ `47d35d70` (#294 `cffd5c8f` + #295 merged).
+
+**Launch:** COMPLETE 2026-09-05 — Gaussian receipt PASS (`t4-prerun-gaussian-receipt-2026-09-05.json`); seff ~47 s total; G1 unlocks Poisson.
+
+```sh
+GLLVM_TOTORO_LAUNCH=1 tools/t4_totoro_gaussian_prerun.sh 2>&1 | tee logs/t4-gaussian-prerun-launch-*.log
+```
+
+Branch: `cursor/totoro-t4-prerun-20260905`. Gate: Poisson/NB2 only after Gaussian receipt PASS.
+
+---
+
 ## 2026-09-05 — TRUE PARITY ultra-plan (Phase 0–2, STOP AT G0)
 
 Multi-month programme plan + programme decision map + wayfinder ladder.
