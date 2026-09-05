@@ -10,7 +10,7 @@
   "tier": "each-own-optimum",
   "host": "totoro.biology.ualberta.ca",
   "oracle": "gllvmTMB 0.7.0 @ b4d5fee64def88bc768dda1f1f77c29b295edd86",
-  "git_head": "536bb26b",
+  "git_head": "8c3d7de3",
   "receipt_date": "2026-09-05",
   "launch_log": "logs/t4-p6-grid-launch-20260905-1353.log",
   "remote_base": "/home/snakagaw/core070-aghq-20260830/t4-p6-grid-01/repo",
