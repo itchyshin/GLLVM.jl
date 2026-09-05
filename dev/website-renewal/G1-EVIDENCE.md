@@ -19,7 +19,9 @@ The companion gllvmTMB evidence record is
   worktree, `julia --project=docs docs/make.jl --local` rendered the new
   VitePress landing page with its hero actions, feature cards, Skip to content
   link, and retained orientation/partial-parity boundaries.
+- native Firefox opened that local output and exposed the desktop navigation,
+  Skip to content link, mobile-navigation control, all three hero actions,
+  feature cards, and retained scope warnings.
 
-The 1440/768/390 screenshot, keyboard/focus, reduced-motion, and overflow
-checks remain open: the controlled browser blocks local `file://` pages.
-No bypass, deployment, or publication was attempted.
+The 1440/768/390 screenshot, full keyboard/focus traversal, reduced-motion,
+and overflow checks remain open. No deployment or publication was attempted.
