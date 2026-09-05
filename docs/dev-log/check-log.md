@@ -17844,6 +17844,16 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - Updated `second-order-matched-coordinates-2026-09-04.md` disposition.
 - **Not claiming:** programme §7; full batch-1 matched tier (2/5 blocked).
 
+## 2026-09-05 — TRUE PARITY map-clearance M0-1…M0-10 (integrator closeout)
+
+- Branch `cursor/true-parity-map-clearance-20260905`; worktree `GLLVM.jl-gllvm-twin-20260904`.
+- Commits on branch: `407e4a69` M0-1/2/7/9 spine; `bc1a9e15` M0-6 phylo; `5868d0b3` M0-3/4/5; `56cc491c` M0-8 AGHQ defer; integrator closeout (programme map + M0-10 Rose).
+- Programme map: P3 PROPOSED (42 rows), P5 research-scheduled, P6/P7 Ada-defaults, P8 AGHQ defer, P10 phylo Ada-default — **map cleared** with owner sign-offs listed.
+- Rose M0-10: **OK-with-owner-signoffs** — no contradictions vs `true-parity-decision-map.md` or G0 locks.
+- After-task: `docs/dev-log/after-task/2026-09-05-true-parity-map-clearance.md`.
+- Unlazy: `.unlazy/true-parity-programme/GATES.md` G14–G18 added.
+- **Not claiming:** v0.true-parity; signed gate-tier; θ-map outcome; true-parity public claim.
+
 ## 2026-09-05 — Option D twin-trust bundle verification
 
 - **#281 MERGED** @ `51e43a4a` (D1 gate receipt post-#280).
