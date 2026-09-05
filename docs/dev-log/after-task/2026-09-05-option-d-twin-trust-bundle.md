@@ -11,10 +11,10 @@ contract §7 programme completion.
 | # | Item | Status | Evidence | Object counts |
 |---|---|---|---|---|
 | 1 | Merge #281 | **PASS** | [PR #281](https://github.com/itchyshin/GLLVM.jl/pull/281) MERGED @ `51e43a4a` (2026-09-05T11:15:00Z) | D1 gate receipt on post-#280 tip |
-| 2 | §6 holdouts disposition | **PASS** | [PR #282](https://github.com/itchyshin/GLLVM.jl/pull/282) draft | OUT **9** / PARTIAL **3** / NOT ATTEMPTED **1** |
-| 3 | Advisory R smoke (0.7.1) | **PASS** | [PR #284](https://github.com/itchyshin/GLLVM.jl/pull/284) draft | **15** PASS / **3** FAIL / **18** total |
-| 4 | Matched-coords batch-1 pilot | **PASS** | [PR #285](https://github.com/itchyshin/GLLVM.jl/pull/285) draft | **3** pass / **0** fail / **2** blocked / **0** skip |
-| 5 | Rose claim hygiene | **PASS** | [PR #283](https://github.com/itchyshin/GLLVM.jl/pull/283) draft | 8 surfaces corrected (companion framing) |
+| 2 | §6 holdouts disposition | **PASS** | [PR #282](https://github.com/itchyshin/GLLVM.jl/pull/282) MERGED | OUT **8** / PARTIAL **3** / NOT ATTEMPTED **1** (reconciled PR #282 @ `563f84b1`) |
+| 3 | Advisory R smoke (0.7.1) | **PASS** | [PR #284](https://github.com/itchyshin/GLLVM.jl/pull/284) MERGED @ `6499112c` | **15** PASS / **3** FAIL / **18** total |
+| 4 | Matched-coords batch-1 pilot | **PASS** | [PR #285](https://github.com/itchyshin/GLLVM.jl/pull/285) MERGED @ `987c293d` | **3** pass / **0** fail / **2** blocked / **0** skip |
+| 5 | Rose claim hygiene | **PASS** | [PR #283](https://github.com/itchyshin/GLLVM.jl/pull/283) MERGED @ `bf8c3c05` | 8 surfaces corrected (companion framing) |
 
 ## Receipt paths (authoritative)
 
@@ -62,7 +62,6 @@ python3 -c "import json; d=json.load(open('docs/dev-log/core070/second-order-mat
 ## Outcome
 
 **Option D twin-trust verification: GOAL_COMPLETE yes** for the five scoped deliverables,
-with all evidence on open draft PRs (#282–#285) or merged main (#281). Maintainer review
-and merge of draft PRs is the next step; this bundle does not authorize merge.
+with #281–#285 merged on main; #286 closes the bundle record.
 
 Branch: `cursor/option-d-twin-trust-bundle-20260905`.
