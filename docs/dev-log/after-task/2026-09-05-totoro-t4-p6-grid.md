@@ -1,6 +1,6 @@
 # After-task: T4 P6 12-cell Totoro grid (2026-09-05)
 
-**Status:** IN PROGRESS — grid launched 2026-09-05 13:53 MDT; 4/12 cells DONE (poll @ 13:56).  
+**Status:** IN PROGRESS — grid launched 2026-09-05 13:53 MDT; 5/12 cells DONE (poll @ 13:57).  
 **Branch:** `cursor/totoro-t4-p6-grid-20260905`  
 **Worktree:** `/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904`  
 **Authority:** Shinichi G0 2026-09-05 (12-cell P6 grid); plan `docs/dev-log/plans/2026-09-05-totoro-t4-prerun-programme.md`  
@@ -20,7 +20,7 @@ Totoro parallel (8-way). Output under `docs/dev-log/core070/t4-grid-out/`.
 - [x] Sibling: Totoro launch + poll loop (launch log `logs/t4-p6-grid-launch-20260905-1353.log`)
 - [ ] Sibling: `.unlazy/totoro-t4-p6-grid/GATES.md` (12 leaves)
 - [ ] Sibling: plan appendix (measured seff vs estimate)
-- [ ] 12/12 cell receipts committed (4/12 PASS committed @ 59208010 + poisson pending commit)
+- [ ] 12/12 cell receipts committed (5/12 PASS committed; Gaussian arm complete)
 - [ ] check-log entry
 - [ ] Rose read-only on receipt prose (no true-parity wording)
 
@@ -31,7 +31,7 @@ Totoro parallel (8-way). Output under `docs/dev-log/core070/t4-grid-out/`.
 | 1 | gaussian | 20 | 500 | **PASS** | `t4-p6-gaussian-p20-n500-K2-receipt-2026-09-05.json` |
 | 2 | gaussian | 20 | 2000 | **PASS** | `t4-p6-gaussian-p20-n2000-K2-receipt-2026-09-05.json` |
 | 3 | gaussian | 50 | 500 | **PASS** | `t4-p6-gaussian-p50-n500-K2-receipt-2026-09-05.json` |
-| 4 | gaussian | 50 | 2000 | running | — |
+| 4 | gaussian | 50 | 2000 | **PASS** | `t4-p6-gaussian-p50-n2000-K2-receipt-2026-09-05.json` |
 | 5 | poisson | 20 | 500 | **PASS** | `t4-p6-poisson-p20-n500-K2-receipt-2026-09-05.json` (pull @ 13:55) |
 | 6 | poisson | 20 | 2000 | running | — |
 | 7 | poisson | 50 | 500 | running | — |
