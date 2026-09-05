@@ -1,3 +1,25 @@
+## 2026-09-05 — T4 Totoro pre-run programme COMPLETE (NB2 G3 PASS)
+
+Branch `cursor/totoro-t4-prerun-20260905` @ tip after commit. Three-family pre-run slice done.
+
+**NB2 cell 3/3:**
+- Launcher: `tools/t4_totoro_nb2_prerun.sh` (`GLLVM_TOTORO_LAUNCH=1`)
+- Log: `logs/t4-nb2-prerun-launch-20260905-1330.log`
+- Receipt: `docs/dev-log/core070/t4-prerun-nb2-receipt-2026-09-05.{json,md}` — **PASS**
+- seff: ~306 s total; Julia fit 95.2 s; confint 99.0 s; R 15.9 s
+- vcov_fro_rel 1.25e-5; max_rel_dSE 7.89e-6; no boundary NaN vcov
+- G3 PASS → G4 re-estimate written in `.unlazy/totoro-t4-prerun/GATES.md`
+- **12-cell P6 grid NOT launched** (needs Shinichi G0)
+
+**Prior cells:** Gaussian G1 PASS (~47 s); Poisson G2 PASS (~107 s).
+
+```sh
+git log -1 --oneline cursor/totoro-t4-prerun-20260905
+ls docs/dev-log/core070/t4-prerun-*-receipt-2026-09-05.json
+```
+
+---
+
 ## 2026-09-05 — M2 Foundation day-2 closeout (integrator, PARTIAL)
 
 Integrator slice on `cursor/m2-foundation-day2-20260905` @ `b451ce8d`. B/C/D done
@@ -15,6 +37,29 @@ After-task: `docs/dev-log/after-task/2026-09-05-m2-foundation-day2.md`.
 gh run view 33979515590 --repo itchyshin/GLLVM.jl --json conclusion,mergeStateStatus
 gh pr view 294 --repo itchyshin/GLLVM.jl --json mergeStateStatus,isDraft
 ```
+
+---
+
+## 2026-09-05 — T4 Totoro pre-run programme (Gaussian cell 1/3)
+
+Multi-day plan + compute-go launch for P6 pre-run cell 1 (Gaussian p=20 n=500 K=2 seed=42).
+**NOT** true-parity claim; **NOT** 12-cell grid.
+
+**Deliverables:**
+- `docs/dev-log/plans/2026-09-05-totoro-t4-prerun-programme.md`
+- `.unlazy/totoro-t4-prerun/GATES.md`
+- `tools/t4_totoro_gaussian_prerun.sh` (on main via #295)
+- `docs/dev-log/after-task/2026-09-05-totoro-t4-prerun.md`
+
+**Sync:** main @ `47d35d70` (#294 `cffd5c8f` + #295 merged).
+
+**Launch:** COMPLETE 2026-09-05 — Gaussian receipt PASS (`t4-prerun-gaussian-receipt-2026-09-05.json`); seff ~47 s total; G1 unlocks Poisson.
+
+```sh
+GLLVM_TOTORO_LAUNCH=1 tools/t4_totoro_gaussian_prerun.sh 2>&1 | tee logs/t4-gaussian-prerun-launch-*.log
+```
+
+Branch: `cursor/totoro-t4-prerun-20260905`. Gate: Poisson/NB2 only after Gaussian receipt PASS.
 
 ---
 
@@ -17891,7 +17936,19 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - Bundle after-task: `2026-09-05-option-d-twin-trust-bundle.md`.
 - **Not claiming:** true parity; contract §7 programme complete; 0.7.1 full surface port.
 
-## 2026-09-05 — M2 Foundation day-1 (integrator: D-220 + Gaussian 2SO smoke)
+## 2026-09-05 — T4 Totoro pre-run Poisson cell 2/3 (G2 PASS)
+
+- Branch `cursor/totoro-t4-prerun-20260905` @ worktree `GLLVM.jl-gllvm-twin-20260904`.
+- **G1→G2 gate crossed:** Gaussian receipt PASS; Poisson queued per Ada default.
+- Launcher: `tools/t4_totoro_poisson_prerun.sh` (new).
+- Launch: `GLLVM_TOTORO_LAUNCH=1 tools/t4_totoro_poisson_prerun.sh` → **COMPLETE**.
+- Log: `logs/t4-poisson-prerun-launch-20260905-1312.log`.
+- Receipt: `docs/dev-log/core070/t4-prerun-poisson-receipt-2026-09-05.{json,md}`.
+- **G2 PASS:** logLik Δ 2.59e-7; vcov_fro_rel 1.59e-5; max_rel_dSE 5.94e-6; seff total ~107 s
+  (Julia confint 45.9 s — Laplace mode solve).
+- **Not launched:** NB2 cell 3/3; 12-cell P6 grid.
+- **Not claiming:** true-parity; gate-tier promotion.
+
 
 - Branch `cursor/m2-foundation-day1-20260905` from `origin/main` @ `ede4e2d7`.
 - **D-220:** `tools/d220_paired_gaussian_cell.jl` → PASS (ΔlogLik 4.13e-9, first_order_pass true).
