@@ -33,8 +33,12 @@ only as a **5-cell toy pre-run** on those same families
 (`docs/dev-log/core070/second-order-prerun-2026-09-02.md`) — explicitly *not
 a parity claim*, no tolerance asserted or gated. **Realistic-size cells**
 (p ≥ 20, n ≥ 500) carry no receipts of either order yet. **Interval
-*coverage* is not part of parity** — it is a separate, Julia-only
-certification (the DRAC coverage campaign), not an R↔Julia comparison.
+*coverage* is not part of parity** — it is a separate Julia-only diagnostic
+programme (the DRAC / arcG coverage grids). Empirical undercoverage there is
+**evidence**, not a calibrated-coverage certificate and not an R↔Julia
+comparison. R's own 0.7.1 interval claim is three pinned Wald cells only;
+gllvmTMB withdrew the old total-variance “0.94 coverage floor” wording
+(`gllvmtmb-071-gap-sheet.md` §Class-2).
 
 The qualification claim itself is **one-directional**: R workflows against
 Julia, at the frozen `gllvmTMB` 0.7.0 oracle

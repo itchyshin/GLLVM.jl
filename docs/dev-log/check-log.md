@@ -1,3 +1,29 @@
+## 2026-09-05 — Option D Rose claim hygiene (parallel slice)
+
+Rose scan on user-facing prose; surgical doc edits only. Did not touch #281
+merge, §6 holdouts, or advisory R smoke scripts.
+
+**Corrected:** "digital twin"/"complete bridge" overclaims → companion + narrow
+bridge + true-parity map; "machine precision" on R benchmark headline → six
+significant digits; arcG Wald 0.932–0.958 → undercoverage evidence not
+calibration; DRAC/arcG "certification" → diagnostic programme; 0.7.1 withdrew
+total-variance "0.94 coverage floor" (gap sheet §Class-2).
+
+**Files:** `AGENTS.md`, `CLAUDE.md`, `docs/src/roadmap.md`,
+`docs/src/gllvmtmb-parity.md`, `docs/src/index.md`,
+`docs/design/capability-status.md`,
+`docs/dev-log/after-task/2026-09-05-option-d-rose-claim-hygiene.md`.
+
+**Verify:**
+```sh
+rg -n "0\.94 coverage|coverage floor|true parity complete|full twin|0\.7\.1 feature parity|parity and beyond" \
+  AGENTS.md CLAUDE.md docs/src/roadmap.md docs/src/gllvmtmb-parity.md docs/src/index.md docs/design/capability-status.md
+```
+
+Branch: `cursor/option-d-rose-hygiene-20260905` (twin worktree).
+
+---
+
 ## 2026-09-03 — Core 0.7.0 + AGHQ parity programme merged to main
 
 PR #277 merged as `2524b787` with a **merge commit**, not a squash: the dev-log

@@ -220,6 +220,7 @@ zero-truncated Poisson (Identity 2026-08-15; twin fid 10; engine+admit; **bridge
 | Profile-likelihood intervals | implemented |
 | Parametric bootstrap intervals | implemented |
 | Simulation-validated coverage certificate (broad grid) | missing |
+| Julia-only arcG / DRAC Wald coverage diagnostics | partial |
 | Light gllvmTMB logLik named routes (63/63) | implemented |
 | Shared-X light logLik Gauss/Bin/Pois (18/18) | implemented |
 | ML default (Gaussian closed-form / non-Gaussian Laplace) | implemented |
@@ -227,7 +228,11 @@ zero-truncated Poisson (Identity 2026-08-15; twin fid 10; engine+admit; **bridge
 | AGHQ estimator | missing |
 | VA / ELBO alternative (selected families; not R-default) | implemented |
 
-Notes (not status rows): Gaussian REML is promoted on `src/reml.jl`
+Notes (not status rows): the arcG / DRAC Wald coverage rows (e.g. 0.932–0.958
+across 20 diagnostic cells) record **undercoverage evidence** on Julia's dense
+path — not a production coverage certificate and not R's withdrawn 0.7.0
+total-variance “0.94 floor” claim (0.7.1: three Wald cells only; gap sheet
+§Class-2). Gaussian REML is promoted on `src/reml.jl`
 (`gaussian_reml_loglik`, `fit_gaussian_reml`) + the bridge `reml=true` route +
 `test/test_reml.jl` (dense-oracle criterion at rtol 1e-8, FD gradient ≤ 1e-6,
 span-of-`X` invariance, recovery, bridge route). Twin admits a Gaussian-only

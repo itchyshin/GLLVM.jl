@@ -1,9 +1,12 @@
 # Roadmap
 
-GLLVM.jl is being built as a fast Julia **digital twin of
-[`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/)**: the same model syntax,
-usable directly in Julia and (in the future) through R, across all response
-families. The live, detailed roadmap — with linked issues — is tracked on
+GLLVM.jl is being built as a fast Julia **companion to
+[`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/)**: the same core estimands
+where paired, usable directly in Julia and through a **narrow** R bridge
+(`engine = "julia"`). Core070 ledger closure (FREE=0) is spreadsheet accounting,
+not true parity — see [Capability parity](gllvmtmb-parity.md). A full 0.7.1
+surface port (column_coef, slopes, formula grid) is out of scope unless a new
+arc opens it. The live, detailed roadmap — with linked issues — is tracked on
 GitHub:
 
 ➡️ **[GLLVM.jl roadmap (issue #11)](https://github.com/itchyshin/GLLVM.jl/issues/11)**
@@ -21,7 +24,7 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
 | **v0.2.0** | Gaussian complete | closed-form marginal, O(p) phylogenetic fitter, post-fit tools, this docs site |
 | **v0.3.0** | Non-Gaussian catch-up | one-part Laplace families, first two-part fitters, analytic-gradient hardening |
 | **v0.4.0** | Interface and bridge catch-up | `@formula` front-end, wide/long parity, gllvmTMB-mirroring tutorials, live `gllvmTMB` bridge gates |
-| **v1.0** | Full digital twin | extractor / ordination / diagnostic parity, structured non-Gaussian dependence, complete R bridge coverage for supported models |
+| **v1.0** | True-parity milestone (aspirational) | Meets `true-parity-decision-map.md` against frozen gllvmTMB 0.7.0 — second-order receipts, realistic-size cells, real-data workflows, grouping-level pairing; **not** merely ledger FREE=0 or “complete bridge” for every R row |
 
 ## What works today
 
