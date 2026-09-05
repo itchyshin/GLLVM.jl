@@ -1,3 +1,7 @@
+## 2026-09-05 — T4 P6 after-task: explicit Next step
+
+- Appended **Next step** to `docs/dev-log/after-task/2026-09-05-totoro-t4-p6-grid.md` (review #297 when green; no further cells / no true-parity claim; G4 under-estimate; return to true-parity M2/θ-map). No merge of #297.
+
 ## 2026-09-05 — T4 P6 grid closeout 12/12 (integrator)
 
 - Branch `cursor/totoro-t4-p6-grid-20260905` @ tip after sibling `cd1ab320` (nb2 p50 n2000 receipt).

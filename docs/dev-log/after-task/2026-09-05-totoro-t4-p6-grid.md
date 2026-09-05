@@ -106,3 +106,10 @@ Parallel wall on Totoro was launch-to-last-receipt (8-way), not equal to the ser
 
 - **Ada:** integrator closeout — 12/12 PASS + seff from on-disk receipts
 - **Rose:** receipt / after-task prose — claim boundary held (RSZ + EOO only)
+
+## Next step
+
+1. **Maintainer:** review / merge [PR #297](https://github.com/itchyshin/GLLVM.jl/pull/297) when CI is green (merge is maintainer authority only — agents do not merge).
+2. **Do not** launch cells beyond this 12-cell grid from this programme, and **do not** treat these receipts as a true-parity or gate-tier claim.
+3. **Planning note:** G4’s 8-core wall guess (~23–30 min) was low — cell 12 alone was ~6578 s (~110 min); use measured seff for any future Totoro sizing.
+4. **Programme:** return to the existing true-parity track (M2 / θ-map research) when ready — no new Totoro launch invented here. Rose receipt prose already done on this closeout.
