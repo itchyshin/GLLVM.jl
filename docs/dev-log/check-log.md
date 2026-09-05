@@ -1,3 +1,16 @@
+## 2026-09-05 — M2-R1 θ-map parameter alignment (integrator)
+
+- Branch `cursor/m2-r1-theta-map-20260905` from `origin/main`.
+- Memo: `docs/dev-log/core070/theta-map-parameter-alignment-2026-09-05.md`
+- Companion: `docs/dev-log/core070/theta-map-spec-or-demote-2026-09-05.md`
+- After-task: `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map.md`
+- Evidence: matched-pilot JSON (3 pass / 2 blocked); R scout HEAD `c5ddd198b`
+  per-trait `log_phi_*`; Julia `fit_gllvm` default species dispersion (smoke).
+- Verdict: harness-bug (map requires ×1); recommend implement harness-only.
+- No src/R edits; no #297 merge; no §7 claim.
+- Lease: T4 `cursor:GLLVM.jl` held core070 until 17:51 — wrote new theta-map*
+  filenames only under twin lane.
+
 ## 2026-09-05 — T4 Totoro pre-run programme COMPLETE (NB2 G3 PASS)
 
 Branch `cursor/totoro-t4-prerun-20260905` @ tip after commit. Three-family pre-run slice done.
