@@ -17715,3 +17715,12 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - Added `advisory-r071-smoke-2026-09-05.md` (0.7.1 receipt-only; NB2 health fail).
 - After-task: `2026-09-05-option-d-holdouts-disposition.md`.
 - **Not claiming:** programme-level second-order parity (contract §7); holdout clearance.
+
+## 2026-09-05 — Option D advisory R smoke (NB2 / trunc NB2 / Student-t)
+
+- Branch `cursor/option-d-advisory-smoke-20260905`; live R `gllvmTMB` **0.7.1** via `load_all` on twin worktree (`c5ddd198b`, post-#1269).
+- Object ledger: **15 PASS / 3 FAIL / 18** total (`advisory-r-smoke-nb2-studentt-2026-09-05.json`).
+- Failures: gradient health gate only (`r_gradient_max ≤ 1e-4`) on NB2, truncated NB2 BFGS, Student-t fixed-ν.
+- Fixtures exported to `/Users/z3437171/local-scratch/core070-advisory-fixtures/`.
+- After-task: `2026-09-05-option-d-advisory-r-smoke.md`.
+- **Not claiming:** CI oracle replacement; second-order parity (§7); holdout clearance.
