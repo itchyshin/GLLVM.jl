@@ -1,0 +1,119 @@
+{
+  "mode": "advisory_live_load_all",
+  "gllvmTMB_root": "/Users/z3437171/local-scratch/lanes/gllvmTMB-gllvm-twin-20260904",
+  "packageVersion": "0.7.1",
+  "fixture_dir": "/Users/z3437171/local-scratch/core070-advisory-fixtures",
+  "pass": 15,
+  "fail": 3,
+  "total": 18,
+  "ledger": [
+    {
+      "cell": "NATIVE-06-NB2",
+      "object": "r_converged",
+      "pass": true,
+      "detail": "code=0 msg=relative convergence (4)"
+    },
+    {
+      "cell": "NATIVE-06-NB2",
+      "object": "r_logLik_finite",
+      "pass": true,
+      "detail": "logLik=-820.414959194732"
+    },
+    {
+      "cell": "NATIVE-06-NB2",
+      "object": "r_nfree_19",
+      "pass": true,
+      "detail": "nfree=19"
+    },
+    {
+      "cell": "NATIVE-06-NB2",
+      "object": "r_gradient_max_le_1e-4",
+      "pass": false,
+      "detail": "max=0.000134805"
+    },
+    {
+      "cell": "NATIVE-06-NB2",
+      "object": "r_objective_logLik_consistent",
+      "pass": true,
+      "detail": "obj=820.414959194732 logLik=-820.414959194732"
+    },
+    {
+      "cell": "NATIVE-06-NB2",
+      "object": "fixture_sha256_matches_export",
+      "pass": true,
+      "detail": "sha=af68c91fe8b1e4e2c6d246f9662dbbfc824b124a17fe77997e5fcb770e60cd6c expected=af68c91fe8b1e4e2c6d246f9662dbbfc824b124a17fe77997e5fcb770e60cd6c"
+    },
+    {
+      "cell": "NATIVE-12-TRUNCATED-NB2",
+      "object": "default_r_converged",
+      "pass": true,
+      "detail": "default code=0"
+    },
+    {
+      "cell": "NATIVE-12-TRUNCATED-NB2",
+      "object": "bfgs_r_converged",
+      "pass": true,
+      "detail": "code=0"
+    },
+    {
+      "cell": "NATIVE-12-TRUNCATED-NB2",
+      "object": "bfgs_r_logLik_finite",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "cell": "NATIVE-12-TRUNCATED-NB2",
+      "object": "bfgs_r_nfree_15",
+      "pass": true,
+      "detail": "nfree=15"
+    },
+    {
+      "cell": "NATIVE-12-TRUNCATED-NB2",
+      "object": "bfgs_r_gradient_max_le_1e-4",
+      "pass": false,
+      "detail": "max=0.000646583"
+    },
+    {
+      "cell": "NATIVE-12-TRUNCATED-NB2",
+      "object": "bfgs_r_objective_logLik_consistent",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "cell": "STUDENT-T-fixed-nu",
+      "object": "r_converged",
+      "pass": true,
+      "detail": "code=0"
+    },
+    {
+      "cell": "STUDENT-T-fixed-nu",
+      "object": "r_logLik_finite",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "cell": "STUDENT-T-fixed-nu",
+      "object": "r_gradient_max_le_1e-4",
+      "pass": false,
+      "detail": "max=0.000250816"
+    },
+    {
+      "cell": "STUDENT-T-estimated-nu",
+      "object": "r_converged",
+      "pass": true,
+      "detail": "code=0 msg=relative convergence (4)"
+    },
+    {
+      "cell": "STUDENT-T-estimated-nu",
+      "object": "r_logLik_finite",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "cell": "STUDENT-T-estimated-nu",
+      "object": "r_optimizer_code_0",
+      "pass": true,
+      "detail": "code=0"
+    }
+  ]
+}
