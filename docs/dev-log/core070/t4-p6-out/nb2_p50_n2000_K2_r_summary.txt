@@ -1,0 +1,8 @@
+family=nb2
+p=50 n=2000 K=2 seed=42
+logLik=-229681.2115901688
+converged=TRUE
+has_sd_report=TRUE
+wall_fit_sec=615.7136
+wall_confint_sec=0.0001
+cond_H=2820.94
