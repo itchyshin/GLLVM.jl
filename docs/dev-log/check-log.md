@@ -17706,7 +17706,6 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - HEAD `5e55a205`; local parallel x8 gaussian realistic cells (~218s); nibi Julia artifacts refreshed.
 - `python3 tools/core070_realistic_size_collect.py` nibi + totoro-merged → `realistic-size-paired-20260904-merged.csv`; SE D1 **24/0/0** (was 16/0/8 skip).
 - Updated `second-order-d1-gate-receipt-2026-09-04.json`.
-<<<<<<< HEAD
 
 
 ## 2026-09-05 — Option D §6 holdouts disposition (parallel slice)
@@ -17717,8 +17716,6 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - Added `advisory-r071-smoke-2026-09-05.md` (0.7.1 receipt-only; NB2 health fail).
 - After-task: `2026-09-05-option-d-holdouts-disposition.md`.
 - **Not claiming:** programme-level second-order parity (contract §7); holdout clearance.
-=======
->>>>>>> 055115e1 (fix(docs): drop cherry-pick conflict markers from check-log)
 
 ## 2026-09-05 — Option D advisory R smoke (NB2 / trunc NB2 / Student-t)
 
@@ -17739,7 +17736,3 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - Artifacts: `docs/dev-log/core070/second-order-matched-pilot-batch1-20260905/` + `second-order-matched-pilot-batch1-20260905.md`.
 - Updated `second-order-matched-coordinates-2026-09-04.md` disposition.
 - **Not claiming:** programme §7; full batch-1 matched tier (2/5 blocked).
-<<<<<<< HEAD
-=======
-
->>>>>>> 055115e1 (fix(docs): drop cherry-pick conflict markers from check-log)
