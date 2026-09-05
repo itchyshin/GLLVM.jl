@@ -228,3 +228,12 @@ grep -l "GLLVM_TOTORO_LAUNCH" logs/t4-gaussian-prerun-launch-*.log 2>/dev/null |
 | Launch command | `GLLVM_TOTORO_LAUNCH=1 tools/t4_totoro_gaussian_prerun.sh` |
 | Local log | `logs/t4-gaussian-prerun-launch-20260905-retry2.log` |
 | Status | **COMPLETE** — G1 PASS; Poisson may queue |
+
+### Poisson launch (cell 2/3)
+
+| Field | Value |
+|---|---|
+| Launch attempted | 2026-09-05 |
+| Launch command | `GLLVM_TOTORO_LAUNCH=1 tools/t4_totoro_poisson_prerun.sh` |
+| Local log | `logs/t4-poisson-prerun-launch-20260905-1312.log` |
+| Status | **COMPLETE** — G2 PASS; NB2 may queue |

@@ -17914,7 +17914,19 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - Bundle after-task: `2026-09-05-option-d-twin-trust-bundle.md`.
 - **Not claiming:** true parity; contract §7 programme complete; 0.7.1 full surface port.
 
-## 2026-09-05 — M2 Foundation day-1 (integrator: D-220 + Gaussian 2SO smoke)
+## 2026-09-05 — T4 Totoro pre-run Poisson cell 2/3 (G2 PASS)
+
+- Branch `cursor/totoro-t4-prerun-20260905` @ worktree `GLLVM.jl-gllvm-twin-20260904`.
+- **G1→G2 gate crossed:** Gaussian receipt PASS; Poisson queued per Ada default.
+- Launcher: `tools/t4_totoro_poisson_prerun.sh` (new).
+- Launch: `GLLVM_TOTORO_LAUNCH=1 tools/t4_totoro_poisson_prerun.sh` → **COMPLETE**.
+- Log: `logs/t4-poisson-prerun-launch-20260905-1312.log`.
+- Receipt: `docs/dev-log/core070/t4-prerun-poisson-receipt-2026-09-05.{json,md}`.
+- **G2 PASS:** logLik Δ 2.59e-7; vcov_fro_rel 1.59e-5; max_rel_dSE 5.94e-6; seff total ~107 s
+  (Julia confint 45.9 s — Laplace mode solve).
+- **Not launched:** NB2 cell 3/3; 12-cell P6 grid.
+- **Not claiming:** true-parity; gate-tier promotion.
+
 
 - Branch `cursor/m2-foundation-day1-20260905` from `origin/main` @ `ede4e2d7`.
 - **D-220:** `tools/d220_paired_gaussian_cell.jl` → PASS (ΔlogLik 4.13e-9, first_order_pass true).
