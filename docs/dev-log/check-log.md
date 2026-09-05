@@ -17707,6 +17707,7 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - `python3 tools/core070_realistic_size_collect.py` nibi + totoro-merged → `realistic-size-paired-20260904-merged.csv`; SE D1 **24/0/0** (was 16/0/8 skip).
 - Updated `second-order-d1-gate-receipt-2026-09-04.json`.
 
+
 ## 2026-09-05 — Option D §6 holdouts disposition (parallel slice)
 
 - Branch `cursor/option-d-holdouts-20260905`; evidence audit only (no new compute).
@@ -17724,3 +17725,14 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - Fixtures exported to `/Users/z3437171/local-scratch/core070-advisory-fixtures/`.
 - After-task: `2026-09-05-option-d-advisory-r-smoke.md`.
 - **Not claiming:** CI oracle replacement; second-order parity (§7); holdout clearance.
+
+## 2026-09-05 — matched-coordinates batch-1 pilot (Option D S4)
+
+- Branch: `cursor/option-d-matched-coords-pilot-20260905`; base post-#281 (`51e43a4a`).
+- Added `tools/core070_second_order/theta_map.jl`, `run_matched_batch1.jl`, `common.jl` (helpers extracted from `run_cell.jl`).
+- Pilot: `julia --project=. tools/core070_second_order/run_matched_batch1.jl` → **3 pass / 0 fail / 2 blocked / 0 skip** (~74 s local, threads=1).
+- Pass: gaussian (σ block), poisson, binomial_logit — matched-coordinates se/vcov ≤ 1e-4 at R-anchored θ.
+- Blocked: beta_logit, nb2_log — R per-trait `log_phi_*` (×p) vs Julia shared log-dispersion (×1); honest θ transplant impossible.
+- Artifacts: `docs/dev-log/core070/second-order-matched-pilot-batch1-20260905/` + `second-order-matched-pilot-batch1-20260905.md`.
+- Updated `second-order-matched-coordinates-2026-09-04.md` disposition.
+- **Not claiming:** programme §7; full batch-1 matched tier (2/5 blocked).
