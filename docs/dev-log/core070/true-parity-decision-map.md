@@ -51,19 +51,19 @@ destination.
 | Compute for the ZI-trio ADEMP evidence | Totoro (Narval socket absent, Nibi in maintenance) | plan v1, approved 2026-09-02 |
 | **ZI trio on the R side** (owner decision, RELAYED by the gllvmTMB lane 2026-09-02: chosen option *"Bring zip/zinb/zib to R"*) | **CONFIRMED 2026-09-04 (D6 Ada defaults) — already shipped.** R Arc D landed `zi_poisson()`/`zi_nbinom2()`/`zi_binomial()` (`R/families.R`; fids 17–19). Supersedes decision #12's "no R twin" **on the R side only**; Julia-forward `zip`/`zinb`/`zib` fitters unchanged. No new R build owed; rows pairable when Julia surfaces exist | `maintainer-decision-set-2026-09-03.md` §D6 |
 | **Capability direction** (owner decision, RELAYED 2026-09-02: *"both ways, for user-facing capabilities"* — R ports the models a user would miss; engine-internal Julia-only rows are accounted for in writing; the bridge stays R→Julia) | consistent with T1: the *qualification claim* runs one way (R workflows → Julia against 0.7.0); *capabilities* are tracked both ways and the R lane owns the R-side ports. **Confirmed as vault D-204** (Shinichi in the drmTMB session, 2026-09-02: *"both ways for user-facing; keep the legacy rewrite; file the issues"*) | vault `DECISIONS.md` D-204; this file |
-| Phylo transport Q1–Q4 | brought with recommendations and defaults; **no reply yet**, no code | `phylo-transport-questions-2026-09-02.md` |
+| **Realistic-size grid (T4)** | Gaussian, Poisson, NB2; p∈{20,50}, n∈{500,2000}; Totoro; D-139 pre-run | programme map P6 CLOSED 2026-09-05 |
+| **Real-data order (T7)** | urbanisation_map → avian_trait_scales → nest_morpho_gllvm → BIRDBASE_pcm | programme map P7 CLOSED 2026-09-05 |
+| Phylo transport Q1–Q4 | Ada defaults recorded 2026-09-05 (M0-6); **pending owner override** | `phylo-transport-questions-2026-09-02.md` |
 
 ## Not yet specified
 
 Each line is a question, with who must be in the room and the default if the answer is "use your judgment".
 
-- **T4 Realistic-size grid.** Which (p, n) cells and families first, and on which host? *decide-with-Shinichi after the se=TRUE pre-run timing*; default: Gaussian, Poisson, NB2 at p ∈ {20, 50}, n ∈ {500, 2000} on Totoro, one pre-run cell per family first (D-139).
+- **T4 Realistic-size grid.** **CLOSED Ada-default 2026-09-05 (P6):** Gaussian, Poisson, NB2 at p ∈ {20, 50}, n ∈ {500, 2000} on Totoro; one pre-run cell per family first (D-139). Recorded in programme map.
 - **T5 The 8 PARTIAL_PARITY_DEFECT rows.** Resolved by decisions #1/#3 and merely un-re-bound, or still defective? *task* (`parity-defect-rebind-2026-09-02.md`), then decide; default: re-bind on a passing verifier.
-- **T7 Real-data acceptance runs.** Which of the four repos first, and how is data access granted? Needs gllvmTMB PR #1236 merged. *decide-with-Shinichi*; default: `urbanisation_map` first (an ACC-URBMAP cross-eval receipt already exists), then `avian_trait_scales`.
-- **T8 AGHQ.** 8 unreachable policy rows **reclassified** 2026-09-04 (D4 DEFAULTED);
-  **14 bindable rows** remain `BLOCKED_SPEC_DEFECT` pending public-fit receipts
-  (`t8-aghq-bind-next-slice.md`). Was 22 BLOCKED_SPEC_DEFECT; 0/14 bind receipts.
-- **T10 Phylo Q1–Q4.** *decide-with-Shinichi*; defaults recorded in the questions note.
+- **T7 Real-data acceptance runs.** **CLOSED Ada-default 2026-09-05 (P7):** `urbanisation_map` first (ACC scout exists), then `avian_trait_scales`. Needs gllvmTMB PR #1236 merged for full eight-class runs.
+- **T8 AGHQ.** **CLOSED defer from gate-tier 2026-09-05 (P8/M0-8):** 14 bindable rows bound 2026-09-04; compatibility tier only unless owner promotes (`t8-aghq-bind-next-slice.md` §Gate-tier disposition).
+- **T10 Phylo Q1–Q4.** **CLOSED Ada-default pending override 2026-09-05 (P10/M0-6):** defaults recorded in `phylo-transport-questions-2026-09-02.md`.
 - **T11 Which of the 38 API-alignment collisions are R inconsistencies?** *research*, handed to the gllvmTMB lane with `r-side-defects-2026-09-02.md` (group E).
 - **T12 Grouping-level rows.** Are the four level names the ledger keys (the R lane intends to use them for the twin board)? Does `unit_obs` map to a Julia observation-level random effect that does not exist yet (a new engine surface, not a rename)? *decide-with-Shinichi*; default: keys = the four names; `unit_obs` is a new required surface, sequenced after phylo transport unless the maintainer reorders.
 - **T13 Ledger drift on our own status page.** `docs/design/capability-status.md` (this repo, also on `origin/main`) marks the missing-predictor `mi()` row `planned`, but `fit_gaussian_mi_fiml`, `fit_gaussian_mi_phylo`, `fit_gllvm_mi`, `fit_gllvm_mi_multi` are exported with tests (`test/test_mi_fitter.jl`, `test_missing_predictor_*.jl`) — found by the gllvmTMB lane's join of the two status pages (row names match byte-for-byte; their R ledger `docs/design/capability-status.md`, 76 rows, includes `unit / unit_obs / cluster / cluster2`). *task, then decide*: flip to `implemented` only with a pasted test receipt; default: flip after the receipt. Correction to an earlier message of ours: this file exists and is the exact-name join key for mission control, not the ledger `source_id`.

@@ -42,13 +42,17 @@ G0 (now) ──► M0 ──► M1 ──► M2 ──► M3 ──► M4 ──
 **Months from G0:** ~1 (includes M0)  
 **Agent-days:** 8–15 cumulative
 
+**Status: CLOSED 2026-09-05** (M0-10 Rose OK-with-owner-signoffs).
+
 **Done when:**
 
-- Tickets P1–P12 closed or dispositioned in programme map
-- Gate-tier row **list drafted** (P3) — even if approximate pending build
-- Rose scan: no contradiction between 2026-09-02 and 2026-09-05 maps
-- Ultra-plan Phase 1 **build** slice list written (not executed)
-- `.unlazy/true-parity-programme/` map-leaf gates green
+- Tickets P1–P12 closed or dispositioned in programme map ✅
+- Gate-tier row **list drafted** (P3) — **42 rows PROPOSED**; maintainer sign-off still owed ✅
+- Rose scan: no contradiction between 2026-09-02 and 2026-09-05 maps ✅
+- Ultra-plan Phase 1 map slice list complete ✅
+- `.unlazy/true-parity-programme/` map-leaf gates green ✅
+
+**Remaining before v0.true-parity claim (not M1 blockers):** signed gate-tier; θ-map research outcome; phylo Ada-default override if any.
 
 **Hand-off:** paste-ready `/goal` for first build arc (owner picks M2 vs partial M3)
 

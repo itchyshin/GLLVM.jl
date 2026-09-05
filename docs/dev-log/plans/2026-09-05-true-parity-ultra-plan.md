@@ -4,7 +4,7 @@
 **Worktrees:** JL `~/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904` · R `~/local-scratch/lanes/gllvmTMB-gllvm-twin-20260904` (read-only; no engine surgery)  
 **Oracle (current):** frozen gllvmTMB 0.7.0 `b4d5fee64def88bc768dda1f1f77c29b295edd86`  
 **Main @ sweep:** `a2e641de` (Option D + parity-next 3-day package merged)  
-**Status:** **G0 LOCKED 2026-09-05 (Shinichi: 1–5 yes / Ada defaults)** — map-clearance arc authorised; no Phase 3 engine build yet
+**Status:** **MAP CLEARANCE CLOSED 2026-09-05 (M0-1…M0-10)** — G0 locked; Rose OK-with-owner-signoffs; first build arc awaits owner pick + gate-tier sign-off
 
 ---
 
@@ -197,16 +197,16 @@ MUST STOP: merge to main; any src/ or test/ production code; gllvmTMB edits; tru
 |---|---|---|---|---|---|
 | **M0-1** | Lock destination paragraph (oracle, bridge, tiers) | decide-with-Shinichi | §Destination in programme map | G0 Q1–Q3 | **CLOSED** 2026-09-05 |
 | **M0-2** | Sign second-order tolerances (T3) | decide-with-Shinichi | `second-order-parity-contract.md` amendment | G0 | **CLOSED** 2026-09-05 |
-| **M0-3** | Gate-tier row pick (~30–50) | decide-with-Shinichi | `docs/dev-log/core070/true-parity-gate-tier-2026-09-XX.md` | M0-1 | open (parallel agent) |
-| **M0-4** | θ-map disposition (implement vs demote matched tier) | decide + optional prototype | `docs/dev-log/core070/theta-map-disposition-2026-09-XX.md` | M0-2 | open (parallel agent) |
-| **M0-5** | Bridge-eligible row tag | research | `tools/parity_ledger.py` design note (doc only) | M0-1 | open (parallel agent) |
-| **M0-6** | Phylo Q1–Q4 | decide-with-Shinichi | answers appended to `phylo-transport-questions-2026-09-02.md` | — | open (parallel agent) |
+| **M0-3** | Gate-tier row pick (~30–50) | decide-with-Shinichi | `docs/dev-log/core070/true-parity-gate-tier-2026-09-05.md` | M0-1 | **CLOSED** PROPOSED 2026-09-05 — sign-off pending |
+| **M0-4** | θ-map disposition (implement vs demote matched tier) | decide + optional prototype | `docs/dev-log/core070/theta-map-disposition-2026-09-05.md` | M0-2 | **CLOSED** research-scheduled 2026-09-05 |
+| **M0-5** | Bridge-eligible row tag | research | `bridge-eligible-row-tag-design-2026-09-05.md` (doc only) | M0-1 | **CLOSED** design note 2026-09-05 |
+| **M0-6** | Phylo Q1–Q4 | decide-with-Shinichi | `phylo-transport-questions-2026-09-02.md` | — | **CLOSED** Ada-default pending override 2026-09-05 |
 | **M0-7** | T9 promotion authority | decide-with-Shinichi | one paragraph in programme map | — | **CLOSED** 2026-09-05 |
-| **M0-8** | AGHQ T8 bind strategy | research + decide | `docs/dev-log/core070/t8-aghq-bind-next-slice.md` update | — | open (parallel agent) |
+| **M0-8** | AGHQ T8 bind strategy | research + decide | `t8-aghq-bind-next-slice.md` §Gate-tier disposition | — | **CLOSED** defer from gate-tier 2026-09-05 |
 | **M0-9** | traits / column_coef / 0.7.1 Class-1 | decide-map-only | four-section map in programme file | M0-1 | **CLOSED** 2026-09-05 |
-| **M0-10** | Rose scan of cleared map | review | verbal OK or blocker list in PR | M0-1..9 | open (integrator) |
+| **M0-10** | Rose scan of cleared map | review | after-task + PR body | M0-1..9 | **CLOSED** OK-with-owner-signoffs 2026-09-05 |
 
-**Parallel after G0:** M0-6, M0-7, M0-8 (disjoint docs). **Sequential:** M0-1 before M0-3, M0-5, M0-9.
+**Parallel after G0:** M0-3…M0-8 closed in parallel slices. **Sequential:** M0-1 before M0-3, M0-5, M0-9; M0-10 integrator closeout.
 
 ---
 
@@ -240,9 +240,9 @@ Full ladder: `docs/dev-log/plans/2026-09-05-true-parity-wayfinder.md` (**wayfind
 
 ---
 
-## G0 LOCKED — start map-clearance `/goal`
+## G0 LOCKED — map-clearance arc **CLOSED 2026-09-05**
 
-Paste the block below into a **fresh Cursor goal**. **Do not start Phase 3 engine work** until map tickets M0-1…M0-10 close.
+Map tickets M0-1…M0-10 closed. **Do not start Phase 3 engine work** until owner picks first build arc and (recommended) signs gate-tier list.
 
 ---
 

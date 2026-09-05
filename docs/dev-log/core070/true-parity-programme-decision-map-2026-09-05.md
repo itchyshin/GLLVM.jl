@@ -18,18 +18,20 @@ qualification claim. R `0.7.1+` surfaces (`traits()`, `column_coef`, …) live o
 catch-up board** — not merged into v0.true-parity until owner promotes (see §0.7.1 Class-1).
 
 **Bridge:** **tiered** — thin JuliaCall for ACC-class real workflows; native Julia for rows the
-bridge cannot honestly carry. Bridge-eligible rows require ACC-class receipts (P2 closed; design
-note owed by parallel slice M0-5).
+bridge cannot honestly carry. Bridge-eligible rows require ACC-class receipts (**P2 CLOSED**;
+design note `bridge-eligible-row-tag-design-2026-09-05.md`, M0-5).
 
-**Must-have rows:** **~30–50 gate-tier** rows for v0.true-parity (not all 497). Signed list
-pending owner (P3 — parallel slice M0-3).
+**Must-have rows:** **~30–50 gate-tier** rows for v0.true-parity (not all 497). **42 rows
+PROPOSED** at `true-parity-gate-tier-2026-09-05.md` — **maintainer sign-off pending** (P3
+CLOSED as drafted; signed gate-tier still owed).
 
 **Compute:** **Totoro-first**; DRAC by maintainer approval when estimate warrants (D-50 / D-139).
 Cursor chat capped at smoke ≤30 min; campaigns never block the lane (D-220).
 
-**Matched-coordinates (§7):** **θ-map research first** (2-week ticket); owner then chooses
-implement vs demote matched tier (P5 — parallel slice M0-4). Each-own-optimum remains the
-shipped claim tier until then.
+**Matched-coordinates (§7):** **θ-map research first** (2-week ticket `RESEARCH-THETA-MAP-20260905`);
+owner then chooses implement vs demote matched tier (**P5 CLOSED** as research-scheduled;
+`theta-map-disposition-2026-09-05.md`). Each-own-optimum remains the shipped claim tier until
+research completes and owner decides.
 
 **When this programme is done**, GLLVM.jl satisfies all seven clauses in the 2026-09-02
 true-parity map **and** the owner has signed the gate-tier row list above.
@@ -59,9 +61,14 @@ promotes them into gate-tier; 0.7.1 Class-1 formula grammar (§0.7.1 Class-1 bel
 | Qualification direction | One-way R→Julia @ 0.7.0; reverse = tool list to R lane | T1; D-204 |
 | Oracle | Frozen **0.7.0** `b4d5fee6` for qualification; **0.7.1+** separate catch-up board | **G0 2026-09-05**; **P1 CLOSED** (M0-1) |
 | Bridge | **Tiered** — thin JuliaCall ACC-class; native Julia elsewhere; bridge-eligible tag in ledger | **G0 2026-09-05**; **P2 CLOSED** (M0-1) |
-| Gate-tier size | ~**30–50** must-have rows for v0.true-parity (not all 497) | **G0 2026-09-05**; signed list pending (P3) |
+| Gate-tier size | ~**30–50** must-have rows; **42 PROPOSED** — signed list pending owner | **G0 2026-09-05**; **P3 CLOSED** drafted (M0-3); `true-parity-gate-tier-2026-09-05.md` |
 | Compute | **Totoro-first**; DRAC by approval (D-50 / D-139) | **G0 2026-09-05**; **P12 CLOSED** (M0-1) |
-| Matched-coords (§7) | θ-map **research first**; then owner choose implement vs demote | **G0 2026-09-05**; P5 open (M0-4 parallel) |
+| Matched-coords (§7) | θ-map **research first**; then owner choose implement vs demote | **G0 2026-09-05**; **P5 CLOSED** research-scheduled (M0-4); `theta-map-disposition-2026-09-05.md` |
+| Bridge-eligible tag | Tiered bridge + proposed `bridge_eligible` ledger field | **P2 CLOSED** design (M0-5); `bridge-eligible-row-tag-design-2026-09-05.md` |
+| Realistic-size grid (T4) | Gaussian, Poisson, NB2; p∈{20,50}, n∈{500,2000}; Totoro | **P6 CLOSED** Ada-default (M0-10); D-139 pre-run before campaigns |
+| Real-data order (T7) | `urbanisation_map` first, then `avian_trait_scales` | **P7 CLOSED** Ada-default (M0-10) |
+| AGHQ bind (T8) | Defer AGHQ from v0.true-parity gate-tier unless owner promotes | **P8 CLOSED** (M0-8); `t8-aghq-bind-next-slice.md` §Gate-tier disposition |
+| Phylo transport Q1–Q4 | Ada defaults recorded; pending owner override | **P10 CLOSED** Ada-default (M0-6); `phylo-transport-questions-2026-09-02.md` |
 | Second-order tolerances | Adopt draft rtol/abs; **conditioning recorded, not gated** | **SIGNED 2026-09-05**; **P4 CLOSED** (M0-2); `second-order-parity-contract.md` |
 | Promotion authority (T9) | **Draft PR + Rose scan = proposal**; **maintainer merge = sign-off** | **2026-09-05**; **P9 CLOSED** (M0-7) |
 | 0.7.1 Class-1 surfaces | **Change-control** — not in 0.7.0 true-parity claim | **2026-09-05**; **P11 CLOSED map-only** (M0-9); §0.7.1 below |
@@ -123,53 +130,39 @@ against `b4d5fee6`; 0.7.1 surfaces are explicitly fenced.
 
 ---
 
-## Not yet specified — programme tickets
+## Closed programme tickets (map-clearance arc 2026-09-05)
 
-Each line is a **map ticket** (decide / research / prototype). Default = Ada recommendation if Shinichi says "use your judgment".
+**Spine (M0-1/2/7/9):** P1, P2 (bridge width), P4, P9, P11, P12 — see Decisions so far.
 
-**Closed in spine slice (M0-1/2/7/9):** P1, P2, P4, P9, P11, P12 — see Decisions so far.
+**Parallel leaves (M0-3…M0-8):**
 
-### P3 — Gate-tier row list (~30–50 for v0.true-parity)
+| Ticket | Status | Leaf file |
+|---|---|---|
+| **P3** Gate-tier row list | **CLOSED — PROPOSED** (42 rows); **maintainer sign-off pending** for *signed* gate-tier | `true-parity-gate-tier-2026-09-05.md` |
+| **P5** Matched-coordinates (§7) | **CLOSED — research-scheduled**; implement vs demote deferred to end of `RESEARCH-THETA-MAP-20260905` | `theta-map-disposition-2026-09-05.md` |
+| **P6** Realistic-size grid (T4) | **CLOSED — Ada-default** | this file §P6 below |
+| **P7** Real-data repos (T7) | **CLOSED — Ada-default** | this file §P7 below |
+| **P8** AGHQ bind (T8) | **CLOSED — defer from gate-tier** | `t8-aghq-bind-next-slice.md` §Gate-tier disposition |
+| **P10** Phylo transport Q1–Q4 | **CLOSED — Ada-default pending override** | `phylo-transport-questions-2026-09-02.md` |
+| **P2** Bridge-eligible tag (design) | **CLOSED — design note** | `bridge-eligible-row-tag-design-2026-09-05.md` |
 
-- **Question:** Which `required_core` rows are **must-have** vs compatibility disposition?
-- **Who:** decide-with-Shinichi (Fisher + Pat input)
-- **Default:** paired second-order families + four grouping levels + one real-data repo per major family class
-- **Blocks:** all build slicing
+### P6 — Realistic-size grid (T4) — **CLOSED Ada-default**
 
-### P5 — Matched-coordinates tier (§7)
+- **Answer:** Gaussian, Poisson, NB2 at **p ∈ {20, 50}**, **n ∈ {500, 2000}** on **Totoro**; one
+  pre-run cell per family first (D-139 estimate before full grid).
+- **Blocks:** M2 campaigns only — not map clearance.
 
-- **Question:** Implement θ-map for beta/NB2 and pursue matched tier, or demote v0.true-parity to each-own-optimum-only?
-- **Who:** prototype (θ-map spec) → decide-with-Shinichi
-- **Default:** 2-week research ticket; owner chooses at end
-- **Blocks:** second-order programme completion claim
+### P7 — Real-data repos (T7) — **CLOSED Ada-default**
 
-### P6 — Realistic-size grid (T4)
+- **Answer:** **`urbanisation_map` first** (thin ACC scout receipt exists), then
+  **`avian_trait_scales`**, then `nest_morpho_gllvm`, then `BIRDBASE_pcm` per gate-tier table C1–C4.
+- **Blocks:** M4 — not map clearance.
 
-- **Question:** First (p, n, family) cells and host?
-- **Who:** decide-with-Shinichi after se=TRUE timing
-- **Default:** Gaussian, Poisson, NB2 at p∈{20,50}, n∈{500,2000} on Totoro
-- **Blocks:** M2 campaigns
+---
 
-### P7 — Real-data repos (T7)
+## Open programme tickets
 
-- **Question:** Order of four Ayumi repos; data access?
-- **Who:** decide-with-Shinichi
-- **Default:** urbanisation_map first (ACC receipt exists), then avian_trait_scales
-- **Blocks:** M4
-
-### P8 — AGHQ bind (T8)
-
-- **Question:** Strategy for 14 bindable `BLOCKED_SPEC_DEFECT` AGHQ rows?
-- **Who:** research + decide
-- **Default:** defer AGHQ from v0.true-parity gate-tier unless owner promotes
-- **Blocks:** AGHQ receipts only
-
-### P10 — Phylo transport Q1–Q4
-
-- **Question:** Unanswered phylo design questions
-- **Who:** decide-with-Shinichi
-- **Default:** defaults in `phylo-transport-questions-2026-09-02.md`
-- **Blocks:** phylo structured dependence arc
+Default = Ada recommendation if Shinichi says "use your judgment".
 
 ### P13 — Mechanical guard for one-lane twin (D-220 caveat)
 
@@ -204,8 +197,31 @@ Each line is a **map ticket** (decide / research / prototype). Default = Ada rec
 
 ## Map clearance definition
 
-The programme map is **cleared** when: P3, P5–P8, P10 each have a recorded answer (or explicit
-defer with owner sign-off); P13 scheduled; P1/P2/P4/P9/P11/P12 **closed** (spine slice 2026-09-05);
-Rose scans programme + 2026-09-02 maps for contradiction; ultra-plan Phase 1 slice list complete.
+**Status: CLEARED for map arc (2026-09-05, M0-10 Rose OK-with-owner-signoffs).**
 
-**Next hand-off:** `/goal` map-clearance arc → then first **build** arc (likely M2 second-order or gate-tier surface — chosen after P3).
+The programme map is **cleared** when: P3, P5–P8, P10 each have a recorded answer (or explicit
+defer with owner sign-off); P13 scheduled; P1/P2/P4/P9/P11/P12 **closed**; Rose scans programme +
+2026-09-02 maps for contradiction; ultra-plan Phase 1 slice list complete.
+
+**Remaining owner sign-offs (do not block map clearance; block v0.true-parity claim):**
+
+| Item | State | Action to sign |
+|---|---|---|
+| Gate-tier row list | **PROPOSED** (42 rows) | Maintainer merge of Rose-scanned PR citing `true-parity-gate-tier-2026-09-05.md` (T9) |
+| Phylo Q1–Q4 | **Ada-default pending override** | Owner may override any answer in `phylo-transport-questions-2026-09-02.md` without reopening G0 |
+| θ-map implement vs demote | **Research open** | Owner chooses at end of `RESEARCH-THETA-MAP-20260905` (`theta-map-disposition-2026-09-05.md`) |
+
+**Leaf cross-links:**
+
+| M0 slice | Leaf |
+|---|---|
+| M0-3 / P3 | `true-parity-gate-tier-2026-09-05.md` |
+| M0-4 / P5 | `theta-map-disposition-2026-09-05.md` |
+| M0-5 / P2 design | `bridge-eligible-row-tag-design-2026-09-05.md` |
+| M0-6 / P10 | `phylo-transport-questions-2026-09-02.md` |
+| M0-8 / P8 | `t8-aghq-bind-next-slice.md` §Gate-tier disposition |
+| M0-2 / P4 | `second-order-parity-contract.md` |
+| M0-9 / P11 | §0.7.1 Class-1 above; `gllvmtmb-071-gap-sheet.md` |
+
+**Next hand-off:** `/goal` first **build** arc (owner picks M2 second-order campaigns vs partial M3
+surface — after gate-tier sign-off or explicit proceed-with-PROPOSED list).
