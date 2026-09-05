@@ -22,8 +22,8 @@ bridge cannot honestly carry. Bridge-eligible rows require ACC-class receipts (*
 design note `bridge-eligible-row-tag-design-2026-09-05.md`, M0-5).
 
 **Must-have rows:** **~30–50 gate-tier** rows for v0.true-parity (not all 497). **42 rows
-PROPOSED** at `true-parity-gate-tier-2026-09-05.md` — **maintainer sign-off pending** (P3
-CLOSED as drafted; signed gate-tier still owed).
+SIGNED** at `true-parity-gate-tier-2026-09-05.md` — maintainer sign-off 2026-09-05 (P3
+CLOSED SIGNED; proposal PR #292, sign-off PR via T9).
 
 **Compute:** **Totoro-first**; DRAC by maintainer approval when estimate warrants (D-50 / D-139).
 Cursor chat capped at smoke ≤30 min; campaigns never block the lane (D-220).
@@ -61,7 +61,7 @@ promotes them into gate-tier; 0.7.1 Class-1 formula grammar (§0.7.1 Class-1 bel
 | Qualification direction | One-way R→Julia @ 0.7.0; reverse = tool list to R lane | T1; D-204 |
 | Oracle | Frozen **0.7.0** `b4d5fee6` for qualification; **0.7.1+** separate catch-up board | **G0 2026-09-05**; **P1 CLOSED** (M0-1) |
 | Bridge | **Tiered** — thin JuliaCall ACC-class; native Julia elsewhere; bridge-eligible tag in ledger | **G0 2026-09-05**; **P2 CLOSED** (M0-1) |
-| Gate-tier size | ~**30–50** must-have rows; **42 PROPOSED** — signed list pending owner | **G0 2026-09-05**; **P3 CLOSED** drafted (M0-3); `true-parity-gate-tier-2026-09-05.md` |
+| Gate-tier size | ~**30–50** must-have rows; **42 SIGNED** | **G0 2026-09-05**; **P3 CLOSED SIGNED** (M0-3); `true-parity-gate-tier-2026-09-05.md` |
 | Compute | **Totoro-first**; DRAC by approval (D-50 / D-139) | **G0 2026-09-05**; **P12 CLOSED** (M0-1) |
 | Matched-coords (§7) | θ-map **research first**; then owner choose implement vs demote | **G0 2026-09-05**; **P5 CLOSED** research-scheduled (M0-4); `theta-map-disposition-2026-09-05.md` |
 | Bridge-eligible tag | Tiered bridge + proposed `bridge_eligible` ledger field | **P2 CLOSED** design (M0-5); `bridge-eligible-row-tag-design-2026-09-05.md` |
@@ -138,7 +138,7 @@ against `b4d5fee6`; 0.7.1 surfaces are explicitly fenced.
 
 | Ticket | Status | Leaf file |
 |---|---|---|
-| **P3** Gate-tier row list | **CLOSED — PROPOSED** (42 rows); **maintainer sign-off pending** for *signed* gate-tier | `true-parity-gate-tier-2026-09-05.md` |
+| **P3** Gate-tier row list | **CLOSED — SIGNED** (42 rows); maintainer sign-off 2026-09-05 | `true-parity-gate-tier-2026-09-05.md` |
 | **P5** Matched-coordinates (§7) | **CLOSED — research-scheduled**; implement vs demote deferred to end of `RESEARCH-THETA-MAP-20260905` | `theta-map-disposition-2026-09-05.md` |
 | **P6** Realistic-size grid (T4) | **CLOSED — Ada-default** | this file §P6 below |
 | **P7** Real-data repos (T7) | **CLOSED — Ada-default** | this file §P7 below |
@@ -207,7 +207,7 @@ defer with owner sign-off); P13 scheduled; P1/P2/P4/P9/P11/P12 **closed**; Rose 
 
 | Item | State | Action to sign |
 |---|---|---|
-| Gate-tier row list | **PROPOSED** (42 rows) | Maintainer merge of Rose-scanned PR citing `true-parity-gate-tier-2026-09-05.md` (T9) |
+| Gate-tier row list | **SIGNED** (42 rows, 2026-09-05) | — |
 | Phylo Q1–Q4 | **Ada-default pending override** | Owner may override any answer in `phylo-transport-questions-2026-09-02.md` without reopening G0 |
 | θ-map implement vs demote | **Research open** | Owner chooses at end of `RESEARCH-THETA-MAP-20260905` (`theta-map-disposition-2026-09-05.md`) |
 

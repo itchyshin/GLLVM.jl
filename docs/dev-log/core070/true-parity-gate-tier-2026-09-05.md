@@ -1,9 +1,9 @@
-# v0.true-parity gate-tier row list — PROPOSED (2026-09-05)
+# v0.true-parity gate-tier row list — SIGNED (2026-09-05)
 
-**Status: PROPOSED — pending maintainer sign-off.** This list is Ada's default per G0 Q3
-(~30–50 rows, not all 497). **Do not read as covered or signed.** Promotion to the signed
-gate-tier requires an explicit maintainer sentence or merge of a Rose-scanned PR that cites
-this file (T9 / P9).
+**Status: SIGNED by maintainer 2026-09-05.** This list is the agreed v0.true-parity
+gate-tier per G0 Q3 (~30–50 rows, not all 497). **Do not read as covered** — signed
+means programme planning scope only; row receipts still owed per build arcs. Proposal
+landed in map-clearance PR #292 (`1b38906c`); sign-off recorded via gate-tier sign-off PR (T9 / P3).
 
 **Oracle:** frozen gllvmTMB 0.7.0 `b4d5fee64def88bc768dda1f1f77c29b295edd86`  
 **Basis:** G0 locked 2026-09-05; Ada default = paired second-order families + four grouping
@@ -116,14 +116,15 @@ These remain in the full ledger but are **compatibility** or **beyond** unless o
 
 ---
 
-## Sign-off block (empty until owner acts)
+## Sign-off block
 
 | Field | Value |
 |---|---|
 | Proposed by | Ada (map-clearance arc M0-3) |
 | Proposed date | 2026-09-05 |
-| Maintainer sign-off | **PENDING** |
-| Signed row count | — |
-| Promotion PR | — |
+| Maintainer sign-off | **SIGNED — Shinichi 2026-09-05** |
+| Signed row count | **42** |
+| Proposal PR | #292 merged @ `1b38906c` |
+| Sign-off PR | gate-tier sign-off branch (T9) |
 
-**P3 status:** list drafted; owner sign-off still required for promotion to signed gate-tier.
+**P3 status:** **CLOSED SIGNED 2026-09-05** — gate-tier list locked for programme planning.

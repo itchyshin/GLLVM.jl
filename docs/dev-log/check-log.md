@@ -17854,6 +17854,15 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - Unlazy: `.unlazy/true-parity-programme/GATES.md` G14–G18 added.
 - **Not claiming:** v0.true-parity; signed gate-tier; θ-map outcome; true-parity public claim.
 
+## 2026-09-05 — TRUE PARITY map-clearance #292 merged + gate-tier sign-off
+
+- **#292 MERGED** @ `1b38906c` — map-clearance M0-1…M0-10 on main.
+- Maintainer sign-off: **42-row gate-tier list SIGNED** (Shinichi 2026-09-05, decision round).
+- Branch `cursor/true-parity-gate-tier-signoff-20260905`; files: `true-parity-gate-tier-2026-09-05.md`,
+  `true-parity-programme-decision-map-2026-09-05.md`, ultra-plan, wayfinder, check-log.
+- P3: **CLOSED SIGNED** — programme planning scope locked; row receipts still owed per build arcs.
+- **Not claiming:** v0.true-parity; θ-map outcome; true-parity public claim.
+
 ## 2026-09-05 — Option D twin-trust bundle verification
 
 - **#281 MERGED** @ `51e43a4a` (D1 gate receipt post-#280).
