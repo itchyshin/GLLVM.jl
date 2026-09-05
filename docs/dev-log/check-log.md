@@ -1,3 +1,11 @@
+## 2026-09-05 — M2-R1 θ-map: Julia scout ingest
+
+- Ingested Julia scout packed-θ table into
+  `docs/dev-log/core070/theta-map-parameter-alignment-2026-09-05.md`
+  (no re-scout). Critical: `fit_gllvm` ×p vs named shared ×1; map bug at
+  `theta_map.jl:34-42`. Lean **IMPLEMENT** harness-only.
+- Draft PR #298 already open; this commit amends memo only.
+
 ## 2026-09-05 — M2-R1 θ-map parameter alignment (integrator)
 
 - Branch `cursor/m2-r1-theta-map-20260905` from `origin/main`.

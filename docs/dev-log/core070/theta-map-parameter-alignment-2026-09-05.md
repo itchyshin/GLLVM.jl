@@ -1,10 +1,10 @@
 # θ-map parameter alignment — batch-1 (2026-09-05)
 
 **Ticket:** `RESEARCH-THETA-MAP-20260905` (M2-R1)  
-**Status:** RESEARCH — alignment tables filled enough for **implement-vs-demote**  
+**Status:** RESEARCH COMPLETE for tables — **lean IMPLEMENT** (owner still signs disposition)  
 **Branch:** `cursor/m2-r1-theta-map-20260905`  
 **Oracle R twin:** gllvmTMB worktree HEAD `c5ddd198b` (read-only; D-220)  
-**Julia tip (this memo branch):** see commit tip  
+**Julia tip (this memo branch):** tip of `cursor/m2-r1-theta-map-20260905` (updated this commit)  
 **No programme §7 / true-parity claim.** No `src/` or R engine edits in this ticket.
 
 Related: `theta-map-disposition-2026-09-05.md` · matched pilot
@@ -19,7 +19,7 @@ Related: `theta-map-disposition-2026-09-05.md` · matched pilot
 |---|---|
 | Honest `θ_R → θ_JL` without changing public APIs? | **Yes** for batch-1 defaults — **bijection** on `{b_fix, theta_rr_B, log_phi_*}` once the harness accepts **per-trait** dispersion length `p`. |
 | Pilot 2 blocked cells (`beta_logit`, `nb2_log`)? | **Harness false-negative**, not a model mismatch. Pilot `julia_theta_len` already matches R (`15` / `19`); `theta_map.jl` wrongly requires `length(log_phi_*) == 1`. |
-| Implement vs demote? | Prefer **implement (harness-only)** — fix `tools/core070_second_order/theta_map.jl` (+ matched pilot re-smoke). **Demote** only if owner refuses matched tier for beta/NB2 even after the map fix. |
+| Implement vs demote? | **Lean IMPLEMENT (harness-only).** Evidence is enough: fix `theta_map.jl:34-42` length-1 gate to accept `\|log_phi_*\| == p` on the `fit_gllvm` path; re-smoke matched batch-1. **Demote** only if owner refuses matched tier for beta/NB2 even after that fix (or insists on comparing against shared `fit_*_gllvm` instead of `fit_gllvm`). |
 
 Companion disposition: `theta-map-spec-or-demote-2026-09-05.md`.
 
@@ -71,31 +71,43 @@ Init defaults (`fit-multi.R`): `log_phi_nbinom2` starts at 0; `log_phi_beta` sta
 
 ---
 
-## Julia packed θ (integrator + local smoke; Julia scout may refine)
+## Julia packed θ (Julia scout — authoritative; do not re-scout)
 
-Batch-1 matched driver uses `fit_gllvm` for beta/NB2
-(`tools/core070_second_order/run_matched_batch1.jl`). Per `src/families/fit_gllvm.jl`
-API B: `NegativeBinomial` / `Beta` default **`disp_group = :species`** →
-`fit_*_gllvm_grouped` → `θ = [β; pack_lambda(Λ); log.(disp_1…disp_p)]`.
+Λ packing: `pack_lambda` = **diag then column-wise strict lower** (`src/packing.jl`;
+same convention as gllvmTMB.cpp:343-376). Confirmed by poisson/binomial matched **pass**.
 
-Verified smoke (this session, worktree):
+Batch-1 matched driver (`run_matched_batch1.jl:101-104`) uses **`fit_gllvm`** for
+beta/NB2 — **not** the named shared fitters. Per `fit_gllvm.jl` API B,
+`NegativeBinomial` / `Beta` default `disp_group = :species` → grouped path
+(`grouped_dispersion.jl:328-367`, `:721-760`) →
+`θ = [β; pack_lambda(Λ); log φ_1…φ_p]` or `log r_1…r_p` with **G = p**.
 
-| Fit | `|θ|` via `_family_ci` | Tail names |
+| Cell | Packed order | \|θ\| example (pilot) |
 |---|---|---|
-| `BetaGroupedFit` p=5 K=1 | 15 | `phi[1]…phi[5]` (stored as log in θ) |
-| `NBGroupedFit` p=5 K=2 | 19 | `r[1]…r[5]` (log in θ) |
+| gaussian | `[log_σ_eps; pack(Λ)]` | p=5, K=2 → **10** |
+| poisson / binomial_logit | `[β; pack(Λ)]` | p=5, K=2 → **14** |
+| beta_logit via `fit_gllvm` | `[β; pack(Λ); log φ_1…φ_p]` (G=p) | p=5, K=1 → **15** |
+| nb2_log via `fit_gllvm` | `[β; pack(Λ); log r_1…r_p]` (G=p) | p=5, K=2 → **19** |
 
-Loading pack: `src/packing.jl` — diagonals then column-wise strict lower
-(matches gllvmTMB.cpp:343-376). Confirmed by poisson/binomial matched **pass**.
+Cites: `packing.jl`; `grouped_dispersion.jl:328-367,:721-760`; `fit_gllvm.jl`;
+`confint_family.jl` (`_family_ci` for `BetaGroupedFit` / `NBGroupedFit`);
+`run_matched_batch1.jl:101-104`; `theta_map.jl:34-42,:54-72`.
 
-| Julia path | Dispersion | Pairable to R default? |
+### Critical mismatch (for the memo)
+
+| Path | Dispersion length | Pairable to R default `log_phi_*` ×p? |
 |---|---|---|
-| `fit_gllvm(... Beta/NB)` default | per-trait ×p | **Yes — bijection** |
-| `fit_beta_gllvm` / `fit_nb_gllvm` shared | ×1 | **No** vs R default ×p (nested submodel) |
-| Grouped G < p | ×G | Pairable only if R `dispersion_trait_map` ties same groups |
+| **batch-1 / `fit_gllvm`** (pilot) | **p** (per-trait) | **Yes — bijection** |
+| Named shared `fit_beta_gllvm` / `fit_nb_gllvm` | **1** | **non-pairable** vs R default (nested submodel) |
+| Grouped G < p | G | Pairable only if R `dispersion_trait_map` ties same groups |
 
-**TBD (Julia scout):** exact name strings in `_grouped_dispersion_names`; any
-`theta_diag_B` Julia analogue for batch-1 (none expected).
+`theta_map.jl:34-42` still requires `length(log_phi_*) == 1`. That is a **map bug
+relative to the `fit_gllvm` pilot path**, **not** a shared-vs-per-trait engine
+mismatch on the pilot cells. Pilot `|θ_JL|` already equals R outer length
+(15 / 19).
+
+**Pairing:** R `log_phi_beta` ↔ Julia `log φ_*`; R `log_phi_nbinom2` ↔ Julia
+`log r_*` (same length p; φ ≡ r as size/precision).
 
 ---
 
@@ -148,5 +160,6 @@ accept `length(didx) == p` (species) as well as `== 1` (shared).
 - [x] Parameter alignment table (batch-1)  
 - [x] beta/NB2 dispersion mismatch diagnosed (harness vs model)  
 - [x] Matched-pilot blockers cited  
-- [x] Implement path without public API change identified  
+- [x] Implement path without public API change identified (`theta_map.jl` length-p gate)  
+- [x] Implement-vs-demote **leaning stated** (IMPLEMENT harness-only)  
 - [ ] Owner chooses implement vs demote (append `theta-map-disposition-2026-09-05.md` §Owner decision)

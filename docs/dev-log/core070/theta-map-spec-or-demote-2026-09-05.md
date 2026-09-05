@@ -5,6 +5,8 @@
 
 ## Recommendation: IMPLEMENT (harness-only)
 
+Julia scout confirms batch-1/`fit_gllvm` uses per-trait length **p** (matches R). The length-1 gate in `theta_map.jl:34-42` is the sole blocker on pilot cells — not an engine parameterisation divergence.
+
 Matched-coordinates for beta_logit / nb2_log is blocked by
 `theta_map.jl` requiring a single shared `log_phi_*`, while both engines'
 **defaults** use per-trait log-dispersion of length p. Pilot lengths already
