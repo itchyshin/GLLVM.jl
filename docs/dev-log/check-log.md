@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## 2026-09-05 — parity-next 3-day package closeout (V1 + Melissa)
 
 Mechanical verify + plan-actual for G0 **3-day package** (`trust-fence + thin-wedge`).
@@ -24,6 +25,8 @@ Branch: `cursor/parity-next-v1-verify-20260905`. Base: wedge A tip (PR #289).
 
 ---
 
+=======
+>>>>>>> origin/main
 ## 2026-09-05 — parity-next wedge A bridge ACC scout (S6a, PASS thin)
 
 G0 wedge **A** on Ayumi `urbanisation_map` via `engine = "julia"` (ACC id
