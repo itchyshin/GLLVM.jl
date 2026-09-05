@@ -1,3 +1,25 @@
+## 2026-09-05 — TRUE PARITY ultra-plan (Phase 0–2, STOP AT G0)
+
+Multi-month programme plan + programme decision map + wayfinder ladder.
+**Does not replan** parity-next 3-day package (main @ `a2e641de`).
+
+**Deliverables:**
+- `docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md`
+- `docs/dev-log/core070/true-parity-programme-decision-map-2026-09-05.md`
+- `docs/dev-log/plans/2026-09-05-true-parity-wayfinder.md`
+- `.unlazy/true-parity-programme/GATES.md` — 10/10 MET (local, gitignored)
+
+**Phase 0.6:** decision-map-first; Phase 1 build waits on map clearance + owner G0.
+**SIZE:** ~9–18 months · ~120–230 agent-days honest envelope.
+
+```sh
+node ~/shinichi-brain/skills/unlazy/scripts/gate-check.mjs --reverify .unlazy/true-parity-programme/GATES.md
+```
+
+Branch: `cursor/true-parity-ultra-plan-20260905`. **STOP AT G0** — map-clearance arc only.
+
+---
+
 ## 2026-09-05 — parity-next 3-day package closeout (V1 + Melissa)
 
 Mechanical verify + plan-actual for G0 **3-day package** (`trust-fence + thin-wedge`).
