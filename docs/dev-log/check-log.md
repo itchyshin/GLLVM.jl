@@ -1,3 +1,29 @@
+## 2026-09-05 — parity-next day-1 trust fences (S4 + S5)
+
+G0 locked: 3-day package; day-1 trust only (wedge A deferred).
+
+**S4 — §7 / matched-coords claim boundary:**
+- `docs/dev-log/core070/second-order-parity-contract.md` §7 — programme §7 **NOT DONE**; matched-coords batch-1 **3 pass / 2 blocked** (beta/nb2 θ-map); tier **NOT implemented**; cites #285 receipt on main.
+- `docs/src/gllvmtmb-parity.md` — new "Second-order programme status" subsection with same fence.
+
+**S5 — advisory smoke disposition:**
+- `docs/dev-log/core070/advisory-smoke-fail-disposition-2026-09-05.md` — NB2, truncated NB2 BFGS, Student-t fixed-ν `r_gradient_max` fails → **advisory-red**; points at `advisory-r-smoke-nb2-studentt-2026-09-05.md` (#284).
+
+**Verify:**
+```sh
+rg -n 'NOT DONE|3 pass / 2 blocked|advisory-red' \
+  docs/dev-log/core070/second-order-parity-contract.md \
+  docs/src/gllvmtmb-parity.md \
+  docs/dev-log/core070/advisory-smoke-fail-disposition-2026-09-05.md
+test -f docs/dev-log/core070/advisory-smoke-fail-disposition-2026-09-05.md
+```
+
+Branch: `cursor/parity-next-day1-trust-20260905`. Base: `origin/main` @ `753a0173`.
+
+**Not claiming:** true parity; contract §7 programme complete; matched-coordinates tier shipped; CI oracle replacement; holdout clearance.
+
+---
+
 ## 2026-09-05 — Option D Rose claim hygiene (parallel slice)
 
 Rose scan on user-facing prose; surgical doc edits only. Did not touch #281
