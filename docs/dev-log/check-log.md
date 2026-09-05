@@ -17740,12 +17740,7 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 ## 2026-09-05 — Option D twin-trust bundle verification
 
 - **#281 MERGED** @ `51e43a4a` (D1 gate receipt post-#280).
-<<<<<<< HEAD
 - Option D slices merged on main: #282 holdouts (OUT 8 / PARTIAL 3 / NOT ATTEMPTED 1), #283 Rose hygiene,
   #284 advisory R smoke (**15/3/18**), #285 matched-coords pilot (**3/0/2/0**); closeout #286.
-=======
-- Parallel draft PRs: #282 holdouts (OUT 8 / PARTIAL 3 / NOT ATTEMPTED 1; reconciled @ `563f84b1`), #283 Rose hygiene,
-  #284 advisory R smoke (**15/3/18**), #285 matched-coords pilot (**3/0/2/0**).
->>>>>>> 9c4fcb12 (Align bundle holdouts counts with PR #282 reconciliation.)
 - Bundle after-task: `2026-09-05-option-d-twin-trust-bundle.md`.
 - **Not claiming:** true parity; contract §7 programme complete; 0.7.1 full surface port.
