@@ -1,13 +1,13 @@
 # Phylo transport — the four sub-questions, brought to the maintainer (2026-09-02)
 
-**Status: QUESTIONS FOR DECISION — no code.** Maintainer decision round2-3 #7 made phylo
-transport the next engine track and required the conversion design to be *reviewed before any
-code*. The design is committed at `phylo-transport-design.md` (recommendation: hybrid — trees
-pass as topology into `make_phy`; pedigree / sparse `Ainv` / dense `vcv=` pass as R's already
-canonical sparse precision bundle with explicit `scale` and `log_det` checksums; Julia adds a
-`PrecisionPhy` consumer and a unit-height mode; no new inversion anywhere). This note restates
-its §5 open questions with one recommendation and one safe default each, so a single reply
-closes the review. Nothing below is implemented under any answer until the maintainer replies.
+**Status: ADA-DEFAULT ANSWERS RECORDED 2026-09-05 (M0-6) — pending owner override.**
+Maintainer decision round2-3 #7 made phylo transport the next engine track and required the
+conversion design to be *reviewed before any code*. The design is committed at
+`phylo-transport-design.md`. This note restates §5 open questions with recommendations and
+safe defaults. **Map-clearance arc:** Ada defaults below are recorded as programme answers
+(P10); Shinichi may override any item without reopening G0.
+
+Nothing below is implemented under any answer until the build arc starts.
 
 Reviewer lenses used: Noether (symbolic ↔ API consistency), Fisher (estimand), Gauss (numerics),
 Hopper (R accessor semantics; all R citations are to the frozen 0.7.0 readback).
@@ -79,9 +79,37 @@ at ≤120 cores behind a D-139 pre-run. **Recommendation:** Totoro now; Nibi tom
 fallback. **Safe default:** proceeds under the approved plan; the evidence, not the scheduler,
 is what #12 asked for.
 
-## What happens after the reply
+## Ada-default answers (2026-09-05 — M0-6 / P10)
 
-Answers feed `phylo-transport-design.md` §4 slices S1–S4 unchanged in order (PrecisionPhy
-consumer → scale alignment → bridge payload + gate lift → paired parity leaf). No slice starts
-before the reply. Related: `bridge-coverage-matrix.md` §R-ADAPTER-BLOCKED,
+Recorded as programme decisions. Each answer adopts the recommendation and safe default
+already stated above in this file.
+
+### Q1 — Estimand convention
+
+**Ada-default 2026-09-05 (map-clearance M0-6); pending owner override:** Opt-in
+`correlation::Bool`, default `false` for native fits; bridge always sets `true`.
+
+### Q2 — Dense `vcv=` admission
+
+**Ada-default 2026-09-05 (map-clearance M0-6); pending owner override:** Admit with
+condition-number shipped; Julia warns when κ(C) > 1e8.
+
+### Q3 — Kernel scope
+
+**Ada-default 2026-09-05 (map-clearance M0-6); pending owner override:** Split kernel into
+slice S3b after phylo + animal green.
+
+### Q4 — Non-ultrametric trees
+
+**Ada-default 2026-09-05 (map-clearance M0-6); pending owner override:** Defer with gate
+`GJL-GATE-PHYLO-NONULTRAMETRIC`; native accepts non-ultrametric in `correlation=false` mode.
+
+**P10 status:** CLOSED as Ada-default pending override (not blocking map clearance).
+
+## What happens after owner confirms or overrides
+
+Confirmed answers feed `phylo-transport-design.md` §4 slices S1–S4 unchanged in order
+(PrecisionPhy consumer → scale alignment → bridge payload + gate lift → paired parity leaf).
+Build slices start only after map clearance + first phylo build arc. Related:
+`bridge-coverage-matrix.md` §R-ADAPTER-BLOCKED,
 `required-source-case-map.json` (the 121 `BLOCKED_NEEDS_JULIA_SURFACE` rows).

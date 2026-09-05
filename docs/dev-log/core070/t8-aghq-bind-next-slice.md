@@ -39,4 +39,30 @@ Oracle: frozen gllvmTMB 0.7.0 `b4d5fee6` for engine; policy reads may use R twin
 - Local R + compiled TMB in twin worktree (capability proof per cursor handover).
 - Medium-risk rows need p≥20 trait fixtures (size from existing core070 fixtures or new seed audit per T15).
 
-Does **not** gate true-parity claim until all 14 bound and second-order contract cells run.
+Bind work is **optional catch-up** (compatibility tier only). AGHQ rows do **not** gate the
+v0.true-parity claim unless the owner promotes them into gate-tier (M0-8 amendment below).
+
+---
+
+## Gate-tier disposition (2026-09-05 — M0-8 / P8)
+
+**Authority:** G0 locked **2026-09-05** (`docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md`);
+programme ticket **P8** (`true-parity-programme-decision-map-2026-09-05.md` §P8); map ticket
+**M0-8**.
+
+**Decision:** **Defer AGHQ from v0.true-parity gate-tier** unless owner explicitly promotes.
+
+| Item | Disposition |
+|---|---|
+| 14 bindable AGHQ policy rows | Bound 2026-09-04 with receipts (`aghq-public-policy-bind-receipt-2026-09-04.json`) — **compatibility tier**, not gate-tier |
+| T8 bind / ledger apply work | **Optional catch-up** — no programme blocker; run when twin R toolchain is convenient |
+| AGHQ as integration engine for qualification | **Out of v0.true-parity claim** — Laplace remains default oracle path (G0 Q1) |
+| Promotion path | Owner sentence or signed gate-tier amendment adding AGHQ rows |
+
+**P8 status:** CLOSED — defer from gate-tier (research + decide complete for map clearance).
+
+**M0-8 status:** CLOSED — strategy recorded in this file.
+
+**Rationale:** True parity qualification runs against frozen 0.7.0 Laplace surface; AGHQ is
+opt-in on R `main` and adds estimator variance not required for the gate-tier Ada default
+(`true-parity-gate-tier-2026-09-05.md` §E).
