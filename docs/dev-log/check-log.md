@@ -17680,3 +17680,12 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - HEAD `5e55a205`; local parallel x8 gaussian realistic cells (~218s); nibi Julia artifacts refreshed.
 - `python3 tools/core070_realistic_size_collect.py` nibi + totoro-merged → `realistic-size-paired-20260904-merged.csv`; SE D1 **24/0/0** (was 16/0/8 skip).
 - Updated `second-order-d1-gate-receipt-2026-09-04.json`.
+
+## 2026-09-05 — Option D §6 holdouts disposition (parallel slice)
+
+- Branch `cursor/option-d-holdouts-20260905`; evidence audit only (no new compute).
+- Extended `second-order-holdouts-2026-09-04.md` disposition pass: OUT 8 / PARTIAL 3 / NOT ATTEMPTED 1.
+- Realistic Gaussian holdout → PARTIAL (intercept-`X` repair 2026-09-04; 8/8 SE D1).
+- Added `advisory-r071-smoke-2026-09-05.md` (0.7.1 receipt-only; NB2 health fail).
+- After-task: `2026-09-05-option-d-holdouts-disposition.md`.
+- **Not claiming:** programme-level second-order parity (contract §7); holdout clearance.
