@@ -1,11 +1,14 @@
-# Second-order parity contract — DEFAULTED 2026-09-04 (D1/D2; Option A + Ada defaults)
+# Second-order parity contract — SIGNED 2026-09-05 (T3 / P4 / M0-2)
 
-Status: **DEFAULTED 2026-09-04** — tolerances per D1; `cond(H)` scaling uses **R's
-number** per D2 with both recorded in every receipt. Extends, does not replace, the
-first-order contract in `docs/dev-log/core070/delta-matched-contract.md`. Oracle:
-frozen `gllvmTMB` 0.7.0 export surface, commit
+Status: **SIGNED 2026-09-05** — maintainer adopted Ada default tolerances (G0 map-clearance
+M0-2); supersedes DEFAULTED 2026-09-04 draft status for tolerance gates. `cond(H)` scaling
+uses **R's number** per D2 with both recorded in every receipt. Extends, does not replace,
+the first-order contract in `docs/dev-log/core070/delta-matched-contract.md`. Oracle: frozen
+`gllvmTMB` 0.7.0 export surface, commit
 `b4d5fee64def88bc768dda1f1f77c29b295edd86` (capability-status join uses
 `origin/main` on both repos — that file post-dates the oracle pin).
+
+**P4 closed:** adopt draft rtol/abs (§4 table); conditioning recorded, **not gated**.
 
 ## 1. Scope
 

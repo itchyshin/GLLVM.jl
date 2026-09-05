@@ -11,15 +11,41 @@
 
 ---
 
-## Destination
+## Destination — **LOCKED 2026-09-05 (G0; M0-1)**
 
-**When this programme is done**, GLLVM.jl satisfies all seven clauses in the 2026-09-02 true-parity map **and** the owner has signed a **gate-tier row list** naming which ledger rows are required for the public **v0.true-parity** claim (expected **~30–50 rows**, not all 497).
+**Oracle:** frozen gllvmTMB **0.7.0** commit `b4d5fee64def88bc768dda1f1f77c29b295edd86` for the
+qualification claim. R `0.7.1+` surfaces (`traits()`, `column_coef`, …) live on a **separate
+catch-up board** — not merged into v0.true-parity until owner promotes (see §0.7.1 Class-1).
 
-Concretely, a maintainer can run representative **R workflows against frozen gllvmTMB 0.7.0** through Julia (native and/or bridge-eligible paths), obtain **first- and second-order** agreement at committed tolerances, pass **realistic-size** and **real-data** acceptance classes, and read a single page (`docs/src/gllvmtmb-parity.md`) that states what parity does **not** mean — **without** implying harness parity, FREE=0 ledger accounting, or 3/5 matched-coordinates pilot = programme §7 complete.
+**Bridge:** **tiered** — thin JuliaCall for ACC-class real workflows; native Julia for rows the
+bridge cannot honestly carry. Bridge-eligible rows require ACC-class receipts (P2 closed; design
+note owed by parallel slice M0-5).
 
-**Stopping condition:** programme decision map has **no open owner tickets**; gate-tier signed; Rose audit OK; **no** CRAN/Julia General release required as part of this destination.
+**Must-have rows:** **~30–50 gate-tier** rows for v0.true-parity (not all 497). Signed list
+pending owner (P3 — parallel slice M0-3).
 
-**Not the destination:** closing all ~122 `BLOCKED_NEEDS_JULIA_SURFACE` rows unless owner promotes them into gate-tier in Q3.
+**Compute:** **Totoro-first**; DRAC by maintainer approval when estimate warrants (D-50 / D-139).
+Cursor chat capped at smoke ≤30 min; campaigns never block the lane (D-220).
+
+**Matched-coordinates (§7):** **θ-map research first** (2-week ticket); owner then chooses
+implement vs demote matched tier (P5 — parallel slice M0-4). Each-own-optimum remains the
+shipped claim tier until then.
+
+**When this programme is done**, GLLVM.jl satisfies all seven clauses in the 2026-09-02
+true-parity map **and** the owner has signed the gate-tier row list above.
+
+Concretely, a maintainer can run representative **R workflows against frozen 0.7.0** through
+Julia (native and/or bridge-eligible paths), obtain **first- and second-order** agreement at
+committed tolerances (`second-order-parity-contract.md`, signed M0-2), pass realistic-size and
+real-data acceptance classes, and read `docs/src/gllvmtmb-parity.md` stating what parity does
+**not** mean — **without** implying harness parity, FREE=0 ledger accounting, or 3/5
+matched-coordinates pilot = programme §7 complete.
+
+**Stopping condition:** programme decision map has **no open owner tickets**; gate-tier signed;
+Rose audit OK; **no** CRAN/Julia General release required.
+
+**Not the destination:** closing all ~122 `BLOCKED_NEEDS_JULIA_SURFACE` rows unless owner
+promotes them into gate-tier; 0.7.1 Class-1 formula grammar (§0.7.1 Class-1 below).
 
 ---
 
@@ -31,11 +57,14 @@ Concretely, a maintainer can run representative **R workflows against frozen gll
 |---|---|---|
 | Programme vs harness | Fixture + real-workflow = true parity; harness alone insufficient | `true-parity-decision-map.md` §Destination |
 | Qualification direction | One-way R→Julia @ 0.7.0; reverse = tool list to R lane | T1; D-204 |
-| Oracle | Frozen 0.7.0 `b4d5fee6` for qualification; 0.7.1+ separate catch-up board | **G0 2026-09-05** (Shinichi 1–5 yes); T2 |
-| Bridge | Tiered — thin JuliaCall ACC-class; native Julia elsewhere | **G0 2026-09-05** |
-| Gate-tier size | ~30–50 must-have rows for v0.true-parity (not all 497) | **G0 2026-09-05** |
-| Compute | Totoro-first; DRAC by approval (D-50 / D-139) | **G0 2026-09-05** |
-| Matched-coords (§7) | θ-map research first; then owner choose implement vs demote | **G0 2026-09-05** |
+| Oracle | Frozen **0.7.0** `b4d5fee6` for qualification; **0.7.1+** separate catch-up board | **G0 2026-09-05**; **P1 CLOSED** (M0-1) |
+| Bridge | **Tiered** — thin JuliaCall ACC-class; native Julia elsewhere; bridge-eligible tag in ledger | **G0 2026-09-05**; **P2 CLOSED** (M0-1) |
+| Gate-tier size | ~**30–50** must-have rows for v0.true-parity (not all 497) | **G0 2026-09-05**; signed list pending (P3) |
+| Compute | **Totoro-first**; DRAC by approval (D-50 / D-139) | **G0 2026-09-05**; **P12 CLOSED** (M0-1) |
+| Matched-coords (§7) | θ-map **research first**; then owner choose implement vs demote | **G0 2026-09-05**; P5 open (M0-4 parallel) |
+| Second-order tolerances | Adopt draft rtol/abs; **conditioning recorded, not gated** | **SIGNED 2026-09-05**; **P4 CLOSED** (M0-2); `second-order-parity-contract.md` |
+| Promotion authority (T9) | **Draft PR + Rose scan = proposal**; **maintainer merge = sign-off** | **2026-09-05**; **P9 CLOSED** (M0-7) |
+| 0.7.1 Class-1 surfaces | **Change-control** — not in 0.7.0 true-parity claim | **2026-09-05**; **P11 CLOSED map-only** (M0-9); §0.7.1 below |
 | Second-order scope | SE + fixed-effect vcov + Wald endpoints; not fitted/predict/residuals | T3 |
 | Grouping levels | Four names required on both sides; Julia surfaces mostly owed | T12; D6 |
 | One Cursor lane | D-220; campaigns on Totoro/DRAC, not in chat | vault D-220 |
@@ -44,23 +73,61 @@ Concretely, a maintainer can run representative **R workflows against frozen gll
 
 ---
 
+## Promotion authority (T9 / P9) — **CLOSED 2026-09-05 (M0-7)**
+
+A row disposition flip or gate-tier promotion requires:
+
+1. **Proposal:** a **draft PR** with evidence paths cited; **Rose pre-publish scan** = proposal
+   (consistency of claim vs receipt, no overclaim on user-facing surfaces).
+2. **Sign-off:** **maintainer merge** of that PR = owner sign-off. No separate sentence required
+   per row when the PR body enumerates rows and Rose verdict.
+
+Ad-hoc chat approval does **not** flip ledger dispositions. Emergency revert remains maintainer
+authority outside this rule.
+
+---
+
+## 0.7.1 Class-1 — change-control sub-map (M0-9 / P11)
+
+**Verdict:** R `0.7.1+` Class-1 exports are **not in the 0.7.0 true-parity claim.** They live on
+a **separate catch-up board** until owner promotes rows into gate-tier. Detail:
+`docs/dev-log/core070/gllvmtmb-071-gap-sheet.md`.
+
+### §1 — Scope boundary
+
+| In v0.true-parity (0.7.0 oracle) | On 0.7.1 catch-up board only |
+|---|---|
+| Long-format `gllvmTMB()` grammar GLLVM.jl already pairs | `traits()` wide-data LHS |
+| Frozen 0.7.0 export surface @ `b4d5fee6` | `column_coef()`, `*_coef`, `slope`, `*_slope` family |
+| Matrix / explicit long-format Julia entry points | `gllvmTMB(..., column_data = NULL)` path |
+| Existing bridge families (6 receipted + extensions per gate-tier) | iSDM / spatial / column-coefficient TMB gates |
+
+### §2 — Disposition default (until catch-up arc)
+
+| Surface class | Default disposition | Julia action |
+|---|---|---|
+| `traits()` wide grammar | **R-only compatibility** | No port in true-parity programme; optional later formula arc |
+| Response-column coefficient family (`column_coef`, `phylo_coef`, …) | **R-only compatibility** | No Julia `@formula` counterpart; track on catch-up board |
+| `column_data` argument | **Untracked / compatibility** | Not in frozen oracle call shapes |
+| Class-2 interval claim rewrite (0.7.1) | **Docs hygiene only** | Check GLLVM.jl cites of old R coverage wording |
+
+### §3 — Promotion path
+
+Owner may promote individual Class-1 rows into gate-tier via T9 rule (draft PR + Rose + merge).
+Re-freeze oracle only after second-order contract + explicit owner call (T2 unchanged).
+
+### §4 — Cross-reference
+
+Programme map P1 (0.7.0-only claim) and this section are **consistent**: qualification runs
+against `b4d5fee6`; 0.7.1 surfaces are explicitly fenced.
+
+---
+
 ## Not yet specified — programme tickets
 
 Each line is a **map ticket** (decide / research / prototype). Default = Ada recommendation if Shinichi says "use your judgment".
 
-### P1 — Destination ref: 0.7.0 oracle vs 0.7.1+ live surface
-
-- **Question:** Does v0.true-parity qualify against **only** frozen 0.7.0, or also require 0.7.1 Class-1 exports (`traits()`, `column_coef`, …)?
-- **Who:** decide-with-Shinichi
-- **Default:** 0.7.0 for claim; 0.7.1+ on separate catch-up board until promoted
-- **Blocks:** gate-tier row pick (P3), public wording
-
-### P2 — Bridge width and bridge-eligible rows
-
-- **Question:** Which ledger rows must pass via `engine = "julia"` bridge vs native Julia only?
-- **Who:** research → decide-with-Shinichi
-- **Default:** tag bridge-eligible in ledger; no bridge row without ACC-class receipt
-- **Blocks:** M3 surface arc ordering
+**Closed in spine slice (M0-1/2/7/9):** P1, P2, P4, P9, P11, P12 — see Decisions so far.
 
 ### P3 — Gate-tier row list (~30–50 for v0.true-parity)
 
@@ -68,13 +135,6 @@ Each line is a **map ticket** (decide / research / prototype). Default = Ada rec
 - **Who:** decide-with-Shinichi (Fisher + Pat input)
 - **Default:** paired second-order families + four grouping levels + one real-data repo per major family class
 - **Blocks:** all build slicing
-
-### P4 — Second-order tolerances (T3 closure)
-
-- **Question:** Adopt draft rtol/abs in `second-order-parity-contract.md` or tighten?
-- **Who:** decide-with-Shinichi after contract reread
-- **Default:** adopt draft; record conditioning, not gate
-- **Blocks:** M2 realistic-size grid
 
 ### P5 — Matched-coordinates tier (§7)
 
@@ -104,32 +164,12 @@ Each line is a **map ticket** (decide / research / prototype). Default = Ada rec
 - **Default:** defer AGHQ from v0.true-parity gate-tier unless owner promotes
 - **Blocks:** AGHQ receipts only
 
-### P9 — Promotion authority (T9)
-
-- **Question:** Rose draft PR sufficient to flip disposition, or maintainer sentence each?
-- **Who:** decide-with-Shinichi
-- **Default:** draft PR + Rose = proposal; maintainer merge = sign-off
-
 ### P10 — Phylo transport Q1–Q4
 
 - **Question:** Unanswered phylo design questions
 - **Who:** decide-with-Shinichi
 - **Default:** defaults in `phylo-transport-questions-2026-09-02.md`
 - **Blocks:** phylo structured dependence arc
-
-### P11 — traits() / column_coef / 0.7.1 Class-1
-
-- **Question:** Port, bridge-only, or disposition as R-only compatibility?
-- **Who:** decide-map-only (four-section sub-map)
-- **Default:** change-control — not in 0.7.0 true-parity claim
-- **Blocks:** formula recognizer programme
-
-### P12 — Compute envelope
-
-- **Question:** Totoro vs DRAC split for multi-seed recovery and realistic-size grids
-- **Who:** decide-with-Shinichi
-- **Default:** Totoro-first; DRAC when estimate >30 min smoke or grid >10k fits (D-139)
-- **Blocks:** campaign launches
 
 ### P13 — Mechanical guard for one-lane twin (D-220 caveat)
 
@@ -164,6 +204,8 @@ Each line is a **map ticket** (decide / research / prototype). Default = Ada rec
 
 ## Map clearance definition
 
-The programme map is **cleared** when: P1–P12 each have a recorded answer (or explicit defer with owner sign-off); P13 scheduled; Rose scans programme + 2026-09-02 maps for contradiction; ultra-plan Phase 1 slice list written from cleared tickets.
+The programme map is **cleared** when: P3, P5–P8, P10 each have a recorded answer (or explicit
+defer with owner sign-off); P13 scheduled; P1/P2/P4/P9/P11/P12 **closed** (spine slice 2026-09-05);
+Rose scans programme + 2026-09-02 maps for contradiction; ultra-plan Phase 1 slice list complete.
 
 **Next hand-off:** `/goal` map-clearance arc → then first **build** arc (likely M2 second-order or gate-tier surface — chosen after P3).
