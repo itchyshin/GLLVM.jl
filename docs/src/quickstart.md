@@ -51,8 +51,8 @@ the R route remains the richer formula-first documentation path and its
 apply to claims about its route.
 
 The shared-residual `sigma_y_site()`, `communality()`, and `correlation()`
-extractors do not yet accept `GaussianPerVarFit`. For a per-response fit,
-construct the rotation-invariant quantities explicitly:
+extractors do not yet accept `GaussianPerVarFit`. For this experimental
+per-response route, construct the rotation-invariant quantities explicitly:
 
 ```julia
 Σ_hat = fit.Λ * fit.Λ' + Diagonal(fit.ψ²)

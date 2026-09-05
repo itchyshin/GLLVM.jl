@@ -27,7 +27,7 @@ the same model as R's ordinary `latent()` teaching fit.
 - [x] `julia --project=docs docs/make.jl --local` and the R article build checks succeed.
 - [ ] Rendered pages inspected at 1440 px, 768 px, and 390 px.
 - [ ] Keyboard/focus, reduced-motion, and horizontal-overflow checks recorded.
-- [x] Source-versus-rendered scan confirms the extractor-interface limit,
-  orientation, partial parity, residual semantics, and Gaussian-only speed
-  wording.
+- [x] Source-versus-rendered scan confirms experimental status, the
+  extractor-interface limit, orientation, partial parity, residual semantics,
+  and Gaussian-only speed wording.
 - [ ] Screenshots and an evidence report exist; nothing is published.
