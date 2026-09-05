@@ -1,0 +1,23 @@
+{
+  "dgp_source": "test/parity/test_beta_parity.jl (seed=45,p=5,K=1,n=60)",
+  "tier_tolerance_se_rel": 0.0001,
+  "note": "Matched-coordinates diagnostic only; not programme §7 second-order parity claim.",
+  "julia_theta_len": 15,
+  "matched_pass": false,
+  "tier": "matched-coordinates",
+  "anchor": "R_opt_par",
+  "pilot_status": "blocked",
+  "matched_coordinates": true,
+  "each_own_se_max_relative_delta": 2.218879423230192e-6,
+  "r_param_counts": {"b_fix": 5, "theta_rr_B": 5, "log_phi_beta": 5},
+  "status": "blocked",
+  "cell_id": "beta_logit",
+  "blocker_note": "Julia uses one shared log_phi_beta; R has 5 entries — cannot transplant θ without changing the model",
+  "blocker_reason": "dispersion parameterization mismatch",
+  "seed": 45,
+  "tier_tolerance_vcov_fro_rel": 0.0001,
+  "programme_section7_claim": false,
+  "K": 1,
+  "p": 5,
+  "n": 60
+}
