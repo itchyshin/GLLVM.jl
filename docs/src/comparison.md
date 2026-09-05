@@ -1,5 +1,14 @@
 # Comparison: R, GLLVM.jl, MixedModels.jl
 
+```@raw html
+<div class="gllvm-route gllvm-route--evidence">
+  <div>
+    <span class="gllvm-route__eyebrow">Context, not a leaderboard</span>
+    <p>Read the timing results together with the fitted model, warm-up conditions, and the limits of each comparison.</p>
+  </div>
+</div>
+```
+
 The benchmark study (see [Benchmarks](benchmarks.md)) runs three engines
 on each cell to put GLLVM.jl's speed numbers in context against the
 state-of-the-art Julia LMM port. The third engine is

@@ -1,5 +1,14 @@
 # Vignette: Phylogenetic GLLVM & Evolutionary Covariance Partitioning
 
+```@raw html
+<div class="gllvm-route gllvm-route--applied">
+  <div>
+    <span class="gllvm-route__eyebrow">Applied phylogenetic route</span>
+    <p>Separate evolutionary history, shared functional structure, and response-specific variation in the same matrix-first model.</p>
+  </div>
+</div>
+```
+
 This vignette demonstrates how to model multivariate trait evolution, estimate
 phylogenetic signal ($H^2$), construct transformed-Wald confidence intervals,
 and partition evolutionary versus environmental covariance using `GLLVM.jl`.

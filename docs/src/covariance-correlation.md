@@ -1,5 +1,14 @@
 # Covariance and correlation
 
+```@raw html
+<div class="gllvm-route gllvm-route--interpret">
+  <div>
+    <span class="gllvm-route__eyebrow">Interpret the shared structure</span>
+    <p>Start with model-implied covariance, correlation, and shared variance; those quantities remain meaningful when a loading axis rotates.</p>
+  </div>
+</div>
+```
+
 A fitted Gaussian GLLVM gives you more than latent ordination axes — it gives
 the full **among-response covariance** `Σ_y` those axes imply, and the
 ecological quantities you read off it: how much of each response's variation is

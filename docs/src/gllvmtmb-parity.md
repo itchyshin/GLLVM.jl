@@ -1,5 +1,14 @@
 # Capability parity with gllvmTMB
 
+```@raw html
+<div class="gllvm-route gllvm-route--evidence">
+  <div>
+    <span class="gllvm-route__eyebrow">Evidence boundary</span>
+    <p>Use this as a route-specific evidence record, not a promise that every R workflow has an identical Julia counterpart.</p>
+  </div>
+</div>
+```
+
 GLLVM.jl is a from-scratch Julia twin of R's `gllvmTMB`, built for fitting speed
 at moderate-to-large species counts while reproducing point estimates and
 likelihoods to **at least six significant digits** on the shared Gaussian +

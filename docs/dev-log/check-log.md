@@ -17989,3 +17989,18 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   raw-HTML integration correction; it explicitly skipped deployment locally.
 - **Not claiming:** official Julia affiliation; GLLVM.jl parity with gllvmTMB;
   a DRM.jl landing-page redesign; or a published documentation update.
+
+## 2026-09-05 — GLLVM.jl reader visual system
+
+- Extended the approved GLLVM.jl mark into a restrained, shared article system:
+  quick start, covariance, model, capability parity, comparison, and both
+  applied vignettes now have route-specific orientation panels.
+- Kept the mark decorative in bundled CSS, added light/dark panel tokens and a
+  first-level-heading accent, and expanded the navigation drawer guard to
+  1320 px after a 1280 px visual review exposed a title/search collision.
+- Validation: `julia --project=docs docs/make.jl --local` completed; generated
+  markup contained no escaped route-panel HTML; all seven modified routes were
+  present. Browser review covered the landing page, quick start, and parity page.
+- After-task: `2026-09-05-gllvmjl-reader-visual-system.md`.
+- **Not claiming:** a model/API/capability change, true parity, official Julia
+  branding, or navigation-taxonomy completion.

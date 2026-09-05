@@ -1,5 +1,14 @@
 # Quick start
 
+```@raw html
+<div class="gllvm-route gllvm-route--start">
+  <div>
+    <span class="gllvm-route__eyebrow">Start here</span>
+    <p>Make the matrix orientation explicit, fit a first Gaussian model, and read the covariance before attaching meaning to individual latent axes.</p>
+  </div>
+</div>
+```
+
 This page walks through one end-to-end fit: simulate a Gaussian GLLVM with one
 residual variance per response, fit it with `fit_gaussian_pervar_gllvm`, inspect the recovered parameters, build
 three flavours of confidence interval, and visualise the recovered
