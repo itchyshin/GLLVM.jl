@@ -87,3 +87,12 @@ Worktree clean on `cursor/m2-foundation-day2-20260905`.
 | Rose | Claim boundary explicit; stacked PR strategy honest while #294 open — OK for draft |
 
 **Integrator verdict:** M2 Foundation day-2 **PARTIAL** — B/C/D done; Poisson smoke stitched; #294 Julia+Documenter green; advisory R 277/9 blocks UNSTABLE until Shinichi call; Totoro queued dry-run only.
+
+## Update (2026-09-05 PM) — advisory fail diagnosis
+
+Both sibling diagnosis notes on this branch recommend **accept advisory-red; merge #294**:
+
+- [`advisory-studentt-cell9-fail-diagnose-2026-09-05.md`](../core070/advisory-studentt-cell9-fail-diagnose-2026-09-05.md) @ `3bef8e33` — seven Cell-9 fails = A6 boundary-flat fixture, not a Julia likelihood defect
+- [`advisory-nb2-trunc-fail-diagnose-2026-09-05.md`](../core070/advisory-nb2-trunc-fail-diagnose-2026-09-05.md) @ `548b57c9` — NB2 boundary trajectory + truncated-NB2 CI oracle rebuild class
+
+Integrator updated [`advisory-r070-smoke-fail-brief-2026-09-05.md`](../core070/advisory-r070-smoke-fail-brief-2026-09-05.md) with Ada recommendation. **#294 still unmerged** — awaiting Shinichi merge call.

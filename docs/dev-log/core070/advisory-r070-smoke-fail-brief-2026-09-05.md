@@ -1,3 +1,6 @@
+> **Ada recommendation:** accept advisory non-gating; merge [#294](https://github.com/itchyshin/GLLVM.jl/pull/294).
+> Diagnosis: [Student-t Cell 9](advisory-studentt-cell9-fail-diagnose-2026-09-05.md) @ `3bef8e33` · [NB2 / truncated NB2](advisory-nb2-trunc-fail-diagnose-2026-09-05.md) @ `548b57c9`.
+
 # Advisory R 0.7.0 smoke — nine fail brief (PR #294 CI)
 
 **Date:** 2026-09-05  
@@ -31,4 +34,6 @@
 
 Same family cluster as Option D live-R slice (`advisory-smoke-fail-disposition-2026-09-05.md`, `advisory-r-smoke-nb2-studentt-2026-09-05.md`). **advisory-red** — not a Julia CI gate; retained frozen oracle authority unchanged.
 
-**Needs Shinichi:** accept advisory non-gating and merge #294, or triage NB2 / truncated-NB2 / Student-t first.
+Per-cell diagnosis: [Student-t Cell 9](advisory-studentt-cell9-fail-diagnose-2026-09-05.md) (7 fails — A6 boundary-flat fixture) · [NB2 / truncated NB2](advisory-nb2-trunc-fail-diagnose-2026-09-05.md) (2 fails — boundary trajectory + CI oracle rebuild class). Both recommend **accept advisory-red**.
+
+**Needs Shinichi:** merge #294 on Ada recommendation above, or override and triage first.
