@@ -4,7 +4,7 @@
 **Worktrees:** JL `~/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904` · R `~/local-scratch/lanes/gllvmTMB-gllvm-twin-20260904` (read-only; no engine surgery)  
 **Oracle (current):** frozen gllvmTMB 0.7.0 `b4d5fee64def88bc768dda1f1f77c29b295edd86`  
 **Main @ sweep:** `a2e641de` (Option D + parity-next 3-day package merged)  
-**Status:** **MAP CLEARANCE CLOSED 2026-09-05 (M0-1…M0-10)** — G0 locked; Rose OK-with-owner-signoffs; first build arc awaits owner pick + gate-tier sign-off
+**Status:** **MAP CLEARANCE CLOSED 2026-09-05 (M0-1…M0-10)** — G0 locked; Rose OK-with-owner-signoffs; **gate-tier SIGNED 2026-09-05**; first build arc awaits owner pick
 
 ---
 
@@ -197,7 +197,7 @@ MUST STOP: merge to main; any src/ or test/ production code; gllvmTMB edits; tru
 |---|---|---|---|---|---|
 | **M0-1** | Lock destination paragraph (oracle, bridge, tiers) | decide-with-Shinichi | §Destination in programme map | G0 Q1–Q3 | **CLOSED** 2026-09-05 |
 | **M0-2** | Sign second-order tolerances (T3) | decide-with-Shinichi | `second-order-parity-contract.md` amendment | G0 | **CLOSED** 2026-09-05 |
-| **M0-3** | Gate-tier row pick (~30–50) | decide-with-Shinichi | `docs/dev-log/core070/true-parity-gate-tier-2026-09-05.md` | M0-1 | **CLOSED** PROPOSED 2026-09-05 — sign-off pending |
+| **M0-3** | Gate-tier row pick (~30–50) | decide-with-Shinichi | `docs/dev-log/core070/true-parity-gate-tier-2026-09-05.md` | M0-1 | **CLOSED SIGNED** 2026-09-05 (42 rows; maintainer sign-off) |
 | **M0-4** | θ-map disposition (implement vs demote matched tier) | decide + optional prototype | `docs/dev-log/core070/theta-map-disposition-2026-09-05.md` | M0-2 | **CLOSED** research-scheduled 2026-09-05 |
 | **M0-5** | Bridge-eligible row tag | research | `bridge-eligible-row-tag-design-2026-09-05.md` (doc only) | M0-1 | **CLOSED** design note 2026-09-05 |
 | **M0-6** | Phylo Q1–Q4 | decide-with-Shinichi | `phylo-transport-questions-2026-09-02.md` | — | **CLOSED** Ada-default pending override 2026-09-05 |
@@ -242,7 +242,7 @@ Full ladder: `docs/dev-log/plans/2026-09-05-true-parity-wayfinder.md` (**wayfind
 
 ## G0 LOCKED — map-clearance arc **CLOSED 2026-09-05**
 
-Map tickets M0-1…M0-10 closed. **Do not start Phase 3 engine work** until owner picks first build arc and (recommended) signs gate-tier list.
+Map tickets M0-1…M0-10 closed. **Gate-tier signed 2026-09-05.** Do not start Phase 3 engine work until owner picks first build arc.
 
 ---
 

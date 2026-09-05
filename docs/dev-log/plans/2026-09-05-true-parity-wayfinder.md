@@ -47,12 +47,12 @@ G0 (now) ──► M0 ──► M1 ──► M2 ──► M3 ──► M4 ──
 **Done when:**
 
 - Tickets P1–P12 closed or dispositioned in programme map ✅
-- Gate-tier row **list drafted** (P3) — **42 rows PROPOSED**; maintainer sign-off still owed ✅
+- Gate-tier row **list signed** (P3) — **42 rows SIGNED 2026-09-05** ✅
 - Rose scan: no contradiction between 2026-09-02 and 2026-09-05 maps ✅
 - Ultra-plan Phase 1 map slice list complete ✅
 - `.unlazy/true-parity-programme/` map-leaf gates green ✅
 
-**Remaining before v0.true-parity claim (not M1 blockers):** signed gate-tier; θ-map research outcome; phylo Ada-default override if any.
+**Remaining before v0.true-parity claim (not M1 blockers):** θ-map research outcome; phylo Ada-default override if any.
 
 **Hand-off:** paste-ready `/goal` for first build arc (owner picks M2 vs partial M3)
 
