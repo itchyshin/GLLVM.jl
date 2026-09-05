@@ -1,6 +1,11 @@
 # TRUE PARITY programme — decision map (2026-09-05)
 
-**Extends** (does not replace) `docs/dev-log/core070/true-parity-decision-map.md` (2026-09-02 wayfinder map).  
+**Extends** (does not replace) the live twin maps:
+- Julia: `docs/dev-log/core070/true-parity-decision-map.md` (2026-09-02)
+- R: `docs/dev-log/2026-09-02-true-parity-decision-map-gllvmtmb.md` (read-only reference)
+
+**Wayfinder:** no standalone `/wayfinder` skill — rules live in `~/shinichi-brain/skills/ultra-plan/SKILL.md` §Decision map + Phase 0.6; scout brief at `~/local-scratch/true-parity-wayfinder-brief-20260905.md`.
+
 **Purpose:** programme-level tickets for the **multi-month TRUE PARITY journey** after the 3-day parity-next package closed on main @ `a2e641de`.  
 **Rule:** map tickets hold **questions**; build slices follow map clearance (ultra-plan Phase 0.6).
 

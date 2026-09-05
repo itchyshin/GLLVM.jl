@@ -28,7 +28,9 @@ DISCIPLINE: verify=unlazy gates on map leaves · compute=Totoro/DRAC after D-139
 | Programme decision map (extends 2026-09-02 map) | `docs/dev-log/core070/true-parity-programme-decision-map-2026-09-05.md` |
 | Wayfinder-compatible milestone ladder | `docs/dev-log/plans/2026-09-05-true-parity-wayfinder.md` |
 | Map-clearance acceptance ledger | `.unlazy/true-parity-programme/GATES.md` (gitignored run state) |
-| Prior true-parity map (cited, not replaced) | `docs/dev-log/core070/true-parity-decision-map.md` |
+| Prior true-parity map — Julia (cited, not replaced) | `docs/dev-log/core070/true-parity-decision-map.md` |
+| Prior true-parity map — R twin (read-only) | `docs/dev-log/2026-09-02-true-parity-decision-map-gllvmtmb.md` |
+| Wayfinder scout brief (no standalone skill) | `~/local-scratch/true-parity-wayfinder-brief-20260905.md` |
 | Prior 3-day plan (DONE — do not replan) | `docs/dev-log/plans/2026-09-05-parity-next-ultra-plan.md` |
 
 ---

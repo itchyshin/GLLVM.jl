@@ -1,6 +1,12 @@
 # TRUE PARITY — wayfinder-compatible milestone ladder
 
-**Label:** wayfinder-compatible ladder (**skill absent** — no `wayfinder/SKILL.md` found; brief at `~/local-scratch/true-parity-wayfinder-brief-20260905.md` not present).  
+**Label:** wayfinder-compatible ladder (**skill absent** — `/wayfinder` folded into ultra-plan §Decision map, Phase 0.6).  
+**Scout brief:** `~/local-scratch/true-parity-wayfinder-brief-20260905.md`  
+**Live twin maps (update in place, do not fork a third):**
+- Julia: `docs/dev-log/core070/true-parity-decision-map.md`
+- R: `docs/dev-log/2026-09-02-true-parity-decision-map-gllvmtmb.md` (gllvmTMB twin, read-only)
+- Programme extension: `docs/dev-log/core070/true-parity-programme-decision-map-2026-09-05.md`
+
 **Doctrine:** destination before tickets; map before build; month bands are honest guesstimates, not commitments.  
 **Parent plan:** `docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md`
 
@@ -124,9 +130,25 @@ G0 (now) ──► M0 ──► M1 ──► M2 ──► M3 ──► M4 ──
 
 ---
 
+## Decision-phase ladder (house M0–M5 from scout brief)
+
+These are **gates**, not build slices. Build work lives under M3–M4 only.
+
+| Milestone | Gate | Month band (programme view) |
+|---|---|---|
+| **M0** | Destination written and agreed (G0) | 0–1 |
+| **M1** | All blocking decisions in "Decisions so far" (map cleared) | ~1 |
+| **M2** | Phase 1 slice table + Phase 2.5 acceptance ledger written | 1–2 |
+| **M3** | G0 approved → `/goal` execution begins | 2+ |
+| **M4** | All leaf gates pass (`--reverify`) | varies by arc |
+| **M5** | D-43 panel + Melissa reconcile + after-task | at v0.true-parity |
+
+The **build programme** milestones (second-order, surface catch-up, real-data, sign-off) in §M2–M5 above remain the long-horizon view; they start only after M1 map clearance.
+
 ## Route doctrine (wayfinder-compatible)
 
 1. **Never skip M0** to start porting — the drmTMB true-parity night lane showed map-first saves rebuilds.
 2. **Campaigns never block the lane** — dispatch Totoro/DRAC; lane reads results (D-220).
 3. **One R ref per claim** — frozen oracle discipline (P1).
 4. **Map ticket ≠ build slice** — if the row says "implement X", the map ticket is "decide whether X is gate-tier".
+5. **Update twin maps in place** — Julia + R maps stay authoritative; this file is a progress ladder only.
