@@ -1,8 +1,9 @@
 # GLLVM.jl Agent Instructions
 
 `GLLVM.jl` is a Julia implementation of the Gaussian + phylogenetic
-Generalised Linear Latent Variable Model, built as a digital twin of R's
-`gllvmTMB` engine at ~10× speed.
+Generalised Linear Latent Variable Model, built as a Julia companion to R's
+`gllvmTMB` engine (Core070 ledger accounting ≠ true parity; see
+`docs/src/gllvmtmb-parity.md`).
 
 ## Project identity
 
@@ -10,9 +11,13 @@ Generalised Linear Latent Variable Model, built as a digital twin of R's
   missing-data, structural-dependence, and bridge capability is present, but
   release/tag signoff remains gated by the issue ledger, R bridge parity, docs,
   and Rose audit.
-- Headline result: median 265.1× (range 161–698×) on the published Gaussian closed-form profile grid over R/`gllvmTMB`, with log-likelihoods and point estimates matching R to machine precision.
+- Headline result: median 265.1× (range 161–698×) on the published Gaussian
+  closed-form profile grid over R/`gllvmTMB`, with log-likelihoods and point
+  estimates agreeing to at least six significant digits on that grid (worst case
+  `|Δ logLik| = 2.343e-07`, not ~2.2e-16 machine precision).
 - Phylogenetic representations: sparse (CHOLMOD), contrasts, edge-incidence;
-  all return identical log-likelihoods to machine precision.
+  all return identical log-likelihoods to ≤1e-13 on cross-check cells (internal
+  equivalence, not an R↔Julia parity claim).
 - Next milestone: finish-gap hardening for the R-Julia twin: reconcile #95/#94,
   keep runtime fixes (#91/#92/#96 and gradient defaults) accuracy-anchored, wire
   verified O(p) sparse-phylo gradients, validate the R bridge, and keep the
@@ -114,7 +119,10 @@ Full responsibility detail lives in §2 of the reference plan.
   incl. the CLOGLOG parity defect resolved as OURS (Fisher-vs-observed
   curvature; identity 2.099 -> 7.4e-12) and Student-t paired green at pinned
   df. Suite green at the merge: 13327 pass / 0 fail / 0 error. Compute: 10,000-fit
-  DRAC recovery campaign + Wald coverage 0.932-0.958 across 20 cells.
+  DRAC recovery campaign; Julia-only Wald interval *coverage* in the arcG
+  diagnostic grid ran 0.932–0.958 across 20 cells — undercoverage evidence, not
+  a calibrated-coverage or R-parity certificate (gllvmTMB 0.7.1 withdrew its
+  old total-variance “0.94 floor” claim; see `gllvmtmb-071-gap-sheet.md`).
   CARRIED-OVER: six maintainer decisions in
   docs/dev-log/core070/maintainer-decision-set-2026-09-03.md (only D3,
   `loading_profile` estimand scope, blocks a ledger row); 2 invalid

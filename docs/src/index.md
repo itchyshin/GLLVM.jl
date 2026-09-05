@@ -95,11 +95,12 @@ After fitting, the usual report-ready quantities are:
 ## Relation To gllvmTMB
 
 R `gllvmTMB` remains the reference model surface and the richer applied article
-set. GLLVM.jl is the Julia companion: matrix-first today, formula syntax later,
-with the same core estimands and a stronger performance path for large Gaussian
-and phylogenetic fits. See [Comparison vs gllvmTMB](comparison.md) and
-[Benchmarks](benchmarks.md) for the validated Gaussian + phylogenetic benchmark
-grid.
+set. GLLVM.jl is the Julia companion: matrix-first today, with a partial
+`engine = "julia"` bridge — **ledger closure ≠ true parity** (see
+[Capability parity](gllvmtmb-parity.md)). Interval coverage campaigns on the
+Julia side are diagnostic evidence, not calibrated inference certificates.
+See [Comparison vs gllvmTMB](comparison.md) and [Benchmarks](benchmarks.md) for
+the validated Gaussian closed-form benchmark grid.
 
 ## Citing
 
