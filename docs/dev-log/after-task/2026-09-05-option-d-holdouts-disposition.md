@@ -10,7 +10,7 @@ No programme-level second-order parity claim.
 
 | Count | Status |
 |---|---|
-| 9 | OUT |
+| 8 | OUT |
 | 3 | PARTIAL |
 | 1 | NOT ATTEMPTED |
 

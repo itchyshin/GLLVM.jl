@@ -31,7 +31,7 @@ NB2-log — covered by toy 20-cell grid (superset) and merged-tip refresh
 - **PARTIAL** — first-order or health-only / each-own-optimum receipts; no second-order bind
 - **NOT ATTEMPTED** — no honest paired run in this arc
 
-**Summary:** OUT **9** · PARTIAL **3** · NOT ATTEMPTED **1** (plus batch-1 NB2 noted below)
+**Summary:** OUT **8** · PARTIAL **3** · NOT ATTEMPTED **1** (plus batch-1 NB2 noted below)
 
 | Holdout | Status | Reason (measured) | Evidence |
 |---|---|---|---|

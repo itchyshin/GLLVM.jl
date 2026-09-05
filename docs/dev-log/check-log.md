@@ -17684,7 +17684,7 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 ## 2026-09-05 — Option D §6 holdouts disposition (parallel slice)
 
 - Branch `cursor/option-d-holdouts-20260905`; evidence audit only (no new compute).
-- Extended `second-order-holdouts-2026-09-04.md` disposition pass: OUT 9 / PARTIAL 3 / NOT ATTEMPTED 1.
+- Extended `second-order-holdouts-2026-09-04.md` disposition pass: OUT 8 / PARTIAL 3 / NOT ATTEMPTED 1.
 - Realistic Gaussian holdout → PARTIAL (intercept-`X` repair 2026-09-04; 8/8 SE D1).
 - Added `advisory-r071-smoke-2026-09-05.md` (0.7.1 receipt-only; NB2 health fail).
 - After-task: `2026-09-05-option-d-holdouts-disposition.md`.
