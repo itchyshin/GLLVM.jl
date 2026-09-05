@@ -1,0 +1,102 @@
+{
+  "receipt_date": "2026-09-04",
+  "contract": "docs/dev-log/core070/second-order-parity-contract.md",
+  "d1_d2_defaults": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md",
+  "jl_worktree_head": "5e55a205",
+  "post_merge_smoke": {
+    "batch1_cells": [
+      "gaussian",
+      "poisson",
+      "binomial_logit",
+      "beta_logit",
+      "nb2_log"
+    ],
+    "batch1_d1_each_own_pass": "5/5",
+    "compute": "local laptop, OPENBLAS/OMP/JULIA_NUM_THREADS=1, ~159s wall for 5 cells"
+  },
+  "toy_20cell_archive": {
+    "source": "docs/dev-log/core070/second-order-batch-out/*.json",
+    "se_d1_pass_fail": "20/0",
+    "vcov_d1_pass_fail_skip": "15/0/5",
+    "ci_d1_pass_fail": "20/0",
+    "vcov_skip_reason": "nb2_log private full-block route lacks T14 boundary conditioning (known from 2026-09-03 batch)"
+  },
+  "realistic_24cell_paired": {
+    "source_collect": "tools/core070_realistic_size_collect.py on docs/dev-log/core070/realistic-size-out/{nibi,totoro}",
+    "paired_julia_r": "24/24",
+    "first_order_paired_loglik_abs_delta_lt_1e-4": "22/24",
+    "mismatched_optima_idx": [
+      "9",
+      "17"
+    ],
+    "second_order_metrics_present": "24/24",
+    "se_d1_pass_fail_skip": "24/0/0",
+    "vcov_d1_pass_fail_skip": "24/0/0",
+    "wald_d1_pass_fail_skip": "24/0/0"
+  },
+  "totoro_cm_socket": false,
+  "remaining": [
+    "Matched-coordinates diagnostic tier (\u03b8 packing map)",
+    "Contract \u00a76 holdout families (API gaps + disputed defaults)",
+    "Programme-level second-order parity claim (contract \u00a77)",
+    "Optional: re-run idx 9/17 on frozen 0.7.0 oracle if maintainer requires pin over local 0.7.1"
+  ],
+  "goal_complete_second_order_objective": false,
+  "merged_tip_refresh_2026-09-04": {
+    "jl_head": "f873ee69",
+    "post_pr280_merge_includes": "b4447e16",
+    "out_dir": "docs/dev-log/core070/second-order-batch-out-20260904-merged-tip",
+    "cells": 20,
+    "se_d1_pass_fail": "20/0",
+    "vcov_d1_pass_fail_skip": "16/0/4",
+    "ci_d1_pass_fail": "20/0",
+    "compute": "local sequential, ~602s wall, OPENBLAS/OMP/JULIA_NUM_THREADS=1"
+  },
+  "realistic_idx_9_17": {
+    "disposition": "wrong_r_seed_in_archive",
+    "doc": "docs/dev-log/core070/realistic-size-pairing-disposition-2026-09-04.md",
+    "first_order_paired_excluding_mismatch": "22/24",
+    "status": "repaired_2026-09-04"
+  },
+  "matched_coordinates_tier": {
+    "status": "not_implemented",
+    "doc": "docs/dev-log/core070/second-order-matched-coordinates-2026-09-04.md"
+  },
+  "holdouts_doc": "docs/dev-log/core070/second-order-holdouts-2026-09-04.md",
+  "collector_patch": "tools/core070_realistic_size_collect.py seed_match + gaussian notes",
+  "realistic_idx_9_17_r_rerun_2026-09-04": {
+    "status": "repaired",
+    "julia_csv": "Julia data-only core070_realistic_size_cell.jl seeds 1009/1017",
+    "r_driver": "tools/core070_realistic_size_cell.R",
+    "r_gllvmTMB_version": "0.7.1 (local Rscript; twin main 1e44d8d22 source tree \u2014 installed package, not TMB rebuild this slice)",
+    "artifacts": "docs/dev-log/core070/realistic-size-out/totoro-repair-20260904/",
+    "merged_pairing_csv": "docs/dev-log/core070/realistic-size-paired-20260904-merged.csv",
+    "idx9_logLik_delta": 2.6117049856111407e-08,
+    "idx17_logLik_delta": 9.749055607244372e-08,
+    "idx9_max_rel_dSE_beta": 4.99022518040146e-06,
+    "idx17_max_rel_dSE_beta": 1.885135583587388e-05
+  },
+  "realistic_24cell_paired_after_repair": {
+    "seed_match": "24/24",
+    "first_order_paired_loglik_abs_delta_lt_1e-4": "24/24",
+    "se_d1_pass_fail_skip_among_cells_with_beta_metrics": "24/0/0",
+    "note": "Gaussian trait-intercept SE patch (5e55a205); 8 cells re-run local parallel 2026-09-04"
+  },
+  "gaussian_realistic_intercept_se_rerun_2026-09-04": {
+    "driver": "tools/core070_realistic_size_cell.jl @ 5e55a205",
+    "compute": "local laptop parallel x8, OPENBLAS/OMP/JULIA_NUM_THREADS=1, ~218s wall",
+    "cells": "idx 1-8 (8 gaussian realistic-size)",
+    "se_d1_pass_fail_skip": "8/0/0",
+    "per_cell_max_rel_dSE_beta": {
+      "1": 6.73e-06,
+      "2": 1.7e-06,
+      "3": 3.3e-06,
+      "4": 4.2e-07,
+      "5": 3.34e-06,
+      "6": 2.23e-05,
+      "7": 1.96e-06,
+      "8": 1.89e-06
+    },
+    "artifacts": "docs/dev-log/core070/realistic-size-out/nibi/gaussian_* (patched Julia side)"
+  }
+}

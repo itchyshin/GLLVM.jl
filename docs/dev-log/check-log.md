@@ -17637,3 +17637,46 @@ existing `zi_poisson`/`zi_nbinom2`/`zi_binomial` (R Arc D); no new R build.
 `true-parity-decision-map.md` Decisions table, `.unlazy/parity-claim-closeout/leaf-s1-decisions/GATES.md`.
 
 **Not claiming:** true parity complete; grouping levels built; ZI Julia↔R paired.
+
+## 2026-09-04 — Post-merge second-order D1 gate (PR #280 / #1268 merged)
+
+**Merge:** GLLVM.jl #280 → `b4447e16`; gllvmTMB #1268 → `1e44d8d2` (squash; drafts marked ready first).
+
+**Second-order gate (D1 each-own, R cond scaling):**
+- Toy archive 20 cells: SE 20/0; vcov 15/0/5 skip; CI 20/0.
+- Local batch-1 smoke post-merge: 5/5.
+- Realistic 24 paired: 22/24 first-order paired; second-order metrics 14/0/8 skip where present.
+
+**Commands:** `run_cell.jl` ×5; python gate on `second-order-batch-out/`; `core070_realistic_size_collect.py`.
+
+**Receipt:** `docs/dev-log/core070/second-order-d1-gate-receipt-2026-09-04.json`, after-task `2026-09-04-second-order-d1-verification-tranche.md`.
+
+**Not claiming:** second-order parity complete; matched-coordinates tier; full toy re-run on merged main.
+
+## 2026-09-04 — Second-order tranche 2 (merged-tip refresh + dispositions)
+
+**20-cell refresh:** `second-order-batch-out-20260904-merged-tip/` on post-#280 merge;
+D1 gate SE 20/0, vcov 16/0/4 skip, CI 20/0 (~602s local sequential).
+
+**Realistic idx 9/17:** R archive seed mismatch (1002 vs 1009; 1003 vs 1017) — not optima
+divergence; `realistic-size-pairing-disposition-2026-09-04.md`.
+
+**Collector:** `core070_realistic_size_collect.py` adds `seed_match`, pairing disposition,
+gaussian estimand note.
+
+**Matched-coordinates:** not implemented; `second-order-matched-coordinates-2026-09-04.md`.
+
+**Holdouts:** `second-order-holdouts-2026-09-04.md` (contract §6).
+
+## 2026-09-04 — Realistic idx 9/17 R re-run (local)
+
+Julia data-only CSV (seeds 1009/1017) + `core070_realistic_size_cell.R` locally (gllvmTMB 0.7.1).
+Repair artifacts: `realistic-size-out/totoro-repair-20260904/`; merged CSV
+`realistic-size-paired-20260904-merged.csv` → seed_match 24/24, first-order 24/24,
+idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
+
+## 2026-09-04 — Gaussian realistic intercept SE re-run (D1 gate)
+
+- HEAD `5e55a205`; local parallel x8 gaussian realistic cells (~218s); nibi Julia artifacts refreshed.
+- `python3 tools/core070_realistic_size_collect.py` nibi + totoro-merged → `realistic-size-paired-20260904-merged.csv`; SE D1 **24/0/0** (was 16/0/8 skip).
+- Updated `second-order-d1-gate-receipt-2026-09-04.json`.

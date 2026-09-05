@@ -79,6 +79,38 @@ def frob_rel(J, R):
     return math.sqrt(num) / math.sqrt(den) if den > 0 else float("nan")
 
 
+
+def parse_seed_from_summary(d):
+    """Extract integer seed from summary key=value lines."""
+    if "seed" in d:
+        try:
+            return int(float(d["seed"]))
+        except ValueError:
+            pass
+    for v in d.values():
+        if isinstance(v, str):
+            m = re.search(r"seed=(\d+)", v)
+            if m:
+                return int(m.group(1))
+    return None
+
+
+def julia_beta_rows(jterms, p_int):
+    beta = [r for r in jterms if r.get("term", "").startswith("beta[")]
+    if len(beta) == p_int:
+        return beta
+    return []
+
+
+def r_trait_rows(rterms, p_int):
+    if len(rterms) == p_int:
+        return rterms
+    trows = [r for r in rterms if re.match(r"^t\d+$", r.get("term", ""))]
+    if len(trows) == p_int:
+        return sorted(trows, key=lambda r: int(r["term"][1:]))
+    return []
+
+
 def read_cells(path):
     cells = []
     with open(path) as f:
@@ -126,8 +158,22 @@ def main():
         if js.get("logLik") and rs.get("logLik"):
             row["logLik_delta"] = float(js["logLik"]) - float(rs["logLik"])
 
-        jterms = read_terms_csv(os.path.join(args.julia_out_dir, f"{tag}_julia_terms.csv"), term_prefix="beta[")
-        rterms = read_terms_csv(os.path.join(args.r_out_dir, f"{tag}_r_fixed.csv"))
+        p_int = int(c["p"])
+        js_seed = parse_seed_from_summary(js)
+        rs_seed = parse_seed_from_summary(rs)
+        if js_seed is not None:
+            row["julia_seed"] = js_seed
+        if rs_seed is not None:
+            row["r_seed"] = rs_seed
+        if js_seed is not None and rs_seed is not None:
+            row["seed_match"] = js_seed == rs_seed
+            if js_seed != rs_seed:
+                row["pairing_disposition"] = "wrong_r_seed_in_archive_not_optima_divergence"
+
+        jterms_all = read_terms_csv(os.path.join(args.julia_out_dir, f"{tag}_julia_terms.csv"))
+        rterms_all = read_terms_csv(os.path.join(args.r_out_dir, f"{tag}_r_fixed.csv"))
+        jterms = julia_beta_rows(jterms_all, p_int)
+        rterms = r_trait_rows(rterms_all, p_int)
         if jterms and rterms and len(jterms) == len(rterms):
             max_rel_dse = 0.0
             max_dwald = 0.0
@@ -140,10 +186,18 @@ def main():
                                  abs(float(jt["upper"]) - float(rt["upper"])))
             row["max_rel_dSE_beta"] = max_rel_dse
             row["max_abs_dWald"] = max_dwald
+        elif c["family"] == "gaussian":
+            row["second_order_beta_block"] = "gaussian_julia_confint_has_no_trait_intercept_se_rows"
 
         Jv = read_matrix(os.path.join(args.julia_out_dir, f"{tag}_julia_vcov_beta.csv"))
+        if Jv is None:
+            Jfull = read_matrix(os.path.join(args.julia_out_dir, f"{tag}_julia_vcov_full.csv"))
+            if Jfull is not None and len(Jfull) >= p_int:
+                Jv = [row[:p_int] for row in Jfull[:p_int]]
         Rv = read_matrix(os.path.join(args.r_out_dir, f"{tag}_r_vcov_beta.csv"))
         row["vcov_rel_frobenius_beta"] = frob_rel(Jv, Rv)
+        if c["family"] == "gaussian" and (Jv is None or Rv is None or math.isnan(row["vcov_rel_frobenius_beta"])):
+            row["vcov_beta_note"] = "gaussian_vcov_block_not_aligned_julia_full_vs_r_trait_block"
 
         out_rows.append(row)
 

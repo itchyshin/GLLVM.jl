@@ -76,7 +76,7 @@ Reverse-parity gap programme (ZI trio, `ordinal_logit`, `censored_poisson`, `sel
 Concrete end state:
 1. D1–D2, D4–D6 signed (D3 already decided → `loading_profile_exploratory`).
 2. `--r-ref` implemented on R ledger side; joint `CLOSURE: PASS` trustworthy under one lane.
-3. Second-order contract published with signed tolerances; 20+22 cells re-verified under contract.
+3. Second-order contract published with signed tolerances; **D1 gate receipted 2026-09-04** — toy 20/0 SE, realistic 22/24 first-order paired + 14/14 second-order where measured (`second-order-d1-gate-receipt-2026-09-04.json`); full toy refresh + idx 9/17 optima still open.
 4. At least one real-data workflow per qualified family through `engine = "julia"` (after #1236 merge or scoped subset Shinichi names).
 5. Grouping-level design signed (D5/D6); phylo transport Q1–Q4 answered before S3/S4 code.
 6. `docs/src/gllvmtmb-parity.md` states what parity does **not** mean.
@@ -213,6 +213,7 @@ Concrete end state:
 | # | Slice | Output | Status |
 |---|---|---|---|
 | S1 | Sign + commit second-order contract | `second-order-parity-contract.md` DEFAULTED | **done** 2026-09-04 |
+| S1b | D1 gate + merged-tip 20-cell refresh | `second-order-d1-gate-receipt-2026-09-04.json` + `second-order-batch-out-20260904-merged-tip/` | **partial** 2026-09-04 — 20/0 SE on merged tip; idx 9/17 R seed fix + matched-coords + §6 holdouts open |
 | S2 | Implement `--r-ref` | R `parity_ledger.R` + CLOSURE receipt | **done** 2026-09-04 |
 | S3 | D4 AGHQ disposition batch | 8 reclassify + 14 bind receipts | **done** 2026-09-04 (`t8-aghq-public-policy-bind-receipt-2026-09-04.md`) |
 | S4 | D5/D6 grouping design doc | `t12-grouping-levels-design.md` D5 defaulted | **partial** — D6 relay OPEN |

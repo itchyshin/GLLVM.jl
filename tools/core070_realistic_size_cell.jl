@@ -103,12 +103,20 @@ if fam == "gaussian"
         exit(0)
     end
 
-    t0 = time(); fit = fit_gaussian_gllvm(Y; K = K); wall_fit = time() - t0
+    # R pairs per-trait intercept SEs (`0 + trait`); Julia's default X=nothing is
+    # zero-mean. On row-centred Y the intercept path is logLik-identical but
+    # exposes beta[1:p] in confint (see test_fixed_effects.jl).
+    X = zeros(p, n, p)
+    for t in 1:p
+        X[t, :, t] .= 1.0
+    end
+
+    t0 = time(); fit = fit_gaussian_gllvm(Y; K = K, X = X); wall_fit = time() - t0
     push!(summary_lines, "converged=$(fit.converged)")
     push!(summary_lines, "logLik=$(fit.logLik)")
     push!(summary_lines, "wall_fit_sec=$(wall_fit)")
 
-    t1 = time(); ci = confint(fit, Y); wall_ci = time() - t1
+    t1 = time(); ci = confint(fit, Y; X = X); wall_ci = time() - t1
     push!(summary_lines, "pd_hessian=$(ci.pd_hessian)")
     push!(summary_lines, "wall_confint_sec=$(wall_ci)")
     boundary_terms = hasproperty(ci, :boundary_terms) ? ci.boundary_terms : String[]
@@ -117,7 +125,7 @@ if fam == "gaussian"
     write_terms(joinpath("out", "$(tag)_julia_terms.csv"), ci.term, ci.estimate, ci.se, ci.lower, ci.upper)
 
     θ̂ = fit.pars.θ_packed
-    nll = GLLVM._confint_reconstruct_nll(fit, Y, nothing, nothing)
+    nll = GLLVM._confint_reconstruct_nll(fit, Y, X, nothing)
     H = ForwardDiff.hessian(nll, θ̂)
     Hs = Symmetric((H .+ H') ./ 2)
     push!(summary_lines, "cond_H=$(cond(Hs))")
@@ -128,6 +136,7 @@ if fam == "gaussian"
         fill(NaN, size(H))
     end
     write_mat(joinpath("out", "$(tag)_julia_vcov_full.csv"), Σ)
+    write_mat(joinpath("out", "$(tag)_julia_vcov_beta.csv"), Σ[1:p, 1:p])
 
 elseif fam == "poisson"
     Y = [_rand_poisson(exp(clamp(η[t, s], -8.0, 8.0))) for t in 1:p, s in 1:n]
