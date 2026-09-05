@@ -1,3 +1,25 @@
+## 2026-09-05 — T4 Totoro pre-run programme COMPLETE (NB2 G3 PASS)
+
+Branch `cursor/totoro-t4-prerun-20260905` @ tip after commit. Three-family pre-run slice done.
+
+**NB2 cell 3/3:**
+- Launcher: `tools/t4_totoro_nb2_prerun.sh` (`GLLVM_TOTORO_LAUNCH=1`)
+- Log: `logs/t4-nb2-prerun-launch-20260905-1330.log`
+- Receipt: `docs/dev-log/core070/t4-prerun-nb2-receipt-2026-09-05.{json,md}` — **PASS**
+- seff: ~306 s total; Julia fit 95.2 s; confint 99.0 s; R 15.9 s
+- vcov_fro_rel 1.25e-5; max_rel_dSE 7.89e-6; no boundary NaN vcov
+- G3 PASS → G4 re-estimate written in `.unlazy/totoro-t4-prerun/GATES.md`
+- **12-cell P6 grid NOT launched** (needs Shinichi G0)
+
+**Prior cells:** Gaussian G1 PASS (~47 s); Poisson G2 PASS (~107 s).
+
+```sh
+git log -1 --oneline cursor/totoro-t4-prerun-20260905
+ls docs/dev-log/core070/t4-prerun-*-receipt-2026-09-05.json
+```
+
+---
+
 ## 2026-09-05 — M2 Foundation day-2 closeout (integrator, PARTIAL)
 
 Integrator slice on `cursor/m2-foundation-day2-20260905` @ `b451ce8d`. B/C/D done

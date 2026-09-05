@@ -237,3 +237,18 @@ grep -l "GLLVM_TOTORO_LAUNCH" logs/t4-gaussian-prerun-launch-*.log 2>/dev/null |
 | Launch command | `GLLVM_TOTORO_LAUNCH=1 tools/t4_totoro_poisson_prerun.sh` |
 | Local log | `logs/t4-poisson-prerun-launch-20260905-1312.log` |
 | Status | **COMPLETE** — G2 PASS; NB2 may queue |
+
+### NB2 launch (cell 3/3)
+
+| Field | Value |
+|---|---|
+| Launch attempted | 2026-09-05 |
+| Launch command | `GLLVM_TOTORO_LAUNCH=1 tools/t4_totoro_nb2_prerun.sh` |
+| Local log | `logs/t4-nb2-prerun-launch-20260905-1330.log` |
+| Status | **COMPLETE** — G3 PASS; three receipts done; G4 re-estimate written; grid **NOT** launched |
+
+### G4 re-estimate (12-cell P6 grid — estimate only)
+
+Measured seff @ p=20, n=500: Gaussian ~19 s compute, Poisson ~60 s, NB2 ~210 s.  
+Scaled 12-cell serial mid ≈ **~3.0 h** (prior D-139 ~72 min underestimated NB2 Laplace cost).  
+8-core parallel mid ≈ **23–30 min**. **Needs Shinichi G0 before grid launch.**

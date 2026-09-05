@@ -1,0 +1,56 @@
+=== T4 NB2 pre-run — Totoro queue spec ===
+Authority: docs/dev-log/plans/2026-09-05-totoro-t4-prerun-programme.md
+Cell: nb2 p=20 n=500 K=2 seed=42
+Host: snakagaw@totoro.biology.ualberta.ca (1 core, 4G envelope, ~30 min wall request)
+Remote: /home/snakagaw/core070-aghq-20260830/t4-prerun-01/repo
+Risk: NB2 boundary dispersion — Julia vcov may NaN; record honest FAIL if triggered.
+
+# 1) rsync repo to Totoro
+  rsync
+  -az
+  --delete
+  --exclude=.git
+  --exclude=.julia
+  --exclude=tmp
+  --exclude=logs
+  --exclude=out
+  --exclude=data
+  -e
+  ssh\ -o\ ControlPath=/Users/z3437171/.ssh/cm/snakagaw@totoro.biology.ualberta.ca:22\ -o\ BatchMode=yes
+  /Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904/
+  snakagaw@totoro.biology.ualberta.ca:/home/snakagaw/core070-aghq-20260830/t4-prerun-01/repo/
+
+# 2) ssh remote run (Julia fit+confint, then R se=TRUE)
+  ssh -o ControlPath=/Users/z3437171/.ssh/cm/snakagaw@totoro.biology.ualberta.ca:22 -o BatchMode=yes snakagaw@totoro.biology.ualberta.ca bash -s <<'REMOTE'
+set -euo pipefail
+cd /home/snakagaw/core070-aghq-20260830/t4-prerun-01/repo
+export JULIA_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+export JULIA_DEPOT_PATH=/home/snakagaw/.julia:/home/snakagaw/codex/julia_depot
+export R_LIBS=/home/snakagaw/core070-aghq-20260830/oracle-build-01/library
+mkdir -p logs out data
+echo "[t4-prerun] Julia cell nb2_p20_n500_K2 seed=42"
+/home/snakagaw/.julia/juliaup/julia-1.10.10+0.x64.linux.gnu/bin/julia --project=. tools/core070_realistic_size_cell.jl nb2 20 500 2 42
+echo "[t4-prerun] R cell nb2_p20_n500_K2"
+Rscript --vanilla tools/core070_realistic_size_cell.R nb2 20 500 2 42
+echo "[t4-prerun] DONE nb2_p20_n500_K2 — copy receipts from /home/snakagaw/core070-aghq-20260830/t4-prerun-01/repo/out/ after poll"
+REMOTE
+
+Set GLLVM_TOTORO_LAUNCH=1 to execute the above.
+
+GLLVM_TOTORO_LAUNCH=1 — executing rsync + ssh ...
+[t4-prerun] Julia cell nb2_p20_n500_K2 seed=42
+DONE nb2_p20_n500_K2
+family=nb2
+p=20 n=500 K=2 seed=42
+converged=true
+logLik=-23429.668074434976
+hessian_selector=observed (grouped default)
+wall_fit_sec=95.18699502944946
+dispersion_boundary=Bool[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+pd_hessian=true
+wall_confint_sec=99.02723693847656
+boundary_terms=
+cond_H=79.07486673805928
+[t4-prerun] R cell nb2_p20_n500_K2
+DONE nb2_p20_n500_K2 
+[t4-prerun] DONE nb2_p20_n500_K2 — copy receipts from /home/snakagaw/core070-aghq-20260830/t4-prerun-01/repo/out/ after poll
