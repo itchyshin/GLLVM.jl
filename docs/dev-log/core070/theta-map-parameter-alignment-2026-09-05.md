@@ -7,6 +7,8 @@
 **Julia tip (this memo branch):** tip of `cursor/m2-r1-theta-map-20260905` (updated this commit)  
 **No programme §7 / true-parity claim.** No `src/` or R engine edits in this ticket.
 
+**Brain (ask-brain):** no D-* locks θ-map (D-220 is lane/ledger only); RESEARCH-THETA-MAP/M2-R1 absent from vault; #148 notes shared global-φ *may be deliberate* — owner G0 on implement vs demote (lean harness-only from code; no coverage/true-parity promotion from this memo alone).
+
 Related: `theta-map-disposition-2026-09-05.md` · matched pilot
 `second-order-matched-pilot-batch1-20260905.md` · harness
 `tools/core070_second_order/theta_map.jl`.

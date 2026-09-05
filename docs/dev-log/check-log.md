@@ -1,3 +1,12 @@
+## 2026-09-05 — M2-R1 θ-map: brain scout ingest (after-task)
+
+- After-task `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map.md` updated:
+  cites draft PR #298, harness false-negative → lean IMPLEMENT harness-only,
+  owner G0 still owed; brain fences (D-220 not a θ lock; no D-* on beta/nb2
+  mismatch; #148 deliberate-shared caveat; no coverage/true-parity claim).
+- Memo footnote: Brain ask-brain one-liner (no invented vault locks).
+- Tip ≥ `665918f2`; draft PR #298 only — no merge; no src/R engine edit.
+
 ## 2026-09-05 — M2-R1 θ-map: Julia scout ingest
 
 - Ingested Julia scout packed-θ table into
