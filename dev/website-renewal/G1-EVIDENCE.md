@@ -15,6 +15,10 @@ The companion gllvmTMB evidence record is
   experimental current route rather than a stable extractor promise;
 - source/rendered scans retain partial-parity, orientation, and
   Gaussian-only-speed boundaries; `git diff --check` passes.
+- after instantiating the declared `docs` environment in a fresh `origin/main`
+  worktree, `julia --project=docs docs/make.jl --local` rendered the new
+  VitePress landing page with its hero actions, feature cards, Skip to content
+  link, and retained orientation/partial-parity boundaries.
 
 The 1440/768/390 screenshot, keyboard/focus, reduced-motion, and overflow
 checks remain open: the controlled browser blocks local `file://` pages.

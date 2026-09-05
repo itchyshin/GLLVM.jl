@@ -1,4 +1,33 @@
-# GLLVM.jl
+```@raw html
+---
+layout: home
+
+hero:
+  name: "GLLVM.jl"
+  text: "Which responses vary together?"
+  tagline: "A matrix-first Julia companion for separating shared multivariate structure from response-specific variation."
+  actions:
+    - theme: brand
+      text: Fit the first Gaussian model
+      link: /quickstart
+    - theme: alt
+      text: Interpret covariance and correlation
+      link: /covariance-correlation
+    - theme: alt
+      text: Check capability parity
+      link: /gllvmtmb-parity
+
+features:
+  - title: "Start with a response matrix"
+    details: "Responses are rows and sites are columns: p × n. The first route makes that orientation explicit before fitting."
+  - title: "Read the covariance first"
+    details: "Use model-implied Sigma, correlation, and the shared-variance fraction before attaching meaning to a rotated loading axis."
+  - title: "A companion, not a replacement"
+    details: "GLLVM.jl is matrix-first and partial parity. Use gllvmTMB for the richer formula-first R workflow and its route-specific evidence boundary."
+---
+```
+
+# Start with the response matrix
 
 Fast Generalised Linear Latent Variable Models in Julia for multivariate
 response matrices.
