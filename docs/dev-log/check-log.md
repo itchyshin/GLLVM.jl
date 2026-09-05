@@ -17958,3 +17958,12 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - After-task: `docs/dev-log/after-task/2026-09-05-m2-foundation-day1.md`.
 - **Sibling slices (same branch):** P13 @ `e404f748`; slice table + T4 estimate @ `6e11814d`.
 - **Not claiming:** true parity; programme §7; gate-tier row coverage; P13 CLOSURE until joint run receipt lands.
+
+## 2026-09-05 — paired Julia branding design
+
+- Recorded the approved matched-hex identity contract for GLLVM.jl and DRM.jl:
+  custom Julia-adjacent colours and distinct internal structural marks.
+- Scope is landing-page identity and reciprocal optional-companion wording;
+  it changes no model, capability, parity, or release claim.
+- Design: `docs/superpowers/specs/2026-09-05-paired-julia-branding-design.md`.
+- Not yet implemented, deployed, or published.
