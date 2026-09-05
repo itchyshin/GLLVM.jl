@@ -68,6 +68,12 @@ the accessible identity. The badge is hidden at 960 px and below, while the
 existing 768--1100 px drawer-navigation guard remains unchanged. The DRM indigo
 was lightened to `#4D6FE3`, yielding 3.70:1 contrast against navy.
 
+After the first public render exposed the badge beside the matrix-orientation
+callout, the body-level element was removed. The final badge is a scoped
+`.VPHomeHero .container::after` decoration; a desktop browser inspection
+confirmed that it occupies the hero's empty right-hand space and does not
+overlap the feature cards or article content.
+
 ## 9. Review
 
 An independent asset review passed the original-geometry, Julia-adjacent palette,

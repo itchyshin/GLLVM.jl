@@ -11,21 +11,23 @@
   }
 }
 
-.gllvm-brand-mark {
-  position: absolute;
-  top: 10rem;
-  right: clamp(2rem, 10vw, 12rem);
-  width: min(12rem, 16vw);
+.VPHomeHero .container {
+  position: relative;
 }
 
-.gllvm-brand-mark img {
-  display: block;
-  width: 100%;
-  height: auto;
+.VPHomeHero .container::after {
+  content: "";
+  position: absolute;
+  top: 3rem;
+  right: clamp(3rem, 9vw, 11rem);
+  width: min(12rem, 16vw);
+  aspect-ratio: 1;
+  background: url("/assets/gllvmjl-mark.svg") center / contain no-repeat;
+  pointer-events: none;
 }
 
 @media (max-width: 960px) {
-  .gllvm-brand-mark {
+  .VPHomeHero .container::after {
     display: none;
   }
 }
