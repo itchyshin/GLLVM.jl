@@ -1,7 +1,7 @@
 # Quick start
 
-This page walks through one end-to-end fit: simulate a Gaussian GLLVM,
-fit it with `fit_gaussian_gllvm`, inspect the recovered parameters, build
+This page walks through one end-to-end fit: simulate a Gaussian GLLVM with one
+residual variance per response, fit it with `fit_gaussian_pervar_gllvm`, inspect the recovered parameters, build
 three flavours of confidence interval, and visualise the recovered
 `Σ_y` against the truth. It concludes with an R `gllvmTMB` ⟷ Julia `GLLVM.jl`
 cheat sheet.
@@ -21,7 +21,7 @@ Random.seed!(20260528)
 n_sites   = 80
 n_species = 10
 K         = 2                  # rank of the latent factor block
-σ_eps     = 0.5
+ψ_true    = 0.15 .+ 0.10 .* rand(n_species)  # response-specific residual variances
 
 # True low-rank loading matrix Λ_B (n_species × K)
 Λ_true = randn(n_species, K)
@@ -29,29 +29,47 @@ K         = 2                  # rank of the latent factor block
 # Latent factor scores per site (n_sites × K)
 η = randn(n_sites, K)
 
-# Response matrix y (n_species × n_sites) — closed-form GLLVM with no X
-y = Λ_true * η' .+ σ_eps .* randn(n_species, n_sites)
+# Response matrix y (n_species × n_sites) — diagonal-residual Gaussian GLLVM
+y = Λ_true * η' .+ sqrt.(ψ_true) .* randn(n_species, n_sites)
 ```
 
 ## 2. Fit the model
 
 ```julia
-fit = fit_gaussian_gllvm(y; K = K)
+fit = fit_gaussian_pervar_gllvm(y; K = K)
 ```
 
-`fit_gaussian_gllvm` returns a `GllvmFit` object. The Gaussian path is
-fit at the marginal log-likelihood maximum via the closed-form
-integration described in the [Model](model.md) page. For models without
-diagonal random effects or phylogeny the PPCA warm start lands on the
-optimum directly, so L-BFGS typically reports convergence after 0–1
-iterations.
+`fit_gaussian_pervar_gllvm` returns a `GaussianPerVarFit` object. It fits the Gaussian
+model with `Sigma_y = Lambda * Lambda' + Psi`, where `Psi` is diagonal with a
+separate residual variance for each response. This is the Julia model to use
+before comparing with ordinary R `gllvmTMB` `traits(...) + latent(...)`; see
+the [R get-started guide](https://itchyshin.github.io/gllvmTMB/articles/gllvmTMB.html).
+The shared-residual `fit_gaussian_gllvm` shortcut is a restricted model, not an
+identical spelling of that R teaching fit. The packages have partial parity;
+the R route remains the richer formula-first documentation path and its
+[current limits](https://itchyshin.github.io/gllvmTMB/articles/current-limits.html)
+apply to claims about its route.
+
+The shared-residual `sigma_y_site()`, `communality()`, and `correlation()`
+extractors do not yet accept `GaussianPerVarFit`. For this experimental
+per-response route, construct the rotation-invariant quantities explicitly:
+
+```julia
+Σ_hat = fit.Λ * fit.Λ' + Diagonal(fit.ψ²)
+c²_hat = diag(fit.Λ * fit.Λ') ./ diag(Σ_hat)
+R_hat = Diagonal(1 ./ sqrt.(diag(Σ_hat))) * Σ_hat *
+    Diagonal(1 ./ sqrt.(diag(Σ_hat)))
+```
+
+This transparent calculation is a current route, not a stable extractor
+promise. Raw loading columns remain orientation-dependent; `Σ_hat`, `c²_hat`,
+and `R_hat` do not.
 
 ## 3. Inspect the recovered parameters
 
 ```julia
-fit.pars                  # named tuple of optimised parameters
-fit.logLik                # marginal log-likelihood at the optimum
-sigma_y_site(fit)         # marginal covariance Σ_y at the optimum
+fit.Λ, fit.ψ²             # shared loadings and response-specific residual variances
+fit.loglik                # marginal log-likelihood at the optimum
 ```
 
 The recovered `Λ_B` can be compared with `Λ_true` only up to an
@@ -75,14 +93,16 @@ distributional assumption on the sampling distribution of the estimator.
 ## 5. Check `Σ_y` recovery
 
 ```julia
-Σ_true = Λ_true * Λ_true' + σ_eps^2 .* I(n_species)
-Σ_hat  = sigma_y_site(fit)
+Σ_true = Λ_true * Λ_true' + Diagonal(ψ_true)
+Σ_hat  = fit.Λ * fit.Λ' + Diagonal(fit.ψ²)
 
 maximum(abs, Σ_hat .- Σ_true)        # largest per-cell discrepancy — should be small
 ```
 
-Per-cell agreement at the relative Frobenius scale is `< 1e-3` on the benchmark
-grid (see [Benchmarks](benchmarks.md)).
+This teaching simulation is not a recovery certificate. The published
+[Benchmarks](benchmarks.md) grid instead covers a matched **shared-residual**
+Gaussian special case; its agreement and speed results do not establish
+per-response-residual or non-Gaussian performance.
 
 To visualise it, with Plots.jl installed separately (`Pkg.add("Plots")` — it is
 not a GLLVM.jl dependency):

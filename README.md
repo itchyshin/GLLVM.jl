@@ -75,16 +75,17 @@ using Pkg
 Pkg.add(url = "https://github.com/itchyshin/GLLVM.jl")
 using GLLVM
 
-# Simulate a Gaussian GLLVM fixture
+# Simulate the per-response-residual Gaussian model used for the R comparison
 using Random
 Random.seed!(0)
 p, K, n = 20, 2, 200
 Λ_true = randn(p, K); for i in 1:K, k in 1:K; if i < k; Λ_true[i, k] = 0; end; end
 for k in 1:K; Λ_true[k, k] = abs(Λ_true[k, k]) + 0.5; end
-y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
+ψ_true = 0.15 .+ 0.10 .* rand(p)           # one residual variance per response
+y = Λ_true * randn(K, n) .+ sqrt.(ψ_true) .* randn(p, n)  # responses × sites
 
-# Fit
-fit = fit_gaussian_gllvm(y; K = K)
+# Fit the matching diagonal-residual model
+fit = fit_gaussian_pervar_gllvm(y; K = K)
 
 # Inspect
 fit.pars.Λ                            # estimated loadings
@@ -92,6 +93,22 @@ fit.pars.σ_eps                        # observation SD
 fit.logLik                            # log-likelihood
 fit.cputime                           # wall-clock seconds
 ```
+
+This is the matrix-first companion to the ordinary R
+[`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/) teaching route:
+`traits(...) + latent(...)` also implies
+`Sigma = Lambda * Lambda' + Psi`, with one diagonal residual variance per
+response. Julia stores responses in rows (`p x n`), whereas the R wide table
+stores units in rows. The simpler `fit_gaussian_gllvm` route uses one shared
+residual SD, so it is a restricted model and is **not** identical to this
+per-response-residual teaching fit. The two packages have partial parity, not
+a drop-in equivalence; use R for the richer formula-first documentation and
+read its current limits before making a same-model or inference claim.
+
+The published Gaussian speed benchmark is deliberately separate: it compares
+the shared-residual closed-form special case against a matched R configuration.
+Its speed numbers do not establish speed for this per-response route or for
+non-Gaussian models.
 
 ## Confidence intervals
 
