@@ -40,6 +40,23 @@ comparison. R's own 0.7.1 interval claim is three pinned Wald cells only;
 gllvmTMB withdrew the old total-variance “0.94 coverage floor” wording
 (`gllvmtmb-071-gap-sheet.md` §Class-2).
 
+### Second-order programme status (contract §7 — NOT DONE)
+
+**Programme §7 / true second-order parity: NOT DONE.** The second-order
+contract's §7 boundary still applies: a toy pre-run or a partial batch does
+not close the programme. See `second-order-parity-contract.md` §7 and
+`docs/dev-log/core070/true-parity-decision-map.md`.
+
+**Matched-coordinates tier: NOT implemented.** The shipped receipt tier remains
+**each-own-optimum only**. A batch-1 pilot (merged #285;
+`docs/dev-log/core070/second-order-matched-pilot-batch1-20260905.md`) measured
+**3 pass / 2 blocked** on five cells — gaussian, poisson, and binomial_logit
+pass at R-anchored θ; **beta_logit** and **nb2_log** are **blocked** on θ-map
+(R per-trait dispersion vs Julia shared log-dispersion). Disposition:
+`docs/dev-log/core070/second-order-matched-coordinates-2026-09-04.md`. Do not
+read 3/5 pilot pass as programme completion or as a live matched-coordinates
+tier.
+
 The qualification claim itself is **one-directional**: R workflows against
 Julia, at the frozen `gllvmTMB` 0.7.0 oracle
 (`docs/dev-log/decisions/2026-09-02-maintainer-decisions-true-parity.md`).

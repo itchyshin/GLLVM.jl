@@ -225,3 +225,26 @@ disputed-default finding, and is not a recovery-to-truth or coverage claim
 `drac-coverage-campaign-findings.md`). The panel's qualifier applies here
 with the same force: state fixture shape and cell count alongside any
 second-order pass/fail, every time.
+
+### Measured status (2026-09-05 — NOT DONE)
+
+**Programme §7 / second-order programme completion: NOT DONE.** A passing
+each-own-optimum batch, a matched-coordinates pilot, or a toy pre-run does
+not close §7. True parity and the full second-order programme remain tracked
+in `docs/dev-log/core070/true-parity-decision-map.md`.
+
+**Matched-coordinates tier: NOT implemented.** Contract §4 defines the tier;
+receipts still ship **each-own-optimum only** (`matched_coordinates=false` in
+`tools/core070_second_order/cells.jl`). The batch-1 pilot
+(`docs/dev-log/core070/second-order-matched-pilot-batch1-20260905.md`, merged
+#285 @ `987c293d`) measured **3 pass / 2 blocked / 0 fail / 0 skip** on five
+cells:
+
+| Cell | Status | Blocker |
+|---|---|---|
+| gaussian, poisson, binomial_logit | **pass** | — |
+| beta_logit, nb2_log | **blocked** | R per-trait `log_phi_*` (×p) vs Julia shared log-dispersion (×1); no honest θ map without changing one side |
+
+Disposition detail: `docs/dev-log/core070/second-order-matched-coordinates-2026-09-04.md`.
+Do not read 3/5 pilot pass as closing programme §7 or as a shipped
+matched-coordinates tier.
