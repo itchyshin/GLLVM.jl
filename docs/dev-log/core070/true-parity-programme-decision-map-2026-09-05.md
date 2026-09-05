@@ -31,7 +31,11 @@ Concretely, a maintainer can run representative **R workflows against frozen gll
 |---|---|---|
 | Programme vs harness | Fixture + real-workflow = true parity; harness alone insufficient | `true-parity-decision-map.md` §Destination |
 | Qualification direction | One-way R→Julia @ 0.7.0; reverse = tool list to R lane | T1; D-204 |
-| Oracle (pending reconfirm) | Frozen 0.7.0 `b4d5fee6`; re-freeze after second-order contract | T2 |
+| Oracle | Frozen 0.7.0 `b4d5fee6` for qualification; 0.7.1+ separate catch-up board | **G0 2026-09-05** (Shinichi 1–5 yes); T2 |
+| Bridge | Tiered — thin JuliaCall ACC-class; native Julia elsewhere | **G0 2026-09-05** |
+| Gate-tier size | ~30–50 must-have rows for v0.true-parity (not all 497) | **G0 2026-09-05** |
+| Compute | Totoro-first; DRAC by approval (D-50 / D-139) | **G0 2026-09-05** |
+| Matched-coords (§7) | θ-map research first; then owner choose implement vs demote | **G0 2026-09-05** |
 | Second-order scope | SE + fixed-effect vcov + Wald endpoints; not fitted/predict/residuals | T3 |
 | Grouping levels | Four names required on both sides; Julia surfaces mostly owed | T12; D6 |
 | One Cursor lane | D-220; campaigns on Totoro/DRAC, not in chat | vault D-220 |
