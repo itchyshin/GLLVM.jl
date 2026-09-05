@@ -1,3 +1,34 @@
+## 2026-09-05 — parity-next wedge A bridge ACC scout (S6a, PASS thin)
+
+G0 wedge **A** on Ayumi `urbanisation_map` via `engine = "julia"` (ACC id
+`ACC-URBMAP-BRIDGE-RSCRIPT`). Local run on Dropbox clone +
+`tools/wedge_a_acc_urbanisation_scout.R`; no Totoro.
+
+Model: 51 indicators × 191 reviews, binomial probit, single
+`latent(1|review,d=2,unique=FALSE)` — admitted (no structured-term gate).
+
+Measured: TMB logLik −4417.36975075 (58.7 s); Julia bridge logLik
+−4417.36975059 (363.8 s); |Δ| = 1.628e-07; exit 0.
+
+Receipt: `docs/dev-log/core070/acc-bridge-urbanisation-receipt-2026-09-05.json`
+(status PASS). Scout: `docs/dev-log/core070/acc-bridge-urbanisation-2026-09-05.md`.
+Log: `logs/wedge-a-acc-urbanisation-scout-2026-09-05.log`.
+
+Not claiming: §7 / true parity / full catch-up / #1236 / loading-crossproduct
+parity (ACC-URBMAP-01 class 4–5 still open).
+
+```sh
+cd ~/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904
+GLLVM_JL_PATH="$PWD" GLLVMTMB_R_PATH=~/local-scratch/lanes/gllvmTMB-gllvm-twin-20260904 \
+AYUMI_URBMAP_ROOT="$HOME/Dropbox/Github Local/urbanisation_map" \
+JULIA_PROJECT="$PWD" JULIA_HOME="$HOME/.juliaup/bin" \
+Rscript tools/wedge_a_acc_urbanisation_scout.R
+```
+
+Branch: `cursor/parity-next-wedge-a-20260905`. Base: `origin/main` @ `e3d4bb0f`.
+
+---
+
 ## 2026-09-05 — parity-next day-1 trust fences (S4 + S5)
 
 G0 locked: 3-day package; day-1 trust only (wedge A deferred).
