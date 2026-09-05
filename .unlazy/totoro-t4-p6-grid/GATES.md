@@ -11,11 +11,11 @@ Check leaves in order. A single cell FAIL does **not** abort the grid; record FA
 
 ## G0 — Plan, launcher, compute-go
 
-- [ ] D-139 re-estimate read (pre-run G4: serial ~3 h, 8-core ~23–30 min)
-- [ ] Campaign plan committed (`2026-09-05-totoro-t4-p6-grid-campaign.md`)
-- [ ] Launcher dry-run exits 0 without network (`tools/t4_totoro_p6_grid.sh`)
+- [x] D-139 re-estimate read (pre-run G4: serial ~3 h, 8-core ~23–30 min)
+- [x] Campaign plan committed (`2026-09-05-totoro-t4-p6-grid-campaign.md`)
+- [x] Launcher dry-run exits 0 without network (`tools/t4_totoro_p6_grid.sh`)
 - [x] **Shinichi G0** for 12-cell grid launch recorded (2026-09-05)
-- [ ] Branch `cursor/totoro-t4-p6-grid-20260905` pushed
+- [x] Branch `cursor/totoro-t4-p6-grid-20260905` pushed
 
 ---
 
@@ -28,54 +28,56 @@ Check leaves in order. A single cell FAIL does **not** abort the grid; record FA
 - [x] rsync completed (2026-09-05 13:53 MDT)
 - [x] Remote GNU parallel `-j 8` started (or serial fallback logged)
 - [x] Launch log archived under `logs/t4-p6-grid-launch-20260905-1353.log`
-- [ ] All 12 remote receipts present (`receipts/<tag>.json`) — 4/12 cell outputs DONE @ poll 13:56
+- [x] All 12 remote receipts present (`receipts/<tag>.json`) — **12/12 DONE**
 
-**G1 PASS:** launch submitted + remote run finished (any mix of PASS/FAIL cells)  
+**G1 PASS:** launch submitted + remote run finished (any mix of PASS/FAIL cells) — **PASS**  
 **G1 FAIL:** infra/rsync/ssh failure before receipts written → ping Shinichi
 
 ---
 
-## G2 — Pull and per-cell receipts
+## G2 — Pull and per-cell receipts — **PASS**
 
-- [ ] `out/` and `receipts/` pulled from Totoro
-- [ ] Per-cell dirs under `docs/dev-log/core070/t4-p6-grid-out/<tag>/`
-- [ ] Collector run (`tools/core070_realistic_size_collect.py`) on merged tree
-- [ ] Summary table committed (`t4-p6-grid-summary-2026-09-05.csv` or `.md`)
-
----
-
-## G3 — Programme closeout
-
-- [ ] All 12 cell leaves checked or marked FAIL with disposition
-- [ ] `docs/dev-log/check-log.md` entry
-- [ ] After-task report (`docs/dev-log/after-task/2026-09-05-totoro-t4-p6-grid.md`)
-- [ ] **Explicitly NOT claimed:** true-parity promotion, gate-tier clearance
+- [x] `out/` and `receipts/` pulled from Totoro
+- [x] Per-cell dirs under `docs/dev-log/core070/t4-p6-grid-out/<tag>/` (and `t4-p6-out/` artefacts)
+- [x] Collector / per-cell receipt writers produced 12× `{json,md}` under `docs/dev-log/core070/`
+- [x] Summary PASS table in after-task `2026-09-05-totoro-t4-p6-grid.md` (full seff)
 
 ---
 
-## Cell leaves (12)
+## G3 — Programme closeout — **PASS**
 
-| # | Tag | Leaf |
-|---|-----|------|
-| 1 | `gaussian_p20_n500_K2` | `cells/gaussian_p20_n500_K2.md` |
-| 2 | `gaussian_p20_n2000_K2` | `cells/gaussian_p20_n2000_K2.md` |
-| 3 | `gaussian_p50_n500_K2` | `cells/gaussian_p50_n500_K2.md` |
-| 4 | `gaussian_p50_n2000_K2` | `cells/gaussian_p50_n2000_K2.md` |
-| 5 | `poisson_p20_n500_K2` | `cells/poisson_p20_n500_K2.md` |
-| 6 | `poisson_p20_n2000_K2` | `cells/poisson_p20_n2000_K2.md` |
-| 7 | `poisson_p50_n500_K2` | `cells/poisson_p50_n500_K2.md` |
-| 8 | `poisson_p50_n2000_K2` | `cells/poisson_p50_n2000_K2.md` |
-| 9 | `nb2_p20_n500_K2` | `cells/nb2_p20_n500_K2.md` |
-| 10 | `nb2_p20_n2000_K2` | `cells/nb2_p20_n2000_K2.md` |
-| 11 | `nb2_p50_n500_K2` | `cells/nb2_p50_n500_K2.md` |
-| 12 | `nb2_p50_n2000_K2` | `cells/nb2_p50_n2000_K2.md` |
+- [x] All 12 cell leaves checked — **12/12 PASS** (EOO contract)
+- [x] `docs/dev-log/check-log.md` entry
+- [x] After-task report (`docs/dev-log/after-task/2026-09-05-totoro-t4-p6-grid.md`)
+- [x] **Explicitly NOT claimed:** true-parity promotion, gate-tier clearance
+
+---
+
+## Cell leaves (12) — all PASS
+
+| # | Tag | Leaf | Result |
+|---|-----|------|--------|
+| 1 | `gaussian_p20_n500_K2` | `cells/gaussian_p20_n500_K2.md` | PASS |
+| 2 | `gaussian_p20_n2000_K2` | `cells/gaussian_p20_n2000_K2.md` | PASS |
+| 3 | `gaussian_p50_n500_K2` | `cells/gaussian_p50_n500_K2.md` | PASS |
+| 4 | `gaussian_p50_n2000_K2` | `cells/gaussian_p50_n2000_K2.md` | PASS |
+| 5 | `poisson_p20_n500_K2` | `cells/poisson_p20_n500_K2.md` | PASS |
+| 6 | `poisson_p20_n2000_K2` | `cells/poisson_p20_n2000_K2.md` | PASS |
+| 7 | `poisson_p50_n500_K2` | `cells/poisson_p50_n500_K2.md` | PASS |
+| 8 | `poisson_p50_n2000_K2` | `cells/poisson_p50_n2000_K2.md` | PASS |
+| 9 | `nb2_p20_n500_K2` | `cells/nb2_p20_n500_K2.md` | PASS |
+| 10 | `nb2_p20_n2000_K2` | `cells/nb2_p20_n2000_K2.md` | PASS |
+| 11 | `nb2_p50_n500_K2` | `cells/nb2_p50_n500_K2.md` | PASS |
+| 12 | `nb2_p50_n2000_K2` | `cells/nb2_p50_n2000_K2.md` | PASS |
 
 Seeds: **42** for all cells (matches pre-run convention); see `tools/t4_p6_cells.tsv`.
+
+Cell 12 measured: JL fit ~2065 s, JL confint ~3898 s, R ~616 s; logLik Δ≈4.8e-7; vcov Fro≈1.2e-4.
 
 ---
 
 ## Infra leaves
 
-- [ ] Totoro SSH ping OK before launch
-- [ ] Remote base distinct from `t4-prerun-01` (no collision)
+- [x] Totoro SSH ping OK before launch
+- [x] Remote base distinct from `t4-prerun-01` (no collision)
 - [ ] Lane lease released when slice idle

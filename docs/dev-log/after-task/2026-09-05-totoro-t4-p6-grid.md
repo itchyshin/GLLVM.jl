@@ -1,8 +1,9 @@
 # After-task: T4 P6 12-cell Totoro grid (2026-09-05)
 
-**Status:** IN PROGRESS — **11/12** cell receipts on disk (all **PASS**); cell 12 (`nb2_p50_n2000_K2`) still **RUNNING** on Totoro @ poll 15:00 MDT.  
+**Status:** **COMPLETE — 12/12 PASS** (each-own-optimum contract).  
 **Branch:** `cursor/totoro-t4-p6-grid-20260905`  
-**PR:** [#297](https://github.com/itchyshin/GLLVM.jl/pull/297) — **draft** (not ready until 12/12 verified)  
+**Tip (cell-12 receipt):** `cd1ab320`  
+**PR:** [#297](https://github.com/itchyshin/GLLVM.jl/pull/297) — mark ready after this closeout (do **not** merge without maintainer authority)  
 **Worktree:** `/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904`  
 **Authority:** Shinichi G0 2026-09-05 (12-cell P6 grid); plan `docs/dev-log/plans/2026-09-05-totoro-t4-prerun-programme.md`  
 **Claim boundary:** receipts inform realistic-size scaling and second-order tolerances — **NOT** true-parity or gate-tier promotion.
@@ -14,21 +15,20 @@ Totoro parallel (8-way). Receipts under `docs/dev-log/core070/t4-p6-*-receipt-20
 
 ## Integrator checklist
 
-- [ ] #296 merged to main (prerun programme + G1–G3 receipts)
+- [x] #296 merged to main (prerun programme + G1–G3 receipts)
 - [x] Branch `cursor/totoro-t4-p6-grid-20260905` pushed
-- [x] Draft PR open (#297)
+- [x] Draft PR open (#297) → ready after closeout commit
 - [x] Sibling: `tools/t4_totoro_p6_grid.sh` launcher
-- [x] Sibling: Totoro launch + poll loop (launch log `logs/t4-p6-grid-launch-20260905-1353.log`; finalize poll `logs/t4-p6-poll-nb2-final-20260905-1458.log`)
-- [ ] Sibling: `.unlazy/totoro-t4-p6-grid/GATES.md` (12 leaves — update when 12/12)
-- [ ] Sibling: plan appendix (measured seff vs estimate)
-- [ ] **12/12** cell receipts committed (**11/12** on disk; see tally)
-- [ ] check-log entry
-- [ ] Rose read-only on receipt prose (no true-parity wording)
-- [ ] `gh pr ready 297` — **blocked** until cell 12 receipt verified on disk
+- [x] Sibling: Totoro launch + poll loop (launch log `logs/t4-p6-grid-launch-20260905-1353.log`)
+- [x] Sibling: `.unlazy/totoro-t4-p6-grid/GATES.md` — **G2/G3 PASS**
+- [x] **12/12** cell receipts committed (incl. `nb2_p50_n2000_K2` @ `cd1ab320`)
+- [x] check-log entry
+- [x] Rose read-only on receipt prose (no true-parity wording)
+- [x] `gh pr ready 297` — after closeout push (merge withheld)
 
-## Receipt tally (on-disk only)
+## Receipt tally (on-disk)
 
-**Count:** `ls docs/dev-log/core070/t4-p6-*-receipt-2026-09-05.json | wc -l` → **11**
+**Count:** `ls docs/dev-log/core070/t4-p6-*-receipt-2026-09-05.json | wc -l` → **12**
 
 | # | Family | p | n | Status | Receipt JSON |
 |---|--------|---|---|--------|--------------|
@@ -43,11 +43,11 @@ Totoro parallel (8-way). Receipts under `docs/dev-log/core070/t4-p6-*-receipt-20
 | 9 | nb2 | 20 | 500 | **PASS** | `t4-p6-nb2-p20-n500-K2-receipt-2026-09-05.json` |
 | 10 | nb2 | 20 | 2000 | **PASS** | `t4-p6-nb2-p20-n2000-K2-receipt-2026-09-05.json` |
 | 11 | nb2 | 50 | 500 | **PASS** | `t4-p6-nb2-p50-n500-K2-receipt-2026-09-05.json` |
-| 12 | nb2 | 50 | 2000 | **RUNNING** | — (stub only: `t4-p6-grid-out/nb2_p50_n2000_K2/receipt-stub.json`) |
+| 12 | nb2 | 50 | 2000 | **PASS** | `t4-p6-nb2-p50-n2000-K2-receipt-2026-09-05.json` |
 
-## PASS table (12/12 skeleton — fill from receipts)
+## PASS table (12/12 — from committed receipts)
 
-Wall times in seconds. Deltas from each-own-optimum smoke. **Do not promote** beyond claim boundary.
+Wall times in seconds (total = Julia fit + Julia confint + R fit). Deltas from each-own-optimum smoke. **Do not promote** beyond claim boundary.
 
 | # | Family | p | n | Result | Total wall | JL fit | JL confint | R fit | \|ΔlogLik\| | vcov Fro rel | max rel dSE |
 |---|--------|---|---|--------|----------:|-------:|-----------:|------:|------------:|-------------:|------------:|
@@ -62,42 +62,47 @@ Wall times in seconds. Deltas from each-own-optimum smoke. **Do not promote** be
 | 9 | nb2 | 20 | 500 | **PASS** | 217 | 97.9 | 102.7 | 16.6 | 2.08e-07 | 1.25e-05 | 7.89e-06 |
 | 10 | nb2 | 20 | 2000 | **PASS** | 912 | 400.3 | 386.7 | 124.9 | 7.91e-08 | 3.05e-05 | 2.27e-05 |
 | 11 | nb2 | 50 | 500 | **PASS** | 1334 | 387.3 | 846.4 | 100.6 | 9.20e-07 | 4.95e-05 | 2.27e-05 |
-| 12 | nb2 | 50 | 2000 | _TBD_ | — | — | — | — | — | — | — |
+| 12 | nb2 | 50 | 2000 | **PASS** | 6578 | 2064.8 | 3897.8 | 615.7 | 4.83e-07 | 1.20e-04 | 5.08e-05 |
 
-**Partial seff (11 cells, serial sum):** ~5 341 s (~89 min). Dominant cells: poisson p50 n2000 (1 926 s), nb2 p50 n500 (1 334 s), nb2 p20 n2000 (912 s). Cell 12 expected heaviest — re-estimate full-grid parallel wall after it lands.
+### Cell 12 highlight (`nb2_p50_n2000_K2`)
 
-## Outcome (when 12/12)
+- Julia fit ~2065 s; Julia confint ~3898 s; R fit ~616 s
+- logLik Δ ≈ 4.8e-7; vcov Fro rel ≈ 1.2e-4; max rel dSE ≈ 5.1e-05
+- Receipt: `docs/dev-log/core070/t4-p6-nb2-p50-n2000-K2-receipt-2026-09-05.{json,md}`
 
-| Item | Target | Current |
+## Full seff (12 cells)
+
+| Aggregate | Value |
+|---|---|
+| Serial sum (JL fit + JL confint + R fit) | **~11 920 s (~199 min / ~3.3 h)** |
+| Heaviest cell | nb2 p50 n2000 — **6578 s** (~110 min) |
+| Next heaviest | poisson p50 n2000 — 1926 s; nb2 p50 n500 — 1334 s |
+| Pre-run G4 estimate (8-core wall) | ~23–30 min |
+| Measured note | Serial sum ≫ 8-core estimate because NB2 large cells dominate; Julia confint is the main cost on non-Gaussian arms |
+
+Parallel wall on Totoro was launch-to-last-receipt (8-way), not equal to the serial sum. Record for scaling: cell 12 alone is longer than the original 8-core pre-run guess for the whole grid.
+
+## Outcome
+
+| Item | Target | Result |
 |---|---|---|
-| Receipts on disk | 12 JSON + 12 MD | **11/12** |
-| All PASS within EOO contract | 12/12 or FAIL disposition | **11/11 PASS** |
-| PR ready for review | `gh pr ready 297` | **no** — blocked at 11/12 |
+| Receipts on disk | 12 JSON + 12 MD | **12/12** |
+| All PASS within EOO contract | 12/12 or FAIL disposition | **12/12 PASS** |
+| GATES G2 / G3 | PASS | **PASS** |
+| PR ready for review | `gh pr ready 297` | done at closeout (merge withheld) |
 | True-parity / gate-tier claim | **NOT claimed** | honoured |
 
 ## Stop conditions hit
 
-(none — cell 12 in flight)
+(none)
 
-## Next steps
+## Explicitly NOT claimed / NOT next
 
-1. **Poll cell 12** — `tools/t4_p6_poll_nb2_p50_n2000_finalize.sh` or manual poll until `t4-p6-nb2-p50-n2000-K2-receipt-2026-09-05.json` exists on disk.
-2. **Commit receipt 12** — pull remote artefact, run receipt writer; do not invent JSON locally.
-3. **Fill row 12** in PASS table from committed receipt only.
-4. **Re-estimate grid seff** — append measured 12-cell serial/parallel totals to plan appendix (compare to pre-run G4 estimate ~23–30 min @ 8-core).
-5. **Closeout** — update GATES G2/G3 leaves, check-log, then `gh pr ready 297` **only after** 12/12 verified.
-6. **Explicitly NOT next:** true-parity promotion, gate-tier clearance, or merge without maintainer authority.
-
-## Resume (Shinichi)
-
-```bash
-cd /Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904
-git checkout cursor/totoro-t4-p6-grid-20260905 && git pull
-ls docs/dev-log/core070/t4-p6-*-receipt-2026-09-05.json | wc -l   # expect 12
-tail -f logs/t4-p6-poll-nb2-final-20260905-1458.log
-```
+- True-parity promotion
+- Gate-tier clearance
+- Merge of #297 without maintainer authority
 
 ## Reviewers
 
-- **Ada:** integrator closeout prep — tally accurate @ 11/12
-- **Rose:** receipt prose — no true-parity overclaim (pending final read)
+- **Ada:** integrator closeout — 12/12 PASS + seff from on-disk receipts
+- **Rose:** receipt / after-task prose — claim boundary held (RSZ + EOO only)
