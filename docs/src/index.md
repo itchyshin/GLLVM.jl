@@ -92,10 +92,9 @@ workflow and its current evidence boundary.
 
 `GaussianPerVarFit` does not yet have the `sigma_y_site()`, `correlation()`,
 and `communality()` extractor methods used by the shared-residual Gaussian
-fit. The explicit `Σ`, `c²`, and `R` calculation above is therefore the
-current experimental per-response route; its fields and output contract may
-change. It is shown to make the model comparison explicit, not as a stable
-extractor promise.
+fit. For a per-response fit, calculate `Σ`, `c²`, and `R` explicitly as shown
+above. This makes the model comparison explicit without promising that these
+fit fields are a stable extractor interface.
 
 ## What The Fit Gives You
 

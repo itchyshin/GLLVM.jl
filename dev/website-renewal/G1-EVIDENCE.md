@@ -11,8 +11,8 @@ The companion gllvmTMB evidence record is
 - the per-response `GaussianPerVarFit` smoke example constructed `Sigma`,
   correlation, and communality successfully from `Lambda` and `psi²`;
 - the pages explicitly state that the shared-residual extractor methods do not
-  yet dispatch on `GaussianPerVarFit`, so the explicit calculation is an
-  experimental current route rather than a stable extractor promise;
+  yet dispatch on `GaussianPerVarFit`, so the pages show the explicit
+  calculation without promising a stable extractor interface;
 - source/rendered scans retain partial-parity, orientation, and
   Gaussian-only-speed boundaries; `git diff --check` passes.
 - after instantiating the declared `docs` environment in a fresh `origin/main`
