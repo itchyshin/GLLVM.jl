@@ -4,7 +4,7 @@
 **Worktrees:** JL `~/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904` · R `~/local-scratch/lanes/gllvmTMB-gllvm-twin-20260904` (read-only; no engine surgery)  
 **Oracle (current):** frozen gllvmTMB 0.7.0 `b4d5fee64def88bc768dda1f1f77c29b295edd86`  
 **Main @ sweep:** `a2e641de` (Option D + parity-next 3-day package merged)  
-**Status:** **STOP AT G0 — map-clearance arc only; no Phase 3 implementation**
+**Status:** **G0 LOCKED 2026-09-05 (Shinichi: 1–5 yes / Ada defaults)** — map-clearance arc authorised; no Phase 3 engine build yet
 
 ---
 
@@ -110,9 +110,19 @@ Cursor planning surface. Two-bar: Cursor Models preferred for scouts; judgment o
 
 ---
 
-## Phase 0.4 — G0 questions (need Shinichi)
+## Phase 0.4 — G0 questions — **LOCKED**
 
-Each carries Ada's recommendation and a safe default.
+**Owner answers 2026-09-05:** Shinichi locked **1–5 = yes** (Ada defaults). Record:
+
+| # | Decision | Lock |
+|---|----------|------|
+| 1 | Oracle | Frozen **0.7.0** for qualification; **0.7.1+** on a separate catch-up board |
+| 2 | Bridge | **Tiered** — thin JuliaCall for ACC-class; native Julia elsewhere |
+| 3 | Must-have | ~**30–50** gate-tier rows for v0.true-parity (not all 497) |
+| 4 | Compute | **Totoro-first**; DRAC by approval when estimate warrants |
+| 5 | Matched-coords (§7) | θ-map **research first**, then owner chooses implement vs demote |
+
+Each item below still carries Ada's recommendation for audit trail.
 
 ### Q1 — Destination oracle: frozen 0.7.0 vs live 0.7.1+ surface?
 
@@ -230,42 +240,44 @@ Full ladder: `docs/dev-log/plans/2026-09-05-true-parity-wayfinder.md` (**wayfind
 
 ---
 
-## STOP AT G0
+## G0 LOCKED — start map-clearance `/goal`
 
-This chat ends at the approval packet. **Do not start Phase 3.** After G0, paste the `/goal` block below into a **fresh Cursor goal** for map-clearance only.
+Paste the block below into a **fresh Cursor goal**. **Do not start Phase 3 engine work** until map tickets M0-1…M0-10 close.
 
 ---
 
-## Paste-ready `/goal` (map-clearance arc first)
+## Paste-ready `/goal` (map-clearance arc — G0 locked)
 
 ```
 /goal GLLVM.jl true-parity map-clearance (NOT build)
 
+G0 LOCKED 2026-09-05 (Shinichi 1–5 yes):
+1. Oracle = frozen gllvmTMB 0.7.0 (b4d5fee6) for qualification; 0.7.1+ separate catch-up board
+2. Bridge = tiered (thin JuliaCall ACC-class + native Julia elsewhere)
+3. Must-have ≈ 30–50 gate-tier rows for v0.true-parity (not all 497)
+4. Compute = Totoro-first; DRAC by approval (D-50 / D-139)
+5. Matched-coords = θ-map research first, then owner choose implement vs demote
+
 Read first:
 - docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md
 - docs/dev-log/core070/true-parity-programme-decision-map-2026-09-05.md
-- docs/dev-log/core070/true-parity-decision-map.md (prior — cite, don't contradict)
+- docs/dev-log/core070/true-parity-decision-map.md (cite; don't contradict)
 - docs/dev-log/plans/2026-09-05-true-parity-wayfinder.md
 - Vault D-220, D-204, D-50, D-139
 
-Branch: cursor/true-parity-ultra-plan-20260905 from origin/main
+Branch: cursor/true-parity-ultra-plan-20260905 (PR #291) or fresh off origin/main after merge
 Worktree: ~/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904
 R twin: ~/local-scratch/lanes/gllvmTMB-gllvm-twin-20260904 (READ-ONLY — no engine surgery)
 
-G0 ANSWERS NEEDED (ask Shinichi if not in chat history):
-1. Oracle: frozen 0.7.0 for qualification claim vs track 0.7.1+ separately?
-2. Bridge: tiered thin bridge + native Julia for the rest — OK?
-3. Must-have: ~30–50 gate-tier rows for v0.true-parity — OK or pick list?
-4. Compute: Totoro-first, DRAC by approval — OK?
-5. Matched-coordinates: θ-map research ticket then owner choose implement vs demote?
-
 SCOPE (map-clearance ONLY):
 - Close tickets M0-1 … M0-10 in the ultra-plan
-- Update programme decision map; NO production code in src/ or test/
-- Run unlazy gates in .unlazy/true-parity-programme/
-- Draft PR for docs; do not merge without Shinichi
+- Update programme + twin decision maps in place
+- NO production code in src/ or test/
+- Unlazy: .unlazy/true-parity-programme/
+- Draft/update PR for docs; do not merge without Shinichi unless he says so
+- After-task when arc closes
 
-DEFER: any Julia/R engine implementation, campaigns, true-parity claim, traits parser, full 122-row port
+DEFER: Julia/R engine implementation, campaigns, true-parity public claim, traits parser, full 122-row port, #1236 build
 
-DISCIPLINE: lane_preflight before write; stage by path never git add -A; after-task when arc closes
+DISCIPLINE: lane_preflight; stage by path; never git add -A
 ```
