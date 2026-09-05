@@ -17736,3 +17736,11 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - Artifacts: `docs/dev-log/core070/second-order-matched-pilot-batch1-20260905/` + `second-order-matched-pilot-batch1-20260905.md`.
 - Updated `second-order-matched-coordinates-2026-09-04.md` disposition.
 - **Not claiming:** programme §7; full batch-1 matched tier (2/5 blocked).
+
+## 2026-09-05 — Option D twin-trust bundle verification
+
+- **#281 MERGED** @ `51e43a4a` (D1 gate receipt post-#280).
+- Option D slices merged on main: #282 holdouts (OUT 8 / PARTIAL 3 / NOT ATTEMPTED 1), #283 Rose hygiene,
+  #284 advisory R smoke (**15/3/18**), #285 matched-coords pilot (**3/0/2/0**); closeout #286.
+- Bundle after-task: `2026-09-05-option-d-twin-trust-bundle.md`.
+- **Not claiming:** true parity; contract §7 programme complete; 0.7.1 full surface port.
