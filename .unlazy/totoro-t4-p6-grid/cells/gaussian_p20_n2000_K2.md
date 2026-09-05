@@ -3,10 +3,10 @@
 **Programme:** `.unlazy/totoro-t4-p6-grid/GATES.md`
 **Shape:** gaussian · p=20 · n=2000 · K=2 · seed=42
 
-- [ ] Remote run completed
-- [ ] `out/` pulled to `docs/dev-log/core070/t4-p6-grid-out/gaussian_p20_n2000_K2/`
-- [ ] Receipt JSON committed
-- [ ] Each-own-optimum deltas recorded (informing only)
-- [ ] `seff` wall times logged
+- [x] Remote run completed
+- [x] `out/` pulled to `docs/dev-log/core070/t4-p6-out/`
+- [x] Receipt JSON committed
+- [x] Each-own-optimum deltas recorded (informing only)
+- [x] `seff` wall times logged
 
-**Status stub:** PENDING
+**Status stub:** PASS (2026-09-05)

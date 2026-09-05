@@ -14,7 +14,7 @@ Check leaves in order. A single cell FAIL does **not** abort the grid; record FA
 - [ ] D-139 re-estimate read (pre-run G4: serial ~3 h, 8-core ~23–30 min)
 - [ ] Campaign plan committed (`2026-09-05-totoro-t4-p6-grid-campaign.md`)
 - [ ] Launcher dry-run exits 0 without network (`tools/t4_totoro_p6_grid.sh`)
-- [ ] **Shinichi G0** for 12-cell grid launch recorded
+- [x] **Shinichi G0** for 12-cell grid launch recorded (2026-09-05)
 - [ ] Branch `cursor/totoro-t4-p6-grid-20260905` pushed
 
 ---
@@ -25,10 +25,10 @@ Check leaves in order. A single cell FAIL does **not** abort the grid; record FA
 **Launcher:** `GLLVM_TOTORO_LAUNCH=1 tools/t4_totoro_p6_grid.sh`  
 **Remote:** `/home/snakagaw/core070-aghq-20260830/t4-p6-grid-01/repo/`
 
-- [ ] rsync completed
-- [ ] Remote GNU parallel `-j 8` started (or serial fallback logged)
-- [ ] Launch log archived under `logs/t4-p6-grid-launch-*.log`
-- [ ] All 12 remote receipts present (`receipts/<tag>.json`)
+- [x] rsync completed (2026-09-05 13:53 MDT)
+- [x] Remote GNU parallel `-j 8` started (or serial fallback logged)
+- [x] Launch log archived under `logs/t4-p6-grid-launch-20260905-1353.log`
+- [ ] All 12 remote receipts present (`receipts/<tag>.json`) — 4/12 cell outputs DONE @ poll 13:56
 
 **G1 PASS:** launch submitted + remote run finished (any mix of PASS/FAIL cells)  
 **G1 FAIL:** infra/rsync/ssh failure before receipts written → ping Shinichi

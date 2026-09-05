@@ -1,6 +1,6 @@
 # After-task: T4 P6 12-cell Totoro grid (2026-09-05)
 
-**Status:** IN PROGRESS — integrator lane open; siblings own launcher/poll/gates.  
+**Status:** IN PROGRESS — grid launched 2026-09-05 13:53 MDT; 4/12 cells DONE (poll @ 13:56).  
 **Branch:** `cursor/totoro-t4-p6-grid-20260905`  
 **Worktree:** `/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904`  
 **Authority:** Shinichi G0 2026-09-05 (12-cell P6 grid); plan `docs/dev-log/plans/2026-09-05-totoro-t4-prerun-programme.md`  
@@ -17,10 +17,10 @@ Totoro parallel (8-way). Output under `docs/dev-log/core070/t4-grid-out/`.
 - [ ] Branch `cursor/totoro-t4-p6-grid-20260905` pushed
 - [ ] Draft PR open (stitch sibling commits)
 - [ ] Sibling: `tools/t4_totoro_p6_grid.sh` launcher
-- [ ] Sibling: Totoro launch + poll loop
+- [x] Sibling: Totoro launch + poll loop (launch log `logs/t4-p6-grid-launch-20260905-1353.log`)
 - [ ] Sibling: `.unlazy/totoro-t4-p6-grid/GATES.md` (12 leaves)
 - [ ] Sibling: plan appendix (measured seff vs estimate)
-- [ ] 12/12 cell receipts committed
+- [ ] 12/12 cell receipts committed (4/12 PASS committed @ 59208010 + poisson pending commit)
 - [ ] check-log entry
 - [ ] Rose read-only on receipt prose (no true-parity wording)
 
@@ -28,18 +28,18 @@ Totoro parallel (8-way). Output under `docs/dev-log/core070/t4-grid-out/`.
 
 | # | Family | p | n | Status | Receipt |
 |---|--------|---|---|--------|---------|
-| 1 | gaussian | 20 | 500 | pending | — |
-| 2 | gaussian | 20 | 2000 | pending | — |
-| 3 | gaussian | 50 | 500 | pending | — |
-| 4 | gaussian | 50 | 2000 | pending | — |
-| 5 | poisson | 20 | 500 | pending | — |
-| 6 | poisson | 20 | 2000 | pending | — |
-| 7 | poisson | 50 | 500 | pending | — |
-| 8 | poisson | 50 | 2000 | pending | — |
-| 9 | nb2 | 20 | 500 | pending | — |
-| 10 | nb2 | 20 | 2000 | pending | — |
-| 11 | nb2 | 50 | 500 | pending | — |
-| 12 | nb2 | 50 | 2000 | pending | — |
+| 1 | gaussian | 20 | 500 | **PASS** | `t4-p6-gaussian-p20-n500-K2-receipt-2026-09-05.json` |
+| 2 | gaussian | 20 | 2000 | **PASS** | `t4-p6-gaussian-p20-n2000-K2-receipt-2026-09-05.json` |
+| 3 | gaussian | 50 | 500 | **PASS** | `t4-p6-gaussian-p50-n500-K2-receipt-2026-09-05.json` |
+| 4 | gaussian | 50 | 2000 | running | — |
+| 5 | poisson | 20 | 500 | **PASS** | `t4-p6-poisson-p20-n500-K2-receipt-2026-09-05.json` (pull @ 13:55) |
+| 6 | poisson | 20 | 2000 | running | — |
+| 7 | poisson | 50 | 500 | running | — |
+| 8 | poisson | 50 | 2000 | running | — |
+| 9 | nb2 | 20 | 500 | running | — |
+| 10 | nb2 | 20 | 2000 | running | — |
+| 11 | nb2 | 50 | 500 | running | — |
+| 12 | nb2 | 50 | 2000 | running | — |
 
 ## Resume (Shinichi, ~2 days)
 
