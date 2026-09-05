@@ -27,6 +27,12 @@ features:
 ---
 ```
 
+```@raw html
+<div class="gllvm-brand-mark" aria-hidden="true">
+  <img src="/assets/gllvmjl-mark.svg" alt="" />
+</div>
+```
+
 # Start with the response matrix
 
 Fast Generalised Linear Latent Variable Models in Julia for multivariate

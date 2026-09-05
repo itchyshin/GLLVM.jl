@@ -17967,3 +17967,25 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   it changes no model, capability, parity, or release claim.
 - Design: `docs/superpowers/specs/2026-09-05-paired-julia-branding-design.md`.
 - Not yet implemented, deployed, or published.
+
+## 2026-09-05 — paired Julia branding implementation
+
+- GLLVM.jl now has an original rounded-hex response-grid / curved-latent-axis
+  identity: `docs/src/assets/gllvmjl-mark.svg` and its compact favicon.
+  Generated local derivatives are `docs/src/assets/logo.png` and `favicon.ico`,
+  which DocumenterVitepress auto-detects; its generated configuration was left
+  unchanged.
+- The reader landing page has a decorative desktop badge and preserves the
+  existing matrix-first, partial-parity boundary. Its gllvmTMB reference is now
+  a direct optional-companion link; it does not make an engine, feature-parity,
+  performance, or inference claim.
+- DRM.jl assets were created in isolated lane
+  `codex/paired-julia-identity-20260905`: a matching teal/indigo same-mean,
+  different-spread density-curve mark with PNG and favicon derivatives. No DRM
+  landing-page file was touched in this slice.
+- Validation: all four SVG masters parse with `xmllint` and were rendered with
+  `rsvg-convert`; DRM indigo has 3.70:1 contrast against navy. `julia
+  --project=docs docs/make.jl --local` completed successfully after the
+  raw-HTML integration correction; it explicitly skipped deployment locally.
+- **Not claiming:** official Julia affiliation; GLLVM.jl parity with gllvmTMB;
+  a DRM.jl landing-page redesign; or a published documentation update.

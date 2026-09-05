@@ -10,3 +10,22 @@
     display: flex !important;
   }
 }
+
+.gllvm-brand-mark {
+  position: absolute;
+  top: 10rem;
+  right: clamp(2rem, 10vw, 12rem);
+  width: min(12rem, 16vw);
+}
+
+.gllvm-brand-mark img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 960px) {
+  .gllvm-brand-mark {
+    display: none;
+  }
+}

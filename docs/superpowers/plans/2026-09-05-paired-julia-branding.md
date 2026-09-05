@@ -4,7 +4,7 @@
 
 **Goal:** Add matched, original Julia-adjacent hex badges for GLLVM.jl and DRM.jl, and integrate the GLLVM.jl badge into its reader-first landing page with an honest optional-companion connection to gllvmTMB.
 
-**Architecture:** Keep the identity system deliberately small and native to each documentation site: a project-local SVG mark plus an SVG favicon.  The GLLVM landing page consumes its own mark through VitePress home markup and scoped CSS; DRM.jl receives its matching asset in a separate, clean worktree so its detached shared checkout is untouched.
+**Architecture:** Keep the identity system deliberately small and native to each documentation site: a project-local SVG master plus generated `logo.png` and `favicon.ico` derivatives. DocumenterVitepress auto-detects those conventional files, so its generated configuration remains untouched. The GLLVM landing page consumes its own mark through VitePress home markup and scoped CSS; DRM.jl receives its matching asset in a separate, clean worktree so its detached shared checkout is untouched.
 
 **Tech Stack:** SVG, VitePress/DocumenterVitepress, Markdown, CSS, Julia local documentation builds.
 
@@ -42,7 +42,6 @@ Run `git add docs/src/assets/*mark.svg docs/src/assets/*favicon.svg` in the rele
 
 **Files:**
 - Modify: `GLLVM.jl/docs/src/index.md`
-- Modify: `GLLVM.jl/docs/src/.vitepress/config.mts`
 - Modify: `GLLVM.jl/docs/src/.vitepress/theme/overrides.css`
 
 - [ ] **Step 1: Add a decorative hero badge**
@@ -63,11 +62,11 @@ Append CSS that places `.gllvm-brand-mark` at the right of the desktop hero,
 sets the image to 12rem maximum width, and hides it below 960 px.  The existing
 768--1100 px drawer-navigation guard must remain unchanged.
 
-- [ ] **Step 3: Replace the generated favicon placeholder**
+- [ ] **Step 3: Add conventional asset derivatives**
 
-In `docs/src/.vitepress/config.mts`, replace the VitePress favicon placeholder
-with the generated relative URL for `assets/gllvmjl-favicon.svg`, preserving all
-other DocumenterVitepress placeholders exactly as generated.
+Generate `docs/src/assets/logo.png` and `docs/src/assets/favicon.ico` from the
+approved SVG master. DocumenterVitepress auto-detects these conventional files,
+so leave `docs/src/.vitepress/config.mts` exactly as generated.
 
 - [ ] **Step 4: Add the companion link without widening claims**
 
@@ -78,7 +77,7 @@ promise that the Julia route replaces R.
 
 - [ ] **Step 5: Commit the GLLVM.jl integration**
 
-Run `git add docs/src/index.md docs/src/.vitepress/config.mts docs/src/.vitepress/theme/overrides.css` and commit with `docs: integrate GLLVM hex identity`.
+Run `git add docs/src/index.md docs/src/assets/logo.png docs/src/assets/favicon.ico docs/src/.vitepress/theme/overrides.css` and commit with `docs: integrate GLLVM hex identity`.
 
 ### Task 3: Validate locally and retain honest boundaries
 
