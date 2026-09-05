@@ -1,6 +1,6 @@
 # G0 gates — paired reader journey
 
-Status: **G0 implementation; stop at G1.** This is a documentation-only lane.
+Status: **G1 complete; not published.** This is a documentation-only lane.
 It neither changes the Julia or R engines nor promotes a capability or
 validation claim.
 
@@ -25,9 +25,9 @@ the same model as R's ordinary `latent()` teaching fit.
 
 - [x] Reciprocal R/Julia links and current-limit links name the intended routes in source and rendered output.
 - [x] `julia --project=docs docs/make.jl --local` and the R article build checks succeed.
-- [ ] Rendered pages inspected at 1440 px, 768 px, and 390 px.
-- [ ] Keyboard/focus, reduced-motion, and horizontal-overflow checks recorded.
+- [x] Rendered pages inspected at 1440 px, 768 px, and 390 px.
+- [x] Keyboard/focus, reduced-motion, and horizontal-overflow checks recorded.
 - [x] Source-versus-rendered scan confirms experimental status, the
   extractor-interface limit, orientation, partial parity, residual semantics,
   and Gaussian-only speed wording.
-- [ ] Screenshots and an evidence report exist; nothing is published.
+- [x] Screenshots and an evidence report exist; nothing is published.

@@ -1,0 +1,12 @@
+/* The generated top-level menu is about 1,060 px wide.  Keep the accessible
+   drawer navigation until there is room for it rather than overflowing at the
+   theme's generic 768 px breakpoint. */
+@media (min-width: 768px) and (max-width: 1100px) {
+  .VPNavBarMenu {
+    display: none !important;
+  }
+
+  .VPNavBarHamburger {
+    display: flex !important;
+  }
+}

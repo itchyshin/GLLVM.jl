@@ -1,7 +1,7 @@
 # G1 evidence — paired reader journey
 
 Date: 2026-09-05
-Status: **STOPPED AT G1; NOT PUBLISHED**
+Status: **G1 COMPLETE; NOT PUBLISHED**
 
 The companion gllvmTMB evidence record is
 `gllvmTMB/dev/website-renewal/G1-EVIDENCE.md`. The Julia-specific evidence is:
@@ -23,5 +23,18 @@ The companion gllvmTMB evidence record is
   Skip to content link, mobile-navigation control, all three hero actions,
   feature cards, and retained scope warnings.
 
-The 1440/768/390 screenshot, full keyboard/focus traversal, reduced-motion,
-and overflow checks remain open. No deployment or publication was attempted.
+## Responsive and accessibility review
+
+- An isolated local-browser review checked both rendered routes at **1440 px**,
+  **768 px**, and **390 px**. Each had `scrollWidth == viewport width`.
+  The R reader-route chooser remained present at every size; the Julia hero
+  retained all three actions at 1440 and 390 px.
+- At 768 px, the generated VitePress desktop menu was 1,060 px wide. The
+  source theme override keeps the accessible drawer navigation through 1,100
+  px; a fresh local build then showed no overflow, the drawer control, and no
+  desktop menu at 768 px. The full menu returned at 1440 px.
+- At 390 px, both navigation toggles opened. Keyboard tab traversal reached
+  the R `Get started` control and Julia `Getting Started` control. The
+  generated VitePress CSS supplies a `prefers-reduced-motion: reduce` rule.
+- In-app screenshots were reviewed at each breakpoint, including the corrected
+  Julia 768 px layout. No deployment or publication was attempted.
