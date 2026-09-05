@@ -28,8 +28,15 @@ against docs/dev-log/core070/required-source-case-map.json's
 `namespace/export/<name>` rows, so a forward gap that is already a tracked
 ledger row (with a disposition) is distinguished from one that is UNTRACKED.
 
-    python3 tools/parity_ledger.py --ref origin/main
+    python3 tools/parity_ledger.py
+    python3 tools/parity_ledger.py --r-ref b4d5fee64def88bc768dda1f1f77c29b295edd86
+    python3 tools/parity_ledger.py --ref origin/main   # live main comparison only
     python3 tools/parity_ledger.py --self-test
+
+``--ref`` and ``--r-ref`` both pin the R ``NAMESPACE`` read via ``git show`` (never
+the working tree). Default: frozen gllvmTMB 0.7.0 ``b4d5fee6``. Capability-status
+CLOSURE (``gllvmTMB/tools/parity_ledger.R``) is a separate join — see
+``tools/parity_oracle.py`` and ``tools/parity_capability_closure.sh``.
 """
 
 import argparse
@@ -40,8 +47,10 @@ import sys
 import tempfile
 from pathlib import Path
 
+from parity_oracle import CAPABILITY_LEDGER_REF, DEFAULT_R_REF, FROZEN_GLLVMTMB_ORACLE
+
 DEFAULT_GLLVMTMB = "/Users/z3437171/Dropbox/Github Local/gllvmTMB"
-DEFAULT_REF = "b4d5fee64def88bc768dda1f1f77c29b295edd86"  # frozen 0.7.0 oracle
+DEFAULT_REF = DEFAULT_R_REF
 
 # ---------------------------------------------------------------------------
 # FORWARD direction: R name -> Julia symbol, where the twin exists under a
@@ -391,16 +400,25 @@ def self_test() -> int:
             NOT_CAPABILITY.clear()
             NOT_CAPABILITY.update(old_not_cap)
 
+    assert DEFAULT_REF == FROZEN_GLLVMTMB_ORACLE, DEFAULT_REF
     print("SELFTEST_OK")
     return 0
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(
+        description="Export-surface parity: R NAMESPACE vs GLLVM.jl exports at a git ref.",
+        epilog=(
+            f"Default R pin: frozen gllvmTMB 0.7.0 {FROZEN_GLLVMTMB_ORACLE[:8]}. "
+            f"Capability CLOSURE uses {CAPABILITY_LEDGER_REF} via parity_capability_closure.sh."
+        ),
+    )
     ap.add_argument("--gllvmtmb", default=DEFAULT_GLLVMTMB, type=Path,
                      help="path to the gllvmTMB repo")
     ap.add_argument("--ref", default=DEFAULT_REF,
-                     help="git ref to read (default: frozen 0.7.0 oracle; also accepts origin/main)")
+                     help=f"R NAMESPACE git ref (default: frozen oracle {FROZEN_GLLVMTMB_ORACLE[:8]})")
+    ap.add_argument("--r-ref", default=None,
+                     help="alias for --ref on the R NAMESPACE read (P13; same default as --ref)")
     ap.add_argument("--root", default=Path(__file__).resolve().parents[1], type=Path,
                      help="path to the GLLVM.jl repo root")
     ap.add_argument("--self-test", action="store_true",
@@ -410,7 +428,8 @@ def main() -> int:
     if args.self_test:
         return self_test()
 
-    return run(args.gllvmtmb, args.ref, args.root)
+    ref = args.r_ref if args.r_ref is not None else args.ref
+    return run(args.gllvmtmb, ref, args.root)
 
 
 if __name__ == "__main__":

@@ -17870,3 +17870,14 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   #284 advisory R smoke (**15/3/18**), #285 matched-coords pilot (**3/0/2/0**); closeout #286.
 - Bundle after-task: `2026-09-05-option-d-twin-trust-bundle.md`.
 - **Not claiming:** true parity; contract §7 programme complete; 0.7.1 full surface port.
+
+## 2026-09-05 — M2 Foundation day-1 (integrator: D-220 + Gaussian 2SO smoke)
+
+- Branch `cursor/m2-foundation-day1-20260905` from `origin/main` @ `ede4e2d7`.
+- **D-220:** `tools/d220_paired_gaussian_cell.jl` → PASS (ΔlogLik 4.13e-9, first_order_pass true).
+  Receipt: `docs/dev-log/core070/d220-paired-gaussian-cell-receipt-2026-09-05.json`.
+- **2SO smoke:** `tools/core070_second_order/smoke_gaussian_eoo.jl` → PASS (SE rel 1.02e-6, CI abs 9.20e-7).
+  Receipt: `docs/dev-log/core070/gaussian-2so-eoo-smoke-receipt-2026-09-05.json`.
+- After-task: `docs/dev-log/after-task/2026-09-05-m2-foundation-day1.md`.
+- **Sibling slices (same branch):** P13 @ `e404f748`; slice table + T4 estimate @ `6e11814d`.
+- **Not claiming:** true parity; programme §7; gate-tier row coverage; P13 CLOSURE until joint run receipt lands.
