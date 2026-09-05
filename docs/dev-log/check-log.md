@@ -1,3 +1,23 @@
+## 2026-09-05 — M2 Foundation day-2 closeout (integrator, PARTIAL)
+
+Integrator slice on `cursor/m2-foundation-day2-20260905` @ `b451ce8d`. B/C/D done
+(worktree hygiene, Poisson smoke + draft PR #295, Totoro dry-run queue script).
+PR #294 CI run [33979515590](https://github.com/itchyshin/GLLVM.jl/actions/runs/33979515590):
+Julia 8/8 + Documenter **PASS**; advisory Frozen R 0.7.0 smoke **277/9 FAIL**
+(continue-on-error); `mergeStateStatus` **UNSTABLE**; #294 ready-for-review, not merged.
+
+Nine-fail brief: `docs/dev-log/core070/advisory-r070-smoke-fail-brief-2026-09-05.md`.
+After-task: `docs/dev-log/after-task/2026-09-05-m2-foundation-day2.md`.
+
+**Needs Shinichi:** accept advisory non-gating + merge #294, or triage NB2/trunc-NB2/Student-t first.
+
+```sh
+gh run view 33979515590 --repo itchyshin/GLLVM.jl --json conclusion,mergeStateStatus
+gh pr view 294 --repo itchyshin/GLLVM.jl --json mergeStateStatus,isDraft
+```
+
+---
+
 ## 2026-09-05 — TRUE PARITY ultra-plan (Phase 0–2, STOP AT G0)
 
 Multi-month programme plan + programme decision map + wayfinder ladder.
