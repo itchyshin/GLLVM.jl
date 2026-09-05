@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ## 2026-09-05 — parity-next 3-day package closeout (V1 + Melissa)
 
 Mechanical verify + plan-actual for G0 **3-day package** (`trust-fence + thin-wedge`).
@@ -12,7 +11,7 @@ Unlazy: S6a 7/7 PASS (pre-existing); V1 7/7 after plan-actual + closeout.
 **Rose:** no overclaim on `gllvmtmb-parity.md` / `second-order-parity-contract.md`.
 **Ledger:** `FORWARD=77` @ `b4d5fee6`.
 
-**GOAL_COMPLETE candidate:** yes (3-day scope only). #289 merge to main still open.
+**GOAL_COMPLETE candidate:** yes (3-day scope only). #289 merged to main (b730d031).
 
 ```sh
 node ~/.cursor/skills/unlazy/scripts/gate-check.mjs --reverify .unlazy/parity-next-20260905/gates/leaf-v1-verify.md
@@ -25,8 +24,8 @@ Branch: `cursor/parity-next-v1-verify-20260905`. Base: wedge A tip (PR #289).
 
 ---
 
-=======
->>>>>>> origin/main
+---
+
 ## 2026-09-05 — parity-next wedge A bridge ACC scout (S6a, PASS thin)
 
 G0 wedge **A** on Ayumi `urbanisation_map` via `engine = "julia"` (ACC id
