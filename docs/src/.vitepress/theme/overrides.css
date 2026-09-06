@@ -1,0 +1,134 @@
+/* The generated top-level menu is about 1,060 px wide.  Keep the accessible
+   drawer navigation until there is room for it rather than overflowing at the
+   theme's generic 768 px breakpoint. */
+@media (min-width: 768px) and (max-width: 1320px) {
+  .VPNavBarMenu {
+    display: none !important;
+  }
+
+  .VPNavBarHamburger {
+    display: flex !important;
+  }
+}
+
+.VPHomeHero .container {
+  position: relative;
+}
+
+.VPHomeHero .container::after {
+  content: "";
+  position: absolute;
+  top: 3rem;
+  right: clamp(3rem, 9vw, 11rem);
+  width: min(12rem, 16vw);
+  aspect-ratio: 1;
+  background: url("/assets/gllvmjl-mark.svg") center / contain no-repeat;
+  pointer-events: none;
+}
+
+@media (max-width: 1320px) {
+  .VPHomeHero .container::after {
+    display: none;
+  }
+}
+
+/* GLLVM.jl's shared-structure identity: Julia-adjacent hues, a calm navy
+   field, and a small reusable route panel.  The panel is deliberately an
+   orientation aid, not a status badge or a claim about model support. */
+:root {
+  --gllvm-ink: #102646;
+  --gllvm-red: #cb3c33;
+  --gllvm-purple: #9558b2;
+  --gllvm-blue: #4063d8;
+  --gllvm-route-surface: #f5f7fc;
+  --gllvm-route-border: #d9e1f0;
+  --gllvm-route-copy: #3b4a62;
+}
+
+.dark {
+  --gllvm-route-surface: #12233f;
+  --gllvm-route-border: #334a70;
+  --gllvm-route-copy: #c8d4e8;
+}
+
+.VPDoc .content-container > h1:first-child {
+  position: relative;
+  margin-bottom: 2rem;
+  padding-bottom: 0.85rem;
+}
+
+.VPDoc .content-container > h1:first-child::after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 4.25rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--gllvm-red), var(--gllvm-purple), var(--gllvm-blue));
+  content: "";
+}
+
+.gllvm-route {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  margin: 0 0 2.25rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--gllvm-route-border);
+  border-left: 0.3rem solid var(--gllvm-purple);
+  border-radius: 1rem;
+  background: var(--gllvm-route-surface);
+}
+
+.gllvm-route::before {
+  display: block;
+  width: 4.25rem;
+  height: 4.25rem;
+  background: url("/assets/gllvmjl-mark.svg") center / contain no-repeat;
+  content: "";
+}
+
+.gllvm-route__eyebrow {
+  display: block;
+  margin-bottom: 0.18rem;
+  color: var(--gllvm-purple);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gllvm-route p {
+  margin: 0;
+  color: var(--gllvm-route-copy);
+  font-size: 0.96rem;
+  line-height: 1.55;
+}
+
+.gllvm-route--start { border-left-color: var(--gllvm-blue); }
+.gllvm-route--interpret { border-left-color: var(--gllvm-purple); }
+.gllvm-route--evidence { border-left-color: var(--gllvm-red); }
+.gllvm-route--applied { border-left-color: #2c8c5a; }
+.gllvm-route--start .gllvm-route__eyebrow { color: var(--gllvm-blue); }
+.gllvm-route--interpret .gllvm-route__eyebrow { color: var(--gllvm-purple); }
+.gllvm-route--evidence .gllvm-route__eyebrow { color: var(--gllvm-red); }
+.gllvm-route--applied .gllvm-route__eyebrow { color: #2c8c5a; }
+
+@media (max-width: 640px) {
+  .VPDoc .content-container > h1:first-child {
+    margin-bottom: 1.5rem;
+  }
+
+  .gllvm-route {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .gllvm-route::before {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+}

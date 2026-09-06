@@ -1,3 +1,34 @@
+## 2026-09-05 — M2-R1 θ-map implement harness-only closeout (docs)
+
+- Owner G0 is signed: **IMPLEMENT harness-only** on 2026-09-05.
+- Implement tip: `c37ada2e` on
+  `cursor/m2-r1-theta-map-implement-20260905`; accepts supported dispersion
+  blocks of length `1` or `p` and rejects unmapped lengths.
+- Updated disposition:
+  `docs/dev-log/core070/theta-map-disposition-2026-09-05.md`.
+- Added after-task:
+  `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map-implement.md`.
+- Focused unit smoke:
+  `julia --project=. -e 'using GLLVM; include("tools/core070_second_order/theta_map.jl"); ...'`
+  → `THETA_MAP_SMOKE PASS per_trait=ok/11 shared=ok/9 invalid=blocked`.
+  The smoke exercised `p=3`, `K=2`, accepted dispersion lengths `p` and `1`,
+  and rejected unmapped length `2`.
+- Focused matched-pilot smoke completed from `c37ada2e` with
+  `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 JULIA_NUM_THREADS=1 julia
+  --project=. tools/core070_second_order/run_matched_batch1.jl
+  logs/matched-batch1-post-r1-20260905`: **5/0/0/0
+  pass/fail/blocked/skip**, all five cells reported `matched_pass=true`.
+  Receipt log: `logs/matched-batch1-smoke-20260905.log`. NB2 emitted a
+  grouped-dispersion boundary warning and R covariance `NaNs produced`
+  warnings; the process exited 0. This remains focused harness smoke only,
+  not a matched-coordinates or programme §7 completion claim.
+- After-task:
+  `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map-implement.md`.
+- No matched-coordinates or programme §7 completion claim is made.
+- No `src/` / R engine edit, no conflict rewrite of `theta_map.jl`, and no
+  merge. Push the docs closeout to the implement branch; overnight integrator
+  owns any merge.
+
 ## 2026-09-05 — T4 P6 after-task: explicit Next step
 
 - Appended **Next step** to `docs/dev-log/after-task/2026-09-05-totoro-t4-p6-grid.md` (review #297 when green; no further cells / no true-parity claim; G4 under-estimate; return to true-parity M2/θ-map). No merge of #297.
@@ -17971,3 +18002,49 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - After-task: `docs/dev-log/after-task/2026-09-05-m2-foundation-day1.md`.
 - **Sibling slices (same branch):** P13 @ `e404f748`; slice table + T4 estimate @ `6e11814d`.
 - **Not claiming:** true parity; programme §7; gate-tier row coverage; P13 CLOSURE until joint run receipt lands.
+
+## 2026-09-05 — paired Julia branding design
+
+- Recorded the approved matched-hex identity contract for GLLVM.jl and DRM.jl:
+  custom Julia-adjacent colours and distinct internal structural marks.
+- Scope is landing-page identity and reciprocal optional-companion wording;
+  it changes no model, capability, parity, or release claim.
+- Design: `docs/superpowers/specs/2026-09-05-paired-julia-branding-design.md`.
+- Not yet implemented, deployed, or published.
+
+## 2026-09-05 — paired Julia branding implementation
+
+- GLLVM.jl now has an original rounded-hex response-grid / curved-latent-axis
+  identity: `docs/src/assets/gllvmjl-mark.svg` and its compact favicon.
+  Generated local derivatives are `docs/src/assets/logo.png` and `favicon.ico`,
+  which DocumenterVitepress auto-detects; its generated configuration was left
+  unchanged.
+- The reader landing page has a decorative desktop badge and preserves the
+  existing matrix-first, partial-parity boundary. Its gllvmTMB reference is now
+  a direct optional-companion link; it does not make an engine, feature-parity,
+  performance, or inference claim.
+- DRM.jl assets were created in isolated lane
+  `codex/paired-julia-identity-20260905`: a matching teal/indigo same-mean,
+  different-spread density-curve mark with PNG and favicon derivatives. No DRM
+  landing-page file was touched in this slice.
+- Validation: all four SVG masters parse with `xmllint` and were rendered with
+  `rsvg-convert`; DRM indigo has 3.70:1 contrast against navy. `julia
+  --project=docs docs/make.jl --local` completed successfully after the
+  raw-HTML integration correction; it explicitly skipped deployment locally.
+- **Not claiming:** official Julia affiliation; GLLVM.jl parity with gllvmTMB;
+  a DRM.jl landing-page redesign; or a published documentation update.
+
+## 2026-09-05 — GLLVM.jl reader visual system
+
+- Extended the approved GLLVM.jl mark into a restrained, shared article system:
+  quick start, covariance, model, capability parity, comparison, and both
+  applied vignettes now have route-specific orientation panels.
+- Kept the mark decorative in bundled CSS, added light/dark panel tokens and a
+  first-level-heading accent, and expanded the navigation drawer guard to
+  1320 px after a 1280 px visual review exposed a title/search collision.
+- Validation: `julia --project=docs docs/make.jl --local` completed; generated
+  markup contained no escaped route-panel HTML; all seven modified routes were
+  present. Browser review covered the landing page, quick start, and parity page.
+- After-task: `2026-09-05-gllvmjl-reader-visual-system.md`.
+- **Not claiming:** a model/API/capability change, true parity, official Julia
+  branding, or navigation-taxonomy completion.

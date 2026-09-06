@@ -1,5 +1,14 @@
 # Model
 
+```@raw html
+<div class="gllvm-route gllvm-route--interpret">
+  <div>
+    <span class="gllvm-route__eyebrow">General model guide</span>
+    <p>Follow each term to the covariance it contributes before comparing estimates, latent axes, or fitted models.</p>
+  </div>
+</div>
+```
+
 The Gaussian GLLVM that this package implements decomposes the response
 of species `s` (a length-`p` vector across the `p` species at site `s`)
 into a fixed linear predictor plus a sequence of latent contributions:

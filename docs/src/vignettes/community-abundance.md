@@ -1,5 +1,14 @@
 # Vignette: Community Abundance & Joint Species Distribution Modeling (JSDM)
 
+```@raw html
+<div class="gllvm-route gllvm-route--applied">
+  <div>
+    <span class="gllvm-route__eyebrow">Applied species-distribution route</span>
+    <p>Use the response matrix to connect environmental gradients, residual association, and community-level variation.</p>
+  </div>
+</div>
+```
+
 This vignette demonstrates how to analyze multivariate ecological abundance data
 using **Joint Species Distribution Models (JSDMs)** in `GLLVM.jl`.
 

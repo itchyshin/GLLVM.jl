@@ -17,7 +17,12 @@ function _count_names(names::AbstractVector{<:AbstractString})
     return d
 end
 
-"""Standard GLM cells: θ = [b_fix; theta_rr_B] (+ optional single dispersion)."""
+"""Standard GLM cells: θ = [b_fix; theta_rr_B] (+ optional dispersion of length 1 or p).
+
+Dispersion gate (memo `theta-map-parameter-alignment-2026-09-05.md`):
+accept `|log_phi_*| == 1` (shared) or `|log_phi_*| == p` (`fit_gllvm` grouped ×p).
+Reject other lengths — no silent p→1 pooling and no unmapped G ∉ {1, p}.
+"""
 function map_r_theta_glm(rpar, rnames, p, K; disp_name=nothing, julia_theta_len=nothing)
     counts = _count_names(rnames)
     bidx = findall(==("b_fix"), rnames)
@@ -33,11 +38,14 @@ function map_r_theta_glm(rpar, rnames, p, K; disp_name=nothing, julia_theta_len=
     parts = [rpar[bidx], rpar[lidx]]
     if disp_name !== nothing
         didx = findall(==(disp_name), rnames)
-        if length(didx) != 1
+        nd = length(didx)
+        # Memo lines 23–24, 107–116: batch-1 `fit_gllvm` is per-trait length p.
+        # Length-1-only was a harness false-negative, not a model mismatch.
+        if nd != 1 && nd != p
             return (:blocked, ThetaMapBlocker(
                 "dispersion parameterization mismatch",
                 counts, julia_theta_len === nothing ? 0 : julia_theta_len,
-                "Julia uses one shared $(disp_name); R has $(length(didx)) entries — cannot transplant θ without changing the model"))
+                "expected |$(disp_name)| ∈ {1, p=$p} (shared or fit_gllvm per-trait); R has $nd entries — no group map for G ∉ {1,p}"))
         end
         push!(parts, rpar[didx])
     end

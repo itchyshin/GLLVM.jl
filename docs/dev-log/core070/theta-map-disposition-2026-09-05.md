@@ -1,8 +1,8 @@
-# θ-map disposition — RESEARCH OPEN (2026-09-05)
+# θ-map disposition — OWNER SIGNED: IMPLEMENT HARNESS-ONLY (2026-09-05)
 
-**Status:** RESEARCH OPEN — **do not choose implement vs demote yet.** G0 Q5 locked:
-θ-map **research first**, then owner chooses implement vs demote matched-coordinates tier for
-v0.true-parity.
+**Status:** OWNER SIGNED — **implement harness-only.** G0 Q5 was resolved on
+2026-09-05: proceed with the narrow θ-map harness fix while keeping the
+matched-coordinates tier diagnostic-only.
 
 **Blocks:** claiming programme §7 / matched-coordinates tier complete; honest matched-coordinates
 second-order receipts for beta_logit and nb2_log.
@@ -64,17 +64,24 @@ No honest θ map exists without changing parameterisation on one side or introdu
 
 ---
 
-## Owner decision (pending)
+## Owner decision — **OWNER SIGNED: implement harness-only** (G0 2026-09-05)
+
+**Signed:** 2026-09-05 — owner approved the implement baton and lean
+harness-only θ-map route. No `src/` or R engine edits. No true-parity or
+programme §7 claim.
 
 | Branch | v0.true-parity claim |
 |---|---|
-| **Implement θ-map** | Matched-coordinates diagnostic included for all batch-1 families once map lands |
-| **Demote matched tier** | v0.true-parity = each-own-optimum only; matched-coordinates remains optional diagnostic |
+| **Implement θ-map** | **Selected:** matched-coordinates remains a diagnostic path; the harness accepts supported shared or per-trait dispersion blocks. |
+| **Demote matched tier** | Not selected as the implementation response; the diagnostic remains fenced from a programme §7 claim. |
 
-**Scheduled:** owner chooses at end of research ticket — **not during map-clearance arc**.
+**Implementation:** landed on `cursor/m2-r1-theta-map-implement-20260905`
+at `c37ada2e`; focused batch-1 smoke receipt `cb8ede10` reports 5/5 PASS.
 
 ---
 
 ## P5 status
 
-**CLOSED as research-scheduled.** Question dispositioned; implementation choice deferred per G0.
+**CLOSED as research-scheduled.** Question dispositioned; the owner selected
+the harness-only implementation route. The matched-coordinates result remains
+diagnostic and does not close programme §7.

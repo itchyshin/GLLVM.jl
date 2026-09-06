@@ -1,4 +1,33 @@
-# GLLVM.jl
+```@raw html
+---
+layout: home
+
+hero:
+  name: "GLLVM.jl"
+  text: "Which responses vary together?"
+  tagline: "A matrix-first Julia companion for separating shared multivariate structure from response-specific variation."
+  actions:
+    - theme: brand
+      text: Fit the first Gaussian model
+      link: /quickstart
+    - theme: alt
+      text: Interpret covariance and correlation
+      link: /covariance-correlation
+    - theme: alt
+      text: Check capability parity
+      link: /gllvmtmb-parity
+
+features:
+  - title: "Start with a response matrix"
+    details: "Responses are rows and sites are columns: p × n. The first route makes that orientation explicit before fitting."
+  - title: "Read the covariance first"
+    details: "Use model-implied Sigma, correlation, and the shared-variance fraction before attaching meaning to a rotated loading axis."
+  - title: "A companion, not a replacement"
+    details: "GLLVM.jl is matrix-first and partial parity. Use gllvmTMB for the richer formula-first R workflow and its route-specific evidence boundary."
+---
+```
+
+# Start with the response matrix
 
 Fast Generalised Linear Latent Variable Models in Julia for multivariate
 response matrices.
@@ -25,37 +54,61 @@ Most analyses start with the same scientific question:
 > Which responses vary together, and how much variation is shared rather than
 > response-specific?
 
-For continuous multivariate data, the Gaussian path is the smallest complete
-example:
+For continuous multivariate data, start with the Gaussian route that gives
+each response its own residual variance:
 
 ```julia
-using GLLVM, Random
+using GLLVM, Random, LinearAlgebra
 
 Random.seed!(1)
 n, p, K = 80, 5, 2                         # sites, responses, latent axes
 Λ = 0.7 .* randn(p, K)
-Y = Λ * randn(K, n) .+ 0.5 .* randn(p, n)  # p × n response matrix
+ψ = 0.15 .+ 0.10 .* rand(p)                # one residual variance per response
+Y = Λ * randn(K, n) .+ sqrt.(ψ) .* randn(p, n)  # p × n response matrix
 
-fit = fit_gaussian_gllvm(Y; K = K)
-communality(fit)   # shared-variance fraction per response
-correlation(fit)   # model-implied cross-response correlation matrix
+fit = fit_gaussian_pervar_gllvm(Y; K = K)
+
+# Rotation-invariant summaries implied by the per-response fit
+Σ = fit.Λ * fit.Λ' + Diagonal(fit.ψ²)
+c² = diag(fit.Λ * fit.Λ') ./ diag(Σ)       # shared-variance fraction
+R = Diagonal(1 ./ sqrt.(diag(Σ))) * Σ * Diagonal(1 ./ sqrt.(diag(Σ)))
 ```
 
 ![Model-implied cross-response correlations from a simulated two-factor GLLVM fit](assets/correlation_heatmap.png)
 
-The heatmap is a simulated two-factor Gaussian fit. The off-diagonal structure
-is what `correlation(fit)` reports: responses that share a latent axis correlate,
+The heatmap is a simulated two-factor Gaussian fit. Its off-diagonal structure
+is what the explicit `R` calculation reports: responses that share a latent axis correlate,
 and responses with no shared axis stay near zero.
+
+This is the matrix-first companion to the ordinary R
+[`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/) teaching route. Both use
+`Sigma = Lambda * Lambda' + Psi`; here `Psi` has one diagonal residual
+variance per response. R's wide formula is `traits(...) + latent(...)`, while
+Julia's matrix has responses in rows and units in columns. The simpler
+`fit_gaussian_gllvm` route has one shared residual SD, so it is a restricted
+model, not an identical R comparison. GLLVM.jl has partial parity and a
+smaller applied documentation set; use gllvmTMB for the richer formula-first
+workflow and its current evidence boundary.
+
+`GaussianPerVarFit` does not yet have the `sigma_y_site()`, `correlation()`,
+and `communality()` extractor methods used by the shared-residual Gaussian
+fit. The explicit `Σ`, `c²`, and `R` calculation above is therefore the
+current experimental per-response route; its fields and output contract may
+change. It makes the model comparison explicit without promising a stable
+extractor interface.
 
 ## What The Fit Gives You
 
-After fitting, the usual report-ready quantities are:
+For the shared-residual Gaussian fit, the usual report-ready quantities are:
 
 - `sigma_y_site(fit)` for the among-response covariance `Σ_y`;
 - `communality(fit)` for the shared-variance fraction per response;
 - `correlation(fit)` for model-implied cross-response correlations;
 - `phylo_signal(fit)` for the phylogenetic share of trait variation;
 - `getLV(fit)` and `getLoadings(fit)` for ordination scores and loadings.
+
+For the per-response residual fit used above, use the explicit `Σ`, `c²`, and
+`R` construction until those extractors are admitted for `GaussianPerVarFit`.
 
 ## Start Here
 
@@ -94,13 +147,15 @@ After fitting, the usual report-ready quantities are:
 
 ## Relation To gllvmTMB
 
-R `gllvmTMB` remains the reference model surface and the richer applied article
+R `gllvmTMB` remains the richer formula-first model surface and applied article
 set. GLLVM.jl is the Julia companion: matrix-first today, with a partial
 `engine = "julia"` bridge — **ledger closure ≠ true parity** (see
 [Capability parity](gllvmtmb-parity.md)). Interval coverage campaigns on the
 Julia side are diagnostic evidence, not calibrated inference certificates.
 See [Comparison vs gllvmTMB](comparison.md) and [Benchmarks](benchmarks.md) for
-the validated Gaussian closed-form benchmark grid.
+the validated shared-residual Gaussian closed-form benchmark grid. Those
+speed results do not generalise to non-Gaussian fits or establish speed for the
+per-response-residual teaching route above.
 
 ## Citing
 
