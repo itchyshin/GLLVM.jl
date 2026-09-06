@@ -96,6 +96,10 @@ end
         @test admitted_dict.species_aug_id == pp.species_aug_id
         @test Matrix(admitted_dict.Q) ≈ Matrix(pp.Q) atol = 1e-12
 
+        admitted_kw = GLLVM.admit_phylo_precision_payload(; payload...)
+        @test admitted_kw.n_aug == pp.n_aug
+        @test Matrix(admitted_kw.Q) ≈ Matrix(pp.Q) atol = 1e-12
+
         # Raw triplet constructor stays a thin wrap (S1/S2 unchanged).
         I, J, V = findnz(pp.Q)
         loose = PrecisionPhy(I, J, V, pp.n_aug, pp.n_leaves, pp.node_labels,
@@ -126,6 +130,11 @@ end
 
         bad_label = merge(payload, (; node_labels = payload.node_labels[1:(end - 1)]))
         _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_label),
+                         "GJL-GATE-PHYLO-PAYLOAD-LABEL")
+
+        empty_label = merge(payload, (; node_labels = copy(payload.node_labels)))
+        empty_label.node_labels[1] = ""
+        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(empty_label),
                          "GJL-GATE-PHYLO-PAYLOAD-LABEL")
 
         nan_x = merge(payload, (; x = copy(payload.x)))

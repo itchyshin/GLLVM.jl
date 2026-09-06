@@ -275,6 +275,8 @@ Rejects malformed dimensions, indices, tip maps, labels, non-finite
 values, and a shipped log-determinant that disagrees with an independent
 checksum by more than `1e-8`.
 """
+admit_phylo_precision_payload(; kwargs...) = admit_phylo_precision_payload((; kwargs...))
+
 function admit_phylo_precision_payload(payload)
     nt = _phylo_payload_as_nt(payload)
     for key in PHYLO_PRECISION_PAYLOAD_KEYS
