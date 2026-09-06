@@ -18004,3 +18004,12 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - After-task: `2026-09-05-gllvmjl-reader-visual-system.md`.
 - **Not claiming:** a model/API/capability change, true parity, official Julia
   branding, or navigation-taxonomy completion.
+
+## 2026-09-06 — D-220 kernel-latent unique regression
+
+- `julia --project=. -e 'using Pkg; Pkg.instantiate()'` → OK.
+- `julia --project=. test/test_kernel_latent_unique_bridge.jl` →
+  **11/11 passed**, marker `KERNEL_LATENT_UNIQUE_JULIA_OK`.
+- The regression covers non-identity K, repeated source groups, and
+  `unique = true`; no true-parity, Class-1, M2-R2, or compute-campaign claim
+  is made.
