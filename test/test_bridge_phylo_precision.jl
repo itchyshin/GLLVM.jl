@@ -114,6 +114,10 @@ end
         _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_dim),
                          "GJL-GATE-PHYLO-PAYLOAD-DIM")
 
+        bad_triplet_len = merge(payload, (; x = payload.x[1:(end - 1)]))
+        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_triplet_len),
+                         "GJL-GATE-PHYLO-PAYLOAD-DIM")
+
         bad_index = merge(payload, (; i = copy(payload.i)))
         bad_index.i[1] = 0
         _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_index),
