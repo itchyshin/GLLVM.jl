@@ -19,6 +19,10 @@ Evidence:
 Rose audit: this is a development regression only; no public capability
 surface was changed.
 
+Rose verdict: PASS WITH NOTES — the focused Julia and paired R checks support
+only this fixed, one-source Gaussian transport route; full-package and CI
+evidence remains the before-merge gate.
+
 Follow-up reverify: `test/test_bridge_sources.jl` now includes a direct
 `bridge_fit` versus `fit_gaussian_sources` identity cell for non-identity K,
 repeated groups, and `unique = true`. It passed **24/24**, including equality
