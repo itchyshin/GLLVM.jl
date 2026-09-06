@@ -1,3 +1,25 @@
+## 2026-09-05 — M2-R1 θ-map implement harness-only closeout (docs)
+
+- Owner G0 is signed: **IMPLEMENT harness-only** on 2026-09-05.
+- Implement tip: `c37ada2e` on
+  `cursor/m2-r1-theta-map-implement-20260905`; accepts supported dispersion
+  blocks of length `1` or `p` and rejects unmapped lengths.
+- Updated disposition:
+  `docs/dev-log/core070/theta-map-disposition-2026-09-05.md`.
+- Added after-task:
+  `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map-implement.md`.
+- Focused smoke run:
+  `julia --project=. -e 'using GLLVM; include("tools/core070_second_order/theta_map.jl"); ...'`
+  → `THETA_MAP_SMOKE PASS per_trait=ok/11 shared=ok/9 invalid=blocked`.
+  The smoke exercised `p=3`, `K=2`, accepted dispersion lengths `p` and `1`,
+  and rejected unmapped length `2`.
+- After-task:
+  `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map-implement.md`.
+- No matched-coordinates or programme §7 completion claim is made.
+- No `src/` / R engine edit, no conflict rewrite of `theta_map.jl`, and no
+  merge. Push the docs closeout to the implement branch; overnight integrator
+  owns any merge.
+
 ## 2026-09-05 — T4 Totoro pre-run programme COMPLETE (NB2 G3 PASS)
 
 Branch `cursor/totoro-t4-prerun-20260905` @ tip after commit. Three-family pre-run slice done.
