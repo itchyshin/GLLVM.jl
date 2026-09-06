@@ -329,3 +329,37 @@ reruns above are the authoritative receipts.
 - Superseded destination-map draft: [#305](https://github.com/itchyshin/GLLVM.jl/pull/305)
 
 **Decision point:** this artifact ends at G0. Awaiting Shinichi read/approve.
+
+## G0 LOCKED — 2026-09-06
+
+Shinichi approved Ada's recommended G0. The destination is **B**:
+`v0.true-parity` against frozen gllvmTMB 0.7.0, while the next leave-able
+arc is **A**, the bounded M2 remainder. The frozen-0.7.0 / signed 42-row M5
+sentence is accepted: M5 means retained evidence for the owner-approved
+42-row gate tier, not coverage of every ledger row.
+
+1. **Destination:** B; first leave-able arc: A (M2 remainder).
+2. **M5 sentence:** accepted as written for frozen 0.7.0 and 42 rows.
+3. **First build arc after A:** continue the M2 remainder from #303
+   (S1/S2 leftovers: binomial/beta/NB2 EOO and `se=TRUE` wiring). Do not
+   start M2-R2 matched coordinates without a later G0.
+4. **Class-1:** C is deferred; no Class-1 rows are promoted.
+5. **Oracle:** frozen 0.7.0 remains in force; do not re-freeze.
+6. **Bridge:** the R TMB engine is read-only. Use the Julia engine and the
+   R julia-bridge surface only for a named G0'd slice. The kernel bridge is
+   not started.
+7. **After G0:** this planning PR may merge. Execution starts only through
+   `/goal` on the named next arc; this planning chat does not implement M2.
+8. **Compute:** local smoke checks only for A. No Totoro/DRAC campaign
+   without a separate D-139 G0.
+9. **GATES:** write acceptance GATES only after destination sign-off (now
+   signed), and only for the active leave-able scope A / M2 remainder, not
+   the full 120–230 day programme.
+10. **Authorized next actions:** M2 remainder leave-able work is authorized;
+    when green, merge order is #301, then #297, then #304. Merge plan #306
+    after recording this G0. #298 may wait/close later. The kernel bridge and
+    gllvmTMB#1236 are not authorized.
+
+The approval timestamp is **2026-09-06**. No implementation, campaign,
+kernel bridge, R-engine edit, true-parity claim, or M2-R2 work is authorized
+by this record.
