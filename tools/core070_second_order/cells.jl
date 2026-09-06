@@ -118,6 +118,8 @@ function cell_gaussian()
     d["boundary_terms"] = String[]
     d["pd_hessian_r"] = r.pd_hessian
     d["r_condition_number"] = r.r_condition_number
+    d["derived_quantity"] = nothing
+    d["r_objective"] = r.objective
     d["note"] = "Gaussian has no beta (Y pre-centred); compared quantity is sigma_eps + the (sigma_eps,Lambda) vcov block, per the pre-run convention. NOT compared against a b_fix block (none exists on the Julia side)."
 
     if !r.has_sd
@@ -433,6 +435,8 @@ function cell_gaussian_x()
     d["boundary_terms"] = String[]
     d["pd_hessian_r"] = r.pd_hessian
     d["r_condition_number"] = r.r_condition_number
+    d["derived_quantity"] = nothing
+    d["r_objective"] = r.objective
     d["note"] = "Gaussian has no per-trait intercept on the Julia side (Y pre-centred); the only rotation-safe fixed effect is the shared X slope gamma, if the Gaussian+X packing exposes one as a named term (see gamma_idx below)."
 
     if !r.has_sd
@@ -801,6 +805,8 @@ function _assemble(cell_id, dgp_source, family_display, hessian_selector, disput
     d["boundary_terms"] = hasproperty(ci_pub, :boundary_terms) ? collect(ci_pub.boundary_terms) : String[]
     d["pd_hessian_r"] = r.pd_hessian
     d["r_condition_number"] = r.r_condition_number
+    d["derived_quantity"] = nothing
+    d["r_objective"] = r.objective
 
     if !r.has_sd
         d["skip_reason"] = "R se=TRUE produced no sd_report"
@@ -896,6 +902,8 @@ function _assemble_speciescov(cell_id, dgp_source, family_display, hessian_selec
     d["boundary_terms"] = String[]
     d["pd_hessian_r"] = r.pd_hessian
     d["r_condition_number"] = r.r_condition_number
+    d["derived_quantity"] = nothing
+    d["r_objective"] = r.objective
     d["vcov_frobenius_relative_delta"] = nothing
     d["note"] = "species-XB cells use confint_speciescov, which has no private _family_ci accessor; only per-term SE and Wald endpoints are compared (no full vcov Frobenius)."
 
