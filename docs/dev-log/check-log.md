@@ -18049,6 +18049,46 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - **Not claiming:** a model/API/capability change, true parity, official Julia
   branding, or navigation-taxonomy completion.
 
+## 2026-09-06 — D-220 kernel-latent unique regression
+
+- `julia --project=. -e 'using Pkg; Pkg.instantiate()'` → OK.
+- `julia --project=. test/test_kernel_latent_unique_bridge.jl` →
+  **11/11 passed**, marker `KERNEL_LATENT_UNIQUE_JULIA_OK`.
+- The regression covers non-identity K, repeated source groups, and
+  `unique = true`; no true-parity, Class-1, M2-R2, or compute-campaign claim
+  is made.
+
+## 2026-09-06 — paired R/TMB cell live-run cited for J4
+
+- Sibling R command (same `fml` under `engine="julia"` and `engine="tmb"`):
+  `GLLVM_JL_PATH=/Users/z3437171/local-scratch/lanes/GLLVM.jl-kernel-latent-unique-20260906 Rscript --vanilla -e 'res <- testthat::test_local(filter="kernel-latent-unique-bridge", reporter="check"); df <- as.data.frame(res); cat("TALLY failed=", sum(df$failed), " skipped=", sum(df$skipped), " error=", sum(df$error), " warning=", sum(df$warning), " passed=", sum(df$passed), "\\n", sep="")'`
+- First isolated run (pre `92c0b95ff`): **[ FAIL 0 | WARN 0 | SKIP 0 | PASS 16 ]**.
+- After the four extra K-shape refusals landed: **[ FAIL 0 | WARN 0 | SKIP 0 | PASS 20 ]**; `TALLY failed=0 skipped=0 error=0 warning=0 passed=20` (extractor 4, rejection 7, paired logLik/B/cov2cor 9).
+- J4 CHECK now re-runs that paired R cell and EXPECTS the PASS-20 tally. File-existence is no longer accepted as paired-cell evidence.
+- No true-parity / Class-1 claim.
+
+## 2026-09-06 — dense kernel unique bridge identity reverify
+
+- `julia --project=. test/test_bridge_sources.jl` -> **24/24 passed**. The
+  new direct case uses a non-identity K, repeated groups, and `unique = true`;
+  it compares `bridge_fit` with `fit_gaussian_sources` for log likelihood,
+  residual SD, convergence, source B, and `cov2cor(B)`.
+- Serial regression reverify: `test/test_gaussian_sources.jl` -> **46/46**;
+  `test/test_kernel_latent_unique_bridge.jl` -> **11/11**.
+- This is Julia-side transport identity only, not R--Julia true parity or a
+  public capability promotion.
+
+## 2026-09-06 — Slice D Rose claim audit (J5)
+
+- Completed internal Rose claim audit in
+  `docs/dev-log/after-task/2026-09-06-kernel-latent-unique-bridge.md`.
+- File exists; cites no-public-claim (`not claiming`); cites paired
+  `TALLY failed=0 skipped=0 error=0 warning=0 passed=20`; names
+  Class-1 and true parity as out of scope.
+- Branch vs `origin/main` still has no README / capability-status /
+  NEWS-equivalent edit.
+- Unlazy `.unlazy/julia-fixed-dense-kernel/GATES.md` J5 is the closeout
+  row. Not claiming true parity or Class-1 promotion.
 ## 2026-09-06 — parity destination super ultra-plan
 
 - Added `docs/dev-log/plans/2026-09-06-ultra-plan-parity-destination.md`.
