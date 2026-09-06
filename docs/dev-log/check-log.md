@@ -18004,3 +18004,16 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - After-task: `2026-09-05-gllvmjl-reader-visual-system.md`.
 - **Not claiming:** a model/API/capability change, true parity, official Julia
   branding, or navigation-taxonomy completion.
+
+## 2026-09-06 — parity destination super ultra-plan
+
+- Added `docs/dev-log/plans/2026-09-06-ultra-plan-parity-destination.md`.
+- Receipt checks: `lane_preflight.sh` for the fresh GLLVM.jl lane and the
+  read-only gllvmTMB twin; `session_ownership.sh`; `branch_drift_check.sh`;
+  `git status -sb`; `git log --oneline -20`; `git branch -a`;
+  `git worktree list`; `git stash list`; `gh pr view` for #291/#297/#298/#301/
+  #303/#304/#305; and deterministic `rg`/`git ls-tree` plan inventories.
+- Verified the route-check result is decision-map-first, with no Phase 3,
+  `/goal`, `.unlazy/.../GATES.md`, campaign, R-engine edit, or merge.
+- Deliberately not run: Julia tests, R tests, parity fits, Totoro/DRAC,
+  Documenter, or any production implementation.
