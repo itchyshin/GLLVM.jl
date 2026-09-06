@@ -89,6 +89,18 @@ end
         @test abs_diff <= 1e-8
         @test shipped == payload.log_det
         @test isapprox(recomputed, shipped; atol = 1e-8)
+
+        # JuliaCall typically ships string-keyed Dicts, not NamedTuples.
+        as_dict = Dict{String,Any}(String(k) => getfield(payload, k) for k in _S3A_PAYLOAD_KEYS)
+        admitted_dict = GLLVM.admit_phylo_precision_payload(as_dict)
+        @test admitted_dict.species_aug_id == pp.species_aug_id
+        @test Matrix(admitted_dict.Q) ≈ Matrix(pp.Q) atol = 1e-12
+
+        # Raw triplet constructor stays a thin wrap (S1/S2 unchanged).
+        I, J, V = findnz(pp.Q)
+        loose = PrecisionPhy(I, J, V, pp.n_aug, pp.n_leaves, pp.node_labels,
+                             pp.log_det + 0.25, pp.scale, pp.species_aug_id)
+        @test loose.log_det == pp.log_det + 0.25
     end
 
     @testset "malformed payloads raise named gates" begin
