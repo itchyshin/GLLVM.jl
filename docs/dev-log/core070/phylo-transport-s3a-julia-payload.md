@@ -69,7 +69,7 @@ Worktree: `~/local-scratch/lanes/GLLVM.jl-m3-phy-s3a-20260906`.
 
 ```text
 ~/.juliaup/bin/julialauncher --project=. -e 'using Test, GLLVM; include("test/test_bridge_phylo_precision.jl")'
-# exit 0; 69 passed, 0 failed (2026-09-06 12:08 MDT)
+# exit 0; 72 passed, 0 failed (2026-09-06; includes string-key Dict + S1 wrap)
 
 ~/.juliaup/bin/julialauncher --project=. -e 'using Test, GLLVM; include("test/test_phylo_precision.jl")'
 # exit 0; 22 passed, 0 failed (S1 regression)
