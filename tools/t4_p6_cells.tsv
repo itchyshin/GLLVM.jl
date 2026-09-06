@@ -1,0 +1,13 @@
+idx	family	p	n	K	seed
+1	gaussian	20	500	2	42
+2	gaussian	20	2000	2	42
+3	gaussian	50	500	2	42
+4	gaussian	50	2000	2	42
+5	poisson	20	500	2	42
+6	poisson	20	2000	2	42
+7	poisson	50	500	2	42
+8	poisson	50	2000	2	42
+9	nb2	20	500	2	42
+10	nb2	20	2000	2	42
+11	nb2	50	500	2	42
+12	nb2	50	2000	2	42
