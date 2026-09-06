@@ -13,7 +13,7 @@ lifted.
 |---|---|
 | Frozen oracle | gllvmTMB 0.7.0 `b4d5fee64def88bc768dda1f1f77c29b295edd86` |
 | Julia branch | `cursor/m3-phy-s3a-20260906` |
-| Julia HEAD at measurement | `8602293f71dd011ec06430737aaf4ba707175a6c` plus this slice's uncommitted/committed S3a files |
+| Julia HEAD at measurement | `d763ec54531a8efb76ebc47ec6e84da80fea6852` (rebased onto `origin/main` `8692b639` after #297/#304/#306/#308/#309) |
 | Fixture | `_S3A_NEWICK` / S1 8-tip ultrametric balanced tree, height 0.3, `correlation = false` |
 | Fixture identifier | `(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,((E:0.1,F:0.1):0.1,(G:0.1,H:0.1):0.1):0.1);` |
 
