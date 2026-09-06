@@ -8,11 +8,11 @@ DISCIPLINE: verify=receipt-backed focused checks and existing unlazy gates · co
 
 # True-parity M2 execution baton — 2026-09-05
 
-**Status:** STOP AT G0; this is a wayfinder refresh, not a competing ultra-plan.
+**Status:** G0 RECORDED; first arc selected as R1-implement. This is a wayfinder refresh, not a competing ultra-plan.
 **Canonical plan:** `docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md`
 **Canonical map:** `docs/dev-log/core070/true-parity-programme-decision-map-2026-09-05.md`
 **Worktree:** `~/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904`
-**Current tip:** `cursor/m2-r1-theta-map-20260905` @ `8ea211d6`
+**Current tip:** `cursor/m2-baton-g0-lock-20260905` @ `d0dd4fea` base
 **Oracle:** gllvmTMB 0.7.0 `b4d5fee6`
 **R twin:** `~/local-scratch/lanes/gllvmTMB-gllvm-twin-20260904`, read-only
 
@@ -30,8 +30,9 @@ This baton deliberately points back to [#291](https://github.com/itchyshin/GLLVM
 | #294 M2 foundation day 1 | **LANDED** | D-220 proof, paired Gaussian cell, 2SO smoke, P13; reuse receipts |
 | #295 M2 foundation day 2 | **LANDED** | Poisson each-own-optimum 2SO smoke; reuse receipts |
 | #296 T4 pre-run programme | **LANDED** | Pre-run/estimate receipts; T4 execution already followed |
-| T4 P6 12-cell grid | **DONE** | 12/12 receipts; PR [#297](https://github.com/itchyshin/GLLVM.jl/pull/297) is ready for human merge; advisory R smoke is unstable but does not authorize a relaunch |
-| M2-R1 θ-map research | **DONE** | PR [#298](https://github.com/itchyshin/GLLVM.jl/pull/298) is draft; alignment and disposition memos recommend lean harness-only implementation, with #148 owner G0 still pending |
+| #297 T4 P6 12-cell grid | **DONE / merge deferred** | 12/12 receipts; merge remains deferred; advisory R smoke is unstable and does not authorize a relaunch |
+| #298 M2-R1 θ-map research | **DONE / disposition recorded** | Research receipt accepted; #148 route is IMPLEMENT harness-only |
+| #299 M2 multi-day execution baton | **MERGED** | [#299](https://github.com/itchyshin/GLLVM.jl/pull/299), `origin/main` @ `d0dd4fea`; this G0 lock is the follow-up |
 
 ### Closed-work fence
 
@@ -58,9 +59,20 @@ Please answer these questions verbatim:
 
 **Ada recommendation:** merge #297 when the human is satisfied; accept #298 as the research receipt; choose M2-S1 as the smallest reversible next slice; authorize smoke first and require a new estimate before any multi-seed/grid run.
 
+## G0 decision receipt — 2026-09-05
+
+Shinichi’s G0 answers are recorded as follows:
+
+1. **#299 merge:** authorized; #299 is merged to `main` at `d0dd4fea`.
+2. **#148 / θ-map route:** **IMPLEMENT harness-only**. This follows the prior lean; the #148 concern is acknowledged.
+3. **First arc:** **R1-implement**. This is the selected first arc for this goal.
+4. **#297 merge / Totoro budget:** **still deferred**. No merge authorization for #297 and no Totoro wall-clock/core budget has been supplied.
+
+These answers do not authorize relaunching T4 P6, a Totoro campaign, or any work outside the selected R1 slice.
+
 ## Conditional 2–4 day calendar
 
-This calendar starts only after the G0 answers above. It is a baton, not authorization to begin Phase 3 in this chat.
+This calendar records the route after G0. It is a baton, not authorization to begin Phase 3 in this chat.
 
 | Day | Slice | Output | Bar | Model | Dependency | ~duration |
 |---|---|---|---|---|---|---:|
@@ -68,7 +80,7 @@ This calendar starts only after the G0 answers above. It is a baton, not authori
 | Day 1 | Human merge/verify #297 and record #298 disposition | PR state / `docs/dev-log/core070/m2-merge-order-receipt-2026-09-05.md` if needed | Cursor Models | `cursor-grok-4.6-high-fast` | G0 Q1; no P6 rerun | 1–2 h |
 | Day 1–2 (branch A) | M2-S1 θ-map harness-only implementation | `tools/core070_second_order/theta_map.jl` + focused receipt | Cursor Models | `cursor-grok-4.6-high-fast` | G0 Q2 = IMPLEMENT and Q3 = M2-S1 | 2–4 h |
 | Day 1–2 (branch B) | θ-map demotion fence | Existing #291 map/gate wording updated only if G0 Q2 = DEMOTE | Other Models | `gpt-5.6-luna-medium` | G0 Q2 = DEMOTE | 1–2 h |
-| Day 2–3 | Selected R1-implement slice, if chosen instead | The exact R1 output path named by #291 and the owner’s route receipt | Cursor Models | `cursor-grok-4.6-high-fast` | G0 Q3 = R1-implement; no θ-map work in parallel unless explicitly disjoint | 1–2 d |
+| Day 2–3 | Selected R1-implement slice | The exact R1 output path named by #291 and the owner’s route receipt | Cursor Models | `cursor-grok-4.6-high-fast` | G0 Q3 = R1-implement; no θ-map work in parallel unless explicitly disjoint | 1–2 d |
 | Day 2–4 | Selected M2-R2 slice, if chosen instead | The exact M2-R2 output path named by #291 and its receipt | Other Models | `gpt-5.6-luna-medium` | G0 Q3 = M2-R2; design/judgment first | 1–2 d |
 | Final half-day | Reverify, reconcile, and hand off | Existing `.unlazy/` gates + `docs/dev-log/plan-actual/2026-09-05-m2-*.md` | Cursor Models | `cursor-grok-4.6-high-fast` | One selected branch complete | 1–2 h |
 
@@ -89,7 +101,7 @@ For the selected route only:
 
 ## Paste-ready `/goal` for the first post-G0 slice
 
-The alternatives remain intentionally blank until Shinichi answers G0 Q3. Paste only the selected block.
+G0 Q3 selects R1-implement. Paste only the selected block when starting that slice.
 
 ### If G0 selects M2-S1
 
@@ -154,6 +166,6 @@ Stop if the work requires choosing #148, changing an estimand, or exceeding the
 owner-approved Totoro budget.
 ```
 
-## Stop at G0
+## G0 lock
 
-No implementation starts until Shinichi answers the four G0 questions. This baton is complete when the answer is recorded and exactly one first-slice `/goal` is selected.
+G0 is recorded. The first slice is R1-implement; #297 merge and Totoro budget remain deferred. This baton does not authorize implementation in this chat.
