@@ -4,11 +4,13 @@ Deliverable: an owner-readable Phase 1 plan for the remaining Destination B prog
 HEADLINE: correct “0.7.1 parity” to `v0.true-parity` against frozen gllvmTMB 0.7.0, then package A+D and continue only through explicitly gated arcs
 IN PARALLEL: package the completed A+D work; prepare the authorised merge queue; prepare the next M2/M3 slice without starting M2-R2
 DEFER: 0.7.1 Class-1 catch-up (C), M2-R2 matched coordinates without a new G0, full M3–M5 execution, campaigns, R-engine edits, and public parity claims
-DISCIPLINE: verify=unlazy gates plus fresh checks · compute=local smoke only until a separate D-139 approval · closure=G0 answers recorded and this plan stops
+DISCIPLINE: verify=unlazy gates plus fresh checks · compute=local smoke only until a separate D-139 approval · closure=G0 locked 2026-09-06; first-tranche execution authorised
 
-**Status: STOP AT G0.** This file plans the remainder only. It does not push
-the A/D implementation branches, merge PRs, run `/goal`, run campaigns, or
-claim true parity.
+**Status: G0 approved; execution of first tranche authorised.** Shinichi
+answered Q1–9 YES on 2026-09-06. This planning lane records that lock only.
+It does not push the A/D implementation branches (their owning agents do),
+merge other PRs, run campaigns, or claim true parity. A fresh `/goal` may
+launch the approved tranche after this packaging lands.
 
 ## Naming and destination
 
@@ -183,7 +185,28 @@ new decision.
 9. **Next handoff:** after approval, should execution be launched through a
    new `/goal` prompt for only the approved tranche?
 
-## Paste-ready `/goal` prompt — DO NOT RUN
+## G0 LOCKED 2026-09-06
+
+Shinichi G0 on PR #308, 2026-09-06: **ALL YES** to Q1–9.
+
+1. **Push A+D = YES.** The A and D implementation branches may be pushed by
+   the agents that own them. This planning lane does not push those branches.
+2. **Merge #301 → #297 → #304 then #306 = YES.** Authorised order only; this
+   sitting does not merge.
+3. **First build after A = YES.** Proceed with this plan’s P3 next bounded
+   M2/M3 scope. That is not M2-R2.
+4. **M2-R2 stays stopped = YES.** Matched coordinates need a new G0.
+5. **NB2 A11 keep `partial` = YES.** Do not promote it to covered.
+6. **D = bridge-evidence only = YES.** No capability promotion beyond current
+   receipts; no R-engine edit.
+7. **Local smokes only = YES.** Any Totoro/DRAC campaign needs its own
+   estimate, smoke, and G0.
+8. **Class-1 deferred / frozen 0.7.0 = YES.** The oracle stays frozen
+   gllvmTMB 0.7.0; 0.7.1 Class-1 stays deferred.
+9. **Launch via `/goal` after tranche packaging = YES.** Use a fresh `/goal`
+   for the approved first tranche only, after this G0 lock is committed.
+
+## Paste-ready `/goal` prompt — authorised after this packaging lands
 
 ```text
 Use the approved plan at
@@ -210,6 +233,9 @@ or broaden the scope. Stop after the approved tranche’s gates and claim review
 
 ## Closure
 
-This plan stops at G0. A/D are real local prior work, not programme completion.
-The next sitting must record Shinichi’s answers, re-check the branch heads and
-leases, then execute only the named tranche.
+G0 is locked (2026-09-06). A/D remain real local prior work, not programme
+completion. First-tranche execution is authorised: package A+D (owning
+agents push those branches), process the merge queue
+#301 → #297 → #304 then #306, and prepare the P3 next bounded M2/M3 scope.
+A fresh `/goal` launches that tranche after this packaging commit. This
+sitting does not merge other PRs or push A/D.
