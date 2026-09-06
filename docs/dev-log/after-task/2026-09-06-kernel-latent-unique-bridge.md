@@ -18,3 +18,10 @@ Evidence:
 
 Rose audit: this is a development regression only; no public capability
 surface was changed.
+
+Follow-up reverify: `test/test_bridge_sources.jl` now includes a direct
+`bridge_fit` versus `fit_gaussian_sources` identity cell for non-identity K,
+repeated groups, and `unique = true`. It passed **24/24**, including equality
+of log likelihood, residual SD, convergence, B, and `cov2cor(B)`. The existing
+Gaussian source and kernel-smoke files were rerun serially (**46/46** and
+**11/11**, respectively). These are engine-transport checks only.
