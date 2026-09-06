@@ -64,7 +64,9 @@ No honest θ map exists without changing parameterisation on one side or introdu
 
 ---
 
-## Owner decision (pending)
+## Owner decision — **OWNER SIGNED: implement harness-only** (chat G0 2026-09-05 approve)
+
+**Signed:** 2026-09-05 — owner G0 approve baton + lean IMPLEMENT harness-only (θ-map). No `src/` / R engine edits. No true-parity / programme §7 claim.
 
 | Branch | v0.true-parity claim |
 |---|---|
