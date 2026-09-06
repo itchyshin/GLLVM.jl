@@ -1,9 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
   <title id="title">GLLVM.jl favicon</title>
-  <desc id="desc">A rounded hexagonal badge with a shared latent curve across a response grid.</desc>
+  <desc id="desc">A compact hexagonal mark with response columns and shared latent paths.</desc>
+  <defs><linearGradient id="ring" x1="14" y1="30" x2="114" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#CB3C33"/><stop offset=".5" stop-color="#9558B2"/><stop offset="1" stop-color="#4063D8"/></linearGradient><linearGradient id="shared" x1="24" y1="50" x2="104" y2="82" gradientUnits="userSpaceOnUse"><stop stop-color="#CB3C33"/><stop offset=".5" stop-color="#D84CDB"/><stop offset="1" stop-color="#4063D8"/></linearGradient></defs>
   <path d="M64 5 118 36V92L64 123 10 92V36Z" fill="#0B1F3A"/>
-  <path d="M64 10 113 38V90L64 118 15 90V38Z" fill="none" stroke="#9558B2" stroke-linejoin="round" stroke-width="3"/>
-  <g stroke="#B8C8E4" stroke-linecap="round" stroke-width="3" opacity=".78"><path d="M38 35V91"/><path d="M64 25V103"/><path d="M90 35V91"/></g>
-  <path d="M28 79C47 79 48 49 64 49S80 79 100 79" fill="none" stroke="#9558B2" stroke-linecap="round" stroke-width="7"/>
-  <circle cx="38" cy="66" r="5" fill="#CB3C33"/><circle cx="64" cy="49" r="8" fill="#F7F9FC" stroke="#CB3C33" stroke-width="4"/><circle cx="90" cy="66" r="5" fill="#389826"/>
+  <path d="M64 10 113 38V90L64 118 15 90V38Z" fill="none" stroke="url(#ring)" stroke-linejoin="round" stroke-width="3"/>
+  <g stroke="#B8C8E4" stroke-linecap="round" stroke-width="3" opacity=".78"><path d="M30 39V91"/><path d="M47 30V98"/><path d="M64 27V101"/><path d="M81 30V98"/><path d="M98 39V91"/></g>
+  <path d="M24 80C39 80 43 50 63 50S84 80 104 80" fill="none" stroke="url(#shared)" stroke-linecap="round" stroke-width="6"/>
+  <path d="M28 91C44 72 56 74 67 85S88 88 101 70" fill="none" stroke="#8D7DFF" stroke-dasharray="3 5" stroke-linecap="round" stroke-width="3"/>
+  <circle cx="63" cy="50" r="8" fill="#F7F9FC" stroke="#D84CDB" stroke-width="4"/>
 </svg>
