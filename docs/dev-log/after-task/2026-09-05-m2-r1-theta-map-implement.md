@@ -1,58 +1,19 @@
-# M2-R1 θ-map harness implementation — after-task
-
-## Scope
-
-This slice implements the owner-signed, harness-only θ-map clearance for
-`beta_logit` and `nb2_log`. `map_r_theta_glm` now accepts dispersion blocks of
-length `1` (shared) or `p` (per-trait `fit_gllvm`), and blocks every other
-length with an explicit diagnostic. No `src/` or R engine code changed.
-
-## Evidence
-
-- Owner disposition: `docs/dev-log/core070/theta-map-disposition-2026-09-05.md`
-  records G0 approval for harness-only implementation.
-- Implement tip: `c37ada2e` on
-  `cursor/m2-r1-theta-map-implement-20260905`.
-- Focused smoke, run locally with Julia and the package project:
-
-```text
-THETA_MAP_SMOKE PASS per_trait=ok/11 shared=ok/9 invalid=blocked
-```
-
-The smoke checked `p = 3`, `K = 2`, accepted per-trait and shared dispersion
-blocks, and rejected an unmapped length of `2`.
-
-## Boundaries
-
-This is harness evidence only. It does not establish matched-coordinate
-second-order parity, programme §7 completion, coverage, or a true-parity claim.
-The implement PR remains a human merge decision.
 # M2-R1 θ-map implementation closeout — 2026-09-05
 
 ## Scope
 
-This slice implements the owner-approved, harness-only θ-map fix for the
-matched-coordinates diagnostic. It does not edit `src/`, the R twin, or the
-public API, and it does not claim completion of programme §7.
+This slice implements the owner-signed, harness-only θ-map clearance for
+`beta_logit` and `nb2_log`. `map_r_theta_glm` accepts dispersion blocks of
+length `1` (shared) or `p` (per-trait `fit_gllvm`) and blocks every other
+length with an explicit diagnostic. No `src/` or R engine code changed.
 
 Owner G0 signed **IMPLEMENT harness-only** on 2026-09-05. The implementation
-landed on `cursor/m2-r1-theta-map-implement-20260905` at `c37ada2e`.
+landed on `cursor/m2-r1-theta-map-implement-20260905` at `c37ada2e`; the
+smoke receipt was recorded at `cb8ede10`.
 
-## Change
+## Focused smoke receipt
 
-`tools/core070_second_order/theta_map.jl` now accepts the supported dispersion
-block lengths:
-
-- `|log_phi_*| == 1` for a shared dispersion block;
-- `|log_phi_*| == p` for the per-trait `fit_gllvm` block.
-
-Other lengths remain blocked with an explicit diagnostic. The harness does not
-pool a per-trait block into one value and does not silently map an unknown
-group size.
-
-## Smoke receipt
-
-Focused sibling smoke completed successfully from `c37ada2e`:
+Command:
 
 ```sh
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 JULIA_NUM_THREADS=1 \
@@ -60,26 +21,44 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 JULIA_NUM_THREADS=1 \
   logs/matched-batch1-post-r1-20260905
 ```
 
-Receipt log: `logs/matched-batch1-smoke-20260905.log`
+Receipt: `docs/dev-log/core070/matched-batch1-smoke-receipt-2026-09-05.md`
 
-- `MATCHED_PILOT_DONE pass/fail/blocked/skip = 5/0/0/0`
-- Gaussian, Poisson, Binomial-logit, Beta-logit, and NB2-log each reported
-  `matched_pass=true`.
-- The NB2 run emitted a grouped-dispersion boundary warning and R emitted
-  `NaNs produced` warnings while computing a diagnostic covariance summary;
-  the process nevertheless exited `0` and reported the declared smoke tally.
-- This is a focused harness smoke, not a matched-coordinates programme §7
-  completion claim or a multi-seed validation campaign.
+The process exited 0 and reported **5/0/0/0
+pass/fail/blocked/skip**. All five cells reported `matched_pass=true`:
 
-## Verification and boundaries
+| Cell | SE max relative delta | Vcov Frobenius relative delta | Log-likelihood delta | Result |
+|---|---:|---:|---:|---|
+| `gaussian` | 2.13e-7 | 4.26e-7 | 3.41e-13 | PASS |
+| `poisson` | 1.92e-7 | 1.84e-7 | 2.09e-11 | PASS |
+| `binomial_logit` | 4.18e-8 | 8.10e-8 | 8.24e-12 | PASS |
+| `beta_logit` | 1.06e-7 | 1.79e-7 | 4.26e-13 | PASS |
+| `nb2_log` | 1.91e-7 | 2.48e-7 | 1.71e-12 | PASS |
 
-- Branch tip: `c37ada2e`.
-- Disposition: `docs/dev-log/core070/theta-map-disposition-2026-09-05.md`.
+The two formerly blocked cells now map their per-trait dispersion blocks:
+`log_phi_beta = 5 (= p)` and `log_phi_nbinom2 = 5 (= p)`. All values are
+inside the declared `1e-4` SE/vcov bars.
+
+## Caveats and boundaries
+
+The NB2 run emitted a grouped-dispersion boundary warning for groups `[1, 3]`
+and R emitted `sqrt(diag(cv)) : NaNs produced` warnings twice. The driver still
+reported the declared smoke result and exited 0; this is not a claim that the
+NB2 Wald/vcov surface is healthy on every diagnostic.
+
+The smoke output's `summary.json` `note` field is stale: it still says
+`beta_logit` and `nb2_log` are expected to be blocked. Trust the receipt
+tally and per-cell JSON, not that stale note.
+
+This is harness evidence only. It does not establish matched-coordinate
+second-order parity, programme §7 completion, coverage, or a true-parity
+claim. No merge was performed; the overnight integrator owns PR #301.
+
+## Verification
+
+- Disposition:
+  `docs/dev-log/core070/theta-map-disposition-2026-09-05.md`.
+- Receipt:
+  `docs/dev-log/core070/matched-batch1-smoke-receipt-2026-09-05.md`.
+- Raw run log (not committed):
+  `logs/matched-batch1-smoke-20260905.log`.
 - No conflict rewrite of `theta_map.jl`.
-- No merge performed.
-- Smoke receipt: `logs/matched-batch1-smoke-20260905.log` (5/0/0/0).
-
-## Follow-up
-
-The sibling receipt has landed; the check-log records the same evidence. Leave
-PR merges to the overnight integrator.

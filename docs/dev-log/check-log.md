@@ -8,11 +8,20 @@
   `docs/dev-log/core070/theta-map-disposition-2026-09-05.md`.
 - Added after-task:
   `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map-implement.md`.
-- Focused smoke run:
+- Focused unit smoke:
   `julia --project=. -e 'using GLLVM; include("tools/core070_second_order/theta_map.jl"); ...'`
   → `THETA_MAP_SMOKE PASS per_trait=ok/11 shared=ok/9 invalid=blocked`.
   The smoke exercised `p=3`, `K=2`, accepted dispersion lengths `p` and `1`,
   and rejected unmapped length `2`.
+- Focused matched-pilot smoke completed from `c37ada2e` with
+  `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 JULIA_NUM_THREADS=1 julia
+  --project=. tools/core070_second_order/run_matched_batch1.jl
+  logs/matched-batch1-post-r1-20260905`: **5/0/0/0
+  pass/fail/blocked/skip**, all five cells reported `matched_pass=true`.
+  Receipt log: `logs/matched-batch1-smoke-20260905.log`. NB2 emitted a
+  grouped-dispersion boundary warning and R covariance `NaNs produced`
+  warnings; the process exited 0. This remains focused harness smoke only,
+  not a matched-coordinates or programme §7 completion claim.
 - After-task:
   `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map-implement.md`.
 - No matched-coordinates or programme §7 completion claim is made.
