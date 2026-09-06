@@ -223,6 +223,7 @@ println(_SHARD === nothing ?
     _shard_include("test_formula_structured_terms.jl")
     _shard_include("test_gaussian_source_bindings.jl")
     _shard_include("test_bridge_gradient_payload.jl")
+    _shard_include("test_bridge_phylo_precision.jl")
     _shard_include("test_bridge_sources.jl")
     _shard_include("test_coevolution_kronecker.jl")
     _shard_include("test_coevolution_blockna.jl")

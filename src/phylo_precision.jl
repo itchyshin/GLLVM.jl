@@ -210,6 +210,10 @@ function precision_logdet_check(pp::PrecisionPhy)
     return recomputed, shipped, abs(recomputed - shipped)
 end
 
+# S3a payload assembly/validation lives in `src/bridge.jl`
+# (`phylo_precision_payload` / `admit_phylo_precision_payload`). This file
+# keeps the PrecisionPhy constructors and the independent log-det checksum.
+
 # ---------------------------------------------------------------------------
 # Dispatch into the sparse-phylo likelihood kernel: PrecisionPhy is already
 # root-dropped, so this method is just field access — the AugmentedPhy

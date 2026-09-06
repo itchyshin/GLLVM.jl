@@ -238,6 +238,8 @@ make_cross_kernel
 augmented_phy
 PrecisionPhy
 precision_logdet_check
+phylo_precision_payload
+admit_phylo_precision_payload
 random_balanced_tree
 sigma_phy_dense
 node_grad
