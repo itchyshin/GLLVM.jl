@@ -1,3 +1,47 @@
+## 2026-09-05 — M2-R1 θ-map implement harness-only closeout (docs)
+
+- Owner G0 is signed: **IMPLEMENT harness-only** on 2026-09-05.
+- Implement tip: `c37ada2e` on
+  `cursor/m2-r1-theta-map-implement-20260905`; accepts supported dispersion
+  blocks of length `1` or `p` and rejects unmapped lengths.
+- Updated disposition:
+  `docs/dev-log/core070/theta-map-disposition-2026-09-05.md`.
+- Added after-task:
+  `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map-implement.md`.
+- Focused unit smoke:
+  `julia --project=. -e 'using GLLVM; include("tools/core070_second_order/theta_map.jl"); ...'`
+  → `THETA_MAP_SMOKE PASS per_trait=ok/11 shared=ok/9 invalid=blocked`.
+  The smoke exercised `p=3`, `K=2`, accepted dispersion lengths `p` and `1`,
+  and rejected unmapped length `2`.
+- Focused matched-pilot smoke completed from `c37ada2e` with
+  `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 JULIA_NUM_THREADS=1 julia
+  --project=. tools/core070_second_order/run_matched_batch1.jl
+  logs/matched-batch1-post-r1-20260905`: **5/0/0/0
+  pass/fail/blocked/skip**, all five cells reported `matched_pass=true`.
+  Receipt log: `logs/matched-batch1-smoke-20260905.log`. NB2 emitted a
+  grouped-dispersion boundary warning and R covariance `NaNs produced`
+  warnings; the process exited 0. This remains focused harness smoke only,
+  not a matched-coordinates or programme §7 completion claim.
+- After-task:
+  `docs/dev-log/after-task/2026-09-05-m2-r1-theta-map-implement.md`.
+- No matched-coordinates or programme §7 completion claim is made.
+- No `src/` / R engine edit, no conflict rewrite of `theta_map.jl`, and no
+  merge. Push the docs closeout to the implement branch; overnight integrator
+  owns any merge.
+
+## 2026-09-05 — T4 P6 after-task: explicit Next step
+
+- Appended **Next step** to `docs/dev-log/after-task/2026-09-05-totoro-t4-p6-grid.md` (review #297 when green; no further cells / no true-parity claim; G4 under-estimate; return to true-parity M2/θ-map). No merge of #297.
+
+## 2026-09-05 — T4 P6 grid closeout 12/12 (integrator)
+
+- Branch `cursor/totoro-t4-p6-grid-20260905` @ tip after sibling `cd1ab320` (nb2 p50 n2000 receipt).
+- **12/12 PASS** receipts under `docs/dev-log/core070/t4-p6-*-receipt-2026-09-05.{json,md}`.
+- Cell 12: `|ΔlogLik|` 4.83e-7; vcov Fro rel 1.20e-4; max rel dSE 5.08e-5; total wall ~6578 s.
+- Seff serial sum (12 cells): ~11 919 s; parallel floor ≥ cell-12 (~110 min); G4 8-core ~23–30 min under-estimate.
+- GATES G2/G3 marked PASS; after-task `2026-09-05-totoro-t4-p6-grid.md` finalized.
+- PR #297: `gh pr ready` after this commit. **Not claiming:** true-parity; gate-tier; merge.
+
 ## 2026-09-05 — T4 Totoro pre-run programme COMPLETE (NB2 G3 PASS)
 
 Branch `cursor/totoro-t4-prerun-20260905` @ tip after commit. Three-family pre-run slice done.
@@ -18045,3 +18089,15 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   NEWS-equivalent edit.
 - Unlazy `.unlazy/julia-fixed-dense-kernel/GATES.md` J5 is the closeout
   row. Not claiming true parity or Class-1 promotion.
+## 2026-09-06 — parity destination super ultra-plan
+
+- Added `docs/dev-log/plans/2026-09-06-ultra-plan-parity-destination.md`.
+- Receipt checks: `lane_preflight.sh` for the fresh GLLVM.jl lane and the
+  read-only gllvmTMB twin; `session_ownership.sh`; `branch_drift_check.sh`;
+  `git status -sb`; `git log --oneline -20`; `git branch -a`;
+  `git worktree list`; `git stash list`; `gh pr view` for #291/#297/#298/#301/
+  #303/#304/#305; and deterministic `rg`/`git ls-tree` plan inventories.
+- Verified the route-check result is decision-map-first, with no Phase 3,
+  `/goal`, `.unlazy/.../GATES.md`, campaign, R-engine edit, or merge.
+- Deliberately not run: Julia tests, R tests, parity fits, Totoro/DRAC,
+  Documenter, or any production implementation.

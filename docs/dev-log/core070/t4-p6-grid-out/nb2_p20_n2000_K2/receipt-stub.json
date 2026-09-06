@@ -1,0 +1,13 @@
+{
+  "campaign": "t4-p6-grid",
+  "cell_tag": "nb2_p20_n2000_K2",
+  "family": "nb2",
+  "p": 20,
+  "n": 2000,
+  "K": 2,
+  "seed": 42,
+  "status": "PENDING",
+  "launcher": "tools/t4_totoro_p6_grid.sh",
+  "remote_base": "/home/snakagaw/core070-aghq-20260830/t4-p6-grid-01",
+  "claim_boundary": "receipts inform realistic-size scaling — NOT true-parity promotion"
+}

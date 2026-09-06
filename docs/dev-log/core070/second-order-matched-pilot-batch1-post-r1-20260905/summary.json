@@ -1,0 +1,15 @@
+{
+  "tolerance_se_rel": 0.0001,
+  "tolerance_vcov_fro_rel": 0.0001,
+  "out_dir": "logs/matched-batch1-post-r1-20260905",
+  "cells": ["gaussian", "poisson", "binomial_logit", "beta_logit", "nb2_log"],
+  "note": "3 cells expected pass (gaussian/poisson/binomial_logit); beta_logit and nb2_log blocked on per-trait vs shared dispersion θ map.",
+  "pilot": "matched-coordinates batch-1",
+  "tier": "matched-coordinates (contract §4 diagnostic)",
+  "anchor": "R_opt_par",
+  "jl_head": "c37ada2e",
+  "programme_section7_claim": false,
+  "wall_sec": 91.64735007286072,
+  "pass_fail_blocked_skip": "5/0/0/0",
+  "receipt_date": "2026-09-05"
+}
