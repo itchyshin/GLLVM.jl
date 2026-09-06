@@ -1,3 +1,14 @@
+## 2026-09-06 — M3-PHY-S3a Julia precision-payload (#310)
+
+- Merged to `main` as `ca912a3f` (PR #310).
+- After-task: `docs/dev-log/after-task/2026-09-06-m3-phy-s3a-julia-payload.md`.
+- Local (post-#307 merge): `test_bridge_phylo_precision.jl` **78/78**;
+  `test_phylo_precision.jl` **22/22**.
+- Replay vs `AugmentedPhy`: abs/rel Δ = 0 at σ²_phy ∈ {0.3, 1.0, 2.5}.
+- Diagnostic only. No true-parity claim. R `phylo_rr` S3b not started.
+- This append was deferred at S3a closeout because the #307 lease still held
+  this path; lease is now free.
+
 ## 2026-09-05 — M2-R1 θ-map implement harness-only closeout (docs)
 
 - Owner G0 is signed: **IMPLEMENT harness-only** on 2026-09-05.
