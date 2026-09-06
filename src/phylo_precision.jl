@@ -211,6 +211,128 @@ function precision_logdet_check(pp::PrecisionPhy)
 end
 
 # ---------------------------------------------------------------------------
+# S3a — Julia-side bridge payload (flat primitives only).
+# `src/bridge.jl` remains leased by the kernel-unique lane; the public
+# names live here so admission can land without touching that file. Thin
+# wrappers can move into bridge.jl once that lease is released.
+# Frozen field meanings: `species_aug_id` is 0-indexed on the wire
+# (`fit-multi.R:4638`); `i,j` are 1-based Matrix/findnz triplets.
+# ---------------------------------------------------------------------------
+const PHYLO_PRECISION_PAYLOAD_KEYS = (
+    :i, :j, :x, :n_aug, :n_leaves, :species_aug_id,
+    :node_labels, :scale, :log_det,
+)
+const PHYLO_PRECISION_LOGDET_TOL = 1e-8
+
+"""
+    phylo_precision_payload(pp::PrecisionPhy)
+
+Pack a `PrecisionPhy` into a JuliaCall-flat NamedTuple for the phylo
+transport wire. Field meanings match frozen gllvmTMB 0.7.0:
+`Ainv_phy_rr` triplets (`i`, `j`, `x`), `n_aug_phy`, tip count,
+0-indexed `species_aug_id`, node labels, applied `scale`, and shipped
+`log_det_A_phy_rr`.
+"""
+function phylo_precision_payload(pp::PrecisionPhy)
+    I, J, V = findnz(pp.Q)
+    return (
+        i = collect(Int, I),
+        j = collect(Int, J),
+        x = collect(Float64, V),
+        n_aug = Int(pp.n_aug),
+        n_leaves = Int(pp.n_leaves),
+        species_aug_id = collect(Int, pp.species_aug_id) .- 1,
+        node_labels = collect(String, pp.node_labels),
+        scale = Float64(pp.scale),
+        log_det = Float64(pp.log_det),
+    )
+end
+
+function _phylo_payload_as_nt(payload)
+    payload isa NamedTuple && return payload
+    if payload isa AbstractDict
+        kwargs = Dict{Symbol,Any}()
+        for key in PHYLO_PRECISION_PAYLOAD_KEYS
+            raw = haskey(payload, key) ? payload[key] :
+                  haskey(payload, String(key)) ? payload[String(key)] :
+                  throw(ArgumentError("GJL-GATE-PHYLO-PAYLOAD-DIM: missing field $(key)"))
+            kwargs[key] = raw
+        end
+        return (; kwargs...)
+    end
+    throw(ArgumentError("GJL-GATE-PHYLO-PAYLOAD-DIM: payload must be a NamedTuple or Dict"))
+end
+
+function _phylo_payload_gate(tag::AbstractString, msg::AbstractString)
+    throw(ArgumentError("$(tag): $(msg)"))
+end
+
+"""
+    admit_phylo_precision_payload(payload) :: PrecisionPhy
+
+Validate a Julia-side precision payload and reconstruct `PrecisionPhy`.
+Rejects malformed dimensions, indices, tip maps, labels, non-finite
+values, and a shipped log-determinant that disagrees with an independent
+checksum by more than `1e-8`.
+"""
+function admit_phylo_precision_payload(payload)
+    nt = _phylo_payload_as_nt(payload)
+    for key in PHYLO_PRECISION_PAYLOAD_KEYS
+        haskey(nt, key) ||
+            _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-DIM", "missing field $(key)")
+    end
+
+    n_aug = Int(nt.n_aug)
+    n_leaves = Int(nt.n_leaves)
+    n_aug == 2 * n_leaves - 2 ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-DIM",
+            "n_aug ($(n_aug)) must equal 2*n_leaves-2 ($(2 * n_leaves - 2))")
+    n_aug > 0 ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-DIM", "n_aug must be positive")
+
+    I = collect(Int, nt.i)
+    J = collect(Int, nt.j)
+    V = collect(Float64, nt.x)
+    length(I) == length(J) == length(V) ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-DIM",
+            "sparse triplets i, j, x must have equal length")
+
+    (all(>=(1), I) && all(<=(n_aug), I) && all(>=(1), J) && all(<=(n_aug), J)) ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-INDEX",
+            "sparse triplet indices must lie in 1:n_aug")
+
+    tip0 = collect(Int, nt.species_aug_id)
+    length(tip0) == n_leaves ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-TIPMAP",
+            "species_aug_id length ($(length(tip0))) must equal n_leaves ($(n_leaves))")
+    (all(>=(0), tip0) && all(<(n_aug), tip0) && length(unique(tip0)) == n_leaves) ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-TIPMAP",
+            "species_aug_id must be a unique 0-based map into 0:n_aug-1")
+
+    labels = collect(String, nt.node_labels)
+    length(labels) == n_aug ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-LABEL",
+            "node_labels length ($(length(labels))) must equal n_aug ($(n_aug))")
+    all(!isempty, labels) ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-LABEL",
+            "node_labels must be non-empty strings")
+
+    scale = Float64(nt.scale)
+    log_det = Float64(nt.log_det)
+    (all(isfinite, V) && isfinite(scale) && isfinite(log_det)) ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-NONFINITE",
+            "precision values, scale, and log_det must be finite")
+
+    tip1 = tip0 .+ 1
+    pp = PrecisionPhy(I, J, V, n_aug, n_leaves, labels, log_det, scale, tip1)
+    recomputed, shipped, abs_diff = precision_logdet_check(pp)
+    abs_diff <= PHYLO_PRECISION_LOGDET_TOL ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-LOGDET",
+            "shipped log_det ($(shipped)) disagrees with recomputed ($(recomputed)) by $(abs_diff)")
+    return pp
+end
+
+# ---------------------------------------------------------------------------
 # Dispatch into the sparse-phylo likelihood kernel: PrecisionPhy is already
 # root-dropped, so this method is just field access — the AugmentedPhy
 # method (in likelihood_sparse_phy.jl) does the root-row deletion PrecisionPhy
