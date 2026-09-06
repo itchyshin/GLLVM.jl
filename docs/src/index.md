@@ -112,6 +112,7 @@ For the per-response residual fit used above, use the explicit `Σ`, `c²`, and
 
 ## Start Here
 
+- Choose a workflow: [Choose R, Julia, or the bridge](choose-r-julia-bridge.md).
 - First Gaussian fit & Cheat Sheet: [Quick start](quickstart.md).
 - Applied JSDM Vignette: [Community Abundance](vignettes/community-abundance.md).
 - Applied Evolutionary Vignette: [Phylogenetic GLLVM](vignettes/phylogenetic-gllvm.md).

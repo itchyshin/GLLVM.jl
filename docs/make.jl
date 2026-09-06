@@ -15,10 +15,11 @@ makedocs(;
     ),
     pages    = [
         "Getting Started" => [
-            "Overview"        => "index.md",
-            "Quick Start"     => "quickstart.md",
-            "Tutorial"        => "tutorial.md",
-            "Common Pitfalls" => "pitfalls.md",
+            "Overview"                       => "index.md",
+            "Choose R, Julia, or the bridge" => "choose-r-julia-bridge.md",
+            "Quick Start"                    => "quickstart.md",
+            "Tutorial"                       => "tutorial.md",
+            "Common Pitfalls"                => "pitfalls.md",
         ],
         "Vignettes" => [
             "Community Abundance (JSDM)" => "vignettes/community-abundance.md",
