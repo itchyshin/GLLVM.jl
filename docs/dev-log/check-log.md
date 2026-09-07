@@ -1,3 +1,15 @@
+## 2026-09-07 — M3-PHY-S3-ANIMAL pedigree Ainv fixture
+
+- Branch `cursor/m3-phy-s3-animal-20260907` from `origin/main` `5d1c9a6c` (#312).
+- After-task: `docs/dev-log/after-task/2026-09-07-m3-phy-s3-animal.md`.
+- Receipt: `docs/dev-log/core070/phylo-transport-s3-animal-fixture.md`.
+- Local: `test_phylo_precision_animal.jl` **43/43**;
+  `test_bridge_phylo_precision.jl` **78/78**; S1 **22/22**;
+  S3-FIT **13+17**; shard selection **43/43**.
+- Admit now allows `n_aug ≥ n_leaves`. Tip-only 12×12 and 10-tip
+  ancestor map both replay vs dense Henderson `A` at ≤ 1e-8.
+- Diagnostic only. No true-parity claim. R `phylo_rr` S3b not started.
+
 ## 2026-09-07 — M3-PHY-S3-FIT PrecisionPhy Gaussian fit
 
 - PR [#312](https://github.com/itchyshin/GLLVM.jl/pull/312); tip `9fcaeccf`

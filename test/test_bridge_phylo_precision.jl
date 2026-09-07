@@ -110,7 +110,10 @@ end
     @testset "malformed payloads raise named gates" begin
         payload = GLLVM.phylo_precision_payload(pp)
 
-        bad_dim = merge(payload, (; n_aug = payload.n_aug + 1))
+        # Animal / Ainv payloads may use n_aug ≥ n_leaves (tip-only or
+        # ancestors kept). n_aug = 2p − 1 is therefore no longer a DIM
+        # reject on a tree payload; n_aug < n_leaves still is.
+        bad_dim = merge(payload, (; n_aug = p - 1))
         _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_dim),
                          "GJL-GATE-PHYLO-PAYLOAD-DIM")
 

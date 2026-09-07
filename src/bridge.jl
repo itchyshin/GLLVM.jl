@@ -2150,9 +2150,11 @@ end
     admit_phylo_precision_payload(payload) :: PrecisionPhy
 
 Validate a Julia-side precision payload and reconstruct `PrecisionPhy`.
-Rejects malformed dimensions, indices, tip maps, labels, non-finite
-values, and a shipped log-determinant that disagrees with an independent
-checksum by more than `1e-8`.
+Rejects malformed dimensions (`n_aug < n_leaves`), indices, tip maps,
+labels, non-finite values, and a shipped log-determinant that disagrees
+with an independent checksum by more than `1e-8`. Tree payloads keep
+`n_aug = 2p − 2`; animal / sparse `Ainv` payloads may be tip-only
+(`n_aug = n_leaves`) or ancestor-augmented (`n_aug > n_leaves`).
 """
 admit_phylo_precision_payload(; kwargs...) = admit_phylo_precision_payload((; kwargs...))
 
@@ -2165,11 +2167,15 @@ function admit_phylo_precision_payload(payload)
 
     n_aug = Int(nt.n_aug)
     n_leaves = Int(nt.n_leaves)
-    n_aug == 2 * n_leaves - 2 ||
+    # Tree payloads use n_aug = 2p − 2 (root dropped). Animal / sparse Ainv
+    # payloads are tip-only (n_aug = n_leaves) or keep unphenotyped
+    # ancestors (n_aug > n_leaves). Subsetting a precision would condition
+    # on the dropped nodes, not marginalise them.
+    n_leaves > 0 ||
+        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-DIM", "n_leaves must be positive")
+    n_aug >= n_leaves ||
         _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-DIM",
-            "n_aug ($(n_aug)) must equal 2*n_leaves-2 ($(2 * n_leaves - 2))")
-    n_aug > 0 ||
-        _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-DIM", "n_aug must be positive")
+            "n_aug ($(n_aug)) must be >= n_leaves ($(n_leaves))")
 
     I = collect(Int, nt.i)
     J = collect(Int, nt.j)
