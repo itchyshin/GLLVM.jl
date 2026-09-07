@@ -1,3 +1,13 @@
+## 2026-09-07 — M3-PHY-S3-FIT PrecisionPhy Gaussian fit
+
+- Branch `cursor/m3-phy-s3-fit-20260907` from `origin/main` `340f3832`.
+- After-task: `docs/dev-log/after-task/2026-09-07-m3-phy-s3-fit.md`.
+- Receipt: `docs/dev-log/core070/phylo-transport-s3-julia-fit.md`.
+- Local: `test_fit_phylo.jl` **13/13** existing + **17/17** S3a PrecisionPhy
+  vs tree; `test_bridge_phylo_precision.jl` **78/78**.
+- Fit-vs-tree abs Δ = 0.0 on μ, σ²_phy, σ²_eps, negll. Interior nll Δ = 0.0.
+- Diagnostic only. No true-parity claim. R `phylo_rr` S3b not started.
+
 ## 2026-09-06 — M3-PHY-S3a Julia precision-payload (#310)
 
 - Merged to `main` as `ca912a3f` (PR #310).

@@ -75,3 +75,54 @@ _balanced(p; bl = 0.1) = _bnw(["t$i" for i in 1:p], bl) * ";"
         @test isfinite(fit.negll) && fit.σ²_phy > 0 && fit.σ²_eps > 0
     end
 end
+
+# Phylo transport S3-FIT — admitted PrecisionPhy payload fits on Julia.
+# Same 8-tip ultrametric S3a fixture as test_bridge_phylo_precision.jl.
+# Diagnostic only: compare to the existing AugmentedPhy tree path. Does not
+# lift the R phylo_rr gate and does not claim true parity.
+const _S3FIT_NEWICK = "(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,((E:0.1,F:0.1):0.1,(G:0.1,H:0.1):0.1):0.1);"
+
+@testset "fit_phylo_gaussian — PrecisionPhy vs tree path (S3a)" begin
+    phy = GLLVM.augmented_phy(_S3FIT_NEWICK)
+    pp_native = PrecisionPhy(phy; correlation = false)
+    payload = GLLVM.phylo_precision_payload(pp_native)
+    admitted = GLLVM.admit_phylo_precision_payload(payload)
+    p = phy.n_leaves
+    @test p == 8
+    @test admitted.n_leaves == p
+
+    Random.seed!(20260907)
+    Σtrue, _ = _dense_phylo_sigma(phy, 1.2, 0.45)
+    ysim = 0.35 .+ cholesky(Σtrue).L * randn(p)
+
+    fit_tree = fit_phylo_gaussian(phy, ysim)
+    fit_pp = fit_phylo_gaussian(admitted, ysim)
+
+    @test fit_tree.converged
+    @test fit_pp.converged
+    @test isapprox(fit_pp.σ²_phy, fit_tree.σ²_phy; atol = 1e-8, rtol = 1e-8)
+    @test isapprox(fit_pp.σ²_eps, fit_tree.σ²_eps; atol = 1e-8, rtol = 1e-8)
+    @test isapprox(fit_pp.μ, fit_tree.μ; atol = 1e-8, rtol = 1e-8)
+    @test isapprox(fit_pp.negll, fit_tree.negll; atol = 1e-8, rtol = 1e-8)
+    @test isfinite(fit_pp.negll) && fit_pp.negll != 0.0
+
+    # Interior matched-parameter nll (not the small-p collapsed MLE).
+    st_tree = GLLVM.build_node_perspecies(phy, fill(sqrt(1.2), p), 0.45)
+    st_pp = GLLVM._build_precision_phy_fit_state(admitted, fill(sqrt(1.2), p), 0.45)
+    nll_tree = GLLVM._phylo_negll(st_tree, ysim, 0.35)
+    nll_pp = GLLVM._phylo_negll(st_pp, ysim, 0.35)
+    @test isfinite(nll_tree) && isfinite(nll_pp)
+    @test isapprox(nll_pp, nll_tree; atol = 1e-8, rtol = 1e-8)
+
+    # Joint (non-profiled) PrecisionPhy path agrees with the tree path.
+    fit_pp3 = fit_phylo_gaussian(admitted, ysim; profile_mu = false)
+    @test isapprox(fit_pp3.negll, fit_tree.negll; rtol = 1e-3)
+
+    br = GLLVM.bridge_fit(; y = ysim, family = "gaussian", phylo = payload)
+    @test br.converged === true
+    @test isapprox(br.sigma2_phy, fit_tree.σ²_phy; atol = 1e-8, rtol = 1e-8)
+    @test isapprox(br.sigma2_eps, fit_tree.σ²_eps; atol = 1e-8, rtol = 1e-8)
+    @test isapprox(br.negll, fit_tree.negll; atol = 1e-8, rtol = 1e-8)
+    @test br.diagnostic_only === true
+end
+
