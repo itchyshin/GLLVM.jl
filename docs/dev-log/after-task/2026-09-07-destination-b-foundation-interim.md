@@ -9,6 +9,14 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+The actual pedigree fitted pilot now retains two distinct R outcomes: direct
+Ainv formula fails on frozen private-helper lookup; pedigree syntax preserves
+the same model/data but returns singular optimizer status1. Julia marginal
+cross-evaluation agrees and its independent public fit converges with all
+primary Wald intervals available. This is not paired-fit qualification: R's
+status remains failed, and review/refinement gates are open. All attempts and
+source/data hashes are retained; no R engine/parser was changed.
+
 Pedigree follow-on adds actual frozen-R canonical precision and an independent
 structural-equation covariance fixture, including related-parent matings and
 four unobserved founders. Fixed-model checks22/22PASS; dropping founders from

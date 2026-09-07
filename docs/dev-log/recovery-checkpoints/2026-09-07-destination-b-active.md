@@ -1,5 +1,22 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — pedigree fit evidence, R status remains failed
+
+Base ea86b503; new pedigree fit tooling/receipts ready for local checkpoint.
+Frozen Ainv route failed61755: confirmed1286 private helper absent from formula
+environment, no R edits. Same data/hash025d9ca7... through pedigree=ped75861
+preserves exact fullQ/model but R status1 singular convergence, gradient8.847e-5.
+R attempt02SHAb8d5f2e884720ad86f3a0d0d562ec5b25248113d0e641825803e4d5cee8e5a06.
+Julia checker23779 15PASS; actual29128 fixed/R-returned NLLdifferences0/1.776e-15.
+Independent public fit33236 converges21iterations, gradient4.426e-6, all12rows
+available (10distinct), condition161.94, NLLdifference-4.806e-11. Fitted-R
+status1 remains in receipt; qualification=false. No liveprocesses or workers.
+Durable docs/dev-log/core070/destination-b-pedigree-fit/ retains all outcomes.
+Next: predeclare same-data R optimizer investigation/refinement, do not alter
+seed/model or erase singular baseline. Then external source review (permission
+still absent), non-unit-height tree case and S3b/S4 admission gates. No frozen
+parser/engine changes, no review bypass, no remote jobs/push/merge. Goal ACTIVE.
+
 ## Latest continuation — real frozen pedigree precision checked
 
 Current base839a1d5d; new local pedigree precursor ready for checkpoint.

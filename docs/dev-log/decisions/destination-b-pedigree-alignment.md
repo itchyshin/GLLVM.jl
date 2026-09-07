@@ -40,3 +40,15 @@ Initial checks require actual frozen R precision, nonzero inbreeding,
 nontrivial tip order, full-node determinant, repeated-label mapping and a
 wrong ancestor-drop control. Fitted pairing, intervals, public bridge
 admission and retained recovery remain separate subsequent gates.
+
+## Frozen direct-Ainv formula boundary
+
+First fitted attempt on2026-09-07 (61755) failed before optimization when using
+animal_latent(species,d=1,Ainv=Q,unique=FALSE). A separate parser diagnostic1286
+proved that frozen brms-sugar.R rewrites Ainv into an unqualified private helper
+.gllvmTMB_maybe_keep_sparse_ainv(Q). In the user formula environment this raises
+function-not-found; parse-multi-formula.R:282 retains the unevaluated expression,
+so fit-multi.R's matrix harvester does not obtain Q. The frozen source is NOT
+changed. The next attempt uses exported pedigree_to_Ainv_sparse through the
+public pedigree=ped route and requires exact same canonical engineQ. It does
+not qualify direct Ainv syntax, which remains a separate recorded failure.
