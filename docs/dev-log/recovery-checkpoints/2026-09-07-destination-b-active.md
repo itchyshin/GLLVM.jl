@@ -1,5 +1,20 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — R candidate interval result converter tested
+
+Mainbase5f931ee0. Canonical Rlease live for scoped3files; read foreignkernel
+diff against RWT HEAD, empty (already same lineage). New Rinternal
+.gllvm_julia_normalise_precision_result adds distinct candidate conversion
+without touching legacy generic normalizer or opening public admission.
+Red11394 missing function; final79405 exit0 boundedRtests (one optinskip)
+plus ACTUAL_JULIACALL_CANDIDATE_NORMALIZATION_PASS12rows. Invalid/partial
+status controls pass, convergence required for available intervals.
+No R engine/parser edits, no Julia fit reruns. Next internal R invocation/
+fittedobject extractor route using this converter, tree/pedigree actual
+JuliaCall marshalling and public gate/review requirements. Existing payload
+preparation functions unchanged; old fixture receipts remain applicable at
+their exact source hashes. All sessions terminal, goalACTIVE, no push/merge.
+
 ## Latest continuation — unified JuliaCall environment and actual dense pilot pass
 
 Base3c887c5b. Global LogExpFunctions0.3.26 loaded before switching to

@@ -9,6 +9,10 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+R candidate result conversion is now separately implemented/tested in the
+authorized bridge worktree. Final79405 passes bounded unit tests plus actual
+saved JuliaCall normalization, preserving partial/unavailable outcomes and
+closed admission. This is not the public R fitting/extractor route yet.
 An isolated offline JuliaCall environment now eliminates the observed mixed
 LogExpFunctions-version extension failure. Startup checks and actual dense
 transport45507 pass; environment hashes/files retained, no global or package

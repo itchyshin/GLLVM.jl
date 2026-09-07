@@ -1,5 +1,7 @@
 ## 2026-09-07 — Destination B internal fitter integration (ongoing)
 
+- Scoped R candidate normalizer: red11394 missing function, final79405 bounded Rtests pass and actual saved JuliaCall12row result normalizes successfully. Preserves partial/unavailable diagnostics, labels, matrix shapes, closedadmission; rejects invalid endpoints/lengths/names/shape/status and nonconverged available intervals. Existing opt-in subprocess test remains skipped, separately retained bridge evidence unchanged. New converter only; public fitting/extractor wiring and review still open.
+
 - JuliaCall environment repair: manifest evidence identifies global LogExpFunctions0.3.26 versus GLLVM0.3.29 switch. Isolated offline combined environment5383 resolves; startup21684 asserts0.3.29/loglogistic/loadedextension, exit0. Corrected dense actual transport45507 exits0 with closedadmission/maps/12CI rows verified. Global/package manifests unchanged; environment artifacts retained. Public setup/wrapper routing still pending.
 
 - Saved JuliaCall readback passes without refit: strips only JuliaNamedTuple class, preserves matrices/maps/twelve interval endpoint pairs and JSON roundtrip. Pure R checker passes12 successes; first synthetic JSON fixture failed on untyped emptylist, restored documented numeric empty slot. Pilot reuses validator and refuses existing raw RDS. Dependency extension error still unresolved; no public R wrapper/admission claim.
