@@ -249,6 +249,7 @@ println(_SHARD === nothing ?
     _shard_include("test_destination_b_phylo_reference_checker.jl")
     _shard_include("test_destination_b_phylo_independent_receipt.jl")
     _shard_include("test_destination_b_pedigree_precision.jl")
+    _shard_include("test_destination_b_tree_precision.jl")
     _shard_include("test_destination_b_pedigree_reference_checker.jl")
     _shard_include("test_bridge_precision_shared_residual.jl")
     _shard_include("test_precision_objective_failures.jl")

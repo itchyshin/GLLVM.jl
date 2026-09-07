@@ -1,5 +1,7 @@
 ## 2026-09-07 — Destination B internal fitter integration (ongoing)
 
+- Height4 tree precursor: frozen export67459 exits0 with14root-dropped nodes, six retained internal nodes, shuffled eight-tip mapping, exact correlation/native precision ratio4 and non-ultrametric rejection. Independent path-covariance/actual marginal consumer22144 exits0,19/19PASS3.3s; wrong physical scale, map and internal-node conditioning discriminate. Registered in fullrunner, but fullsuite not run. No fitting or tree admission claim.
+
 - Pedigree optimizer diagnosis: exact nlminb replay8233 retains status1 and positive marginal curvature. Predeclared public BFGS36491 on unchanged model/data/Q converges from R defaults, gradient1.857232e-7. Same-point comparator11112 differs1.244e-14; retained independent Julia optimum differs1.865e-13 with aligned loading relative difference1.632e-7. Checker95556 exits0 with23/23 assertions, including policy-corruption negatives. Baseline failure remains failed; no engine change, Julia refit, review bypass, interval certification or public admission.
 
 - Final local evidence cohort32549 exit0 PHYLO_EVIDENCE_COHORT_PASS: dense checker41, receipt18, pedigree precision22, pedigree fitted checker15 (96passing assertions); one opt-in integration skip remains explicitly excluded. Actual dense/pedigree fit receipts are separate runs, not inferred from this skip. No full/core-suite or independent-review claim.

@@ -1,5 +1,19 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — tree precision precursor verified
+
+Pedigree optimizer evidence committed 2479537e. New height4 tree precursor
+export67459 exit0, exact frozen DLL and14node root-dropped precision retained;
+artifact SHAab01ee47206565eb1af7da391af313953b8a97c6bb11d9b6160655aaa0429170.
+Independent path covariance/actual consumer22144 exit0,19/19PASS3.3s,
+including wrong scale/map/ancestor-conditioning controls. New tree alignment,
+exporter, test/fullrunner registration and durable artifact; no engine edit.
+All sessions terminal. Next: tree Gaussian frozen-R public fitted exporter,
+canonicalQ/node mapping checks, paired marginal comparison and independent
+Julia fit/interval diagnostics using this exact height4 fixture. Preserve
+native raw scaling and non-ultrametric bridge boundary. Review/remote
+permissions still pending; do not bypass. Full programme remains ACTIVE.
+
 ## Latest continuation — same-data pedigree BFGS point agreement
 
 Base 4ec84cea. Predeclared baseline replay 8233 exactly preserves response,

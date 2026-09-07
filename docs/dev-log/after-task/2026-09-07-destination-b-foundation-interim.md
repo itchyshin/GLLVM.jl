@@ -9,6 +9,12 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Height4 tree precursor adds frozen canonical precision and an independent
+ancestral-edge covariance oracle. Sessions67459/22144 exit0,19/19 assertions
+pass including scaling, mapping and internal-node conditioning negatives.
+Six internal nodes remain marginalized. This is not a tree fit or admission;
+the exact fixture is now ready for the fitted follow-on. No engine edits.
+
 Subsequent same-data pedigree diagnosis now separates an unsuccessful nlminb
 baseline from one successful, predeclared public BFGS attempt. BFGS returns
 status 0, gradient 1.857232e-7 and an optimum within 1.865e-13 of retained
