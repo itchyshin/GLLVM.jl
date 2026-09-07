@@ -1,5 +1,22 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — real frozen pedigree precision checked
+
+Current base839a1d5d; new local pedigree precursor ready for checkpoint.
+R56292 exit0 exports full12node precision with8observed and4unobservedfounders,
+artifactSHAc428e369e6fb554cc4b9bb03f250418d0d51474ba86e01d1be9c7c7301e615ee.
+Julia5526 exit0,22/22PASS3.6s: independent generative A, Q*A, logdet,
+inbreeding, maps and actual multivariate marginal kernel; wrong ancestor
+conditioning/map controls distinguish. Durable artifact/test/fixture/alignment
+doc added; fullrunner registration. Failures retained in ignored pedigree
+ledger, no tolerances widened or engine changes. No fit yet for this pedigree.
+Next implement exact frozen animal_latent(species,d=1,Ainv=Q) Gaussian shared
+residual exporter/consumer comparison using this fixed pedigree, preserving
+full12node Q, observedorder12,5,9,7,10,6,11,8 and all4founders. Extend prior
+S3b pilot machinery without weakening its dense-vcv schema or editing its
+immutable receipts. Review-transmission and remote permissions still pending;
+no new external route attempted. All sessions terminal, goal ACTIVE.
+
 ## Latest continuation — independent pilot recorded, review permission needed
 
 All builders finished; no live numerical/CLI sessions. Parent1226 terminal0

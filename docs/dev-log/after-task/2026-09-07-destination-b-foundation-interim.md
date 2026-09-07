@@ -9,6 +9,13 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Pedigree follow-on adds actual frozen-R canonical precision and an independent
+structural-equation covariance fixture, including related-parent matings and
+four unobserved founders. Fixed-model checks22/22PASS; dropping founders from
+precision and swapping maps are discriminating negatives. This is a precursor
+to fitted pedigree evidence, not its completion. The old founder-pair example
+did not actually exercise inbreeding; the new explicit pedigree does.
+
 The subsequent independent public Julia pilot also converged without R-derived
 starts: own-optimum NLL difference-2.408e-11 and all12 displayed Wald rows
 available (10distinct estimands). Both the pre-optimization missing-import
