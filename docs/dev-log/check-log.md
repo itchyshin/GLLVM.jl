@@ -1,5 +1,7 @@
 ## 2026-09-07 — Destination B internal fitter integration (ongoing)
 
+- Actual JuliaCall tree35981/pedigree42583 run in parallel, both exit0 with numerical/map/12CI checks and Rcandidate conversion passing. Receipts bind input/environment/converter hashes and preserve rawRDS before assertions. Fresh readback PASS; public gllvmTMB formula/fit/extractor route and independent S4 review remain open, admissionclosed. No dependencies or R engine changed.
+
 - Scoped R candidate normalizer: red11394 missing function, final79405 bounded Rtests pass and actual saved JuliaCall12row result normalizes successfully. Preserves partial/unavailable diagnostics, labels, matrix shapes, closedadmission; rejects invalid endpoints/lengths/names/shape/status and nonconverged available intervals. Existing opt-in subprocess test remains skipped, separately retained bridge evidence unchanged. New converter only; public fitting/extractor wiring and review still open.
 
 - JuliaCall environment repair: manifest evidence identifies global LogExpFunctions0.3.26 versus GLLVM0.3.29 switch. Isolated offline combined environment5383 resolves; startup21684 asserts0.3.29/loglogistic/loadedextension, exit0. Corrected dense actual transport45507 exits0 with closedadmission/maps/12CI rows verified. Global/package manifests unchanged; environment artifacts retained. Public setup/wrapper routing still pending.

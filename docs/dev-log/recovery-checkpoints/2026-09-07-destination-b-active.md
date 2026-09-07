@@ -1,5 +1,20 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — tree/pedigree JuliaCall plus R conversion pass
+
+Mainbase5f2ffb0e,R19b42c857. Generalized pilot supports dense/tree/pedigree
+and optional scoped Rconverter; rawRDS saved before assertions, input and
+converter hashes recorded. Parallel35981/42583 both exit0 actual JuliaCall
+fit/map/12CI plus Rconversion checks; durableadapter/juliacall-tree-01.json
+and juliacall-pedigree-01.json freshreadbackPASS, admissionclosed. No live
+processes. Allthree tiny rawtransport pilots now verified, not publicRformula
+routing/extractor or S4 programme acceptance. Next internal invocation/object
+assembly and exported Rworkflow integration, preserving failed interval
+diagnostics and explicit review gate. Rpublic setup environment switch still
+requires bounded treatment; unifiedpilotenv stays the proven route.
+External agent-transmission/remote permissions unanswered, no bypass. Goal
+ACTIVE; full/core/recovery/remaining32rows/finalreviews still incomplete.
+
 ## Latest continuation — R candidate interval result converter tested
 
 Mainbase5f931ee0. Canonical Rlease live for scoped3files; read foreignkernel

@@ -9,6 +9,10 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Tree and pedigree actual JuliaCall pilots now pass alongside dense: two
+parallel local processes35981/42583 return matching raw results and scoped
+R normalization with12available intervalrows each. Hash-bound receipts and
+rawRDS retained; no public formula or fitted-object admission implied.
 R candidate result conversion is now separately implemented/tested in the
 authorized bridge worktree. Final79405 passes bounded unit tests plus actual
 saved JuliaCall normalization, preserving partial/unavailable outcomes and

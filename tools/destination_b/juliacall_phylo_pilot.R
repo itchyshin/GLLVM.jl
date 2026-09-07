@@ -1,7 +1,9 @@
 #!/usr/bin/env Rscript
 # Actual JuliaCall transport; no public R phylo_rr admission implied.
 args <- commandArgs(trailingOnly=TRUE)
-if(length(args)!=4L) stop("usage: juliacall_phylo_pilot.R JULIA_BIN PROJECT CORE070 OUTPUT")
+if(!length(args) %in% c(4L,6L)) stop("usage: juliacall_phylo_pilot.R JULIA_BIN PROJECT CORE070 OUTPUT [KIND R_ADAPTER]")
+kind <- if(length(args)==6L) args[5] else "dense"
+if(!kind %in% c("dense","tree","pedigree")) stop("unknown fixture kind")
 output <- args[4]
 if(any(file.exists(c(output,paste0(output,".rds"))))) stop("refusing existing result or raw attempt")
 script_path <- sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1L])
@@ -12,9 +14,16 @@ startup_project <- Sys.getenv("JULIA_PROJECT","")
 if(!nzchar(startup_project) || !identical(normalizePath(startup_project,mustWork=TRUE),project))
  stop("start JuliaCall in the target combined environment; do not switch loaded dependency versions")
 fixtures <- jsonlite::fromJSON(file.path(root,"destination-b-adapter/fixtures-01.json"))
-dense <- jsonlite::fromJSON(file.path(root,"destination-b-s3b-pilot/r-attempt-02.json"))
-expected <- jsonlite::fromJSON(file.path(root,"destination-b-adapter/dense-result.json"))$result
+reference_relative <- switch(kind,dense="destination-b-s3b-pilot/r-attempt-02.json",
+ tree="destination-b-tree/r-fit-attempt-01.json",pedigree="destination-b-pedigree-fit/r-attempt-02.json")
+reference <- jsonlite::fromJSON(file.path(root,reference_relative))
+Y <- if(kind=="dense") reference$response$Y_traits_by_observations else reference$Y_traits_by_observations
+expected_path <- file.path(root,paste0("destination-b-adapter/",kind,"-result.json"))
+expected <- jsonlite::fromJSON(expected_path)$result
 receipt <- list(status="error",qualified=FALSE,stage="setup",warnings=list())
+receipt$kind <- kind
+receipt$input_sha256 <- as.list(unname(tools::sha256sum(c(file.path(root,reference_relative),expected_path,
+ file.path(root,"destination-b-adapter/fixtures-01.json")))))
 receipt$environment_path <- project
 receipt$environment_sha256 <- as.list(unname(tools::sha256sum(file.path(project,c("Project.toml","Manifest.toml")))))
 tryCatch({
@@ -22,14 +31,24 @@ tryCatch({
  JuliaCall::julia_command(sprintf("import Pkg; Pkg.activate(%s); using GLLVM",encodeString(normalizePath(args[2]),quote='"')))
  receipt$stage <- "fit"
  started <- proc.time()[["elapsed"]]
- result <- JuliaCall::julia_call("GLLVM.bridge_fit",y=dense$response$Y_traits_by_observations,
-  family="gaussian",d=1L,phylo=fixtures$bundles$dense$precision,
+ result <- JuliaCall::julia_call("GLLVM.bridge_fit",y=Y,
+  family="gaussian",d=1L,phylo=fixtures$bundles[[kind]]$precision,
   options=list(phylo_model="multivariate",mode="barelowrank",residual_mode="shared",
-   species_id=as.integer(fixtures$bundles$dense$species_id),ci_method="wald",g_tol=1e-5,iterations=400L))
+   species_id=as.integer(fixtures$bundles[[kind]]$species_id),ci_method="wald",g_tol=1e-5,iterations=400L))
  receipt$elapsed_fit_seconds <- proc.time()[["elapsed"]]-started
  receipt$result <- result
  receipt$stage <- "returned_before_assertions"
  saveRDS(receipt,paste0(output,".rds"))
+ if(length(args)==6L) {
+  adapter_env <- new.env(parent=globalenv())
+  sys.source(args[6],envir=adapter_env)
+  normalized <- adapter_env$.gllvm_julia_normalise_precision_result(result,c("a","b","c"))
+  stopifnot(nrow(normalized$intervals)==12L,all(normalized$intervals$status=="available"),
+   identical(normalized$admission_status,"closed"),
+   identical(rownames(normalized$loadings),c("a","b","c")))
+  receipt$normalized_intervals <- normalized$intervals
+  receipt$result_converter_sha256 <- unname(tools::sha256sum(args[6]))[[1L]]
+ }
  result <- destination_b_validate_juliacall_result(result,expected)
  receipt$result <- result
  stopifnot(isTRUE(result$converged),identical(result$admission_status,"closed"),

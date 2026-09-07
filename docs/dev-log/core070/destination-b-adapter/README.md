@@ -1,5 +1,14 @@
 # Actual R adapter fixtures — public admission closed
 
+Tree35981 and pedigree42583 actual JuliaCall pilots run concurrently with
+one BLAS thread each and both exit0. Each passes raw numerical/map/twelveCI
+comparisons plus the scoped R candidate converter on the returned object.
+Receipts bind input, converter and environment hashes; raw RDS attempts are
+retained before assertions. Fresh readback confirms twelve available rows
+and closedadmission in both cases. This completes the three tiny raw transport
+pilots, not public gllvmTMB formula routing, extractor integration, S4 review
+or broader recovery qualification.
+
 Unified-environment JuliaCall pilot45507 exits0 with actual dense raw fit,
 map and interval checks passing. Startup21684 checks the loaded dependency
 version and extension explicitly; manifests retained in juliacall-environment/.
