@@ -9,6 +9,25 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+The subsequent independent public Julia pilot also converged without R-derived
+starts: own-optimum NLL difference-2.408e-11 and all12 displayed Wald rows
+available (10distinct estimands). Both the pre-optimization missing-import
+failure and corrected attempt are retained byte-for-byte with provenance.
+Fit1.295s plus intervals1.639s excludes startup; not a campaign forecast.
+Pure receipt checks18/18 and strict comparator41/41 passed; separate actual
+integration was run. P7 independent source review remains unmet, so the pilot
+slice and programme are not closed. No R interval or recovery certification.
+
+Latest checkpoint: precision-contract repairs are locally committed b240aa8f
+after bounded independent approval and focused verification. New frozen-R
+exporter and independent JSON checker are integrated but not yet independently
+approved. Actual frozen0.7.0 marginal cross-evaluation passes at fixed and
+R-fitted parameters (differences0 and1.066e-14); checker41/41PASS6.1s. This
+does not establish independently fitted agreement or interval feasibility.
+The first export's NULL metadata fault is retained; repaired attempt02 has
+identical numerical results. External Sol review was blocked before launch;
+explicit scoped transmission approval is pending. Programme remains open.
+
 Since the initial snapshot retained below: joint Gaussian/non-Gaussian fitters,
 explicit public grouping and formula routes, trait-specific Beta/NB2 dispersion,
 full-marginal Wald targets, structural-identification diagnostics, multivariate

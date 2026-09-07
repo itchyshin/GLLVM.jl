@@ -1,5 +1,66 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — independent pilot recorded, review permission needed
+
+All builders finished; no live numerical/CLI sessions. Parent1226 terminal0
+records independent Julia fit from default start, converged25iterations,
+gradient1.687e-6, own-optimum NLL difference-2.408e-11 against frozenR0.7.0.
+All12 displayed Wald rows available (10distinct estimands), condition249.274;
+fit1.295s+interval1.639s excluding startup. Firstattempt89204 failed before
+optimization due missing Normal import; retained and fixed with explicit
+Distributions import. Evidence-env99777 adds cachedDistributions0.25.131
+only; runtimeProjectunchanged. Fresh5809 smoke plus18puretestsPASS. Receipt
+tests registered in fullrunner, integrationopt-in skip remains explicit.
+Durable exact-byte outputs in docs/dev-log/core070/destination-b-s3b-pilot/;
+independent02 SHA712498737bd4f15998ffe294dacfde5a97fee1afb1b23160d7c1a6a204cc9b5e.
+No further fit needed for unchanged candidate. Next: obtain explicit permission
+for rejected Sol external review, extend its existing brief to runner/tests,
+review retained artifacts; resolve issues then continue Gaussian tree/pedigree
+S3b/S4 and programme gates. Remote compute permission also unresolved. Do not
+bypass either rejection. No full/core/recovery/Rinterval/admission/overall
+qualification. Goal ACTIVE; no push/merge. Local checkpoint pending below.
+
+## Latest result — first actual frozen-R cross-evaluation passes
+
+Parent83799 terminal41/41 checker tests PASS6.1s. Parent56010 terminal comparison
+PASS: matched marginal NLL7.627081699167345 exactly equal; at R-fitted point,
+R-1.4478358644291198 vs Julia-1.4478358644291305, absolute difference1.066e-14.
+Attempt02/comparison-attempt-01 JSON retained under ignored S3b pilot ledger.
+This is cross-evaluation only, NOT independent Julia fit/interval qualification.
+Checker/test integrated MAIN; JSON3 test-only dependency and test registration.
+Phylo worker building independent public-fit runner (no fit yet).
+Sol CLI source review was safety-rejected BEFORE launch for external payload
+transmission; explicit scoped user approval requested. Do not bypass via another
+dispatch route. No live numerical/CLI sessions. Goal ACTIVE; broad gates owed.
+
+## Current continuation — frozen-R export complete, independent checker integration
+
+Local commit remains b240aa8f; subsequent exporter/schema/checker work uncommitted.
+R-only attempt02 terminal46661 exit0, private frozen0.7.0 DLL unchanged.
+Artifact .unlazy/destination-b-s3b-pilot/r-attempt-02/phylo_gaussian_reference.json
+SHA2565166bd887d8e85a962d551fd8670bc6f095d7b7cfff22d927b04cba34f3b981f.
+Attempt01 retained with invalid missing-value metadata; attempt02 changes only
+serialization/count extraction. Fresh R comparison proves identical response,
+matched/fitted numerical values; missing gradient now null, counts46/35.
+No real Julia comparison yet. Grouping worker's strict checker37/37 passed;
+parent requested implementation hashes and explicit cross-evaluation receipt
+scope before integration. Phylo worker now owns NEW independent public-fit
+diagnostic runner, no fit yet. Two parallel builders, no numerical sessions.
+Goal ACTIVE; remote approval unanswered, no campaigns/push/merge/admission.
+
+## Latest continuation — local commit b240aa8f
+
+Verified precision-contract repair tranche committed locally as b240aa8f,
+29 explicitly staged files; cached whitespacecheckPASS. No push/merge.
+MAIN clean immediately aftercommit; later evidence tooling not yet integrated.
+Sol59607 terminalapproved; no CLI review or numerical/build sessions live.
+Rworker still preparing frozen-reference exporter/preflight fixes; grouping
+worker continued independent checker/adversarial tests after first incomplete
+draft. Both isolated scopes tools/destination_b/ and new tests/decisions only.
+Frozen R private library and evidence Julia env ready as described below.
+Next review/import exporter and checker, run invalid-evidence tests, then
+declare/run tiny paired pilot. No real paired fitting run yet. Goal ACTIVE.
+
 ## Current continuation — review approved; frozen reference built
 
 Sol59607 terminal APPROVED bounded precision repairs; seven source hashes

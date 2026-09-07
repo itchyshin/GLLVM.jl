@@ -2,6 +2,18 @@
 
 Status: ACTIVE; implementation authorised by Shinichi on 2026-09-07. No capability qualified by this document.
 
+Current execution checkpoint (2026-09-07): local commits89eac4c1 andb240aa8f
+retain grouped/phylogenetic development routes and reviewed precision repairs.
+The first real frozen0.7.0 Gaussian dense-vcv cross-evaluation passes at matched
+and R-fitted points; independent fitting/interval assessment is the active
+parallel slice. This is not S3b/S4 or programme completion. Detailed current
+state and receipts are in `../recovery-checkpoints/2026-09-07-destination-b-active.md`
+and `../core070/destination-b-s3b-pilot/README.md`. The schedule's initial
+checkpoint below is historical, not a claim that no computation has occurred.
+External Sol source review is awaiting scoped transmission approval after a
+safety rejection; remote compute authority is also unresolved. No bypass,
+public admission, push or merge has occurred.
+
 ## Goal and immutable boundaries
 
 Complete the statistical models behind unit, unit_obs, cluster, and cluster2 grouping, multivariate phylogenetic transport/consumer, and feasible primary intervals. Qualification oracle: gllvmTMB 0.7.0, b4d5fee64def88bc768dda1f1f77c29b295edd86. Preserve its build and likelihood. R edits are confined to the authorised phylo_rr S3b bridge adapter, tests and documentation. FRK remains parked at gllvmTMB#1275. No unlisted capability, 0.7.1 expansion, coverage certification, release, registration, push or merge is authorised.

@@ -246,6 +246,8 @@ println(_SHARD === nothing ?
     _shard_include("test_precision_multivariate_fit.jl")
     _shard_include("test_precision_fit_admission.jl")
     _shard_include("test_precision_shared_residual.jl")
+    _shard_include("test_destination_b_phylo_reference_checker.jl")
+    _shard_include("test_destination_b_phylo_independent_receipt.jl")
     _shard_include("test_bridge_precision_shared_residual.jl")
     _shard_include("test_precision_objective_failures.jl")
     _shard_include("test_bridge_precision_multivariate.jl")
