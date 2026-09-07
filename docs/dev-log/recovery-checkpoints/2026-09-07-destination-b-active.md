@@ -1,5 +1,19 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — tree independent fits and interval diagnostics retained
+
+Base15ea5931. R tree37237 exact Q/model passes, nlminbstatus1 retained.
+Julia65969 converges25iterations/gradient3.961e-6, all12displayed Waldrows
+(10distinct targets) available, condition122.9505. Same-data public BFGS87715
+convergescode0/gradient6.585e-7. Own-optimum NLLdifference about6.4e-14;
+comparator9517 same-pointdifference1.066e-14. Finalchecker2580 exit0,27PASS.
+Durable tree receipts/readme include hashes; test registered. No live sessions.
+Next: paired marginal uncertainty/interval checks for three frozen Gaussian
+cases, then authorized adapter S3b/S4 tests/admission gates; do not treat
+transport or current fitted pilots as programme completion. External review
+and remote permissions remain pending, no bypass. Broad suites/recovery,
+remaining signed rows and final independent reviews owed. Goal ACTIVE.
+
 ## Latest continuation — tree precision precursor verified
 
 Pedigree optimizer evidence committed 2479537e. New height4 tree precursor

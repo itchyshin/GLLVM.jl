@@ -9,6 +9,13 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Tree fitted follow-on now retains exact frozen model transport, an unsuccessful
+nlminb baseline, converged independent Julia fit with feasible primary Wald
+diagnostics, and converged same-data public R BFGS. Own-optimum NLLs agree
+within about6.4e-14; checker2580 passes27/27 assertions. Original failures,
+source/data hashes and all returned interval rows remain. Paired R uncertainty,
+review, recovery and admission gates remain open; no likelihood surgery.
+
 Height4 tree precursor adds frozen canonical precision and an independent
 ancestral-edge covariance oracle. Sessions67459/22144 exit0,19/19 assertions
 pass including scaling, mapping and internal-node conditioning negatives.
