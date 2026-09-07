@@ -99,6 +99,11 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **2026-09-07 — D-220 Cursor → Codex handoff.** Destination B is paused at
+  G0 against frozen gllvmTMB 0.7.0; Julia phylo S3a/FIT/ANIMAL work is
+  diagnostic-only and complete, with no named no-G0 Julia leaf remaining.
+  **START HERE:** `docs/dev-log/handover/2026-09-07-codex-handover.md`.
+
 - **Phase 0 — Team and memory scaffolding (complete, 2026-05-30).** PR #1.
 - **Phase 1.1 — O(p) node-frame gradient (complete, CI green cross-platform,
   2026-05-30).** PR #2; `src/node_gradient.jl` (+ wired `sparse_phy_grad.jl`);
