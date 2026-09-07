@@ -441,13 +441,19 @@ end
 
 """
     bridge_fit(; y, family, d=1, N=nothing, X=nothing, X_lv=nothing,
-               trait_names=nothing, unit_names=nothing, options=Dict())
+               trait_names=nothing, unit_names=nothing, phylo=nothing,
+               options=Dict())
 
 Plain-data R->Julia bridge (JuliaCall transport). Fits a one-part GLLVM for the
 requested `family` and returns a flat, JuliaCall-convertible NamedTuple (see the
 file header for the key->type contract). `y` is a `p x n` response matrix
 (traits x units); `d` is the latent dimension `K`; `N` (Binomial trials, `p x n`
 or a scalar) is forwarded to the Binomial fitter.
+
+`phylo` is an optional diagnostic consume hook: an admitted [`PrecisionPhy`](@ref)
+or a flat precision payload. When set, `y` is a length-`p` trait vector and the
+return is the univariate [`fit_phylo_gaussian`](@ref) result (`diagnostic_only =
+true`). This does not lift the R `phylo_rr` gate.
 
 `family = "zib"` reads `N` differently: the zero-inflated binomial carries ONE
 shared scalar trials count, so `N` is **required** (there is no safe default —
@@ -470,7 +476,7 @@ Confidence intervals are routed through `options` (all optional):
   - `"ci_seed"`  — bootstrap RNG seed (default `0`; fixed → reproducible).
 """
 function bridge_fit(; y,
-                    family,
+                    family = nothing,
                     d::Integer = 1,
                     N = nothing,
                     X = nothing,
@@ -479,7 +485,14 @@ function bridge_fit(; y,
                     trait_names = nothing,
                     unit_names = nothing,
                     sources = nothing,
+                    phylo = nothing,
                     options = Dict{String,Any}())
+    if phylo !== nothing
+        sources === nothing || throw(ArgumentError(
+            "bridge_fit: phylo precision consume hook cannot combine with sources"))
+        return _bridge_fit_phylo_precision(y, phylo; family = family, options = options)
+    end
+    family === nothing && throw(ArgumentError("bridge_fit: family is required"))
     K = Int(d)
     K >= 0 || throw(ArgumentError("d must be a non-negative integer"))
     if sources !== nothing
@@ -2081,7 +2094,8 @@ end
 # S3a — Julia-side phylogenetic precision payload.
 # Flat primitives only (JuliaCall). `species_aug_id` is 0-indexed on the
 # wire (`fit-multi.R:4638`); `i,j` are 1-based Matrix/findnz triplets.
-# This does not lift the R `phylo_rr` gate and does not call `bridge_fit`.
+# This does not lift the R `phylo_rr` gate. S3-FIT adds a thin
+# `bridge_fit(; phylo=payload)` consume hook (diagnostic only).
 # ---------------------------------------------------------------------------
 const PHYLO_PRECISION_PAYLOAD_KEYS = (
     :i, :j, :x, :n_aug, :n_leaves, :species_aug_id,
@@ -2197,5 +2211,35 @@ function admit_phylo_precision_payload(payload)
         _phylo_payload_gate("GJL-GATE-PHYLO-PAYLOAD-LOGDET",
             "shipped log_det ($(shipped)) disagrees with recomputed ($(recomputed)) by $(abs_diff)")
     return pp
+end
+
+# S3-FIT — thin diagnostic consume hook. Admits a PrecisionPhy payload (or
+# accepts an already-admitted PrecisionPhy) and fits the univariate
+# phylogenetic Gaussian model. Does not lift the R phylo_rr gate.
+function _bridge_fit_phylo_precision(y, phylo; family = nothing, options = nothing)
+    if family !== nothing && _bridge_family_key(String(family)) != "gaussian"
+        throw(ArgumentError(
+            "bridge_fit: phylo precision consume hook is Gaussian-only (diagnostic)"))
+    end
+    pp = phylo isa PrecisionPhy ? phylo : admit_phylo_precision_payload(phylo)
+    yv = if y isa AbstractMatrix
+        size(y, 2) == 1 || throw(ArgumentError(
+            "bridge_fit: phylo precision consume hook takes a length-p trait vector " *
+            "(or a p×1 matrix); got size $(size(y))"))
+        vec(y)
+    else
+        collect(float.(y))
+    end
+    fit = fit_phylo_gaussian(pp, yv)
+    return (
+        μ = fit.μ,
+        sigma2_phy = fit.σ²_phy,
+        sigma2_eps = fit.σ²_eps,
+        negll = fit.negll,
+        loglik = -fit.negll,
+        converged = fit.converged,
+        iterations = fit.iterations,
+        diagnostic_only = true,
+    )
 end
 

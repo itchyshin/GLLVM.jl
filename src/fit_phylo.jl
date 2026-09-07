@@ -40,10 +40,43 @@ function Base.show(io::IO, f::PhyloGaussianFit)
           f.converged ? "" : ", NOT CONVERGED", ")")
 end
 
+# Fit-state built from an admitted PrecisionPhy (root already dropped, R
+# internal-first / tips-last order). Same Woodbury / logdet identity as
+# NodePerSpecies; only the Q ordering and leaf map differ.
+struct PrecisionPhyFitState{TF<:SparseArrays.CHOLMOD.Factor{Float64}}
+    n_leaves::Int
+    σ_phy::Vector{Float64}
+    σ²_eps::Float64
+    nb::Int
+    leaf_pos::Vector{Int}
+    chol_Qcond::TF
+    cΛ̃::TF
+end
+
+_phylo_n_leaves(st::NodePerSpecies) = st.phy.n_leaves
+_phylo_n_leaves(st::PrecisionPhyFitState) = st.n_leaves
+
+function _build_precision_phy_fit_state(pp::PrecisionPhy, σ_phy::AbstractVector,
+                                         σ²_eps::Real)
+    p = pp.n_leaves
+    length(σ_phy) == p ||
+        throw(DimensionMismatch("length(σ_phy) = $(length(σ_phy)) ≠ n_leaves $p"))
+    Qc = pp.Q
+    nb = size(Qc, 1)
+    lp = pp.species_aug_id
+    inve = 1.0 / float(σ²_eps)
+    Λ̃ = copy(Qc)
+    @inbounds for t in 1:p
+        Λ̃[lp[t], lp[t]] += inve * float(σ_phy[t])^2
+    end
+    return PrecisionPhyFitState(p, Vector{Float64}(σ_phy), float(σ²_eps), nb, copy(lp),
+                                cholesky(Symmetric(Qc)), cholesky(Symmetric(Λ̃)))
+end
+
 # Σ⁻¹ b via Woodbury (O(p)):
 #   Σ⁻¹ b = σ_eps⁻² b − σ_eps⁻⁴ · σ_phy ⊙ S [ Λ̃⁻¹ ( S' (σ_phy ⊙ b) ) ].
-function _phylo_sigma_inv_apply(st::NodePerSpecies, b::AbstractVector)
-    p = st.phy.n_leaves
+function _phylo_sigma_inv_apply(st, b::AbstractVector)
+    p = _phylo_n_leaves(st)
     inve = 1.0 / st.σ²_eps
     sp = st.σ_phy
     φb = sp .* b
@@ -61,8 +94,8 @@ end
 
 # O(p) negative log-likelihood given a prebuilt node state (σ²_phy, σ²_eps
 # baked into st). log|Σ| = p·log σ²_eps + log|Λ̃| − log|Q_cond|.
-function _phylo_negll(st::NodePerSpecies, y::AbstractVector, μ::Real)
-    p = st.phy.n_leaves
+function _phylo_negll(st, y::AbstractVector, μ::Real)
+    p = _phylo_n_leaves(st)
     logdetΣ = p * log(st.σ²_eps) + logdet(st.cΛ̃) - logdet(st.chol_Qcond)
     r = y .- μ
     quad = dot(r, _phylo_sigma_inv_apply(st, r))
@@ -70,8 +103,9 @@ function _phylo_negll(st::NodePerSpecies, y::AbstractVector, μ::Real)
 end
 
 # GLS-profiled μ̂ = (1ᵀ Σ⁻¹ 1)⁻¹ (1ᵀ Σ⁻¹ y), via two Woodbury solves.
-function _phylo_profile_mu(st::NodePerSpecies, y::AbstractVector)
-    one_p = ones(Float64, st.phy.n_leaves)
+function _phylo_profile_mu(st, y::AbstractVector)
+    p = _phylo_n_leaves(st)
+    one_p = ones(Float64, p)
     Σi1 = _phylo_sigma_inv_apply(st, one_p)
     Σiy = _phylo_sigma_inv_apply(st, y)
     return dot(one_p, Σiy) / dot(one_p, Σi1)
@@ -103,28 +137,51 @@ Fit the O(p) single-trait single-variance phylogenetic Gaussian model
 marginal negative log-likelihood — where `Σ_phy_unit` is the unit-variance
 Brownian-motion tip covariance of the tree, never formed densely.
 
-`phy` is an `AugmentedPhy` (from [`augmented_phy`](@ref)) or a Newick string;
-`y` is the length-`p` trait vector in tip order. When `profile_mu` (default),
-`μ` is profiled out by generalised least squares at every evaluation and only
-`(σ²_phy, σ²_eps)` are optimised; otherwise all three are optimised jointly.
-Variances are optimised on the log scale (kept strictly positive). The L-BFGS
-gradient is finite-difference (CHOLMOD blocks forward-mode AD), which is still
-O(p) per gradient.
+`phy` is an `AugmentedPhy` (from [`augmented_phy`](@ref)), an admitted
+[`PrecisionPhy`](@ref) payload, or a Newick string; `y` is the length-`p`
+trait vector in tip order. When `profile_mu` (default), `μ` is profiled out
+by generalised least squares at every evaluation and only `(σ²_phy, σ²_eps)`
+are optimised; otherwise all three are optimised jointly. Variances are
+optimised on the log scale (kept strictly positive). The L-BFGS gradient is
+finite-difference (CHOLMOD blocks forward-mode AD), which is still O(p) per
+gradient.
 
 A single exact gradient/likelihood evaluation scales linearly in the number of
 species `p` (≈0.8 ms at p=10,000), where dense phylogenetic GLLVMs cap near
 `p ≈ 500`.
 """
-function fit_phylo_gaussian(phy::AugmentedPhy, y::AbstractVector;
-        profile_mu::Bool = true,
-        μ0::Real = mean(y),
-        logσ²phy0::Real = log(var(y) / 2),
-        logσ²eps0::Real = log(var(y) / 2),
-        g_tol::Real = 1e-5, iterations::Integer = 500)
+function fit_phylo_gaussian(phy::AugmentedPhy, y::AbstractVector; kwargs...)
     p = phy.n_leaves
     length(y) == p ||
         throw(DimensionMismatch("length(y) = $(length(y)) ≠ number of tips $p"))
-    yf = collect(float.(y))
+    return _fit_phylo_gaussian_lbfgs(p, collect(float.(y)),
+        (σ_phy, σ²_eps) -> build_node_perspecies(phy, σ_phy, σ²_eps); kwargs...)
+end
+
+"""
+    fit_phylo_gaussian(pp::PrecisionPhy, y; kwargs...) -> PhyloGaussianFit
+
+Same univariate phylogenetic Gaussian fit as the `AugmentedPhy` method, using
+an admitted [`PrecisionPhy`](@ref) precision payload (root already dropped).
+Finite-difference L-BFGS; CHOLMOD still blocks forward-mode AD. Diagnostic:
+on the S3a 8-tip fixture this must match the tree-path σ² and log-likelihood
+to `1e-8`.
+"""
+function fit_phylo_gaussian(pp::PrecisionPhy, y::AbstractVector; kwargs...)
+    p = pp.n_leaves
+    length(y) == p ||
+        throw(DimensionMismatch("length(y) = $(length(y)) ≠ number of tips $p"))
+    return _fit_phylo_gaussian_lbfgs(p, collect(float.(y)),
+        (σ_phy, σ²_eps) -> _build_precision_phy_fit_state(pp, σ_phy, σ²_eps);
+        kwargs...)
+end
+
+function _fit_phylo_gaussian_lbfgs(p::Integer, yf::Vector{Float64}, build_state;
+        profile_mu::Bool = true,
+        μ0::Real = mean(yf),
+        logσ²phy0::Real = log(var(yf) / 2),
+        logσ²eps0::Real = log(var(yf) / 2),
+        g_tol::Real = 1e-5, iterations::Integer = 500)
     ls = Optim.LBFGS(linesearch = Optim.LineSearches.BackTracking(order = 3))
     opts = Optim.Options(g_tol = g_tol, iterations = iterations)
 
@@ -133,7 +190,7 @@ function fit_phylo_gaussian(phy::AugmentedPhy, y::AbstractVector;
         function negll2(θ)
             (all(isfinite, θ) && abs(θ[1]) < 50 && abs(θ[2]) < 50) || return _PHYLO_PENALTY
             σ²_phy = exp(θ[1]); σ²_eps = exp(θ[2])
-            st = build_node_perspecies(phy, fill(sqrt(σ²_phy), p), σ²_eps)
+            st = build_state(fill(sqrt(σ²_phy), p), σ²_eps)
             v = _phylo_negll(st, yf, _phylo_profile_mu(st, yf))
             return isfinite(v) ? v : _PHYLO_PENALTY
         end
@@ -141,7 +198,7 @@ function fit_phylo_gaussian(phy::AugmentedPhy, y::AbstractVector;
                              autodiff = :finite)
         θ̂ = Optim.minimizer(res)
         σ²_phy = exp(θ̂[1]); σ²_eps = exp(θ̂[2])
-        st = build_node_perspecies(phy, fill(sqrt(σ²_phy), p), σ²_eps)
+        st = build_state(fill(sqrt(σ²_phy), p), σ²_eps)
         μ̂ = _phylo_profile_mu(st, yf)
         conv, nll = _phylo_verdict(Optim.converged(res), Optim.minimum(res))
         return PhyloGaussianFit(μ̂, σ²_phy, σ²_eps, nll, conv, Optim.iterations(res))
@@ -150,7 +207,7 @@ function fit_phylo_gaussian(phy::AugmentedPhy, y::AbstractVector;
         function negll3(θ)
             (all(isfinite, θ) && abs(θ[2]) < 50 && abs(θ[3]) < 50) || return _PHYLO_PENALTY
             μ = θ[1]; σ²_phy = exp(θ[2]); σ²_eps = exp(θ[3])
-            st = build_node_perspecies(phy, fill(sqrt(σ²_phy), p), σ²_eps)
+            st = build_state(fill(sqrt(σ²_phy), p), σ²_eps)
             v = _phylo_negll(st, yf, μ)
             return isfinite(v) ? v : _PHYLO_PENALTY
         end
