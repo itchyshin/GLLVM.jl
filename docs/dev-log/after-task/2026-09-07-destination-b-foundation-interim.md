@@ -9,6 +9,11 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Actual authorized R adapter payloads now exercise Julia bridge_fit on tree,
+pedigree and dense fixtures. Final28020 passes97/97, with flat numerical and
+interval results retained from21001. Test call/indexing errors were corrected
+without engine/tolerance changes. Admission remainsclosed. JuliaCall transport
+and the public R fitted-object/interval wrapper remain unverified and required.
 Dense uncertainty now passes the bounded signed numerical comparison under
 the predeclared same-data BFGS policy. Both nlminb failures and two metadata
 export failures remain retained; normalized RDS inspection resolved the latter.

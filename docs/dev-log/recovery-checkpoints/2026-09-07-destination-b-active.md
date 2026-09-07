@@ -1,5 +1,20 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — actual R adapter to Julia bridge fits verified
+
+Base8297f0fe. R adapter87205 exports three exact frozen payloads; fixturehash
+089f87d0dcf3c1014fc99646953d8696a0d5aa747287561dd815b5b8bf097549.
+Bridge21001 retains allthree flat fit/interval outputs; test only failed on
+input0based/output1based map assertion. Corrected assertion,28020 exits0
+97/97PASS8.3s. Earlier22489 positional-y call failed before fitting, fixed to
+keyword-only contract. Durable adapter directory retains fixtures and outputs.
+All sessions terminal. Next actual JuliaCall marshalling and public R wrapper/
+extractors for candidate route, with admission closed until independent review
+and applicable S4 gates. Numerical engine unchanged. No R edits this tranche;
+adapter WT still contains original scoped107-line candidate plus tests/docs.
+Review/remote permissions unanswered, no bypass. Full/core/recovery/remaining
+32rows/finalreviews incomplete. Goal ACTIVE; no push/merge/public qualification.
+
 ## Latest continuation — dense uncertainty BFGS succeeds; public gates remain
 
 Base7f2706c6. Refined nlminb still failed; BFGS400/reltol1e-12 sameY/Q/default
