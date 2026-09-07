@@ -19,6 +19,7 @@ include("lowrank_cholesky.jl")          # used by likelihood
 include("likelihood.jl")
 include("source_covariance.jl")          # internal Gaussian additive source reference evaluator
 include("source_fit.jl")                 # local candidate: fixed Gaussian source covariances
+include("grouped_gaussian.jl")           # internal shared/crossed sparse Gaussian factor kernel
 include("ppca_init.jl")                  # used by fit (warm-start)
 include("em_fa.jl")                      # alternative EM solver
 include("profile.jl")                    # σ_eps profile-out (used by fit)
@@ -45,6 +46,7 @@ include("spde_fit.jl")                    # Gaussian SPDE spatial-field model + 
 # Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
 include("sparse_phy.jl")
 include("phylo_precision.jl")        # PrecisionPhy: R-convention sparse precision consumer (phylo transport S1)
+include("precision_multivariate.jl") # internal Destination B multivariate precision kernel
 include("likelihood_sparse_phy.jl")
 include("sparse_phy_grad.jl")            # analytic gradient + SparsePhyState (self-includes takahashi_selinv.jl)
 include("node_gradient.jl")              # O(p) node-frame gradient + per-species BLUPs (Phase 1.1)
@@ -95,6 +97,7 @@ include("families/ordered_beta.jl")       # ordered-beta (must precede fit_gllvm
 include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatcher
 include("none_dep.jl")                    # none × dep matrix fitter (K = p; no formula sugar)
 include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
+include("grouped_laplace.jl")            # internal global grouped non-Gaussian objective
 include("missing_predictor_poisson.jl")  # non-Gaussian missing predictor (mi Phase 5a): Poisson augmented-Laplace FIML
 include("missing_predictor_multi.jl")    # multiple missing predictors, jointly integrated (mi() vector axis, Track T3)
 include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the Laplace families
@@ -153,12 +156,27 @@ include("re_sd.jl")                      # latent_score_sd (renamed from getREsd
 include("families/mixed.jl")             # mixed-family GLLVM (cross-family VCV): fit_mixed_gllvm + MixedFamilyFit. AFTER link_residual + the family fitters so all dispatch targets exist.
 include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware profile CI for variance components
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
+include("marginal_target_intervals.jl")  # internal marginal intervals for grouped/precision candidates
+include("grouped_fit.jl")               # internal joint grouped Gaussian fit and intervals
+include("precision_multivariate_fit.jl") # internal multivariate phylogenetic fit and intervals
+include("grouped_nongaussian_fit.jl")   # internal five-family joint grouping extension
+include("destination_b_postfit.jl")     # explicit population-only Gaussian postfit routes
+include("grouped_nongaussian_postfit.jl") # conditional means at zero random effects
+include("destination_b_fixed_effects.jl") # full observed-marginal fixed-effect covariance
+include("grouped_profile_foundation.jl") # exact-zero evaluator and numerical rank gates
+include("grouped_profile_refit.jl") # retained, stationary constrained nuisance refits
+include("grouped_profile_inversion.jl") # failure-safe callback-only LR bracket inversion
+include("grouped_profile_interval.jl") # private actual-refit profile endpoints
+include("joint_phylo_grouped_gaussian.jl") # one joint Gaussian marginal, evaluation only
+include("joint_phylo_grouped_fit.jl") # private joint optimizer and marginal intervals
+include("joint_phylo_grouped_postfit.jl") # explicit population mean and source-labelled extraction
 include("diagnostics.jl")                # check_gllvmTMB / gllvmTMB_diagnose / predictive_check / sanity_multi / compare_* / confint_inspect (core070 diagnostics/compare cluster)
 include("summary_table.jl")              # coef_table: tidy Wald inference table
 include("postfit_tables.jl")             # final missing-surface cluster (core070 §1): deviance, cross-rho profiles,
                                           # predict_cross_covariance, predict_missing, rotate_loadings, tidy, summary, imputed
 include("formula.jl")                    # @formula front-end (v1: fixed effects → engine)
 include("bridge.jl")                      # R→Julia bridge_fit (JuliaCall flat contract); LAST
+include("bridge_precision_multivariate.jl") # explicit multivariate precision bridge candidate
 
 # Ordination naming: the implemented z_s ~ N(B'x_s, I) model (covariate-informed LV
 # mean PLUS residual) is gllvm's *concurrent* ordination (num.lv.c). Expose the
@@ -179,6 +197,11 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        confint_lv_effects,
        fit_gaussian_gllvm, GllvmModel, GllvmFit,
        SourceCovariance, fit_gaussian_sources, GaussianSourcesFit,
+       GroupingTerm, GroupedGaussianFit, grouped_gaussian_intervals,
+       grouped_gaussian_variance_profile,
+       PrecisionMultivariateFit, precision_multivariate_intervals,
+       JointPhyloGroupedGaussianFit, joint_phylo_grouped_intervals,
+       GroupedNonGaussianFit, grouped_nongaussian_intervals,
        fit_gaussian_structured,
        gaussian_reml_loglik, fit_gaussian_reml, GaussianREMLFit,
        fit_gaussian_random_slope, GaussianRandomSlopeFit, gaussian_grouped_intercept_loglik,

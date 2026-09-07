@@ -103,7 +103,30 @@ the plain-call behaviour when they are at their defaults (regression safe):
 
 ## Precedence and unsupported combinations
 
-The variants route to single specialised fitters; no single underlying fitter combines
+`grouping=[GroupingTerm(...), ...]` selects jointly fitted named
+random effects. Supply `unit`, `unit_obs`, `cluster`, and/or `cluster2` labels
+for selected terms; labels alone never add a random effect. Do not also supply
+`K`, `num_lv`, `row_eff`, `disp_group`, or `pervar`. Each term owns its covariance
+and rank. Gaussian models have one shared residual variance and return
+`GroupedGaussianFit`. Poisson-log, Binomial-logit, Beta-logit and NB2-log return
+`GroupedNonGaussianFit` from one joint Laplace objective. Beta and NB2 estimate
+trait-specific dispersion by default; use `dispersion=:shared` for a shared
+value. Binomial requires a response-shaped trials matrix `N`. These development
+routes have explicit fit/interval diagnostics; full parity qualification remains
+in progress, and unsupported family/link/grouping combinations are not implied.
+
+`phylo=precision` selects an explicit `PrecisionPhy` source for Gaussian data.
+Use `phylo_rank` (default one), `phylo_mode` (default `:barelowrank`) and
+`species_id` (observation-to-tip indices). Without grouping this returns a
+`PrecisionMultivariateFit`; with grouping it returns a
+`JointPhyloGroupedGaussianFit` from one joint marginal likelihood. The first
+joint ordinary-term scope is `mode=:indep, common=false`. Both precision routes
+have trait-specific observation residual variances. Phylogenetic scale is fixed
+at one and is not separately estimated alongside free trait loadings. Precision
+options without `phylo`, non-Gaussian families and the legacy shortcuts below
+are rejected. Native scaling and public R bridge admission are unchanged.
+
+The legacy variants below route to single specialised fitters; no single underlying fitter combines
 two of them. Therefore at most one of `row_eff != :none`, effective
 `disp_group !== nothing` (including the NB/Beta default coerce), and
 `pervar == true` may be active. Any other combination throws an `ArgumentError`
@@ -127,7 +150,52 @@ fit_gllvm(Y; family = Normal(), K = 2, pervar = true)             # per-species 
 """
 function fit_gllvm(Y::AbstractMatrix; family = Normal(), K = nothing,
                    num_lv = nothing, row_eff::Symbol = :none,
-                   disp_group = nothing, pervar::Bool = false, kwargs...)
+                   disp_group = nothing, pervar::Bool = false,
+                   grouping=nothing, unit=nothing, unit_obs=nothing,
+                   cluster=nothing, cluster2=nothing,
+                   phylo=nothing, phylo_rank=nothing, phylo_mode=nothing,
+                   species_id=nothing, kwargs...)
+    if phylo !== nothing
+        phylo isa PrecisionPhy || throw(ArgumentError("phylo must be a PrecisionPhy"))
+        family isa Normal || throw(ArgumentError("explicit precision fitting currently requires Gaussian responses"))
+        K === nothing && num_lv === nothing || throw(ArgumentError(
+            "use phylo_rank for the precision source; do not also supply K or num_lv"))
+        row_eff === :none && disp_group === nothing && !pervar || throw(ArgumentError(
+            "explicit precision fitting cannot be combined with row_eff, disp_group or pervar"))
+        rank = phylo_rank === nothing ? 1 : phylo_rank
+        mode = phylo_mode === nothing ? :barelowrank : phylo_mode
+        rank isa Integer || throw(ArgumentError("phylo_rank must be an integer"))
+        mode isa Symbol || throw(ArgumentError("phylo_mode must be a Symbol"))
+        mapping = species_id === nothing ? collect(1:phylo.n_leaves) : species_id
+        mapping isa AbstractVector{<:Integer} || throw(ArgumentError("species_id must be an integer vector"))
+        if grouping === nothing
+            all(isnothing, (unit, unit_obs, cluster, cluster2)) || throw(ArgumentError(
+                "group identifiers do not add random effects; supply explicit grouping terms"))
+            return fit_precision_multivariate(Y, phylo; rank=rank, mode=mode,
+                species_id=mapping, kwargs...)
+        end
+        return fit_joint_phylo_grouped_gaussian(Y, phylo; rank=rank, phylo_mode=mode,
+            species_id=mapping, terms=grouping, unit=unit, unit_obs=unit_obs,
+            cluster=cluster, cluster2=cluster2, kwargs...)
+    end
+    all(isnothing, (phylo_rank, phylo_mode, species_id)) || throw(ArgumentError(
+        "phylo_rank, phylo_mode and species_id require an explicit phylo=PrecisionPhy"))
+    if grouping !== nothing
+        (K === nothing && num_lv === nothing) || throw(ArgumentError(
+            "explicit grouping terms own their ranks; do not also supply K or num_lv"))
+        (row_eff === :none && disp_group === nothing && !pervar) || throw(ArgumentError(
+            "explicit grouping cannot be combined with row_eff, disp_group or pervar"))
+        if family isa Normal
+            return fit_grouped_gaussian(Y; terms=grouping, unit=unit, unit_obs=unit_obs,
+                cluster=cluster, cluster2=cluster2, kwargs...)
+        elseif family isa Union{Poisson,Binomial,Beta,NegativeBinomial}
+            return fit_grouped_nongaussian(Y; family=family, terms=grouping,
+                unit=unit, unit_obs=unit_obs, cluster=cluster, cluster2=cluster2, kwargs...)
+        end
+        throw(ArgumentError("explicit grouping supports Gaussian, Poisson-log, Binomial-logit, Beta-logit and NB2-log only"))
+    end
+    all(isnothing, (unit, unit_obs, cluster, cluster2)) || throw(ArgumentError(
+        "group identifiers do not add random effects; supply explicit grouping=[GroupingTerm(...)]"))
     # gllvm's `num.lv` alias for K. If both given they must agree.
     if num_lv !== nothing
         if K !== nothing && K != num_lv
