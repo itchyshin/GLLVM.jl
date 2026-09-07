@@ -1,5 +1,17 @@
 # Frozen marginal uncertainty pilots — not qualification
 
+Latest dense result: original and refined nlminb failures remain retained.
+Predeclared BFGS400/reltol1e-12 converges with gradient2.9915e-7. Two metadata
+exports failed strict checks: raw optim field assumptions did not match the
+package's normalized optimizer object. Actual RDS inspection showed objective
+and evaluations fields; corrected export87577 and comparator45831 exit0.
+Metadata-only replay was checked for identical Y/parameters/NLL. Final matched
+covariance relative error4.4446e-6, ownopt4.4887e-6, maximum endpoint error
+1.0751e-5 of Rhalfwidth, condition249.2738. No tolerances widened, no Julia
+refit. Durable dense-bfgs03 reference/sidecar/comparison bind hashes; failed
+attempts and RDSs remain in ignored ledger. Review and public derived R
+interval/admission gates remain open.
+
 Dense follow-on: replay88175 exits0 and preserves original response, canonical
 ridged covariance/precision and fitted coordinates exactly. New hash-linked
 sidecar exports production uncertainty without widening the strict reference

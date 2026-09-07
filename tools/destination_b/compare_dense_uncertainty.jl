@@ -15,8 +15,12 @@ function compare_dense_uncertainty(reference_path,sidecar_path,old_path,julia_pa
         side["data_sha256"]==r["response"]["data_sha256"] || error("sidecar data mismatch")
         side["dll_sha256"]==_DB_TREE_DLL_SHA || error("sidecar DLL mismatch")
         r["response"]==old["response"] && r["precision"]==old["precision"] &&
-            r["source_covariance"]==old["source_covariance"] &&
-            r["fitted_r"]["values"]==old["fitted_r"]["values"] || error("replay changed data/model/fitted coordinates")
+            r["source_covariance"]==old["source_covariance"] || error("replay changed data/model")
+        policy=get(side,"optimizer_policy","original80/120")
+        policy in ("original80/120","nlminb400/600/rel.tol1e-12","BFGS400/reltol1e-12") || error("unknown optimizer policy")
+        if policy=="original80/120"
+            r["fitted_r"]["values"]==old["fitted_r"]["values"] || error("baseline fitted coordinates changed")
+        end
         compare_phylo_gaussian_reference(reference_path;dll_path=dll_path,
             expected_dll_sha256=_DB_TREE_DLL_SHA)
         fixture,precision=r["fixture"],r["precision"]
@@ -30,6 +34,7 @@ function compare_dense_uncertainty(reference_path,sidecar_path,old_path,julia_pa
             "uncertainty"=>side["uncertainty"])
         checked=(;Y,phy=accepted.phy,r_gradient_norm=maximum(abs,gradient))
         merge!(result,_db_compare_checked_uncertainty(normalized,j,checked))
+        result["optimizer_policy"]=policy
         result["input_sha256"]=[hash(p) for p in (reference_path,sidecar_path,old_path,julia_path,dll_path)]
         result["checker_sha256"]=hash(@__FILE__)
         result["shared_checker_sha256"]=hash(joinpath(@__DIR__,"compare_phylo_uncertainty.jl"))

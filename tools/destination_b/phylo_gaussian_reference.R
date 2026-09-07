@@ -12,11 +12,13 @@
 
 args <- commandArgs(trailingOnly = TRUE)
 if (!(length(args) %in% c(2L, 3L)) ||
-    (length(args) == 3L && !identical(args[[3L]], "--preflight-only"))) {
+    (length(args) == 3L && !args[[3L]] %in% c("--preflight-only", "--refined", "--bfgs"))) {
   stop("usage: Rscript phylo_gaussian_reference.R <private-library-dir> <output-dir> [--preflight-only]",
        call. = FALSE)
 }
-preflight_only <- length(args) == 3L
+preflight_only <- length(args) == 3L && identical(args[[3L]], "--preflight-only")
+refined <- length(args) == 3L && identical(args[[3L]], "--refined")
+bfgs <- length(args) == 3L && identical(args[[3L]], "--bfgs")
 
 library_dir <- normalizePath(args[[1L]], mustWork = TRUE)
 output_dir <- normalizePath(args[[2L]], mustWork = FALSE)
@@ -210,8 +212,9 @@ fit <- tryCatch(
       family = gaussian(),
       REML = FALSE,
       engine = "tmb",
-      control = gllvmTMBcontrol(n_init = 1L,
-        optArgs = list(control = list(iter.max = 80, eval.max = 120)))
+      control = gllvmTMBcontrol(n_init = 1L, optimizer = if (bfgs) "optim" else "nlminb",
+        optArgs = if (bfgs) list(method = "BFGS", control = list(maxit = 400, reltol = 1e-12)) else list(control = if (refined) list(iter.max = 400, eval.max = 600,
+          rel.tol = 1e-12) else list(iter.max = 80, eval.max = 120)))
     ),
     warning = function(w) {
       receipt <- list(message = conditionMessage(w), class = class(w))
@@ -427,7 +430,7 @@ receipt <- list(
     marginal_nll = fitted_marginal_nll,
     convergence = fit$opt$convergence,
     message = fit$opt$message,
-    counts = fit$opt$evaluations,
+    counts = if (bfgs) as.list(fit$opt$evaluations) else fit$opt$evaluations,
     optimizer_objective = fit$opt$objective,
     gradient_if_available = fitted_gradient,
     elapsed_seconds = fit_elapsed_seconds,
@@ -462,6 +465,7 @@ if (!file.rename(pending_json, output_json)) {
 }
 append_attempt_log("status=reference_export_validated")
 sidecar <- list(schema_version = "destination-b-dense-uncertainty-1",
+  optimizer_policy = if (bfgs) "BFGS400/reltol1e-12" else if (refined) "nlminb400/600/rel.tol1e-12" else "original80/120",
   reference_sha256 = unname(tools::sha256sum(output_json))[[1L]],
   data_sha256 = receipt$response$data_sha256, dll_sha256 = dll_sha256,
   uncertainty = uncertainty,

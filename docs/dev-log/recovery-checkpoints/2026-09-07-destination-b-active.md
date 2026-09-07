@@ -1,5 +1,18 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — dense uncertainty BFGS succeeds; public gates remain
+
+Base7f2706c6. Refined nlminb still failed; BFGS400/reltol1e-12 sameY/Q/default
+Rstart convergescode0/gradient2.9915e-7. Two rejected metadata exports retained;
+actual RDS normalized objective/evaluations inspected and exporter corrected.
+87577/45831 exit0 with matched covariance4.445e-6, ownopt4.489e-6, endpoint
+1.075e-5 of Rhalfwidth. Dense03 artifacts durable, all prior attempts ignored
+ledger retained. New dense regression4869 checks private-DLL comparison and
+negative sidecar/policy/gradient/covariance inputs; no Julia refit. Next final
+review of uncertainty verifier and public R interval/adapter S3b/S4 routes.
+External review/remote permissions unanswered; no bypass. Broad suites,
+recovery/remaining32rows/finalreviews still owed. Goal ACTIVE, no push/merge.
+
 ## Latest continuation — dense uncertainty gradient gate fails honestly
 
 Base2482bae0. Dense R exporter88175 replays exact original Y/Q/fitted

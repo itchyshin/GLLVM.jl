@@ -1,5 +1,7 @@
 ## 2026-09-07 — Destination B internal fitter integration (ongoing)
 
+- Dense refinement: nlminb60677/42384 remains failed at original gradient. BFGS same-data convergescode0/gradient2.9915e-7. Metadata assumptions corrected after inspecting normalized RDS optimizer; failed exports retained, exact replay checked. Final87577/45831 exit0; matched covariance relative4.445e-6, ownopt4.489e-6, maxendpoint1.075e-5 of Rhalfwidth. No Julia refit or threshold change; public derived intervals/review/admission still open.
+
 - Dense uncertainty replay88175 exit0 preserves original Y/Q/fitted coordinates, adds production sdreport/publicvcov sidecar. Comparator87652 exits1 at measured Rgradient1.177556e-4 > predeclared1e-4. Failed receipt retained, no dense uncertainty pass; shared comparator refactored without tolerance changes. Same-data optimizer investigation is next, not model/seed selection.
 
 - Frozen marginal uncertainty: tree75225/pedigree95000 production sdreport exports and public vcov block checks exit0. Independent checker uses full nuisance covariance, fixed R-to-Julia permutation and analytic LLprime/residual target gradients. Final tree78064/pedigree61975 matched covariance relative errors3.882e-6/2.113e-6, ownopt3.839e-6/2.157e-6, maximum link-endpoint errors7.848e-6/4.407e-6 of Rhalfwidth; signed tolerances unchanged. Checker95094 passes24/24 corruption/valid assertions. Hash-bound receipts retained; derived R intervals are diagnostics, not an admitted public extractor. Dense-vcv uncertainty, review, recovery and broad suites remain owed.

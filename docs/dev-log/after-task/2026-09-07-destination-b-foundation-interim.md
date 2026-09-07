@@ -9,6 +9,11 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Dense uncertainty now passes the bounded signed numerical comparison under
+the predeclared same-data BFGS policy. Both nlminb failures and two metadata
+export failures remain retained; normalized RDS inspection resolved the latter.
+No tolerance changes or Julia refit. Full public interval/adapter qualification
+and independent review remain incomplete; diagnostic parity is not admission.
 Dense production uncertainty export now preserves the old strict schema via
 a hash-linked sidecar. Exact replay agrees in data/model/fitted coordinates,
 but its newly measured marginal gradient1.177556e-4 exceeds1e-4. Comparator
