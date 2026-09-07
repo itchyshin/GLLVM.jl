@@ -9,6 +9,8 @@ qualification remains in progress. The explicit Gaussian `phylo=PrecisionPhy`
 route supports precision-only fits and a bounded joint independent-grouping
 model; source-specific covariance and full-marginal interval diagnostics remain
 separate from frozen-R admission and recovery evidence.
+Precision-only fitting offers `residual_mode=:shared` alongside the unchanged
+trait-specific default; the joint grouping route remains trait-specific.
 Eligible independent Gaussian grouping models also have an explicit
 `grouped_gaussian_variance_profile(Y, fit; term=:unit, trait=1)` route;
 inspect its status and limitations in the grouping guide before using endpoints.

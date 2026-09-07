@@ -42,7 +42,8 @@ _destination_b_fixed_objective(fit::GroupedNonGaussianFit) =
         dispersion_mode = fit.dispersion_mode, inner_maxiter = 100, inner_tol = 1e-8)
 _destination_b_fixed_objective(fit::PrecisionMultivariateFit) = theta ->
     _precision_multivariate_nll(fit.response, fit.phy, theta; rank = fit.rank,
-        mode = fit.mode, species_id = fit.species_id, mean_design = fit.mean_design)
+        mode = fit.mode, residual_mode = fit.residual_mode,
+        species_id = fit.species_id, mean_design = fit.mean_design)
 
 function _destination_b_fixed_effect_information(fit::Union{GroupedGaussianFit,
         GroupedNonGaussianFit,PrecisionMultivariateFit})

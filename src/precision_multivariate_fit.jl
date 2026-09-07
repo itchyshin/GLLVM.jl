@@ -16,24 +16,33 @@ _pmv_valid_objective(value) = !_fd_failed(value)
     return mode
 end
 
-@inline function _pmv_layout(d::Integer, rank::Integer, mode::Symbol, q::Integer)
+@inline function _pmv_residual_mode(residual_mode::Symbol)
+    residual_mode in (:trait, :shared) ||
+        throw(ArgumentError("residual_mode must be :trait or :shared"))
+    return residual_mode
+end
+
+@inline function _pmv_layout(d::Integer, rank::Integer, mode::Symbol, q::Integer;
+        residual_mode::Symbol = :trait)
     _pmv_mode(mode)
+    _pmv_residual_mode(residual_mode)
     _warn_covariance_redundancy(:phylo,
         rr_theta_len(d, rank) + (mode === :explicitunique ? d : 0), d * (d + 1) ÷ 2)
     rr = rr_theta_len(d, rank)
     unique_range = mode === :explicitunique ? ((q + rr + 1):(q + rr + d)) : (1:0)
     residual_start = mode === :explicitunique ? q + rr + d + 1 : q + rr + 1
+    residual_count = residual_mode === :shared ? 1 : d
     return (rr = rr, loading = (q + 1):(q + rr), unique = unique_range,
-            residual = residual_start:(residual_start + d - 1),
-            total = residual_start + d - 1)
+            residual = residual_start:(residual_start + residual_count - 1),
+            total = residual_start + residual_count - 1)
 end
 
 """Unpack the internal `[beta; rr; log_sd_U?; log_sd_eps]` coordinates."""
 function _precision_multivariate_unpack(theta::AbstractVector, d::Integer,
-        rank::Integer, mode::Symbol, q::Integer)
+        rank::Integer, mode::Symbol, q::Integer; residual_mode::Symbol = :trait)
     1 <= rank <= d || throw(ArgumentError("rank must lie in 1:d"))
     q >= 0 || throw(ArgumentError("mean-design column count must be nonnegative"))
-    layout = _pmv_layout(d, rank, mode, q)
+    layout = _pmv_layout(d, rank, mode, q; residual_mode = residual_mode)
     length(theta) == layout.total ||
         throw(DimensionMismatch("packed parameter length $(length(theta)) differs from expected $(layout.total)"))
     all(isfinite, theta) || throw(ArgumentError("packed parameters must be finite"))
@@ -43,14 +52,15 @@ function _precision_multivariate_unpack(theta::AbstractVector, d::Integer,
     beta = collect(view(theta, 1:q))
     loading = unpack_lambda(view(theta, layout.loading), d, rank)
     unique = mode === :explicitunique ? exp.(2 .* view(theta, layout.unique)) : nothing
-    residual = exp.(2 .* view(theta, layout.residual))
+    residual_raw = exp.(2 .* view(theta, layout.residual))
+    residual = residual_mode === :shared ? fill(only(residual_raw), d) : collect(residual_raw)
     all(isfinite, residual) && all(>(0), residual) ||
         throw(ArgumentError("residual variances are not finite positive values"))
     unique === nothing || (all(isfinite, unique) && all(>(0), unique)) ||
         throw(ArgumentError("unique phylogenetic variances are not finite positive values"))
     return (beta = beta, loading = loading,
             phylo_unique_variance = unique,
-            residual_variance = collect(residual), layout = layout)
+            residual_variance = residual, layout = layout, residual_mode = residual_mode)
 end
 
 """
@@ -62,6 +72,7 @@ The phylogenetic scale is deliberately fixed at one.
 """
 function _precision_multivariate_nll(Y::AbstractMatrix, phy::PrecisionPhy,
         theta::AbstractVector; rank::Integer, mode::Symbol,
+        residual_mode::Symbol = :trait,
         species_id::AbstractVector{<:Integer} = collect(1:phy.n_leaves),
         mean_design = nothing)
     d, m = size(Y)
@@ -71,7 +82,8 @@ function _precision_multivariate_nll(Y::AbstractMatrix, phy::PrecisionPhy,
     size(D, 1) == d * m || throw(DimensionMismatch("mean_design must have d*m rows"))
     q = size(D, 2)
     u = try
-        _precision_multivariate_unpack(theta, d, rank, mode, q)
+        _precision_multivariate_unpack(theta, d, rank, mode, q;
+            residual_mode = residual_mode)
     catch err
         err isa ArgumentError || err isa DimensionMismatch || rethrow()
         return _NLL_SENTINEL
@@ -141,10 +153,37 @@ struct PrecisionMultivariateFit <: StatsAPI.StatisticalModel
     mean_design::Matrix{Float64}
     response_shape::Tuple{Int,Int}
     coefficient_names::Vector{Union{String,Symbol}}
+    residual_mode::Symbol
+    parameter_labels::Vector{String}
+end
+
+function _pmv_parameter_labels(q::Integer, d::Integer, rank::Integer,
+        mode::Symbol, residual_mode::Symbol)
+    layout = _pmv_layout(d, rank, mode, q; residual_mode = residual_mode)
+    labels = ["beta[$j]" for j in 1:q]
+    append!(labels, ["phylo.loading[$j]" for j in 1:layout.rr])
+    mode === :explicitunique && append!(labels,
+        ["log_sd_phylo_unique[$j]" for j in 1:d])
+    append!(labels, residual_mode === :shared ? ["log_sd_residual_shared"] :
+        ["log_sd_residual[$j]" for j in 1:d])
+    return labels
+end
+
+# Existing direct fixture constructors retain their trait-residual semantics.
+function PrecisionMultivariateFit(beta, loading, unique, residual, mode, rank,
+        phy, species_id, parameters, loglik, converged, gradient_norm,
+        hessian_minimum, hessian_pd, hessian_condition, iterations, reason,
+        response, design, shape, names)
+    return PrecisionMultivariateFit(beta, loading, unique, residual, mode, rank,
+        phy, species_id, parameters, loglik, converged, gradient_norm,
+        hessian_minimum, hessian_pd, hessian_condition, iterations, reason,
+        response, design, shape, names, :trait,
+        _pmv_parameter_labels(length(beta), size(loading, 1), rank, mode, :trait))
 end
 
 """
     fit_precision_multivariate(Y, phy; rank=1, mode=:barelowrank,
+                               residual_mode=:trait,
                                species_id=collect(1:phy.n_leaves), X=nothing,
                                coefficient_names=nothing, start=nothing,
                                g_tol=1e-5, iterations=400)
@@ -152,18 +191,25 @@ end
 Fit the candidate complete Gaussian multivariate phylogenetic model with
 fixed `sigma2_phy=1`. `Y` is traits x observations. `X`, when supplied, uses
 the existing complete trait-major `p*n x q` / `p x n x q` mean-design helper.
+`residual_mode=:trait` estimates one observation residual variance per trait;
+`:shared` estimates one common variance, using a single log-SD coordinate.
+The latter matches the residual layout of the simplest frozen-R phylogenetic
+model, but does not by itself establish paired likelihood agreement.
 The optimizer and post-fit diagnostics use finite differences because CHOLMOD
 does not accept automatic-differentiation numbers.
 """
 function fit_precision_multivariate(Y::AbstractMatrix{<:Real}, phy::PrecisionPhy;
         rank::Integer = 1, mode::Symbol = :barelowrank,
+        residual_mode::Symbol = :trait,
         species_id::AbstractVector{<:Integer} = collect(1:phy.n_leaves),
         X = nothing, coefficient_names = nothing, start = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 400)
+    phy = _validate_precision_fit_input(phy)
     d, m = size(Y)
     d > 0 && m >= 2 || throw(ArgumentError("fitting needs at least one trait and two observations"))
     1 <= rank <= d || throw(ArgumentError("rank must lie in 1:d"))
     _pmv_mode(mode)
+    _pmv_residual_mode(residual_mode)
     all(isfinite, Y) || throw(ArgumentError("Y must be finite and complete"))
     length(species_id) == m && all(i -> 1 <= i <= phy.n_leaves, species_id) ||
         throw(ArgumentError("species_id must map every observation to a valid tip"))
@@ -175,7 +221,7 @@ function fit_precision_multivariate(Y::AbstractMatrix{<:Real}, phy::PrecisionPhy
     q = size(D, 2)
     names = _source_coefficient_names(coefficient_names, q;
         default_trait_names = default_means)
-    layout = _pmv_layout(d, rank, mode, q)
+    layout = _pmv_layout(d, rank, mode, q; residual_mode = residual_mode)
     beta0 = collect(Float64, D \ vec(data))
     residual0 = reshape(vec(data) - D * beta0, d, m)
     trait_var = vec(sum(abs2, residual0; dims = 2)) ./ max(m - 1, 1)
@@ -183,7 +229,11 @@ function fit_precision_multivariate(Y::AbstractMatrix{<:Real}, phy::PrecisionPhy
     theta0 = if start === nothing
         base = vcat(beta0, init_theta_rr(d, rank))
         mode === :explicitunique && append!(base, log.(sqrt.(0.15 .* trait_var)))
-        append!(base, log.(sqrt.(0.85 .* trait_var)))
+        if residual_mode === :shared
+            push!(base, log(sqrt(0.85 * sum(trait_var) / d)))
+        else
+            append!(base, log.(sqrt.(0.85 .* trait_var)))
+        end
         base
     else
         length(start) == layout.total ||
@@ -193,7 +243,8 @@ function fit_precision_multivariate(Y::AbstractMatrix{<:Real}, phy::PrecisionPhy
         Float64.(start)
     end
     objective = theta -> _precision_multivariate_nll(data, phy, theta;
-        rank = rank, mode = mode, species_id = species_id, mean_design = D)
+        rank = rank, mode = mode, residual_mode = residual_mode,
+        species_id = species_id, mean_design = D)
     _pmv_valid_objective(objective(theta0)) ||
         throw(ArgumentError("start produces an invalid marginal objective"))
     gradient! = (storage, theta) -> _pmv_fd_gradient!(storage, objective, theta)
@@ -210,25 +261,29 @@ function fit_precision_multivariate(Y::AbstractMatrix{<:Real}, phy::PrecisionPhy
     converged = Optim.converged(result) && _pmv_valid_objective(objective_value) && gradient_norm <= g_tol
     reason = converged ? :converged : !_pmv_valid_objective(objective_value) ? :invalid_final :
         Optim.iterations(result) >= iterations ? :iteration_limit : :gradient_not_converged
-    u = _precision_multivariate_unpack(estimate, d, rank, mode, q)
+    u = _precision_multivariate_unpack(estimate, d, rank, mode, q;
+        residual_mode = residual_mode)
     loglik = _pmv_valid_objective(objective_value) ? -objective_value : NaN
     return PrecisionMultivariateFit(u.beta, u.loading,
         u.phylo_unique_variance === nothing ? nothing : collect(u.phylo_unique_variance),
         u.residual_variance, mode, Int(rank), phy, collect(Int, species_id), estimate,
         loglik, converged, gradient_norm, hessian.minimum,
         hessian.positive_definite, hessian.condition, Optim.iterations(result), reason,
-        data, Matrix{Float64}(D), (d, m), names)
+        data, Matrix{Float64}(D), (d, m), names, residual_mode,
+        _pmv_parameter_labels(q, d, rank, mode, residual_mode))
 end
 
 function _pmv_targets(fit::PrecisionMultivariateFit)
     d, _ = fit.response_shape
     q = length(fit.beta)
-    layout = _pmv_layout(d, fit.rank, fit.mode, q)
+    layout = _pmv_layout(d, fit.rank, fit.mode, q;
+        residual_mode = fit.residual_mode)
     targets = NamedTuple[]
     for j in 1:q
         push!(targets, (name = "beta[$j]", value = theta -> theta[j], transform = :identity))
     end
-    unpack = theta -> _precision_multivariate_unpack(theta, d, fit.rank, fit.mode, q)
+    unpack = theta -> _precision_multivariate_unpack(theta, d, fit.rank, fit.mode, q;
+        residual_mode = fit.residual_mode)
     for j in 1:d
         push!(targets, (name = "phylo_cov[$j,$j]", value = theta -> begin
             u = unpack(theta); sum(abs2, view(u.loading, j, :)) +
@@ -239,8 +294,11 @@ function _pmv_targets(fit::PrecisionMultivariateFit)
                 u = unpack(theta); dot(view(u.loading, i, :), view(u.loading, j, :))
             end, transform = :identity))
         end
-        index = first(layout.residual) + j - 1
-        push!(targets, (name = "residual_var[$j]", value = theta -> exp(2 * theta[index]),
+        index = fit.residual_mode === :shared ? first(layout.residual) :
+            first(layout.residual) + j - 1
+        label = fit.residual_mode === :shared ? "residual_var_shared[$j]" :
+            "residual_var[$j]"
+        push!(targets, (name = label, value = theta -> exp(2 * theta[index]),
             transform = :log))
     end
     return targets
@@ -279,7 +337,8 @@ function precision_multivariate_intervals(fit::PrecisionMultivariateFit;
     p = size(fit.response, 1)
     redundant = rr_theta_len(p, fit.rank) + (fit.mode === :explicitunique ? p : 0) > p * (p + 1) ÷ 2
     objective = theta -> _precision_multivariate_nll(fit.response, fit.phy, theta;
-        rank = fit.rank, mode = fit.mode, species_id = fit.species_id,
+        rank = fit.rank, mode = fit.mode, residual_mode = fit.residual_mode,
+        species_id = fit.species_id,
         mean_design = fit.mean_design)
     return _marginal_target_intervals(objective, fit.parameters, _pmv_targets(fit);
         structural_redundancy=redundant,

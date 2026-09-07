@@ -142,7 +142,7 @@ end
 
 function Base.summary(fit::PrecisionMultivariateFit)
     p, n = fit.response_shape
-    return "Multivariate precision Gaussian fit (p=$p, n=$n, rank=$(fit.rank), mode=$(fit.mode), logLik=$(round(fit.loglik; sigdigits=5)))"
+    return "Multivariate precision Gaussian fit (p=$p, n=$n, rank=$(fit.rank), mode=$(fit.mode), residual=$(fit.residual_mode), logLik=$(round(fit.loglik; sigdigits=5)))"
 end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::GroupedGaussianFit)

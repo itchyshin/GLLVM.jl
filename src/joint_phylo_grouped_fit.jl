@@ -168,6 +168,7 @@ function fit_joint_phylo_grouped_gaussian(Y::AbstractMatrix{<:Real}, phy::Precis
         species_id::AbstractVector{<:Integer} = collect(1:phy.n_leaves),
         X = nothing, coefficient_names = nothing, start = nothing,
         g_tol::Real = 1e-5, iterations::Integer = 200)
+    phy = _validate_precision_fit_input(phy)
     p, n = size(Y)
     p > 0 && n >= 2 || throw(ArgumentError("fitting needs at least one trait and two observations"))
     isfinite(g_tol) && g_tol > 0 || throw(ArgumentError("g_tol must be finite and positive"))
@@ -254,6 +255,12 @@ function fit_joint_phylo_grouped_gaussian(Y::AbstractMatrix{<:Real}, phy::Precis
         (unpacked.phylo_unique_variance === nothing ? zeros(Float64, p, p) :
             Matrix(Diagonal(unpacked.phylo_unique_variance)))
     ordinary_covariances = [Matrix(Diagonal(v)) for v in unpacked.ordinary_variances]
+    component_diagnostics = _joint_covariance_identification(phy_snapshot,
+        species_snapshot, terms_snapshot, incidences_snapshot, unpacked.loading;
+        phylo_unique_variance=unpacked.phylo_unique_variance)
+    if component_diagnostics.reason !== :identified
+        @warn "joint phylo grouped covariance components are not separately identifiable; the fixed-parameter marginal kernel remains evaluable, but component interpretation and observed-marginal component inference are unavailable" reason=component_diagnostics.reason labels=component_diagnostics.labels aliases=component_diagnostics.aliases
+    end
     return JointPhyloGroupedGaussianFit(collect(unpacked.beta), Matrix{Float64}(unpacked.loading),
         unpacked.phylo_unique_variance === nothing ? nothing :
             collect(Float64, unpacked.phylo_unique_variance),
@@ -264,6 +271,11 @@ function fit_joint_phylo_grouped_gaussian(Y::AbstractMatrix{<:Real}, phy::Precis
         converged, gradient_norm, hessian.minimum, hessian.positive_definite,
         hessian.condition, Optim.iterations(result), reason, copy(data), copy(D64), (p, n), names,
         incidences_snapshot, phylo_mode, Int(rank))
+end
+
+function _joint_phylo_grouped_component_identification(fit::JointPhyloGroupedGaussianFit)
+    return _joint_covariance_identification(fit.phy, fit.species_id, fit.terms,
+        fit.incidences, fit.loading; phylo_unique_variance=fit.phylo_unique_variance)
 end
 
 function _joint_phylo_grouped_targets(fit::JointPhyloGroupedGaussianFit)
@@ -309,15 +321,36 @@ phylogenetic-signal extractor, or a coverage/R-parity certification.
 """
 function joint_phylo_grouped_intervals(fit::JointPhyloGroupedGaussianFit;
         level::Real = .95, gradient_tolerance::Real = 1e-4)
+    # Keep the early component-identification exits honest: they must validate
+    # the same inference controls as `_marginal_target_intervals` would.
+    isfinite(level) && 0 < level < 1 ||
+        throw(ArgumentError("level must lie in (0,1)"))
+    isfinite(gradient_tolerance) && gradient_tolerance > 0 ||
+        throw(ArgumentError("gradient_tolerance must be positive and finite"))
     objective = _joint_phylo_grouped_nll(fit.response, fit.phy, fit.terms, fit.incidences;
         rank = fit.rank, phylo_mode = fit.phylo_mode, species_id = fit.species_id,
         mean_design = fit.mean_design)
+    targets = _joint_phylo_grouped_targets(fit)
+    component = _joint_phylo_grouped_component_identification(fit)
+    component.reason === :invalid && return _joint_phylo_grouped_unavailable_intervals(
+        targets, :invalid_covariance_tangent)
+    # Structural component aliases are independent of numerical stationarity.
+    # Report them before the generic helper's convergence gate.
+    component.reason === :nonidentifiable && return _joint_phylo_grouped_unavailable_intervals(
+        targets, :nonidentifiable)
     return _marginal_target_intervals(objective, fit.parameters,
-        _joint_phylo_grouped_targets(fit); converged = fit.converged, level = level,
+        targets; converged = fit.converged, level = level,
         gradient_tolerance = gradient_tolerance,
         structural_redundancy = fit.phylo_mode === :explicitunique &&
             rr_theta_len(first(fit.response_shape), fit.rank) + first(fit.response_shape) >
             first(fit.response_shape) * (first(fit.response_shape) + 1) ÷ 2)
+end
+
+function _joint_phylo_grouped_unavailable_intervals(targets, status::Symbol)
+    return (status=status, covariance=nothing, gradient_norm=NaN, condition_number=NaN,
+        intervals=[(name=String(target.name), estimate=NaN, lower=NaN,
+            upper=NaN, se_transformed=NaN, transform=target.transform,
+            method=:unavailable, status=status) for target in targets])
 end
 
 coef(fit::JointPhyloGroupedGaussianFit) = copy(fit.beta)

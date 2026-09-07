@@ -8,6 +8,11 @@ This page documents the public API of `GLLVM.jl`, categorized by functional doma
 
 ### Unified & General Fitters
 
+The explicit Gaussian `phylo=PrecisionPhy` route supports precision-only
+`residual_mode=:trait` (default) or `:shared`. Joint ordinary grouping retains
+trait-specific residuals. See the [development guide](precision-bridge-development.md)
+for validation, interval diagnostics and the still-closed R admission boundary.
+
 ```@docs
 fit_gllvm
 gllvm

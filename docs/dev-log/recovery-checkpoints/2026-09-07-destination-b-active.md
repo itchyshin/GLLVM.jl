@@ -1,5 +1,91 @@
 # Destination B active execution checkpoint
 
+## Current continuation — review approved; frozen reference built
+
+Sol59607 terminal APPROVED bounded precision repairs; seven source hashes
+stable/reverified, no blockers. All prior numerical/docs checks terminalPASS.
+Local frozen R build41530 DONE, verified gllvmTMB0.7.0/private DLL SHA256
+91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb at
+/private/tmp/destination-b-r070-build-l9Y1ri/library/gllvmTMB/libs/gllvmTMB.so.
+Reference checkout and user installed0.7.1 untouched. Durable build receipt in
+decisions/destination-b-frozen-r-build.md. Offline evidence env27424 ready
+/private/tmp/destination-b-evidence-env-3ih0r7 (GLLVM MAIN +JSON3), no runtime
+Project change. Newpilot ledger .unlazy/destination-b-s3b-pilot/GATES.md authored.
+Rworker phylo_consumer builds NEW tools/destination_b/phylo_gaussian_reference.R
+and schema decision. Parent review caught wrong read.dcf namespace and fit$fit
+instead of fit$opt; worker repairing and adding preflight-only/retainedfailure
+output. NO FIT YET. Groupingworker builds independent Julia JSON comparator
+and deliberate-failure tests in its isolated lane; schema coordinated directly.
+Jointworker idle after capacity error. No CLIreview/build/numericaljob live.
+Julia lease includes tools/destination_b/ now, renewed20:15approx for4h;
+R same3path lease remains until23:57approx. No push/merge or R engine edit.
+
+## Latest continuation — bounded checks terminal; independent review pending
+
+Docs82698 terminalPASS: Documenter checks, Vitepress7.49s, no deployment.
+Scope checkerPASS32 rows/no invented10. All numerical checks terminal.
+ONLY LIVE: CLI Sol59607, precision-repair-review prefix under ignored ledger;
+poll existing session/read actual result, do not relaunch on observation timeout.
+Three native workers idle/finished (joint capacity interruption replaced by
+parent24195 actual fixture run). Current source stable for review; repairs
+remain uncommitted beyond WIP89eac4c1. Next handle review and locally checkpoint
+verified repairs, then resume remaining approved programme gates. Keep full
+goal ACTIVE; no remote jobs, R build, push, merge or qualification claim.
+
+## Current continuation — repair verification, 20:10 UTC
+
+MAIN sources now stable for Sol59607 read-only precision-repair-review
+(.unlazy/destination-b/precision-repair-review-{brief,result,events}). Review
+not yet terminal. All native builders finished except joint worker capacity
+error after source completion; no lost code, final64tip rerun done by parent.
+Parent19967 admission37/shared19/Gram18 PASS. Parent45586 public alias15/dense
+Gram10/shared bridge27 PASS. Parent81999 quality12PASS9.6s. Parent24195 unchanged
+64tip fixture18PASS10.7s: original1.511e-4 gradient not_stationary, refined
+7.419e-6 available, condition340.15. Thus aliases refuse inference without
+breaking the retained interior case. No full/core or paired/recovery claim.
+Docs82698 still live, latest ExpandTemplates. Estimate under2min at launch;
+check elapsed before continued wait. No other numerical sessions live.
+All repairs after89eac4c1 remain uncommitted; runner/docs/tests updated.
+Next read docs/review results, repair if needed, checkpoint locally after
+verification. Leases expire about23:57UTC. Remote authority unanswered.
+
+## Current continuation — precision admission and residual alignment
+
+Local base WIP remains89eac4c1; follow-up repairs uncommitted, no push/merge.
+Both same-scope leases renewed about19:57UTC for4h (expiry about23:57UTC).
+Precision validator integrated and called once in standalone/joint fitters;
+actual-MAIN independent public regression37PASS. Actual covariance tangent
+helper/source/test integrated; joint worker now owns scoped fit/postfit gating
+and a new public alias regression in its isolated lane. Parent has not yet
+integrated that gating. Shared-residual minimal diff integrated, preserving
+admission/sentinel/docstrings; fresh-MAIN worker19+44+5PASS. Parent fixed
+downstream fixed-effect objective mode and updated public docs/README.
+Phylo worker owns NEW bridge shared-residual test; red run underway before
+parent adds option/metadata. Grouping worker finished. No numerical parent
+sessions or CLI reviews live. Full/core, frozen pairing, recovery and final
+review gates remain open; goal ACTIVE. Remote socket inspection unanswered.
+
+## Current continuation — WIP committed, joint review repairs
+
+LocalWIPcommit89eac4c1 retains106files/12255insertions; no push/merge or
+qualificationclaim. Stagedcheckcaught9whitespace-onlyissues in previously
+untrackedfiles; repaired beforecommit, stagedcheckPASS. Earlierunstageddiff
+checks didnotcoverthosefiles. Currentfollowupeditswillbesmallscopedcommits.
+
+Sol22599 terminal NOTAPPROVED: P1publicPrecisionPhy bypasses actualadmission;
+P1exactcovariancebasisaliasesmissing. Phylo worker owns NEWprecision_fit_admission
+source/test/decision once-per-fit validatedsnapshot, parentwiresboundaries.
+Jointworker owns NEWjoint_covariance_identification source/test/decision,
+symbolicGramdesignrequestedbeforecode; mustnotfalselytreatlowrankphyΣasfreefullΣ.
+
+Luna93189 terminal referencecensus located frozen dev/stan-oracle-phylo record:
+smallestS3b has3traits8tips2rep, rank1barephylo, SHAREDlog_sigma_eps(single),
+noordinarysources. Existingnativeconsumertraitresidual differs. Newalignment
+decisiondestination-b-phylo-shared-residual.md recordsexactmodel/packing and
+preservedtraitdefault. Nextboundedimplementation adds explicitsharedmode before
+frozenRpairing. RawloadingconventionconfirmedinRrecordandJuliaunpack_lambda.
+Allfullgoalgatesremainopen; no Rengineedits/newSSH/jobs. Leaseexpires20:17UTC.
+
 ## Latest continuation — verified public tranche checkpoint
 
 Docs57288 terminalPASS7.52s after63227 failedonmissingBase.summaryjointmanual

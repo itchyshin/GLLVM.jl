@@ -24,6 +24,13 @@ alone or jointly with independent ordinary grouping sources. Joint population
 prediction, source-separated covariance extraction and full-nuisance fixed-effect
 summaries are integrated. These do not open public R bridge admission.
 
+Follow-up to local WIP commit `89eac4c1`: public precision fits now validate
+and snapshot raw precision inputs. Precision-only fits also support a single
+shared residual variance, while preserving the trait-specific default. The
+shared mode is forwarded through fixed-effect information and candidate bridge
+metadata. Joint covariance-tangent diagnostics are implemented; fit/inference
+gating is being integrated. These repairs remain unqualified pending checks.
+
 ## 3a. Decisions and Rejected Alternatives
 
 The covariance identity is `eta=D*beta+sum(Zq*bq)` with genuinely shared group
@@ -83,8 +90,19 @@ PASS73686. Joint64tip same-data refinement now runs through publicfit_gllvm:
 18PASS78011 with available intervals at gradient7.419e-6; the original loose-fit
 nonstationarity remains retained. Finalquality81903 passed12/12in9.8s. Docs63227
 found one missing joint-summary reference entry; repaired57288 passed with
-Vitepress7.52s, deployment disabled. Numericaljointreview22599 remains in progress;
-broad programme gates remain open. Native bridge regressions72312 passed39+5+80.
+Vitepress7.52s, deployment disabled. Numerical joint review22599 subsequently
+returned NOT APPROVED: raw precision admission and exact covariance aliases
+were missing. Repairs are underway; broad programme gates remain open. Native
+bridge regressions72312 passed39+5+80 before these later repairs. Independent
+fresh-MAIN admission37PASS and shared-residual19+precision44+failure5PASS are
+bounded repair evidence, not a replacement for final review/full regression.
+Parent integrated rechecks then passed admission37/shared19/Gram18 (19967),
+public alias15/dense oracle10/shared bridge27 (45586), quality12 (81999) and
+unchanged64tip18 (24195). Docs82698 passed with Vitepress7.49s and deployment
+disabled. Fresh independent review59607 subsequently APPROVED the bounded
+precision-repair source scope with seven stable SHA256 hashes and no blocking
+findings. This is static independent review plus separately recorded focused
+checks, not full/core, recovery, performance or programme qualification.
 
 ## 6. Tests of the Tests
 

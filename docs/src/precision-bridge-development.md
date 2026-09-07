@@ -38,6 +38,7 @@ fit = GLLVM.bridge_fit(
         "phylo_model" => "multivariate",
         "species_id" => [1, 2, 3, 4, 1, 2, 3, 4],
         "mode" => "explicitunique", # or "barelowrank"
+        "residual_mode" => "trait", # or "shared": one common residual variance
         "ci_method" => "none",      # "wald" is the only interval route here
         "iterations" => 200,
     ),
@@ -81,6 +82,10 @@ a positive numerical Hessian cannot override that mathematical limitation.
 
 `bridge_fit` returns a JuliaCall-safe flat named tuple. The key groups are:
 
+`residual_mode` records `"trait"` or `"shared"`, and `parameter_labels`
+describes the packed coordinates. Shared mode has only one residual log-SD
+coordinate even though residual variances are returned for every trait.
+
 The machine-readable `admission_status == "closed"` and
 `admission_scope == "R phylo_rr"` explicitly prevent treating this candidate
 receipt as evidence that the legacy R route has been admitted. Consumers must
@@ -119,6 +124,10 @@ fit = fit_gllvm(Y; phylo=precision, phylo_rank=1,
     phylo_mode=:barelowrank, species_id=species_id)
 intervals = precision_multivariate_intervals(fit)
 
+# Precision-only alternative: one observation residual variance for all traits.
+shared_fit = fit_gllvm(Y; phylo=precision, phylo_rank=1,
+    species_id=species_id, residual_mode=:shared)
+
 # Each ordinary effect is explicit; a group label alone adds no random effect.
 joint = fit_gllvm(Y; phylo=precision, phylo_rank=1, species_id=species_id,
     grouping=[GroupingTerm(:cluster; mode=:indep, common=false)],
@@ -142,6 +151,27 @@ conditional random-effect predictions or predictive intervals. `vcov` and
 `stderror` refer to the full-nuisance fixed-effect covariance and fail explicitly
 when that information is unavailable. Inspect interval and summary statuses;
 a stopped or converged point fit alone does not validate its uncertainty.
+
+Precision-only fitting defaults to `residual_mode=:trait`; `:shared` instead
+uses one log-SD coordinate for all traits. Its per-trait reported residual
+variances and interval targets then refer to the same estimated quantity,
+not separate variance components. This residual layout matches the simplest
+frozen-R phylogenetic model; paired-R qualification remains outstanding.
+The joint grouping route still uses trait-specific residuals only.
+
+Every fitting route validates the supplied precision matrix itself for
+symmetry, positive definiteness and its determinant checksum, then retains
+an owned copy of the precision and maps. A malformed raw `PrecisionPhy`
+object is not admitted merely because it has the expected type.
+
+Joint fits also check whether their actual covariance components can be
+distinguished. For example, an ordinary group with one level per observation
+duplicates observation residual variance; two groupings with identical group
+membership identify only their sum. These cases warn and withhold component
+intervals, even if a fixed-parameter likelihood is finite. The diagnostic uses
+the requested loading structure, so a low-rank model is not tested as though
+its trait covariance were unrestricted. A local diagnostic passing is not a
+recovery or interval-coverage certificate.
 
 For formulas, use `gllvm(@formula(y ~ 1 + x), Y, data; phylo=precision,
 species_id=:tip, grouping=terms, cluster=:batch)`. The formula supplies the

@@ -46,6 +46,7 @@ include("spde_fit.jl")                    # Gaussian SPDE spatial-field model + 
 # Sparse phylogenetic path (evaluation-only — see docstring for AD limitation)
 include("sparse_phy.jl")
 include("phylo_precision.jl")        # PrecisionPhy: R-convention sparse precision consumer (phylo transport S1)
+include("precision_fit_admission.jl") # Validate and snapshot precision once at each fitting boundary.
 include("precision_multivariate.jl") # internal Destination B multivariate precision kernel
 include("likelihood_sparse_phy.jl")
 include("sparse_phy_grad.jl")            # analytic gradient + SparsePhyState (self-includes takahashi_selinv.jl)
@@ -168,6 +169,7 @@ include("grouped_profile_refit.jl") # retained, stationary constrained nuisance 
 include("grouped_profile_inversion.jl") # failure-safe callback-only LR bracket inversion
 include("grouped_profile_interval.jl") # private actual-refit profile endpoints
 include("joint_phylo_grouped_gaussian.jl") # one joint Gaussian marginal, evaluation only
+include("joint_covariance_identification.jl") # actual covariance tangent aliases
 include("joint_phylo_grouped_fit.jl") # private joint optimizer and marginal intervals
 include("joint_phylo_grouped_postfit.jl") # explicit population mean and source-labelled extraction
 include("diagnostics.jl")                # check_gllvmTMB / gllvmTMB_diagnose / predictive_check / sanity_multi / compare_* / confint_inspect (core070 diagnostics/compare cluster)

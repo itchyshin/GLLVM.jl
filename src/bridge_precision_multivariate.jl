@@ -3,7 +3,7 @@
 
 const _PMV_BRIDGE_OPTION_KEYS = Set((
     "species_id", "mode", "start", "g_tol", "iterations", "ci_method", "ci_level",
-    "phylo_model",
+    "phylo_model", "residual_mode",
 ))
 
 function _bridge_pmv_option_dict(options)
@@ -54,6 +54,8 @@ function _bridge_pmv_options(options, m::Integer, n_leaves::Integer)
     all(i -> 1 <= i <= n_leaves, species_id) || throw(ArgumentError(
         "multivariate precision bridge: species_id must lie in 1:n_leaves"))
     mode = _bridge_pmv_mode(get(parsed, "mode", "barelowrank"))
+    residual_mode = Symbol(lowercase(strip(String(get(parsed, "residual_mode", "trait")))))
+    _pmv_residual_mode(residual_mode)
     if haskey(parsed, "phylo_model")
         lowercase(strip(String(parsed["phylo_model"]))) == "multivariate" ||
             throw(ArgumentError(
@@ -70,7 +72,7 @@ function _bridge_pmv_options(options, m::Integer, n_leaves::Integer)
     ci_level = get(parsed, "ci_level", 0.95)
     ci_level isa Real && isfinite(ci_level) && 0 < ci_level < 1 || throw(ArgumentError(
         "multivariate precision bridge: ci_level must lie in (0,1)"))
-    return (species_id = species_id, mode = mode, start = start,
+    return (species_id = species_id, mode = mode, residual_mode = residual_mode, start = start,
         g_tol = Float64(g_tol), iterations = iterations, ci_method = ci_method,
         ci_level = Float64(ci_level))
 end
@@ -106,6 +108,8 @@ reduced-rank phylogenetic loading rank. `phylo` is either an admitted
 `PrecisionPhy` or the existing flat precision payload. `options["species_id"]`
 is required and uses native 1-based tip indices; this prevents any implicit
 observation-to-tip map. Only `ci_method = "none"` or `"wald"` is supported.
+`residual_mode = "trait"` is the default; `"shared"` estimates one common
+observation residual variance using one packed log-SD coordinate.
 This helper does not open the R `phylo_rr` public route.
 """
 function _bridge_fit_precision_multivariate(y, phylo; family, d::Integer,
@@ -125,6 +129,7 @@ function _bridge_fit_precision_multivariate(y, phylo; family, d::Integer,
     pp = phylo isa PrecisionPhy ? phylo : admit_phylo_precision_payload(phylo)
     opt = _bridge_pmv_options(options, n_observations, pp.n_leaves)
     fit = fit_precision_multivariate(Y, pp; rank = d, mode = opt.mode,
+        residual_mode = opt.residual_mode,
         species_id = opt.species_id, X = X, start = opt.start,
         g_tol = opt.g_tol, iterations = opt.iterations)
     unique = fit.phylo_unique_variance === nothing ? Float64[] :
@@ -140,6 +145,7 @@ function _bridge_fit_precision_multivariate(y, phylo; family, d::Integer,
         admission_status = "closed",
         admission_scope = "R phylo_rr",
         mode = String(fit.mode),
+        residual_mode = String(fit.residual_mode),
         d = Int(d),
         n_traits = n_traits,
         n_observations = n_observations,
@@ -152,6 +158,7 @@ function _bridge_fit_precision_multivariate(y, phylo; family, d::Integer,
         residual_variance = copy(fit.residual_variance),
         residual_covariance = residual_covariance,
         parameters = copy(fit.parameters),
+        parameter_labels = copy(fit.parameter_labels),
         loglik = fit.loglik,
         converged = fit.converged,
         gradient_max = fit.gradient_norm,

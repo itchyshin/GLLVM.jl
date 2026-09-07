@@ -32,6 +32,8 @@ GLLVM._profile_invert_callback
 GLLVM._grouped_gaussian_variance_profile
 GLLVM.joint_phylo_grouped_gaussian_loglik
 GLLVM.fit_joint_phylo_grouped_gaussian
+GLLVM._joint_covariance_identification
+GLLVM._validate_precision_fit_input
 GLLVM.joint_phylo_grouped_population_predict
 ```
 

@@ -54,6 +54,13 @@ function _joint_phylo_grouped_postfit_objective(fit::JointPhyloGroupedGaussianFi
 end
 
 function _joint_phylo_grouped_fixed_information(fit::JointPhyloGroupedGaussianFit)
+    component = _joint_phylo_grouped_component_identification(fit)
+    component.reason === :invalid && return (status=:invalid_covariance_tangent,
+        covariance=nothing, gradient_norm=NaN)
+    # This exact structural result must not be masked by a stale/nonconverged
+    # optimizer receipt in the generic observed-information helper.
+    component.reason === :nonidentifiable && return (status=:nonidentifiable,
+        covariance=nothing, gradient_norm=NaN)
     return _destination_b_fixed_effect_information(_joint_phylo_grouped_postfit_objective(fit),
         fit.parameters, length(fit.beta); converged = fit.converged,
         structural_redundancy = fit.phylo_mode === :explicitunique &&
@@ -172,13 +179,16 @@ Base.summary(fit::JointPhyloGroupedGaussianFit, Y::AbstractMatrix) =
 
 function Base.summary(fit::JointPhyloGroupedGaussianFit)
     p, n = fit.response_shape
-    return "Joint phylo-plus-grouped Gaussian fit (p=$p, n=$n, rank=$(fit.rank), terms=$(join(string.(getfield.(fit.terms, :name)), ",")), logLik=$(round(fit.loglik; sigdigits=5)))"
+    component = _joint_phylo_grouped_component_identification(fit)
+    return "Joint phylo-plus-grouped Gaussian fit (p=$p, n=$n, rank=$(fit.rank), terms=$(join(string.(getfield.(fit.terms, :name)), ",")), component_identification=$(component.reason), logLik=$(round(fit.loglik; sigdigits=5)))"
 end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::JointPhyloGroupedGaussianFit)
     println(io, summary(fit))
     println(io, "  convergence = ", fit.converged, " (", fit.iterations,
         " iterations; reason = ", fit.stopping_reason, ")")
+    println(io, "  covariance-component identification = ",
+        _joint_phylo_grouped_component_identification(fit).reason)
     print(io, "  observed curvature PD = ", fit.hessian_positive_definite,
         "; min eigenvalue = ", round(fit.hessian_min_eigenvalue; sigdigits = 5),
         "; gradient norm = ", round(fit.gradient_norm; sigdigits = 5))
