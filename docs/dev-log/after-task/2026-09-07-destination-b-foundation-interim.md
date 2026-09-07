@@ -9,6 +9,10 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Saved actual JuliaCall dense output is now validated and serialized without
+another fit. Only the S3 result container is removed; shapes and all interval
+fields are checked. Pure R tests pass12 assertions. No dependency-load repair
+or public R fitted-object/extractor admission is claimed by this checkpoint.
 JuliaCall startup matrix roundtrip passes, but actual pilot is not yet a
 passing transport receipt: dependency extension load overran estimate and
 returned JuliaNamedTuple failed jsonlite serialization. Raw RDS contains a

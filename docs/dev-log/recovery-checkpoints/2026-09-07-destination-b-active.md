@@ -1,5 +1,22 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — saved JuliaCall dense result validated without refit
+
+Base4be445ff. New pure R readback strips only JuliaNamedTuple S3 container,
+checks converged/gradient/closedadmission/maps/shapes/twelveCI endpoints,
+and verifies JSON roundtrip. Actual retained RDS passes; durable
+destination-b-adapter/juliacall-dense-readback-01.json binds originalRDS hash
+and expectedbridge hash. Pure tests pass12 successes. Initial JSON fixture
+had empty numericvector decoded aslist; restored explicit uniquevariance slot
+in test, no runtime relaxation. Pilot now refuses existing RDS and validates
+before JSON export; no JuliaCall/refit rerun. All sessions terminal.
+Next isolate dependency version conflict (LogExpFunctions extension after
+activating another environment), then build authorized R candidate-result
+normalizer/public extractor routing; existing generic normalizer expects old
+ci_param_names, not candidate ci_target_names. Public admission staysclosed
+pending review/S4. Parallel code-transmission permission still unanswered;
+do not bypass. GoalACTIVE, broad programme requirements remain incomplete.
+
 ## Latest continuation — JuliaCall raw return retained, export failure
 
 Base7e9c1f58. Installation-disabled JuliaCall startup97894 passes matrix

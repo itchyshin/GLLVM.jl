@@ -3,7 +3,9 @@
 args <- commandArgs(trailingOnly=TRUE)
 if(length(args)!=4L) stop("usage: juliacall_phylo_pilot.R JULIA_BIN PROJECT CORE070 OUTPUT")
 output <- args[4]
-if(file.exists(output)) stop("refusing existing result")
+if(any(file.exists(c(output,paste0(output,".rds"))))) stop("refusing existing result or raw attempt")
+script_path <- sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1L])
+source(file.path(dirname(normalizePath(script_path)),"juliacall_phylo_readback.R"))
 root <- normalizePath(args[3],mustWork=TRUE)
 fixtures <- jsonlite::fromJSON(file.path(root,"destination-b-adapter/fixtures-01.json"))
 dense <- jsonlite::fromJSON(file.path(root,"destination-b-s3b-pilot/r-attempt-02.json"))
@@ -22,6 +24,8 @@ tryCatch({
  receipt$result <- result
  receipt$stage <- "returned_before_assertions"
  saveRDS(receipt,paste0(output,".rds"))
+ result <- destination_b_validate_juliacall_result(result,expected)
+ receipt$result <- result
  stopifnot(isTRUE(result$converged),identical(result$admission_status,"closed"),
   abs(result$loglik-expected$loglik)<=1e-8,
   identical(as.integer(result$species_aug_id),as.integer(unlist(expected$species_aug_id))),
@@ -36,6 +40,8 @@ tryCatch({
  jsonlite::write_json(receipt,output,auto_unbox=TRUE,pretty=TRUE,digits=17L,null="null")
  cat("JULIACALL_PHYLO_RAW_TRANSPORT_PASS\n")
 },error=function(e){
+ receipt$status <- "error"
+ if(inherits(receipt$result,"JuliaNamedTuple")) receipt$result <- unclass(receipt$result)
  receipt$error <- conditionMessage(e)
  jsonlite::write_json(receipt,output,auto_unbox=TRUE,pretty=TRUE,digits=17L,null="null")
  stop(e)

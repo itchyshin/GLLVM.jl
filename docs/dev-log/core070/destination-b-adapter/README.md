@@ -1,5 +1,15 @@
 # Actual R adapter fixtures — public admission closed
 
+Saved JuliaCall dense readback now passes without refitting. The original
+JuliaNamedTuple container alone was removed; matrix dimensions, observation
+maps and all twelve CI rows/endpoints survive JSON roundtrip. Pure tests
+pass12 assertions, including malformed shapes, failed convergence, invalid
+intervals, changed maps and unsupported nested objects. Initial pure test
+fixture needed restoration of JSON's untyped empty[] to the documented empty
+numeric unique-variance vector; the actual saved RDS had that numeric type.
+Pilot now refuses an existing raw RDS and uses the same validator. No new
+JuliaCall execution was needed; dependency extension load remains unresolved.
+
 Exporter87205 executes the scoped R adapter in the frozen namespace, without
 loading Julia or changing the R engine. All three payloads match canonical
 Q/determinant within1e-12 and exact maps/scales. Six tree internal nodes and
