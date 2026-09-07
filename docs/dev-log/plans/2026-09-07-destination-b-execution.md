@@ -30,6 +30,14 @@ The initial grouped family set is Gaussian, Poisson-log, Binomial-logit, Beta-lo
 6. Extend shared joint objective to four non-Gaussian families. Crossed groups cannot use duplicated independent per-unit mode solves. Integrate supported intervals and explicit unsupported-combination errors.
 7. Retained recovery, remaining signed second-order/extractor/real-data rows, public examples, regression and independent review. Assess 0.7.1 delta separately only after Destination B.
 
+## Separate website task — visible GLLVM.jl logo
+
+Requested by Shinichi on 2026-09-07, with GLLVM.jl and DRM.jl homepage screenshots as the visual reference. Status: QUEUED; not implemented or visually verified.
+
+Reuse GLLVM.jl's existing logo, rather than designing a replacement. Give it comparable prominence to DRM.jl: large beside the homepage heading on wide screens, and above the heading on narrower screens. It must remain visible in split-screen windows and at increased browser zoom, not disappear at a responsive breakpoint. Preserve the small navigation logo as well.
+
+Acceptance: inspect the rendered homepage at wide, split-screen and mobile widths, including 120% browser zoom; verify no clipping, overlap or horizontal overflow and an accessible image label. Keep current capability limitations unchanged. This is a separate presentation task, not an additional Destination B statistical row, and does not authorise deployment or push.
+
 ## Interval contract
 
 Targets are fixed effects, group variances/SDs, rotation-invariant latent covariance summaries, and identifiable phylogenetic variance/signal. Use observed marginal-objective curvature including nuisance parameters and transformations, not conditional random-effect curvature. Interior parameters may use transformed Wald; boundary-sensitive targets need a justified profile route or explicit unavailability. Singular, unidentified, unconverged and invalid-curvature cases must be diagnosed. Matching implementations, truth recovery, interval availability and nominal coverage are separate outcomes. There is no blanket 94–95% small-N coverage gate.
