@@ -1,5 +1,21 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — same-data pedigree BFGS point agreement
+
+Base 4ec84cea. Predeclared baseline replay 8233 exactly preserves response,
+parameters and NLL; status 1 remains failed despite positive marginal curvature.
+Public R BFGS 36491 uses its own default start and unchanged model/data/Q:
+status 0, gradient 1.857232e-7, NLL 14.802810611422183. Comparator 11112
+agrees at that point within 1.244e-14. Retained independent Julia fit differs
+in optimum NLL by 1.865e-13 and aligned loadings relatively by 1.632e-7;
+no Julia refit. Checker 95556 exits 0: 15 existing plus 8 policy assertions
+pass. Baseline failure, Ainv syntax limitation and all failed attempts remain.
+Durable receipts and README: core070/destination-b-pedigree-fit/.
+No live sessions. Next: non-unit-height ultrametric tree reference/consumer
+case; paired intervals, S3b/S4 admission, retained recovery and broad suites
+remain open. External review transmission and remote inspection permissions
+still unanswered; do not bypass. Goal ACTIVE; no push/merge/qualification.
+
 ## Latest continuation — pedigree fit evidence, R status remains failed
 
 Base ea86b503; new pedigree fit tooling/receipts ready for local checkpoint.

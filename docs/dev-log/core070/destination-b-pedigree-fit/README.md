@@ -34,8 +34,29 @@ Original R attempt RDSs and all records remain in the ignored pedigree-fit ledge
 
 ## Remaining gates
 
-Investigate R's optimizer status on unchanged data, independently review the
-tooling, and complete the paired/inference/retained-recovery requirements before
+The predeclared same-data optimizer investigation is now recorded. An exact
+baseline replay still returns status 1; its marginal Hessian is positive
+definite (minimum eigenvalue 1.672476, condition 161.9353). One public BFGS
+attempt, starting from R's own defaults, returns status 0 and gradient
+1.8572321931484726e-7. Its NLL is 14.802810611422183. Cross-evaluation at
+that point differs by 1.2434497875801753e-14; the previously retained
+independent Julia optimum differs by 1.865175e-13, with maximum aligned
+loading relative difference 1.631598e-7. No Julia refit was needed.
+
+The baseline and BFGS policies remain distinct: the baseline fails the
+successful-fit policy; BFGS passes it. Targeted checker session 95556 passed
+23/23 assertions, including failed status, nonfinite gradient, mismatched
+data hash and altered loading controls. This is one paired point-estimate
+pilot, not a general optimizer recommendation or interval certification.
+The numerical Hessian is diagnostic, not a substitute for supported intervals.
+
+New retained SHA256 values:
+
+- r-nlminb-diagnostic-01.json: bcda7b1a9f9ee3d9b66d58178e9083a6a608ec91d6f19bf622274e4a003a4a30
+- r-bfgs-attempt-01.json: 55ebb6e89461dcb6693d2b70d8c845d6ec1c1c3447fbaf20c6c58caaf9f221d3
+- bfgs-comparison-01.json: 7c56a765d389e17d752aec0e4713d7be7fb38aa63e53adfeda8502d73df09149
+
+Independently review the tooling and complete the paired/inference/retained-recovery requirements before
 admission. No frozen R engine or parser edits were made. Direct Ainv syntax
 remains a recorded limitation. Feasible intervals on one dataset do not imply
 nominal coverage or programme completion. External review transmission is still

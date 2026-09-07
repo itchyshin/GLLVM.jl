@@ -1,7 +1,9 @@
 #!/usr/bin/env Rscript
 # Exact frozen-R Gaussian animal_latent pilot. No R package source is edited.
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) != 3L) stop("usage: pedigree_gaussian_reference.R PRIVATE_LIBRARY PRECISION_JSON OUTPUT_JSON")
+if (!(length(args) %in% c(3L, 4L))) stop("usage: pedigree_gaussian_reference.R PRIVATE_LIBRARY PRECISION_JSON OUTPUT_JSON [nlminb|bfgs]")
+policy <- if (length(args) == 4L) args[[4L]] else "nlminb"
+if (!policy %in% c("nlminb", "bfgs")) stop("unknown sealed optimizer policy")
 lib <- normalizePath(args[[1L]], mustWork = TRUE)
 precision_path <- normalizePath(args[[2L]], mustWork = TRUE)
 output <- args[[3L]]
@@ -59,17 +61,24 @@ receipt <- list(schema_version = "destination-b-pedigree-gaussian-marginal-1",
   formula = "value ~ 0 + trait + animal_latent(species, d=1, pedigree=ped, unique=FALSE)",
   input_route = "pedigree",
   residual_mode = "shared", rank = 1L, unique = FALSE,
+  optimizer_policy = policy,
   warnings = list(), session_info = paste(capture.output(sessionInfo()), collapse = "\n"),
   claim = "R-only functional pilot; no Julia fit, intervals, recovery or admission")
 warnings <- list()
 tryCatch({
+  optimizer_control <- if (policy == "nlminb") {
+    gllvmTMBcontrol(n_init = 1L, optimizer = "nlminb",
+      optArgs = list(control = list(iter.max = 100L, eval.max = 150L, rel.tol = 1e-12)))
+  } else {
+    gllvmTMBcontrol(n_init = 1L, optimizer = "optim",
+      optArgs = list(method = "BFGS", control = list(maxit = 400L, reltol = 1e-12)))
+  }
   started <- proc.time()[["elapsed"]]
   fit <- withCallingHandlers(gllvmTMB(
     value ~ 0 + trait + animal_latent(species, d = 1, pedigree = ped, unique = FALSE),
     data = df, trait = "trait", unit = "species", cluster = "species",
     family = gaussian(), REML = FALSE, engine = "tmb",
-    control = gllvmTMBcontrol(n_init = 1L,
-      optArgs = list(control = list(iter.max = 100L, eval.max = 150L, rel.tol = 1e-12)))),
+    control = optimizer_control),
     warning = function(w) warnings[[length(warnings) + 1L]] <<-
       list(message = conditionMessage(w), class = class(w)))
   receipt$elapsed_seconds <- proc.time()[["elapsed"]] - started
@@ -119,6 +128,16 @@ tryCatch({
   receipt$fitted$convergence <- fit$opt$convergence
   receipt$fitted$message <- fit$opt$message
   receipt$fitted$evaluations <- fit$opt$evaluations
+  # Diagnostic curvature of the same marginal objective at the returned
+  # point. This is not an interval or a replacement convergence flag.
+  H <- stats::optimHess(fit$opt$par, fn = obj$fn, gr = obj$gr)
+  stopifnot(all(is.finite(H)))
+  eig <- eigen((H + t(H)) / 2, symmetric = TRUE, only.values = TRUE)$values
+  receipt$fitted$marginal_hessian_diagnostic <- list(
+    method = "optimHess on full marginal objective/gradient; default ndeps",
+    matrix = rows(H), eigenvalues = unname(eig),
+    positive_definite = all(eig > 0),
+    condition_number = if (all(eig > 0)) max(eig) / min(eig) else NULL)
   receipt$status <- "recorded"
   jsonlite::write_json(receipt, output, auto_unbox = TRUE, pretty = TRUE,
                        digits = 17L, null = "null", na = "null")

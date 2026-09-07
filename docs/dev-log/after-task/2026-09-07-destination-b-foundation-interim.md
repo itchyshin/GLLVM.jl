@@ -9,6 +9,15 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Subsequent same-data pedigree diagnosis now separates an unsuccessful nlminb
+baseline from one successful, predeclared public BFGS attempt. BFGS returns
+status 0, gradient 1.857232e-7 and an optimum within 1.865e-13 of retained
+independent Julia evidence. The full marginal Hessian is positive definite;
+this is diagnostic only. Checker 95556 passes 23/23 assertions, including
+negative controls that prevent failed status or corrupt data being accepted.
+All original failures remain retained. This closes the bounded optimizer
+investigation, not review, paired interval, recovery or admission gates.
+
 The actual pedigree fitted pilot now retains two distinct R outcomes: direct
 Ainv formula fails on frozen private-helper lookup; pedigree syntax preserves
 the same model/data but returns singular optimizer status1. Julia marginal
