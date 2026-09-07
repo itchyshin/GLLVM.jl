@@ -1,5 +1,116 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — all three fresh prediction transports pass
+
+Parallel local pedigree2948/dense86591 both exit0. Independent dense conditional
+prediction maxabs errors1.332268e-15/3.719247e-15, fits7.787/7.82s. Fresh -02
+JSON receipts retained alongside tree -02; original attempts unchanged. RawRDS
+remain ignored. Combined kernel/bridge/R object-reader work is ready for a local
+unqualified checkpoint commit, not public admission. Next installed-generic
+workflow and invocation, residual/simulation semantics, fresh independent review
+and affected broad regression. All processes terminal; goal ACTIVE.
+
+## Latest continuation — R conditional prediction and fresh tree transport
+
+R candidate link reader validates conditional_plugin kind, dimensions and finite
+values, assigns labels and routes existing fitted/predict methods. Older payloads
+still explicitly error. Synthetic R tests red missing route then green exit0
+2.18s, one opt-in skip. Fresh tree JuliaCall8336 exit0, fit7.972s, R-visible
+fitted means agree with independent dense reference at maxabs2.220446e-15.
+Receipt core070/destination-b-adapter/juliacall-tree-02.json retained; raw RDS
+ignored alongside original attempts. First launch exited before fitting because
+R_LIBS_USER hid jsonlite; corrected to frozen library followed by normal user
+library, no installation. Startup Multinomial warning remains observed.
+Pilot now checks object assembly and independent conditional predictions and
+sources adapter with installed frozen namespace as parent. Public formula gate
+still closed; dense/pedigree fresh prediction transport, residual/simulation
+semantics, installed generic dispatch and programme reviews remain open.
+Changes uncommitted in scoped R files and Julia source/tests/docs/pilot. All
+processes terminal, goal ACTIVE. No remote compute or external agent bypass.
+
+## Latest continuation — bridge conditional fitted-value payload
+
+Bridge now returns fitted_values (traits by observations) and prediction_kind
+conditional_plugin, using X beta plus the augmented posterior mean. Independent
+dense reference converts mean-design observation-major cells to covariance
+trait-major cells explicitly. Fixed-start lowrank+unique, repeated species,
+ancestors and nonzero complete mean design tested. Red27696 missing fields;
+green72618 initial42+5 checks; extended20343 43+5 checks exit0. Startup warning
+on Multinomial name conflict observed in initial rebuild. No campaign or public
+R gate change. R prediction still explicitly blocked until receiving/validating
+this new payload; old saved JuliaCall receipts have no fitted_values. Next R
+reader wiring and actual fresh transport test, then retained-result provenance
+and broader final-candidate regression. All changes remain uncommitted.
+
+## Latest continuation — conditional precision mean kernel
+
+Shared internal _multivariate_phylo_precision_evaluate optionally returns the
+conditional random contribution using the existing augmented posterior solve.
+Public likelihood signature unchanged; default path allocates no response-sized
+fitted matrix. Math recorded before implementation. Independent dense K(K+R)^-1r
+oracle exercises repeated species, unobserved ancestors, lowrank and unique
+phylogenetic variance. Red92687 missing helper exit1; green5433 exit0,
+23/23 tests (0.9s test time). Startup emitted Multinomial name-conflict warning.
+No fits/campaigns rerun. Kernel source changed, so retained likelihood receipts
+remain evidence for their original candidate; affected final-candidate checks
+must be repeated before qualification. Next add X beta and transpose into
+bridge fitted-value payload, then connect R prediction with independent tests.
+Not yet public prediction support. Existing R and Julia changes uncommitted;
+all sessions terminal. Goal ACTIVE.
+
+## Latest continuation — R candidate object assembly
+
+Internal assembler validates response dimensions, parameter/likelihood metadata
+and coefficient labels, and constructs a gllvmTMB_julia object with coefficient,
+likelihood and stored interval reader support. Summary retains separate
+phylogenetic/residual covariances, not an invented common Sigma; printed summary
+shows these and the closed-candidate limitation. Prediction explicitly errors
+until a conditional mean payload is implemented; training data are kept outside
+legacy bridge_input to prevent a wrong-model refit. Public formula remains closed.
+Red missing-constructor and three red printed-output assertions reproduced;
+scoped test green exit0 1.65s (existing opt-in Julia test skipped).
+Actual saved tree/pedigree results assemble and pass coefficient/logLik(df=7)/
+12-CI/summary checks, exit0 0.51s. No refits. Changes remain uncommitted on the
+same R adapter/test/decision and main checkpoint/check-log paths. Next implement
+conditional mean transport, invocation and public route qualification; direct
+method tests do not prove generic dispatch from the installed package.
+All processes terminal; goal ACTIVE, review/compute permissions still unresolved.
+
+## Latest continuation — stored R interval method integration
+
+Candidate results now route through the existing R confint method's stored
+reader, revalidating target completeness and retaining per-target statuses in
+a named target_status attribute. Partial failures stay NA; selection and level
+checks tested. Refit methods explicitly blocked before legacy route can lose
+phylogenetic inputs. New red reproduced field-name mismatch (0 versus 7 rows,
+exit1); scoped R test green exit0, 1.79s, existing opt-in Julia test skipped.
+Saved tree/pedigree actual JuliaCall payloads pass direct stored-method checks
+with exact 12 endpoint pairs (exit0, 0.38s). No new fit or public admission.
+R adapter/test/decision changes remain uncommitted; main checkpoint/check-log
+and logo plan changes also uncommitted. Next constructor/invocation and public
+S3 workflow integration; do not mistake direct method checks for public fit
+qualification. All processes terminal, programme remains ACTIVE.
+
+## Latest continuation — candidate interval target completeness
+
+R adapter working tree now validates the complete target set against coefficient
+count, trait count and residual mode. Removed targets, beta[99], and mismatched
+shared/trait residual labels each reproduced an accepted-invalid-payload failure
+before the change. Bounded R test file then passed (one existing opt-in Julia
+subprocess skip); saved actual tree/pedigree JuliaCall RDS results both passed
+the strengthened converter with 12 rows. No refits, tolerance changes or public
+admission. Changes are uncommitted in R adapter/test/decision files; main plan
+also carries the separately requested logo task. Next: continue internal R
+invocation/object assembly and public workflow integration, then independent
+review; target completeness alone is not complete extractor validation.
+
+Commands: Rscript sourced R/julia-bridge.R into an environment parented by the
+frozen 0.7.0 namespace, then testthat::test_file with stop_on_failure=TRUE.
+Green exit0 (1.71 s); saved-result checks exit0 (0.32 s). Initial red test used
+the default installed namespace, reported three assertion failures but test_file
+returned exit0; assertions, not that exit code, establish the red result.
+All processes terminal. Full programme remains ACTIVE and unqualified.
+
 ## Latest continuation — tree/pedigree JuliaCall plus R conversion pass
 
 Mainbase5f2ffb0e,R19b42c857. Generalized pilot supports dense/tree/pedigree

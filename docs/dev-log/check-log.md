@@ -18273,3 +18273,43 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   `/goal`, `.unlazy/.../GATES.md`, campaign, R-engine edit, or merge.
 - Deliberately not run: Julia tests, R tests, parity fits, Totoro/DRAC,
   Documenter, or any production implementation.
+# 2026-09-07 — closed precision candidate target completeness
+
+R candidate converter rejects missing, unknown and wrong-residual-mode interval
+targets. Three red assertions reproduced; frozen-namespace scoped test file
+passes after repair (one opt-in skip). Saved actual tree/pedigree JuliaCall
+results retain 12 rows. No fits rerun; no public admission or programme claim.
+# 2026-09-07 — stored R precision interval reader
+
+Red reproduced the candidate/legacy CI field mismatch. Scoped R test passes
+with selection, partial-status and recomputation guards; one opt-in skip.
+Saved tree/pedigree results pass direct stored confint method checks with exact
+endpoint preservation. Public fit construction and admission remain incomplete.
+# 2026-09-07 — R precision candidate object assembly
+
+Internal constructor and separate covariance summaries tested, including printed
+limitations and explicit prediction boundary. Scoped R test exit0 (one opt-in
+skip); actual saved tree/pedigree object checks exit0. No public admission.
+# 2026-09-07 — conditional precision mean kernel
+
+Independent dense posterior-mean oracle added before implementation. Missing
+helper reproduced (92687 exit1); shared sparse evaluator green (5433 exit0),
+23/23 kernel tests, 0.9s test time. Startup Multinomial conflict warning retained
+as an observation. Public bridge prediction still pending; source change requires
+affected final-candidate verification before reusing qualification claims.
+# 2026-09-07 — bridge conditional fitted values
+
+Dense-reference tests verify conditional fitted values with repeated nodes,
+ancestors and nonzero fixed-effect design. Red missing fields reproduced;
+extended bridge test20343 passes43+5 tests. R reader/actual transport pending.
+# 2026-09-07 — R conditional prediction round trip
+
+Malformed prediction payload tests and R fitted/predict checks pass. Fresh tree
+JuliaCall8336 passes: fit7.972s, independent dense prediction maxabs2.220446e-15.
+Initial dependency-path failure happened before fitting; preserved in checkpoint.
+Public formula admission and wider workflow validation remain incomplete.
+# 2026-09-07 — pedigree/dense prediction transport
+
+Parallel local JuliaCall2948/86591 exit0. Pedigree/dense conditional means match
+independent dense oracle at1.332268e-15/3.719247e-15; fits7.787/7.82s.
+Fresh -02 receipts retained, no public gate changes. Interim report updated.

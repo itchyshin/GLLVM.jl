@@ -40,7 +40,7 @@ tryCatch({
  receipt$stage <- "returned_before_assertions"
  saveRDS(receipt,paste0(output,".rds"))
  if(length(args)==6L) {
-  adapter_env <- new.env(parent=globalenv())
+  adapter_env <- new.env(parent=asNamespace("gllvmTMB"))
   sys.source(args[6],envir=adapter_env)
   normalized <- adapter_env$.gllvm_julia_normalise_precision_result(result,c("a","b","c"))
   stopifnot(nrow(normalized$intervals)==12L,all(normalized$intervals$status=="available"),
@@ -48,6 +48,20 @@ tryCatch({
    identical(rownames(normalized$loadings),c("a","b","c")))
   receipt$normalized_intervals <- normalized$intervals
   receipt$result_converter_sha256 <- unname(tools::sha256sum(args[6]))[[1L]]
+  assembled <- adapter_env$.gllvm_julia_assemble_precision_result(result,Y)
+  predicted <- adapter_env$fitted.gllvmTMB_julia(assembled)
+  pp <- fixtures$bundles[[kind]]$precision
+  Q <- Matrix::sparseMatrix(i=pp$i,j=pp$j,x=pp$x,dims=rep(pp$n_aug,2))
+  nodes <- as.integer(result$species_aug_id)[as.integer(result$species_id)]
+  C <- solve(as.matrix(Q))[nodes,nodes,drop=FALSE]
+  K <- kronecker(result$phylo_covariance,C)
+  R <- kronecker(result$residual_covariance,diag(ncol(Y)))
+  mu <- as.vector(t(matrix(result$mean_design %*% result$coefficients,nrow(Y),ncol(Y))))
+  oracle <- t(matrix(mu+K %*% solve(K+R,as.vector(t(Y))-mu),ncol(Y),nrow(Y)))
+  error <- max(abs(unname(predicted)-oracle))
+  stopifnot(is.finite(error),error<=1e-8)
+  receipt$conditional_prediction <- list(status="pass",max_abs_error=error,
+    reference="independent dense K(K+R)^-1(y-Xbeta)+Xbeta",fitted_values=unname(predicted))
  }
  result <- destination_b_validate_juliacall_result(result,expected)
  receipt$result <- result

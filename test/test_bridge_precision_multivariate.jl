@@ -55,6 +55,15 @@ end
         @test native.residual_variance ≈ residual
         @test native.phylo_covariance ≈ loading * loading' + Diagonal(unique)
         @test native.residual_covariance ≈ Diagonal(residual)
+        nodes = phy.species_aug_id[species_id]
+        K = kron(loading*loading'+Diagonal(unique),inv(Matrix(phy.Q))[nodes,nodes])
+        R = kron(Diagonal(residual),Matrix{Float64}(I,4,4))
+        mu = vec(permutedims(reshape(native.mean_design*native.coefficients,3,4)))
+        centered = vec(permutedims(Y))-mu
+        expected_fitted = permutedims(reshape(mu+K*((K+R)\centered),4,3))
+        @test native.fitted_values ≈ expected_fitted atol=1e-10 rtol=1e-10
+        @test native.fitted_values ≈ adapter.fitted_values
+        @test native.prediction_kind == "conditional_plugin"
         @test native.species_id == species_id == adapter.species_id
         @test native.species_aug_id == phy.species_aug_id == adapter.species_aug_id
         @test native.scale == phy.scale == adapter.scale
@@ -77,7 +86,7 @@ end
 
     @testset "complete mean design and Wald arrays remain flat" begin
         X = reshape(collect(1.0:(length(Y))), :, 1)
-        start_x = vcat([0.0], GLLVM.pack_lambda(loading),
+        start_x = vcat([0.1], GLLVM.pack_lambda(loading),
             log.(sqrt.(unique)), log.(sqrt.(residual)))
         opts_x = merge(opts, Dict("start" => start_x, "ci_method" => "wald",
             "ci_level" => 0.9))
@@ -85,6 +94,12 @@ end
             family = "gaussian", d = 1, X = X, options = opts_x)
         @test size(bridged.mean_design) == (length(Y), 1)
         @test length(bridged.coefficients) == 1
+        nodes = phy.species_aug_id[species_id]
+        K = kron(loading*loading'+Diagonal(unique),inv(Matrix(phy.Q))[nodes,nodes])
+        R = kron(Diagonal(residual),Matrix{Float64}(I,4,4))
+        mu = vec(permutedims(reshape(X*bridged.coefficients,3,4)))
+        expected = permutedims(reshape(mu+K*((K+R)\(vec(permutedims(Y))-mu)),4,3))
+        @test bridged.fitted_values ≈ expected atol=1e-10 rtol=1e-10
         @test bridged.ci_method == "wald"
         @test bridged.ci_level == 0.9
         @test length(bridged.ci_target_names) == length(bridged.ci_statuses)

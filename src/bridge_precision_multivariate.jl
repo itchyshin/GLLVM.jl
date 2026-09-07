@@ -111,6 +111,10 @@ observation-to-tip map. Only `ci_method = "none"` or `"wald"` is supported.
 `residual_mode = "trait"` is the default; `"shared"` estimates one common
 observation residual variance using one packed log-SD coordinate.
 This helper does not open the R `phylo_rr` public route.
+`fitted_values` is traits-by-observations and includes the fixed mean plus
+the conditional Gaussian random-effect mean at the returned parameters.
+`prediction_kind = "conditional_plugin"` does not imply convergence or
+prediction-interval support; inspect the returned fit diagnostics separately.
 """
 function _bridge_fit_precision_multivariate(y, phylo; family, d::Integer,
         X = nothing, options = Dict())
@@ -139,6 +143,12 @@ function _bridge_fit_precision_multivariate(y, phylo; family, d::Integer,
     residual_covariance = Matrix(Diagonal(fit.residual_variance))
     ci = _bridge_pmv_ci_flat(fit, opt.ci_method, opt.ci_level)
     signal = _pmv_phylogenetic_signal(fit)
+    mean_response = reshape(fit.mean_design*fit.beta,n_traits,n_observations)
+    conditional = _multivariate_phylo_precision_evaluate(
+        permutedims(Y-mean_response),pp,fit.loading,fit.residual_variance;
+        phylo_unique_variance=fit.phylo_unique_variance,
+        species_id=fit.species_id,return_fitted=true)
+    fitted_values = mean_response + permutedims(conditional.fitted)
     return (
         family = "gaussian",
         model = "precision_multivariate_candidate",
@@ -152,6 +162,8 @@ function _bridge_fit_precision_multivariate(y, phylo; family, d::Integer,
         coefficients = copy(fit.beta),
         coefficient_names = String.(fit.coefficient_names),
         mean_design = copy(fit.mean_design),
+        fitted_values = fitted_values,
+        prediction_kind = "conditional_plugin",
         loadings = copy(fit.loading),
         phylo_unique_variance = unique,
         phylo_covariance = phylo_covariance,

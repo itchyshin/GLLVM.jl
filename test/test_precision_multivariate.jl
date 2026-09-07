@@ -51,6 +51,26 @@ end
     expected = _mv_dense_reference(y, pp, loading, psi, sigma2_phy;
                                    phylo_unique_variance = phylo_unique_variance)
 
+    @testset "conditional mean versus independent dense covariance" begin
+        ids = [2,1,2]
+        yr = [y; 0.2 0.5 -0.3]
+        nodes = pp.species_aug_id[ids]
+        for unique_variance in (nothing, phylo_unique_variance)
+            B = loading*loading' + Diagonal(unique_variance === nothing ? zeros(3) : unique_variance)
+            C = sigma2_phy .* inv(Matrix(pp.Q))[nodes,nodes]
+            K = kron(B,C)
+            R = kron(Diagonal(psi),Matrix{Float64}(I,3,3))
+            oracle = reshape(K*((K+R)\vec(yr)),3,3)
+            got = GLLVM._multivariate_phylo_precision_evaluate(yr,pp,loading,psi;
+                sigma2_phy=sigma2_phy,phylo_unique_variance=unique_variance,
+                species_id=ids,return_fitted=true)
+            @test got.fitted ≈ oracle atol=1e-10 rtol=1e-10
+            @test got.loglik ≈ _mv_dense_reference(yr,pp,loading,psi,sigma2_phy;
+                phylo_unique_variance=unique_variance === nothing ? zeros(3) : unique_variance,
+                species_id=ids) atol=1e-10 rtol=1e-10
+        end
+    end
+
     @testset "sparse augmented marginal equals independent dense oracle" begin
         got = GLLVM.multivariate_phylo_precision_loglik(y, pp, loading, psi;
             sigma2_phy = sigma2_phy, phylo_unique_variance = phylo_unique_variance)

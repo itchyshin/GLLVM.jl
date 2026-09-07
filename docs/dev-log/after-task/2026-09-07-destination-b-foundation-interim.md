@@ -9,6 +9,18 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Current conditional-prediction tranche: sparse posterior means reuse the
+likelihood system; bridge transports fixed plus conditional random means in
+traits-by-observations orientation. Independent dense kernel/bridge checks pass
+23 and48 assertions respectively. R candidate assembly and direct stored CI,
+coefficient, likelihood, summary, fitted and prediction readers are tested;
+missing/malformed targets and predictions fail explicitly. Fresh actual tree,
+pedigree and dense JuliaCall prediction receipts all pass (max errors below
+4e-15). This supersedes older missing-prediction/transport descriptions below,
+which are retained as history. Public formula invocation, installed generic
+dispatch, residual/simulation semantics, independent review and broad regression
+remain incomplete; this report remains NOT CLOSED.
+
 Tree and pedigree actual JuliaCall pilots now pass alongside dense: two
 parallel local processes35981/42583 return matching raw results and scoped
 R normalization with12available intervalrows each. Hash-bound receipts and

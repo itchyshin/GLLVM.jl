@@ -112,3 +112,12 @@ the adapter, a fit, or the R model is admitted.
 
 Source boundary: Destination B execution programme, 2026-09-07;
 `gllvmTMB` 0.7.0 frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`.
+# Conditional mean extension — 2026-09-07
+
+For centered observations r, observation map A, residual covariance R and
+augmented prior precision P, J=P+A'R^-1A and u_hat=J^-1 A'R^-1 r.
+The conditional random contribution is A u_hat; the fitted response adds X beta.
+All ancestors remain in J. This uses the same posterior solve as the marginal
+likelihood, not a second covariance inversion. The independent tiny oracle is
+K(K+R)^-1 r with K=A P^-1 A'. Repeated observations select the same latent node.
+These are plug-in conditional means, not prediction intervals or parameter CIs.

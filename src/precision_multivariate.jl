@@ -38,6 +38,19 @@ function multivariate_phylo_precision_loglik(
         psi::AbstractVector; sigma2_phy::Real = 1.0,
         phylo_unique_variance::Union{Nothing,AbstractVector} = nothing,
         species_id::AbstractVector{<:Integer} = collect(1:phy.n_leaves))
+    return _multivariate_phylo_precision_evaluate(y, phy, loading, psi;
+        sigma2_phy=sigma2_phy, phylo_unique_variance=phylo_unique_variance,
+        species_id=species_id)
+end
+
+# Optional conditional mean reuses the exact marginal system and validation.
+# The likelihood-only path does not allocate a fitted-response matrix.
+function _multivariate_phylo_precision_evaluate(
+        y::AbstractMatrix, phy::PrecisionPhy, loading::AbstractMatrix,
+        psi::AbstractVector; sigma2_phy::Real = 1.0,
+        phylo_unique_variance::Union{Nothing,AbstractVector} = nothing,
+        species_id::AbstractVector{<:Integer} = collect(1:phy.n_leaves),
+        return_fitted::Bool = false)
     n_obs, n_traits = size(y)
     n_traits > 0 || throw(ArgumentError("GJL-GATE-PHYLO-MV-DIM: y must have at least one trait"))
     size(loading, 1) == n_traits ||
@@ -157,6 +170,7 @@ function multivariate_phylo_precision_loglik(
     # latter form avoids catastrophic subtraction when psi is tiny relative
     # to a large phylogenetic signal.
     posterior_mode = joint_chol \ b
+    conditional_mean = return_fitted ? zeros(Float64,n_obs,n_traits) : nothing
     integrated_quadratic = dot(posterior_mode, prior_precision * posterior_mode)
     @inbounds for obs in 1:n_obs
         node = mapped_nodes[obs]
@@ -172,9 +186,11 @@ function multivariate_phylo_precision_loglik(
                 fitted += sqrt(unique64[trait]) * posterior_mode[(factor - 1) * n_aug + node]
             end
             residual = y64[obs, trait] - fitted
+            return_fitted && (conditional_mean[obs,trait] = fitted)
             integrated_quadratic += residual^2 / psi64[trait]
         end
     end
     normalizer = n_obs * n_traits * log(2pi) + n_obs * sum(log, psi64)
-    return -0.5 * (normalizer - logdet_prior + logdet_joint + integrated_quadratic)
+    loglik = -0.5 * (normalizer - logdet_prior + logdet_joint + integrated_quadratic)
+    return return_fitted ? (loglik=loglik,fitted=conditional_mean) : loglik
 end
