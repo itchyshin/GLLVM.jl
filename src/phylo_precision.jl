@@ -12,9 +12,14 @@
 #
 # R conventions this struct follows (differ from `AugmentedPhy`,
 # `src/sparse_phy.jl`, which is leaves-first with the root INCLUDED):
-#   * root already dropped              -> n_aug = 2p − 2, full rank
-#   * internal nodes first, tips last   -> matches MCMCglmm::inverseA
+#   * tree: root already dropped        -> n_aug = 2p − 2, full rank
+#   * animal / sparse Ainv: tip-only    -> n_aug = p, identity tip map
+#     or ancestors kept                 -> n_aug > p, tips mapped in
+#   * tree node order: internal first, tips last (MCMCglmm::inverseA)
 #   * optional unit-height ("correlation") scaling folded into Q already
+#
+# The raw-triplet constructor does not enforce 2p − 2. Admission
+# (`admit_phylo_precision_payload`) requires only n_aug ≥ n_leaves.
 #
 # No inversion happens in this file. The `PrecisionPhy(phy::AugmentedPhy)`
 # constructor only drops a row/col and permutes; the raw-triplet
@@ -32,8 +37,11 @@ root dropped, internal nodes first, tips last.
 
 Fields
 ------
-* `n_leaves::Int`               – number of tip species (p).
-* `n_aug::Int`                  – 2p − 2 (root-dropped augmented size).
+* `n_leaves::Int`               – number of tip / phenotyped units (p).
+* `n_aug::Int`                  – rows of `Q`. Tree payloads are
+  `2p − 2` (root already dropped). Animal / sparse `Ainv` payloads
+  are `p` when every individual is phenotyped, or `> p` when
+  unphenotyped ancestors are kept in the precision.
 * `Q::SparseMatrixCSC{T,Int}`   – (n_aug × n_aug) precision. The actual
   phylogenetic precision is `Q / σ²_phy`, matching `AugmentedPhy`'s
   `Q_topology` convention. Already includes any unit-height ("correlation")
@@ -175,9 +183,10 @@ end
 Build a `PrecisionPhy` from raw sparse triplets `(I, J, V)` of the
 precision `Q` plus the accompanying labels, checksum, scale, and tip map
 — the shape a bridge (later slice) will ship across from R's
-`Ainv_phy_rr` / `log_det_A_phy_rr` / `species_aug_id` bundle. No
-inversion happens here; this constructor only wraps what the caller
-already built.
+`Ainv_phy_rr` / `log_det_A_phy_rr` / `species_aug_id` bundle. Accepts
+tree (`n_aug = 2p − 2`) and animal / sparse `Ainv` (`n_aug ≥ p`)
+sizes. No inversion happens here; this constructor only wraps what the
+caller already built.
 """
 function PrecisionPhy(I::AbstractVector{<:Integer}, J::AbstractVector{<:Integer},
                        V::AbstractVector{<:Real}, n_aug::Integer, n_leaves::Integer,
