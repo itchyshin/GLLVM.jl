@@ -1,5 +1,21 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — tree/pedigree marginal uncertainty compared
+
+Baseca63b9dc. R runners now export production sdreport and public vcov before
+cross-objective calls; exact model/BFGS replay75225/95000 exits0. New shared
+checker compares all seven marginal parameter coordinates, matched and own
+optimum covariance/SE plus twelve analytic derived link intervals. Final
+tree78064/pedigree61975 exit0 within signed tolerances. Puretests95094 24PASS.
+Durable uncertainty directory contains exact R exports and final comparisons.
+No engine change, no Julia refits, no public interval/admission qualification.
+All sessions terminal. Next: dense-vcv production uncertainty export/check,
+then public interval and scoped R adapter S3b/S4 requirements. Current checker
+uses analytic R derived diagnostics, not exported R LLprime interval route.
+Review/remote permissions still pending; do not bypass. Full/core suites,
+retained recovery, remaining32-row requirements and final review remain open.
+Goal ACTIVE; previous turn progress, no push/merge.
+
 ## Latest continuation — tree independent fits and interval diagnostics retained
 
 Base15ea5931. R tree37237 exact Q/model passes, nlminbstatus1 retained.

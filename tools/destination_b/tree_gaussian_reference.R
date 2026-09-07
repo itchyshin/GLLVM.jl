@@ -82,6 +82,19 @@ tryCatch({
   saveRDS(list(status = "fit_returned_before_assertions", receipt = receipt,
               optimizer = fit$opt, tmb_data = fit$tmb_data, tmb_map = fit$tmb_map), attempt)
   obj <- fit$tmb_obj
+  # Production marginal covariance, not the conditional random-mode Hessian.
+  # Obtain it before later objective cross-evaluations mutate the TMB cache.
+  fit <- gllvmTMB::standard_errors(fit)
+  sd <- fit$sd_report
+  stopifnot(isTRUE(sd$pdHess), all(is.finite(sd$cov.fixed)),
+            identical(names(sd$par.fixed), names(fit$opt$par)),
+            identical(unname(sd$par.fixed), unname(fit$opt$par)))
+  public_vcov <- stats::vcov(fit)
+  stopifnot(all(public_vcov == sd$cov.fixed[1:3, 1:3]))
+  receipt$uncertainty <- list(method = "frozen production sdreport cov.fixed",
+    parameter_names = names(sd$par.fixed), parameter_values = unname(sd$par.fixed),
+    covariance = rows(sd$cov.fixed), public_beta_vcov = rows(public_vcov),
+    pd_hessian = sd$pdHess, condition_number = kappa(sd$cov.fixed, exact = TRUE))
   expected_names <- c(rep("b_fix", 3L), "log_sigma_eps", rep("theta_rr_phy", 3L))
   stopifnot(identical(names(obj$par), expected_names),
             identical(names(fit$opt$par), expected_names))

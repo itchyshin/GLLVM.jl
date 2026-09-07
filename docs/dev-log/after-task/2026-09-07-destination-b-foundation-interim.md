@@ -9,6 +9,14 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Production R marginal uncertainty is now paired for tree and pedigree pilots:
+full seven-parameter sdreport covariance and public beta vcov, independently
+assembled derived target gradients, matched/own-optimum numerical checks.
+Checker95094 passes24/24 assertions with deliberate failures. Maximum endpoint
+errors are below8e-6 of Rhalfwidth, within unchanged signed bounds. Derived R
+intervals are diagnostic reconstructions, not public extractor admission.
+Dense-vcv uncertainty and programme-wide validation/review remain incomplete.
+
 Tree fitted follow-on now retains exact frozen model transport, an unsuccessful
 nlminb baseline, converged independent Julia fit with feasible primary Wald
 diagnostics, and converged same-data public R BFGS. Own-optimum NLLs agree
