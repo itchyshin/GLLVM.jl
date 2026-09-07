@@ -1,5 +1,7 @@
 ## 2026-09-07 — Destination B internal fitter integration (ongoing)
 
+- JuliaCall97894 installation-disabled startup/matrix roundtrip passes. Dense67782 overruns estimate during dependency extension load; ultimately returns raw fit but exits1 serializing JuliaNamedTuple. RDS preserved before assertions, readback convergedTRUE/admissionclosed/12targets; no JSON or transportPASS claim. Exact process inspection finds terminal before stop signal. Next reanalyse saved result rather than refit, fix serialization and isolate dependency environment. Parallel skill loaded; agent dispatch still awaits scoped transmission approval.
+
 - Actual adapter87205 exports tree/pedigree/dense payloads matching frozenQ/determinants/maps/scales. Bridge21001 runs allthree and preserves flat outputs;94pass/3test-mapfail (zero-based input versus one-based output). Corrected assertion, final28020 97/97PASS8.3s. Earlier22489 keyword-call error occurred before fit. All numerical/interval comparisons pass, admission_status remainsclosed; no JuliaCall/public R wrapper or overall S3b/S4 claim.
 
 - Dense refinement: nlminb60677/42384 remains failed at original gradient. BFGS same-data convergescode0/gradient2.9915e-7. Metadata assumptions corrected after inspecting normalized RDS optimizer; failed exports retained, exact replay checked. Final87577/45831 exit0; matched covariance relative4.445e-6, ownopt4.489e-6, maxendpoint1.075e-5 of Rhalfwidth. No Julia refit or threshold change; public derived intervals/review/admission still open.

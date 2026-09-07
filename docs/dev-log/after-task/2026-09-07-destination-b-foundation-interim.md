@@ -9,6 +9,12 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+JuliaCall startup matrix roundtrip passes, but actual pilot is not yet a
+passing transport receipt: dependency extension load overran estimate and
+returned JuliaNamedTuple failed jsonlite serialization. Raw RDS contains a
+converged candidate with12targets; reuse it for repair without refitting.
+Parallel-agent skill identifies independent environment/conversion lanes;
+external code-transmission approval remains required before dispatch.
 Actual authorized R adapter payloads now exercise Julia bridge_fit on tree,
 pedigree and dense fixtures. Final28020 passes97/97, with flat numerical and
 interval results retained from21001. Test call/indexing errors were corrected

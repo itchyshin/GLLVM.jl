@@ -1,5 +1,25 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — JuliaCall raw return retained, export failure
+
+Base7e9c1f58. Installation-disabled JuliaCall startup97894 passes matrix
+roundtrip. Actual dense pilot67782 exceeded30second estimate loading a
+LogExpFunctionsInverseFunctionsExt extension (loglogistic undefined). By
+targeted process inspection it was already terminal; no signal sent. Final
+exit1: jsonlite cannot serialize JuliaNamedTuple. Raw RDS retained at
+.unlazy/destination-b-adapter/juliacall-dense-01.json.rds; readback confirms
+stage returned_before_assertions, convergedTRUE, loglik1.447836, admission
+closed and12CI targets. No JSON receipt, no rawtransportPASS asserted yet.
+Next reuse RDS for assertion/readback and normalize only its S3 container;
+do not refit to repair serialization. Investigate dependency environment
+conflict separately; no package installation/rebuild was run.
+User explicitly requested dispatching-parallel-agents skill, fully read.
+Useful independent lanes: JuliaCall environment and R result/interval conversion.
+Earlier external transmission rejection remains unresolved; asked explicitly
+for scoped code/evidence transmission approval. No bypass/native review.
+All sessions terminal, goalACTIVE; review/public admission/recovery/fullsuite
+and remaining rows incomplete. Current runner is diagnostic work in progress.
+
 ## Latest continuation — actual R adapter to Julia bridge fits verified
 
 Base8297f0fe. R adapter87205 exports three exact frozen payloads; fixturehash
