@@ -9,6 +9,11 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+Dense production uncertainty export now preserves the old strict schema via
+a hash-linked sidecar. Exact replay agrees in data/model/fitted coordinates,
+but its newly measured marginal gradient1.177556e-4 exceeds1e-4. Comparator
+87652 fails visibly; no dense interval-parity claim. Failed attempt retained,
+same-data optimizer investigation pending. No likelihood or tolerance change.
 Production R marginal uncertainty is now paired for tree and pedigree pilots:
 full seven-parameter sdreport covariance and public beta vcov, independently
 assembled derived target gradients, matched/own-optimum numerical checks.

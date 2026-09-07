@@ -25,7 +25,8 @@ output_dir <- normalizePath(output_dir, mustWork = TRUE)
 output_json <- file.path(output_dir, "phylo_gaussian_reference.json")
 attempt_rds <- file.path(output_dir, "phylo_gaussian_reference_attempt.rds")
 attempt_log <- file.path(output_dir, "phylo_gaussian_reference_attempt.log")
-if (any(file.exists(c(output_json, attempt_rds, attempt_log)))) {
+uncertainty_json <- file.path(output_dir, "phylo_gaussian_uncertainty.json")
+if (any(file.exists(c(output_json, attempt_rds, attempt_log, uncertainty_json)))) {
   stop("output directory already contains a reference or attempt receipt; use a new immutable output directory",
        call. = FALSE)
 }
@@ -242,6 +243,17 @@ persist_attempt(list(
 # integration is exact here. Do not use MakeADFun(random = NULL): that is the
 # historical joint-score target and has a different parameter vector.
 marginal_obj <- fit$tmb_obj
+fit <- gllvmTMB::standard_errors(fit)
+sd <- fit$sd_report
+stopifnot(isTRUE(sd$pdHess), all(is.finite(sd$cov.fixed)),
+          identical(names(sd$par.fixed), names(fit$opt$par)),
+          identical(unname(sd$par.fixed), unname(fit$opt$par)))
+public_vcov <- stats::vcov(fit)
+stopifnot(all(public_vcov == sd$cov.fixed[1:3,1:3]))
+uncertainty <- list(method = "frozen production sdreport cov.fixed",
+  parameter_names = names(sd$par.fixed), parameter_values = unname(sd$par.fixed),
+  covariance = as_json_rows(sd$cov.fixed), public_beta_vcov = as_json_rows(public_vcov),
+  pd_hessian = sd$pdHess, condition_number = kappa(sd$cov.fixed, exact = TRUE))
 active_names <- names(marginal_obj$par)
 expected_counts <- c(b_fix = 3L, log_sigma_eps = 1L, theta_rr_phy = 3L)
 if (any(!active_names %in% names(expected_counts))) {
@@ -449,4 +461,12 @@ if (!file.rename(pending_json, output_json)) {
   stop("could not publish validated reference JSON; pending artifact retained", call. = FALSE)
 }
 append_attempt_log("status=reference_export_validated")
+sidecar <- list(schema_version = "destination-b-dense-uncertainty-1",
+  reference_sha256 = unname(tools::sha256sum(output_json))[[1L]],
+  data_sha256 = receipt$response$data_sha256, dll_sha256 = dll_sha256,
+  uncertainty = uncertainty,
+  gradient = unname(as.numeric(marginal_obj$gr(fitted_theta))),
+  qualified = FALSE)
+jsonlite::write_json(sidecar, uncertainty_json, auto_unbox = TRUE,
+  pretty = TRUE, digits = 17L, null = "null", na = "null")
 cat(sprintf("wrote frozen marginal phylogenetic Gaussian reference: %s\n", output_json))

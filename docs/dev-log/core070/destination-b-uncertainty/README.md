@@ -1,5 +1,14 @@
 # Frozen marginal uncertainty pilots — not qualification
 
+Dense follow-on: replay88175 exits0 and preserves original response, canonical
+ridged covariance/precision and fitted coordinates exactly. New hash-linked
+sidecar exports production uncertainty without widening the strict reference
+schema. Comparator87652 exits1: R marginal gradient1.177556e-4 exceeds the
+predeclared1e-4 threshold. The failed receipt is retained; there is no dense
+uncertainty PASS. Next investigate/refine the same-data R optimizer under an
+explicit policy; do not widen the gradient tolerance or silently replace the
+reference. Shared tree/pedigree uncertainty regression55387 remains separate.
+
 The R exports use production `standard_errors()` / `sd_report$cov.fixed`
 and public `vcov()`, before later objective evaluations mutate TMB caches.
 The covariance covers all seven free parameters. Julia reorders R coordinates

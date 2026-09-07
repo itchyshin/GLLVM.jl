@@ -1,5 +1,19 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — dense uncertainty gradient gate fails honestly
+
+Base2482bae0. Dense R exporter88175 replays exact original Y/Q/fitted
+coordinates and exports production uncertainty in hash-linked sidecar,
+preserving strict reference schema. Dense comparator87652 exits1 at Rgradient
+1.177556e-4 >1e-4; durable failed receipt under destination-b-uncertainty/.
+No tolerance widened. Shared comparison body extracted for reuse; final
+tree/pedigree regression55387 is the same24-assertion test. Next predeclare
+same-data refined R optimizer policy (signed rel.tol1e-12), retain old failure,
+then compare against unchanged independent Julia fit and add dense negative
+tests. Do not treat dense uncertainty as passed. Public interval/adapter,
+review/recovery/fullsuite requirements remain open. No external review or
+remote-permission bypass, no engine edits/push/merge. Goal ACTIVE.
+
 ## Latest continuation — tree/pedigree marginal uncertainty compared
 
 Baseca63b9dc. R runners now export production sdreport and public vcov before

@@ -7,6 +7,11 @@ function compare_phylo_uncertainty(r, reference, j)
     require(ok,msg) = ok || throw(ArgumentError(msg))
     checked = r["input_route"] == "tree" ? _db_check_tree_gaussian(r,reference) :
         _db_check_pedigree_gaussian(r,reference)
+    return _db_compare_checked_uncertainty(r,j,checked)
+end
+
+function _db_compare_checked_uncertainty(r,j,checked)
+    require(ok,msg) = ok || throw(ArgumentError(msg))
     require(r["fitted"]["convergence"] == 0 && j["fit"]["converged"] === true,
         "both independently fitted models must converge")
     require(checked.r_gradient_norm <= 1e-4 && j["fit"]["gradient_norm"] <= 1e-5,
