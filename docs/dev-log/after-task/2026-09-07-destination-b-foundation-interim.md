@@ -9,6 +9,10 @@ remain open. This is a recoverable implementation checkpoint, not closure.
 
 ## 2. Implemented
 
+An isolated offline JuliaCall environment now eliminates the observed mixed
+LogExpFunctions-version extension failure. Startup checks and actual dense
+transport45507 pass; environment hashes/files retained, no global or package
+dependency edits. Public setup and R wrapper integration remain incomplete.
 Saved actual JuliaCall dense output is now validated and serialized without
 another fit. Only the S3 result container is removed; shapes and all interval
 fields are checked. Pure R tests pass12 assertions. No dependency-load repair

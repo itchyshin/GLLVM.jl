@@ -1,5 +1,20 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — unified JuliaCall environment and actual dense pilot pass
+
+Base3c887c5b. Global LogExpFunctions0.3.26 loaded before switching to
+GLLVM0.3.29 caused observed missingloglogistic extension conflict. Offline
+combined env5383 at /private/tmp/destination-b-juliacall-env-IVmUVo contains
+GLLVMMAIN/RCall0.14.13/Suppressor0.2.8. Startup21684 asserts loaded0.3.29
+symbol/extension; actualdense45507 exit0 RAW_TRANSPORT_PASS. Manifest hashes
+and exact files retained under adapter/juliacall-environment/. Pilot refuses
+startup/target mismatch and records hashes. No global/package manifest edits.
+All sessions terminal. Next R candidate result/interval normalizer and public
+wrapper plumbing, plus tree/pedigree JuliaCall checks; admission closed pending
+review/S4. Existing public setup still switches environments and needs bounded
+design/guard; do not claim this isolated pilot repaired that function.
+Parallel permission unanswered, no bypass. GoalACTIVE; full programme open.
+
 ## Latest continuation — saved JuliaCall dense result validated without refit
 
 Base4be445ff. New pure R readback strips only JuliaNamedTuple S3 container,

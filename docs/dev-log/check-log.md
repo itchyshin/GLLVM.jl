@@ -1,5 +1,7 @@
 ## 2026-09-07 — Destination B internal fitter integration (ongoing)
 
+- JuliaCall environment repair: manifest evidence identifies global LogExpFunctions0.3.26 versus GLLVM0.3.29 switch. Isolated offline combined environment5383 resolves; startup21684 asserts0.3.29/loglogistic/loadedextension, exit0. Corrected dense actual transport45507 exits0 with closedadmission/maps/12CI rows verified. Global/package manifests unchanged; environment artifacts retained. Public setup/wrapper routing still pending.
+
 - Saved JuliaCall readback passes without refit: strips only JuliaNamedTuple class, preserves matrices/maps/twelve interval endpoint pairs and JSON roundtrip. Pure R checker passes12 successes; first synthetic JSON fixture failed on untyped emptylist, restored documented numeric empty slot. Pilot reuses validator and refuses existing raw RDS. Dependency extension error still unresolved; no public R wrapper/admission claim.
 
 - JuliaCall97894 installation-disabled startup/matrix roundtrip passes. Dense67782 overruns estimate during dependency extension load; ultimately returns raw fit but exits1 serializing JuliaNamedTuple. RDS preserved before assertions, readback convergedTRUE/admissionclosed/12targets; no JSON or transportPASS claim. Exact process inspection finds terminal before stop signal. Next reanalyse saved result rather than refit, fix serialization and isolate dependency environment. Parallel skill loaded; agent dispatch still awaits scoped transmission approval.

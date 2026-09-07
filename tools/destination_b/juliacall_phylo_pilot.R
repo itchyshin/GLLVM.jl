@@ -7,10 +7,16 @@ if(any(file.exists(c(output,paste0(output,".rds"))))) stop("refusing existing re
 script_path <- sub("^--file=","",commandArgs()[grepl("^--file=",commandArgs())][1L])
 source(file.path(dirname(normalizePath(script_path)),"juliacall_phylo_readback.R"))
 root <- normalizePath(args[3],mustWork=TRUE)
+project <- normalizePath(args[2],mustWork=TRUE)
+startup_project <- Sys.getenv("JULIA_PROJECT","")
+if(!nzchar(startup_project) || !identical(normalizePath(startup_project,mustWork=TRUE),project))
+ stop("start JuliaCall in the target combined environment; do not switch loaded dependency versions")
 fixtures <- jsonlite::fromJSON(file.path(root,"destination-b-adapter/fixtures-01.json"))
 dense <- jsonlite::fromJSON(file.path(root,"destination-b-s3b-pilot/r-attempt-02.json"))
 expected <- jsonlite::fromJSON(file.path(root,"destination-b-adapter/dense-result.json"))$result
 receipt <- list(status="error",qualified=FALSE,stage="setup",warnings=list())
+receipt$environment_path <- project
+receipt$environment_sha256 <- as.list(unname(tools::sha256sum(file.path(project,c("Project.toml","Manifest.toml")))))
 tryCatch({
  JuliaCall::julia_setup(JULIA_HOME=args[1],installJulia=FALSE,install=FALSE,rebuild=FALSE,verbose=FALSE)
  JuliaCall::julia_command(sprintf("import Pkg; Pkg.activate(%s); using GLLVM",encodeString(normalizePath(args[2]),quote='"')))

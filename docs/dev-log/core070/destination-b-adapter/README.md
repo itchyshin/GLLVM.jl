@@ -1,5 +1,11 @@
 # Actual R adapter fixtures — public admission closed
 
+Unified-environment JuliaCall pilot45507 exits0 with actual dense raw fit,
+map and interval checks passing. Startup21684 checks the loaded dependency
+version and extension explicitly; manifests retained in juliacall-environment/.
+The pilot now refuses differing startup/target projects. Existing public
+gllvm_julia_setup environment handling is not changed or qualified here.
+
 Saved JuliaCall dense readback now passes without refitting. The original
 JuliaNamedTuple container alone was removed; matrix dimensions, observation
 maps and all twelve CI rows/endpoints survive JSON roundtrip. Pure tests
