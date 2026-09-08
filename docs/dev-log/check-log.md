@@ -1,3 +1,35 @@
+## 2026-09-07 — A4/S4 source-attested raw frozen-R receipt (unqualified)
+
+- Fresh R-only runner `run_a4_s4_frozen_r_raw.R` validates the exact frozen
+  source/archive/tree fields, externally supplied `build.json` SHA-256,
+  installed marker/tree, exact regular package DLL, runtime helper hashes, and
+  checks the marginal TMB object before two declared-coordinate evaluations.
+  It explicitly requests `se = FALSE` and rejects a retained `sd_report`, so
+  the raw evaluation cannot inherit construction-time standard-error output.
+  The legacy fixture DLL `91bfa6…` stays fixture lineage only; fresh build DLL
+  `5d8a9c…` is bound at receipt level through build receipt
+  `ecb2bf37e4bc5ec4cbe60be777f9e46c4b7812387ee381e71077609872254b8a`.
+- `Rscript --vanilla test/test_destination_b_a4_s4_frozen_r_raw.R`,
+  `test_destination_b_a4_s4_frozen_r_evaluator.R`, and
+  `test_destination_b_a4_s4_runner.R` all exit 0 with their respective
+  `A4_S4_*_OK` markers.  Regression controls cover symlink/exact DLL paths,
+  self-refreshed marker/tree tampering, post-validation DLL mutation, nested
+  pedigree scalar lists, and dense JSON list-matrix decoding.
+- Raw invocation with the point-only control exits 0 in 2.1 s and retains
+  `destination-b-a4-s4/raw-frozen-r-02.rds` (SHA-256
+  `63c087dad7c4d3cdcaffa349d732fbee721c25e69abd2ca2f1db5d0a349fe599`).
+  Independent RDS inspection confirms three finite repeated objectives,
+  `sdreport_requested = false`, `qualified = false`, closed public admission,
+  and no per-row legacy DLL field.  `raw-frozen-r-01.rds` is preserved as the
+  pre-correction receipt and is not the current raw-evidence artifact.
+  `core070_build_oracle.py verify` exits 0 after the run.
+- Two initial live attempts stopped before publication at pedigree/dense JSON
+  representation boundaries; both defects were fixed test-first and reviewed
+  independently.  This is raw R-only material: no Julia value/delta, own
+  optimum, interval, recovery, coverage, public formula admission, 0.7.1
+  parity, or Destination B completion is claimed.  FRK remains parked at
+  `gllvmTMB#1275`.
+
 ## 2026-09-07 — Destination B internal fitter integration (ongoing)
 
 - G2 aggregate current-head receipt: isolated quality environment at
