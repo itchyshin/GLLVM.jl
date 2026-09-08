@@ -1,5 +1,189 @@
 # Destination B active execution checkpoint
 
+## Latest continuation — rendered responsive GLLVM.jl homepage mark
+
+The user-requested GLLVM.jl mark now appears as the semantic VitePress hero
+image, rather than a desktop-only pseudo-element hidden below 1320px.  A real
+`gllvmjl-mark-logo.svg` public asset avoids the symlink that DocumenterVitepress
+would otherwise preserve as a broken public-root link.  Local docs build exits0
+and the rendered `docs/build/1/index.html` contains the hero image and alt text;
+the public asset check passes.  No deploy/push.  This is a documentation identity
+slice, not a Destination B capability claim.
+
+## Latest continuation — controlled closed phylogenetic precision candidate/readback
+
+The ordinary `gllvmTMB(..., engine = "julia")` phylogenetic-precision formula
+route now rejects with `GJL-GATE-PRECISION-ADMISSION` before data packing or
+Julia startup. A disposable frozen-0.7.0 source overlay (unchanged shared
+library hash `91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb`)
+then uses a per-process, explicit candidate option solely for controlled
+evidence. Its retained tree, sparse-pedigree-with-ancestors, and
+supplied-dense-`vcv` runs are
+`core070/destination-b-adapter/controlled-dispatch-{tree,pedigree,dense}-03.json`.
+They bind the source overlay, frozen reference, installed R artifacts, requested
+and in-process Julia executable, and actual Julia executable SHA-256
+`fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30`.
+Each records the exact retained candidate likelihood and conditional fitted
+values, 12 stored interval targets, and formula-labelled `coef`, `summary`,
+`confint`, `fitted`, `predict`, response/Pearson residual, and conditional
+simulation checks.
+
+Fresh no-fit readbacks are retained as `controlled-readers-03.json` and
+`installed-readers-05.json`. They reopen all three saved objects through the
+registered readers, recompute and compare the recorded Julia executable digest,
+and verify formula-column labels rather than anonymous `beta[i]` display labels.
+Deliberately corrupted-digest controls are retained as
+`controlled-readers-bad-julia-hash-01.json` and
+`installed-readers-bad-julia-hash-01.json`; both fail at the required digest
+assertion. A fresh independent review found no remaining A3 blocker.
+
+A3 is therefore **tested only**: all associated receipts remain
+`qualified = false` and `admission_status = "closed"`. The private candidate
+option is not a public interface or admission route. This is not S3b/S4
+qualification, frozen-R estimation parity, recovery, coverage, broad interval
+validation, 0.7.1 parity, or Destination B completion. A4/S4 acceptance and
+the remaining programme gates are still open. All processes terminal; no push,
+merge, release, or FRK work.
+
+## Latest continuation — pedigree formula packing paired check
+
+Generalized formula pilot to pedigree. Initial namespace-only attemptb80906
+failed before fit (dense-vcv validation on unresolved parser expression).
+Attaching frozen gllvmTMB, matching prior reference pilot, resolves generated
+animal expression; retry45810 exit0. Exact responses/design/augmented-node
+mapping match frozen R, wrapper matches retained pedigree likelihood/predictions
+and12available interval rows. Both error01/pass02 JSON retained; raw fit02 kept.
+Frozen parser untouched; namespace-only formula ergonomics is a known boundary,
+not silently fixed or claimed supported. Next dense full-formula packing and
+bounded public routing/admission tests. All sessions terminal, scoped changes
+uncommitted; programme ACTIVE and unqualified.
+
+## Latest continuation — dense/pedigree parser coverage and silent-option repair
+
+Exact frozen animal_latent parser emits .animal_source plus sparse vcv; dense
+phylo_latent preserves dense vcv. Tests now cover both. Negative tests35bc81
+reproduced ignored rho/offset; mapper now rejects unknown term options and
+parsed offsets explicitly. Final07689b exit0 2.39s, one existing opt-in skip.
+No fitting runs, parser edits or public gate changes. Next full formula-wrapper
+packing for pedigree/dense and guard tests before public routing. All processes
+terminal; scoped changes remain uncommitted, goal ACTIVE.
+
+## Latest continuation — frozen-R formula packing paired check
+
+precision_formula_pilot28104 exit0. Reconstructs retained original long data and
+literal frozen phylo_latent formula, then verifies packed responses, engine
+fixed-design rows and zero-based augmented-node mapping against frozen R receipt.
+Wrapper with packed X matches earlier tree likelihood/predictions,12available
+interval rows; elapsed12.074s. Hash-bound precision-formula-01 JSON/rawRDS retained.
+This is parsed-formula-to-internal-wrapper evidence, NOT public engine='julia'
+dispatch or admission. Next remaining parser restrictions/negative cases,
+pedigree/dense formula coverage and final guarded dispatch wiring. All processes
+terminal; uncommitted scoped changes, goal ACTIVE.
+
+## Latest continuation — replicated long-data packing
+
+R internal precision_long_data converts frozen parsed formula plus complete long
+data into response/design/source, retaining row_to_cell and coefficient names.
+Trait replication must be equal within each unit (unequal counts between units
+allowed); each unit maps to one species. Within unit/trait, occurrence order
+only selects columns: all such replicates share the same phylogenetic node and
+independent observation residuals. No extra within-replicate effect is invented.
+Shuffled fixture recovers every response/design row exactly; incomplete cells
+and conflicting species error. Red missing helper, then test-only model.matrix
+attribute mismatch corrected to numeric+column-name checks; finald5e632 exit0
+1.98s, opt-in skip. Public dispatch still unconnected. Next paired frozen-R
+long-data packing comparisons and bounded formula route integration.
+All sessions terminal; scoped changes uncommitted, goal ACTIVE.
+
+## Latest continuation — frozen parsed phylogenetic term mapping
+
+Read exact frozen desugar/parse output: unique=FALSE is one phylo_rr; TRUE
+is latent plus .phylo_unique companion, both sharing lhs/group/source. New
+internal bridge mapper preserves barelowrank/explicitunique and species/tree/vcv,
+rejects mismatched companion or multiple latent terms. Actual frozen parser
+fixtures pass a6b49c exit0 2.36s after red missing helper; one opt-in skip.
+No parser or R likelihood changes. Public dispatch not connected yet. Next
+long-response/mean-design packing with replication and source-map tests, then
+guarded formula integration. All sessions terminal; uncommitted scoped changes,
+goalACTIVE. Sparse pedigree/dense parser fixture coverage still needed.
+
+## Latest continuation — live X wrapper transport verified
+
+precision_x_wrapper_pilot.R uses three trait intercepts plus one shared covariate
+on the retained tree data; two equivalent matrix/array designs pass88711 exit0.
+Four fitted coefficients and13availableCI rows; retained X and mean_design exact.
+Dense likelihood error2.131628e-14 and conditional mean error2.997602e-15 for
+both layouts. Matrix first call12.401s incl startup, array0.282s warm. JSON/raw
+fits retained. This is one same-data transport/design check, not independent
+R-X paired fit, recovery or coverage evidence. Public formula routing and
+installed wrapper integration remain incomplete. Next bounded parsed-formula
+mapping contract and admission tests; do not widen public gate on these pilots
+alone. All sessions terminal; scoped changes remain uncommitted, goalACTIVE.
+
+## Latest continuation — bounded R fitting wrapper passes
+
+Internal .gllvm_julia_fit_precision_candidate validates startup JULIA_PROJECT
+and actual Julia active project, never activates another environment or installs
+dependencies. It calls canonical argument builder, assembles the returned fit,
+and retains full precision_input separately from legacy bridge_input. Missing
+startup guard tested red/green (b8acd8 exit0, opt-in skip). Live wrapper80462
+exit0 matches tree-03 likelihood/predictions and12storedCI rows, retains exact
+source and response. Raw fitRDS and hash-bound precision-wrapper-01 JSON retained.
+Public formula route remains closed; live X transport and installed wrapper
+integration still needed. All processes terminal; scoped uncommitted changes,
+goalACTIVE. This wrapper alone is not S3b/S4 qualification.
+
+## Latest continuation — invocation verified and full mean design retained
+
+Fresh tree66458 through R canonical argument builder exits0; fit8.24s,
+prediction error2.220446e-15, tree-03 JSON/rawRDS retained. Subsequent R builder
+adds X unchanged as either p*n-by-q matrix or p-by-n-by-q array, validating
+finite shape before engine start; Julia retains full-rank validation. Red unused
+X argument reproduced; finalcb7809 exit0 2.08s, one opt-in skip. Actual tree-03
+is no-X evidence and predates X addition, not proof of live X marshalling.
+Next bounded fitting wrapper with environment guard/spec retention, then actual
+X transport and formula integration. Installed generic checks remain applicable
+only to their recorded earlier adapter hash. All processes terminal; uncommitted
+scoped changes, goalACTIVE, no public admission.
+
+## Latest continuation — canonical R invocation arguments
+
+New R .gllvm_julia_precision_args preserves canonical precision and one-based
+species mapping, validates complete responses/rank/mode/CI level, and constructs
+the exact multivariate bridge call. Red helper missing, then CI error-message
+test exposed an unlabelled match.arg error; repaired explicit ci_method message.
+Final961645 exit0 2.31s, one opt-in skip. Existing pilot now calls this builder;
+this modified invocation has NOT yet had a fresh JuliaCall run. Next run it
+against a retained tree fixture, then add full X/input retention and a bounded
+candidate fitting wrapper before public formula integration. Existing installed
+reader overlay predates this argument helper, not proof of new invocation.
+All sessions terminal; uncommitted scoped changes, goal ACTIVE.
+
+## Latest continuation — installed R generic readers verified
+
+Disposable frozen-source adapter overlay installed at
+/private/tmp/destination-b-r-reader-install-GNm6kB/library with unchanged frozen
+DLL, --no-libs (94430 exit0). Registered generic methods on all three saved
+JuliaCall candidates pass fec884 exit0 0.69s. Reproducible checker, JSON and
+source/DLL/lazy-database hashes retained under destination-b-adapter. This is a
+private candidate overlay, not a change to immutable reference/user libraries.
+Public formula invocation remains closed and unverified; next implement bounded
+invocation with full precision/spec retention and honest setup handling.
+R residual changes and new Julia checker/docs remain uncommitted. All processes
+terminal; goalACTIVE. Reader success is not full S3b/S4 qualification.
+
+## Latest continuation — R residual and conditional simulation readers
+
+MainHEAD5ed59fb3,Rbase6263646af. R uncommitted adapter/tests/decision changes
+connect retained complete training Y and sqrt(residual_variance) to existing
+residual and conditional simulation methods. Red d95d0b showed all-NA response
+residuals/missing scale; final749119 exit0 3.63s, existing opt-in skip. Exact
+fixed-seed draws, response/Pearson residuals and malformed variance/Y tested;
+unconditional redraws remain explicitly blocked. No model fits rerun. Next
+installed-generic workflow and public invocation integration; no admission claim.
+All sessions terminal, programme ACTIVE. Earlier prediction tranche committed
+Julia9c36e096,R6263646af; separate logo queue record5ed59fb3.
+
 ## Latest continuation — all three fresh prediction transports pass
 
 Parallel local pedigree2948/dense86591 both exit0. Independent dense conditional

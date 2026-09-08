@@ -1,0 +1,38 @@
+{
+  "status": "error",
+  "qualified": false,
+  "library": "/private/tmp/destination-b-r-public-admission-jobmUD/library",
+  "package_version": "0.7.0",
+  "installed_package": {
+    "r_loader": "570ca456b280cdeb201ef5ebdf22dc8f80092e2c0c68e33c7f73340e420f3759",
+    "r_database": "acaa9194dbeed5b326ab31931ba053536c9a34b1772a964bddd219fd8e1b0dd9",
+    "r_index": "703370e9af01714b2736650d1144fe14f574a00e37148e8280a9c81e09432ece",
+    "description": "7fc53a7b945931a26b4d4c22969916a77b9cb88d5348d3275d5cef58e903efc2"
+  },
+  "cases": {
+    "tree": {
+      "status": "pass",
+      "n_intervals": 12,
+      "n_predictions": 48,
+      "raw_sha256": "e0bdb44408e325017749a13432ac205b6270ceee418a3c2a593ca50294d0e1fa",
+      "reference_sha256": "f702a7859980e29f59b19bee8878171df385ef9bd581dc338520055f0f140223"
+    },
+    "pedigree": {
+      "status": "pass",
+      "n_intervals": 12,
+      "n_predictions": 48,
+      "raw_sha256": "fd425bab81b0e4ef8afe807503433c9a90370d1773a7c1db4640c3f7face9b93",
+      "reference_sha256": "b8d5f2e884720ad86f3a0d0d562ec5b25248113d0e641825803e4d5cee8e5a06"
+    },
+    "dense": {
+      "status": "pass",
+      "n_intervals": 12,
+      "n_predictions": 48,
+      "raw_sha256": "c24f8f48ba0a0dea6f7aea660ffe1080bb81f1966e0d4b7cba9822a6ddec061d",
+      "reference_sha256": "5166bd887d8e85a962d551fd8670bc6f095d7b7cfff22d927b04cba34f3b981f"
+    }
+  },
+  "dll_sha256": "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb",
+  "controlled_dispatch": [],
+  "error": "identical(actual_julia_sha256, requested_julia_sha256) is not TRUE"
+}

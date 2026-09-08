@@ -11,24 +11,11 @@
   }
 }
 
-.VPHomeHero .container {
-  position: relative;
-}
-
-.VPHomeHero .container::after {
-  content: "";
-  position: absolute;
-  top: 3rem;
-  right: clamp(3rem, 9vw, 11rem);
-  width: min(12rem, 16vw);
-  aspect-ratio: 1;
-  background: url("/assets/gllvmjl-mark.svg") center / contain no-repeat;
-  pointer-events: none;
-}
-
-@media (max-width: 1320px) {
-  .VPHomeHero .container::after {
-    display: none;
+/* The mark is the VitePress hero image, so it remains in the document and
+   follows the theme's ordinary stacked layout below the desktop breakpoint. */
+@media (max-width: 959px) {
+  .VPHomeHero .image {
+    margin: 0 auto 1rem;
   }
 }
 

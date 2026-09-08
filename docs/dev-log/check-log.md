@@ -18313,3 +18313,96 @@ Public formula admission and wider workflow validation remain incomplete.
 Parallel local JuliaCall2948/86591 exit0. Pedigree/dense conditional means match
 independent dense oracle at1.332268e-15/3.719247e-15; fits7.787/7.82s.
 Fresh -02 receipts retained, no public gate changes. Interim report updated.
+# 2026-09-07 — R residual/simulation readers
+
+Red all-NA residuals and missing Gaussian scale reproduced. Scoped R check
+749119 passes with exact conditional draws and response/Pearson residuals,
+plus malformed-input controls (one opt-in skip). No refits or public admission.
+# 2026-09-07 — installed R generic readers
+
+Private frozen-source adapter overlay installs with unchanged DLL (--no-libs).
+fec884 exit0: registered generic reader checks pass for tree/pedigree/dense
+saved candidates. Hash-bound receipt retained; public fitting gate still closed.
+# 2026-09-07 — canonical R invocation arguments
+
+R argument builder tested for exact precision/map preservation and malformed
+rank/mapping/CI requests. Final961645 exit0; one opt-in skip. Pilot integration
+edited but not yet executed; no fresh cross-language claim for that edit.
+# 2026-09-07 — R invocation live check and X transport contract
+
+Tree66458 through canonical argument builder passes (8.24s fit). Subsequent
+X argument tests pass after red unused-argument failure; no live X claim yet.
+Fresh tree-03 receipt retained separately from prior immutable attempts.
+# 2026-09-07 — bounded R fitting wrapper
+
+Startup-environment guard test passes; live tree wrapper80462 exit0 verifies
+full source retention, likelihood, fitted means and12storedCI rows. Receipt
+retained. No dependency installation/project switch/public formula admission.
+# 2026-09-07 — live X wrapper transport
+
+88711 exit0: equivalent matrix/array mean designs pass actual JuliaCall fits,
+13interval rows and dense likelihood/prediction checks. Errors2.13e-14/3.00e-15.
+JSON/raw fits retained; this is not R paired-X/recovery evidence or admission.
+# 2026-09-07 — frozen phylogenetic formula mapping
+
+Exact frozen desugar/parser fixtures exercise single latent and linked unique
+companion. Red missing helper reproduced; scoped R tests a6b49c pass, opt-in
+skip remains. Mismatched sources and duplicate latent terms rejected.
+# 2026-09-07 — replicated phylogenetic long data
+
+Internal packing preserves shuffled response/design rows and species mapping.
+Missing replication/conflicting species rejected. Finald5e632 exit0 (one skip).
+Numeric+column-name test avoids incidental model.matrix attribute mismatch.
+No public formula route qualification yet.
+# 2026-09-07 — frozen-R formula packing pair
+
+28104 exit0: exact response/design/node mapping versus frozen R engine receipt,
+then matching internal-wrapper fit with12availableCI rows (12.074s). Evidence
+retained; public dispatch and broader formula sources remain incomplete.
+# 2026-09-07 — formula source coverage and unsupported options
+
+Frozen dense/pedigree parser objects preserved. Red ignored rho/offset failures
+fixed;07689b exit0 scoped R tests, one skip. Public routing still pending.
+# 2026-09-07 — pedigree formula packing pair
+
+Namespace-only pilot fails before fit; attached-package retry45810 passes exact
+frozen response/design/node mapping and matched internal fit. Both receipts
+retained. No frozen parser changes or public admission.
+
+# 2026-09-07 — controlled closed phylogenetic precision candidate/readback
+
+The ordinary `gllvmTMB(..., engine = "julia")` phylogenetic-precision formula
+route rejects with `GJL-GATE-PRECISION-ADMISSION` before data packing or Julia
+startup. Only a private, per-process candidate option in a disposable frozen
+0.7.0 source overlay makes the three controlled evidence calls. Hash-bound
+`controlled-dispatch-{tree,pedigree,dense}-03.json` receipts retain tree,
+sparse-pedigree-with-ancestors, and supplied-dense-`vcv` outcomes, each with
+exact candidate likelihood/conditional-fit checks, 12 stored interval rows,
+formula-labelled public readers, installed-R hashes, and matching requested /
+in-process Julia executable SHA-256
+`fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30`.
+
+Fresh no-fit generic readbacks (`controlled-readers-03.json` and
+`installed-readers-05.json`) re-open all three saved objects, re-hash the live
+Julia executable, and exercise `coef`, `summary`, `confint`, `fitted`,
+`predict`, both residual types, and conditional simulation. Deliberately
+corrupted-digest controls are retained and fail at the digest assertion. A
+fresh independent review found no remaining A3 blocker. This records A3 as
+**tested only**: every object remains `qualified = false` with
+`admission_status = "closed"`; the candidate option is not a public interface.
+Not claiming S3b/S4 qualification, frozen-R estimation parity, recovery,
+coverage, broad interval validation, 0.7.1 parity, or Destination B completion.
+# 2026-09-07 — responsive GLLVM.jl homepage identity mark
+
+The existing GLLVM.jl response-structure mark is now a semantic VitePress hero
+image rather than an absolutely positioned CSS pseudo-element.  The former
+desktop-only pseudo-element was hidden at 1320px; the regular hero image follows
+the theme's ordinary stacked layout below 959px.  The public-root SVG is a real
+file, not a symlink, so DocumenterVitepress copies it safely.
+
+Local `docs/make.jl --local` exits0 and VitePress reports `build complete in
+7.21s` after the documentation/doctest stages.  The rendered homepage contains
+`<img class="VPImage image-src" src="/gllvmjl-mark-logo.svg" alt="GLLVM.jl mark
+showing response columns connected by shared latent structure">`; the output
+contains the non-symlink public asset and `RENDERED_HERO_LOGO_ASSET_PASS`.
+No deploy, push, or capability claim.

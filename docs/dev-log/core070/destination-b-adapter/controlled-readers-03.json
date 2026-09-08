@@ -1,0 +1,51 @@
+{
+  "status": "pass",
+  "qualified": false,
+  "admission_status": "closed",
+  "package_version": "0.7.0",
+  "installed_package": {
+    "r_loader": "570ca456b280cdeb201ef5ebdf22dc8f80092e2c0c68e33c7f73340e420f3759",
+    "r_database": "acaa9194dbeed5b326ab31931ba053536c9a34b1772a964bddd219fd8e1b0dd9",
+    "r_index": "703370e9af01714b2736650d1144fe14f574a00e37148e8280a9c81e09432ece",
+    "description": "7fc53a7b945931a26b4d4c22969916a77b9cb88d5348d3275d5cef58e903efc2",
+    "dll": "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb"
+  },
+  "cases": {
+    "tree": {
+      "status": "pass",
+      "receipt_sha256": "8954c9b977108abd10798dc2ec139d1d82da927f07d3ea3135bf965b64158b14",
+      "object_sha256": "4783be2325eca173302c5b36e1f68a2aa095b5ed93f11132a1ea2021a27f112e",
+      "actual_julia_bin": "/Users/z3437171/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/bin/julia",
+      "actual_julia_bin_sha256": "fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30",
+      "coefficient_names": ["traita", "traitb", "traitc"],
+      "displayed_beta_targets": ["beta[traita]", "beta[traitb]", "beta[traitc]"],
+      "n_intervals": 12,
+      "fitted_shape": [3, 16],
+      "simulation_shape": [48, 2]
+    },
+    "pedigree": {
+      "status": "pass",
+      "receipt_sha256": "bfc8f14da8b97843d8856046b3a8f85866b959f47659eb46f24112ab2bfa5d4d",
+      "object_sha256": "55dbdffc582d5a17d450663554bcdf65998789eadbda61f22ceb53c02c5c6b2a",
+      "actual_julia_bin": "/Users/z3437171/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/bin/julia",
+      "actual_julia_bin_sha256": "fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30",
+      "coefficient_names": ["traita", "traitb", "traitc"],
+      "displayed_beta_targets": ["beta[traita]", "beta[traitb]", "beta[traitc]"],
+      "n_intervals": 12,
+      "fitted_shape": [3, 16],
+      "simulation_shape": [48, 2]
+    },
+    "dense": {
+      "status": "pass",
+      "receipt_sha256": "e30d998cb51f357bd05c97a8ac34a1f5ec7543aa3602298f944066af76d47fdb",
+      "object_sha256": "aa025b420bd65513bddf1fddb1f40e35b8168e391b27f95be50341e1f79e7262",
+      "actual_julia_bin": "/Users/z3437171/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/bin/julia",
+      "actual_julia_bin_sha256": "fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30",
+      "coefficient_names": ["traita", "traitb", "traitc"],
+      "displayed_beta_targets": ["beta[traita]", "beta[traitb]", "beta[traitc]"],
+      "n_intervals": 12,
+      "fitted_shape": [3, 16],
+      "simulation_shape": [48, 2]
+    }
+  }
+}
