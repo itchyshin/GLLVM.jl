@@ -18518,3 +18518,25 @@ convergence 0, direct marginal NLL `12.7509239715045`, maximum gradient
 evaluations. This earns only a private, source-attested R-only own-optimum
 record. There is no parity, interval, recovery, coverage, public admission,
 S3b/S4 qualification, 0.7.1 parity, or Destination B completion claim.
+
+# 2026-09-08 — grouped five-family interval-feasibility interior matrix
+
+The new deterministic Julia public-API matrix uses two traits, 96 observations,
+four nonzero shared grouping sources (`unit`, nested `unit_obs`, crossed
+`cluster`, and diagonal `cluster2`), and independent seeded fixtures for
+Gaussian, Poisson, Binomial, Beta, and NB2. It requires—not merely permits—
+convergence, finite fit diagnostics, positive-definite curvature, a valid
+non-Gaussian inner solve, an available interval object, and finite available
+variance intervals for both traits at every source. It also binds the four
+incidence covariance bases with pairwise Gram separation and rank four,
+fixed-coordinate sensitivity for every source, and the public unused-label
+diagnostic.
+
+Focused direct execution passes `189/189` in 20.2 seconds; the established
+shard entry passes `190/190`. Two independent reviews rejected the earlier
+one-trait boundary fixture because its unavailable intervals were not evidence
+of feasibility; the retained two-trait interior fixture addresses that exact
+failure without treating difficult boundary cases as successes. This is one
+deterministic Julia interval-feasibility cell only—not frozen-R pairing,
+recovery, coverage, public R bridge admission, all-design robustness, 0.7.1
+parity, or Destination B completion.

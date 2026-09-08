@@ -67,6 +67,7 @@ println(_SHARD === nothing ?
     _shard_include("test_destination_b_reference.jl")
     _shard_include("test_destination_b_kernel_crosscheck.jl")
     _shard_include("test_destination_b_grouping_invariance.jl")
+    _shard_include("test_destination_b_grouping_interval_matrix.jl")
     _shard_include("test_grouped_profile_foundation.jl")
     _shard_include("test_grouped_profile_refit.jl")
     _shard_include("test_grouped_profile_inversion.jl")
