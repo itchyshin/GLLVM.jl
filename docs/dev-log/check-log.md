@@ -18560,3 +18560,32 @@ regression seal for a private
 checker. It does not establish a successful paired comparison, interval
 feasibility, recovery, dense-vcv support, S3b/S4 admission, B1 grouping
 parity, 0.7.1 parity, FRK, or Destination B completion.
+
+# 2026-09-08 — B1 Gaussian `unit` source-alignment checkpoint
+
+The existing public Gaussian rank-one `unit` route now has a fixed-coordinate
+regression against an independently assembled dense covariance/NLL, with a
+one-observation changed-membership control.  The fixture uses two traits and
+eight observation columns in four repeated unit groups; it checks the packed
+trait intercepts, rank-one `Lambda * Lambda'`, scalar residual SD, Julia
+trait-within-observation ordering, and the sparse objective without fitting.
+
+The frozen-R 0.7.0 receipt is built from the exact Git archive at
+`b4d5fee64def88bc768dda1f1f77c29b295edd86` with `R CMD INSTALL --preclean`
+into an explicit library.  It binds archive and installed shared-library
+SHA-256 values, uses the matching repeated `site` / distinct `site_species`
+long-data partition, and records the Gaussian ML formula
+`latent(0 + trait | site, d = 1, unique = FALSE)`.  Direct receipt assertions
+pass (`B1_R_RECEIPT_ASSERTIONS_OK`).
+
+The three B1 Unlazy gates reverify as `ALL MET`: two isolated Julia Pkg-test
+shards pass 18/18 in 11.0 s and 10.9 s, and the frozen-R receipt runner exits
+0.  This is source-attested fixed-coordinate alignment only, not a fitted
+same-dataset R--Julia comparison, optimizer agreement, interval evidence,
+recovery, non-Gaussian grouping, `unit_obs`/`cluster`/`cluster2`, public bridge
+admission, S3b/S4, dense `vcv`, FRK, 0.7.1 parity, B1 qualification, or
+Destination B completion.
+
+The 2026-09-07 handover's G0 remains explicitly unresolved.  These source
+alignment gates are not a named B1 disposition and do not authorise a next
+grouping, S3b/S4, dense-`vcv`, or FRK leaf.
