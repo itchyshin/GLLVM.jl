@@ -33,15 +33,13 @@ if (!identical(normalizePath(Sys.getenv("JULIA_PROJECT"), mustWork = TRUE), proj
 frozen_pin <- "b4d5fee64def88bc768dda1f1f77c29b295edd86"
 frozen_dll <- "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb"
 sha <- function(path) unname(tools::sha256sum(path))[[1L]]
-# The fixture bundle stores canonical sparse Q triplets, rather than a dense
-# Q matrix.  Hash that exact, ordered transport representation; do not densify
-# or independently rescale it merely to make a hash.
-q_sha <- function(precision) digest::digest(jsonlite::toJSON(list(
-  i = precision$i, j = precision$j, x = precision$x, n_aug = precision$n_aug
-), auto_unbox = TRUE, digits = 17L), algo = "sha256", serialize = FALSE)
 row_path <- function(kind) file.path(core070, switch(kind,
   tree = "destination-b-tree/r-bfgs-attempt-01.json",
   pedigree = "destination-b-pedigree-fit/r-bfgs-attempt-01.json",
+  dense = "destination-b-s3b-pilot/r-attempt-02.json"))
+precision_source_path <- function(kind) file.path(core070, switch(kind,
+  tree = "destination-b-tree/precision-reference.json",
+  pedigree = "destination-b-pedigree/precision-reference.json",
   dense = "destination-b-s3b-pilot/r-attempt-02.json"))
 
 fixtures_path <- file.path(core070, "destination-b-adapter/fixtures-01.json")
@@ -118,6 +116,15 @@ tryCatch({
       stop(sprintf("%s fixture has no valid observation-level species_id map", kind), call. = FALSE)
     }
     ci_request <- if (identical(kind, "dense")) "none" else "wald"
+    ridge_evidence <- if (identical(kind, "dense")) {
+      operation <- reference$source_covariance$ridge_operation
+      expected_operation <- "A_ridged = A_original + 1e-8 * I; Q_canonical = solve(A_ridged)"
+      if (!identical(operation, expected_operation)) {
+        stop("dense retained source does not document the canonical one-ridge operation", call. = FALSE)
+      }
+      list(source_covariance_reference_sha256 = sha(reference_path),
+        source_covariance_operation = operation)
+    } else NULL
     started <- proc.time()[["elapsed"]]
     fit <- bridge_one(Y, precision, species_id, ci_request)
     elapsed <- proc.time()[["elapsed"]] - started
@@ -134,10 +141,12 @@ tryCatch({
       reference = list(source_pin = source_pin, dll_sha256 = dll_hash,
         julia_source_sha256 = result$provenance$julia_source_sha256,
         data_sha256 = data_hash, reference_file_sha256 = sha(reference_path)),
-      precision = list(canonical_q_sha256 = q_sha(precision),
+      precision = list(precision_payload_sha256 = sha(fixtures_path),
+        precision_source_sha256 = sha(precision_source_path(kind)),
         log_det_Q = precision$log_det, scale = precision$scale,
         ridge = if (identical(kind, "dense")) 1e-8 else 0,
         ridge_applied_once = identical(kind, "dense")),
+      ridge_evidence = ridge_evidence,
       map = list(observed_species_to_augmented_zero_based = precision$species_aug_id,
         species_id_one_based = species_id,
         observation_to_augmented_zero_based = precision$species_aug_id[species_id],

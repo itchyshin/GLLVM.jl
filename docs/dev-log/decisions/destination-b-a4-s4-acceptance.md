@@ -122,3 +122,38 @@ unqualified even if point-objective diagnostics later agree.
 - The verifier also now locks the exact eight-species-to-augmented-node maps:
   tree `[13,6,11,8,12,7,10,9]`, pedigree `[11,4,8,6,9,5,10,7]`, and dense
   `[0,1,2,3,4,5,6,7]`.  No live fit batch was run.
+
+## Evidence-integrity boundary
+
+Each row now binds to its retained response hash and immutable reference-file
+hash.  The canonical precision payload is bound by the immutable
+`fixtures-01.json` SHA-256, with the tree/pedigree precision-reference SHA or
+dense retained-reference SHA recorded separately.  This prevents a coordinated
+change to a row's self-reported data/Q hashes from becoming evidence.  Dense
+also binds its one-ridge claim to the retained operation
+`A_ridged = A_original + 1e-8 * I; Q_canonical = solve(A_ridged)` and the
+retained source hash.
+
+The fixed 12-target order is enforced for tree and pedigree, not merely a
+length-12 string vector.  Boolean values are rejected where finite numbers are
+required, and a gradient norm must lie in `[0, 1e-5]`.
+
+There are no grounded A4/S4 matched-point or independent-own-optimum artifact
+identifiers yet.  Consequently the paired schema is now explicitly
+`paired_evidence_unavailable`: it documents the required R/Julia coordinate
+orders and `sigma2_phy = 1`, but rejects any ungrounded matched/own-optimum
+payload instead of treating arbitrary SHA-shaped strings as evidence.  Raw
+private transport remains separately verifiable and unqualified.
+
+## Evidence-integrity TDD receipt
+
+- RED: the new adversarial cases showed that a row could substitute its own
+  data/reference/Q hashes, use an arbitrary 12-name target vector, supply a
+  boolean or negative gradient norm, or attach SHA-shaped but ungrounded paired
+  artifacts.
+- GREEN: `julia --project=. test/test_destination_b_a4_s4_receipts.jl` passed
+  `35/35` after static retained-source bindings, the exact coordinate/target
+  contracts, numeric checks, and the fail-closed unavailable paired state were
+  added.  `Rscript -e 'parse(file="tools/destination_b/run_a4_s4_paired_matrix.R")'`
+  also parsed successfully.
+- No live fit, simulation, or candidate-success receipt was run or written.

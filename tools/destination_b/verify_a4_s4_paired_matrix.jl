@@ -24,6 +24,32 @@ const _A4_S4_SPECIES_AUGMENTED = Dict(
 )
 const _A4_S4_LOGDET = Dict("tree" => 15.706819081565975,
     "pedigree" => 5.966390909555864, "dense" => 7.861154398716261)
+const _A4_S4_DATA_SHA = Dict(
+    "tree" => "a096e8a4f4408923ea0e906defef936f133b92b65202a9baac9fff0d197373c2",
+    "pedigree" => "025d9ca79375962ef4110c3ce62f84b30cdeea2939957e03f7235e2352e5142b",
+    "dense" => "e33fcb6d2b391e70b1a8a19d8285c6d0205bdf80d97f35c65d82395d9eef3243",
+)
+const _A4_S4_REFERENCE_SHA = Dict(
+    "tree" => "08c2c0f8dca3bb601e716da30d64dae2cd0ce3834766fa557dabb0444ddf4bd7",
+    "pedigree" => "55ebb6e89461dcb6693d2b70d8c845d6ec1c1c3447fbaf20c6c58caaf9f221d3",
+    "dense" => "5166bd887d8e85a962d551fd8670bc6f095d7b7cfff22d927b04cba34f3b981f",
+)
+const _A4_S4_PRECISION_PAYLOAD_SHA = "089f87d0dcf3c1014fc99646953d8696a0d5aa747287561dd815b5b8bf097549"
+const _A4_S4_PRECISION_SOURCE_SHA = Dict(
+    "tree" => "ab01ee47206565eb1af7da391af313953b8a97c6bb11d9b6160655aaa0429170",
+    "pedigree" => "c428e369e6fb554cc4b9bb03f250418d0d51474ba86e01d1be9c7c7301e615ee",
+    "dense" => "5166bd887d8e85a962d551fd8670bc6f095d7b7cfff22d927b04cba34f3b981f",
+)
+const _A4_S4_TARGETS = ["beta[1]", "beta[2]", "beta[3]",
+    "phylo_cov[1,1]", "phylo_cov[2,1]", "phylo_cov[3,1]",
+    "residual_var_shared[1]", "phylo_cov[2,2]", "phylo_cov[3,2]",
+    "residual_var_shared[2]", "phylo_cov[3,3]", "residual_var_shared[3]"]
+const _A4_S4_R_COORDINATES = ["b_fix[1]", "b_fix[2]", "b_fix[3]", "log_sigma_eps",
+    "theta_rr_phy[1]", "theta_rr_phy[2]", "theta_rr_phy[3]"]
+const _A4_S4_JULIA_COORDINATES = ["beta[1]", "beta[2]", "beta[3]",
+    "pack_lambda(Lambda)[1]", "pack_lambda(Lambda)[2]", "pack_lambda(Lambda)[3]",
+    "log_sd_residual_shared"]
+const _A4_S4_DENSE_RIDGE_OPERATION = "A_ridged = A_original + 1e-8 * I; Q_canonical = solve(A_ridged)"
 
 _a4fail(message) = throw(ArgumentError("A4/S4 paired matrix: " * message))
 
@@ -52,7 +78,7 @@ end
 
 function _a4number(object, key, where)
     value = _a4get(object, key, where)
-    value isa Real && isfinite(value) || _a4fail("$(where).$(key) is not finite")
+    value isa Real && !(value isa Bool) && isfinite(value) || _a4fail("$(where).$(key) is not finite")
     return Float64(value)
 end
 
@@ -72,7 +98,7 @@ end
 function _a4optimizer(object, where)
     object = _a4dict(object, where)
     _a4bool(object, "converged", where) || _a4fail("$(where) is not converged")
-    _a4number(object, "gradient_norm", where) <= 1e-5 ||
+    0 <= _a4number(object, "gradient_norm", where) <= 1e-5 ||
         _a4fail("$(where) gradient exceeds 1e-5")
     _a4bool(object, "hessian_positive_definite", where) ||
         _a4fail("$(where) Hessian is not positive definite")
@@ -119,7 +145,7 @@ function _a4interval_target(object, kind, where)
         isempty(targets) && status == "unavailable" && method == "not_run" ||
             _a4fail("dense uncertainty must remain unavailable")
     else
-        length(targets) == 12 && length(unique(targets)) == 12 ||
+        String.(targets) == _A4_S4_TARGETS ||
             _a4fail("$(where) must name the full 12-target interval contract")
         status == "available" && method == "transformed_wald" ||
             _a4fail("$(where) is not the retained transformed-Wald contract")
@@ -140,7 +166,7 @@ function _a4raw_interval_target(object, kind, bridge, where)
             bridge_status == "not_requested" && _a4string(object, "method", where) == "not_run" ||
             _a4fail("dense raw record must retain no-CI unavailable status")
     elseif bridge_status == "available"
-        length(targets) == 12 && length(methods) == 12 && all(==("transformed_wald"), methods) &&
+        targets == _A4_S4_TARGETS && length(methods) == 12 && all(==("transformed_wald"), methods) &&
             status == "available" && _a4string(object, "method", where) == "transformed_wald" ||
             _a4fail("$(where) available target does not match transformed-Wald bridge output")
     else
@@ -150,6 +176,24 @@ function _a4raw_interval_target(object, kind, bridge, where)
     _a4string(object, "gate", where) == "not_assessed" ||
         _a4fail("$(where) cannot qualify an interval gate")
     return nothing
+end
+
+function _a4coordinate_contract(object, where)
+    object = _a4dict(object, where)
+    String.(collect(_a4get(object, "r_parameter_names", where))) == _A4_S4_R_COORDINATES ||
+        _a4fail("$(where) R coordinate order differs from the frozen contract")
+    String.(collect(_a4get(object, "julia_parameter_names", where))) == _A4_S4_JULIA_COORDINATES ||
+        _a4fail("$(where) Julia coordinate order differs from the frozen contract")
+    _a4number(object, "sigma2_phy", where) == 1.0 || _a4fail("$(where) does not lock sigma2_phy at one")
+    return nothing
+end
+
+function _a4finite_vector(object, key, where)
+    values = collect(_a4get(object, key, where))
+    length(values) == 7 || _a4fail("$(where).$(key) has the wrong coordinate length")
+    all(x -> x isa Real && !(x isa Bool) && isfinite(x), values) ||
+        _a4fail("$(where).$(key) is not a finite numeric vector")
+    return Float64.(values)
 end
 
 function _a4fixture(object, id, kind, where)
@@ -170,7 +214,7 @@ function _a4fixture(object, id, kind, where)
     return nothing
 end
 
-function _a4row(object; raw = false)
+function _a4row(object; raw = false, unavailable = false)
     object = _a4dict(object, "row")
     id = _a4string(object, "row_id", "row")
     haskey(_A4_S4_ROWS, id) || _a4fail("unknown row $(id)")
@@ -183,11 +227,17 @@ function _a4row(object; raw = false)
         _A4_S4_FROZEN_DLL || _a4fail("$(id) DLL differs from frozen R")
     _a4sha(_a4get(reference, "julia_source_sha256", "$(id).reference"), "$(id).reference.julia_source_sha256")
     data_sha = _a4sha(_a4get(object, "data_sha256", "row"), "$(id).data_sha256")
+    data_sha == _A4_S4_DATA_SHA[kind] || _a4fail("$(id) data hash differs from its retained fixture")
     data_sha == _a4sha(_a4get(reference, "data_sha256", "$(id).reference"), "$(id).reference.data_sha256") ||
         _a4fail("$(id) data hash differs from its reference")
+    _a4sha(_a4get(reference, "reference_file_sha256", "$(id).reference"), "$(id).reference.reference_file_sha256") ==
+        _A4_S4_REFERENCE_SHA[kind] || _a4fail("$(id) reference file differs from retained evidence")
     _a4fixture(_a4get(object, "fixture", "row"), id, kind, "$(id).fixture")
     precision = _a4dict(_a4get(object, "precision", "row"), "$(id).precision")
-    _a4sha(_a4get(precision, "canonical_q_sha256", "$(id).precision"), "$(id).precision.canonical_q_sha256")
+    _a4sha(_a4get(precision, "precision_payload_sha256", "$(id).precision"), "$(id).precision.precision_payload_sha256") ==
+        _A4_S4_PRECISION_PAYLOAD_SHA || _a4fail("$(id) precision payload differs from retained fixture")
+    _a4sha(_a4get(precision, "precision_source_sha256", "$(id).precision"), "$(id).precision.precision_source_sha256") ==
+        _A4_S4_PRECISION_SOURCE_SHA[kind] || _a4fail("$(id) precision source differs from retained evidence")
     isapprox(_a4number(precision, "log_det_Q", "$(id).precision"), _A4_S4_LOGDET[kind];
         rtol = 1e-12, atol = 0) || _a4fail("$(id) log determinant differs from canonical Q")
     _a4number(precision, "scale", "$(id).precision") == _A4_S4_INHERITED_Q_SCALE[kind] ||
@@ -196,6 +246,12 @@ function _a4row(object; raw = false)
     ridge_once = _a4bool(precision, "ridge_applied_once", "$(id).precision")
     if kind == "dense"
         ridge == 1e-8 && ridge_once || _a4fail("dense row must ridge A once by 1e-8")
+        ridge_evidence = _a4dict(_a4get(object, "ridge_evidence", "row"), "$(id).ridge_evidence")
+        _a4sha(_a4get(ridge_evidence, "source_covariance_reference_sha256", "$(id).ridge_evidence"),
+            "$(id).ridge_evidence.source_covariance_reference_sha256") == _A4_S4_REFERENCE_SHA["dense"] ||
+            _a4fail("dense ridge evidence does not bind the retained covariance source")
+        _a4string(ridge_evidence, "source_covariance_operation", "$(id).ridge_evidence") ==
+            _A4_S4_DENSE_RIDGE_OPERATION || _a4fail("dense ridge operation differs from retained evidence")
     else
         ridge == 0.0 && !ridge_once || _a4fail("$(id) cannot declare a dense ridge")
     end
@@ -220,7 +276,13 @@ function _a4row(object; raw = false)
             _a4fail("dense bridge result records an interval computation")
         _a4raw_interval_target(_a4get(object, "interval_target", "row"), kind, bridge,
             "$(id).interval_target")
+    elseif unavailable
+        !haskey(object, "matched_point") && !haskey(object, "own_optimum") &&
+            !haskey(object, "artifact_bindings") ||
+            _a4fail("$(id) unavailable paired record cannot contain ungrounded evidence")
+        _a4coordinate_contract(_a4get(object, "coordinate_contract", "row"), "$(id).coordinate_contract")
     else
+        _a4coordinate_contract(_a4get(object, "coordinate_contract", "row"), "$(id).coordinate_contract")
         matched = _a4dict(_a4get(object, "matched_point", "row"), "$(id).matched_point")
         r_nll = _a4number(matched, "r_marginal_nll", "$(id).matched_point")
         julia_nll = _a4number(matched, "julia_marginal_nll", "$(id).matched_point")
@@ -228,6 +290,15 @@ function _a4row(object; raw = false)
         isapprox(absdiff, abs(r_nll - julia_nll); atol = 1e-12, rtol = 0) ||
             _a4fail("$(id) matched-point difference is inconsistent")
         absdiff <= 1e-6 || _a4fail("$(id) matched-point objective does not agree")
+        r_values = _a4finite_vector(matched, "r_parameter_values", "$(id).matched_point")
+        julia_values = _a4finite_vector(matched, "julia_parameter_values", "$(id).matched_point")
+        r_values[1:3] == julia_values[1:3] && r_values[5:7] == julia_values[4:6] &&
+            r_values[4] == julia_values[7] || _a4fail("$(id) matched coordinate values violate the transport map")
+        artifacts = _a4dict(_a4get(object, "artifact_bindings", "row"), "$(id).artifact_bindings")
+        for key in ("r_matched_artifact_sha256", "julia_matched_artifact_sha256",
+                "r_own_optimum_artifact_sha256", "julia_own_optimum_artifact_sha256")
+            _a4sha(_a4get(artifacts, key, "$(id).artifact_bindings"), "$(id).artifact_bindings.$(key)")
+        end
         own = _a4dict(_a4get(object, "own_optimum", "row"), "$(id).own_optimum")
         _a4optimizer(_a4get(own, "r", "$(id).own_optimum"), "$(id).own_optimum.r")
         _a4optimizer(_a4get(own, "julia", "$(id).own_optimum"), "$(id).own_optimum.julia")
@@ -244,8 +315,10 @@ function verify_a4_s4_paired_matrix(document)
     document = _a4dict(document, "document")
     schema = _a4string(document, "schema_version", "document")
     raw = schema == _A4_S4_RAW_SCHEMA
+    unavailable = schema == _A4_S4_SCHEMA &&
+        _a4string(document, "status", "document") == "paired_evidence_unavailable"
     schema == _A4_S4_SCHEMA || raw || _a4fail("wrong schema version")
-    _a4string(document, "status", "document") == (raw ? "raw_bridge_returns_recorded" : "recorded") ||
+    _a4string(document, "status", "document") == (raw ? "raw_bridge_returns_recorded" : "paired_evidence_unavailable") ||
         _a4fail("receipt status does not match its schema")
     provenance = _a4dict(_a4get(document, "provenance", "document"), "provenance")
     _a4source_pin(_a4get(provenance, "frozen_source_pin", "provenance"), "provenance.frozen_source_pin")
@@ -259,7 +332,7 @@ function verify_a4_s4_paired_matrix(document)
     _a4string(route, "public_formula_admission", "route") == "closed" || _a4fail("public formula gate is not closed")
     rows = collect(_a4get(document, "rows", "document"))
     length(rows) == length(_A4_S4_ROWS) || _a4fail("must contain exactly three Gaussian rows")
-    ids = [_a4row(row; raw = raw) for row in rows]
+    ids = [_a4row(row; raw = raw, unavailable = unavailable) for row in rows]
     length(unique(ids)) == length(ids) && Set(ids) == Set(keys(_A4_S4_ROWS)) ||
         _a4fail("row identifiers do not equal the prescribed A4/S4 matrix")
     for row in rows
@@ -272,6 +345,14 @@ function verify_a4_s4_paired_matrix(document)
     _a4string(qualification, "r_public_admission", "qualification") == "closed" ||
         _a4fail("candidate receipt does not preserve closed R admission")
     _a4string(qualification, "note", "qualification")
-    return Dict("status" => raw ? "verified_raw_candidate_input_only" : "verified_candidate_input_only", "qualified" => false,
+    if unavailable
+        availability = _a4dict(_a4get(document, "paired_evidence_availability", "document"),
+            "paired_evidence_availability")
+        all(_a4string(availability, key, "paired_evidence_availability") == "unavailable" for key in
+            ("matched_point", "own_optimum", "artifact_bindings")) ||
+            _a4fail("paired evidence availability cannot overstate absent artifacts")
+    end
+    return Dict("status" => raw ? "verified_raw_candidate_input_only" :
+        "paired_evidence_unavailable", "qualified" => false,
         "rows_verified" => sort(ids), "julia_source_sha256" => julia_source)
 end
