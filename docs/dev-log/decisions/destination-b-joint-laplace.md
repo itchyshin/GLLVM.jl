@@ -93,3 +93,14 @@ independent zero-random-effect density normalization checks for the other three
 families and a terminal gradient diagnostic have been added. Scalar quadrature
 anchors for all four families and a fully identified crossed multi-source fit
 remain owed. Review receipt: ignored grouped-review-result.md and events.
+
+## 2026-09-07 status supplement
+
+The final sentence above is a historical statement, not the current G2 status.
+The current-head G2 receipt reruns public, four-source Gaussian, Poisson,
+Binomial, Beta, and NB2 fits; it also retains the original small-NB2 partial
+interval outcome and a larger replicated NB2 interior diagnostic.  The
+separate four-family scalar-quadrature check is `36/36` at the same head.  See
+`docs/dev-log/core070/destination-b-g2/aggregate-verification-01.md`.  Neither
+receipt establishes frozen-R pairing, recovery, coverage, phylogenetic
+admission, or overall Destination B completion.

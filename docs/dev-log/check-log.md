@@ -1,5 +1,17 @@
 ## 2026-09-07 — Destination B internal fitter integration (ongoing)
 
+- G2 aggregate current-head receipt: isolated quality environment at
+  `cc8b95b0`, StableRNGs direct, exit0. Public four-source `fit_gllvm` checks:
+  Gaussian63/63 (12.3s), Poisson46/46 (4.8s), Binomial58/58 (2.3s),
+  Beta63/63 (3.7s), NB2 n=96 55/55 (2.4s) and replicated NB2 n=384 61/61
+  (2.0s), followed by `DESTINATION_B_G2_PASS`. The n=96 NB2
+  `:partial`/target-unavailable source intervals remain a deliberate boundary
+  receipt; they were not relabelled as a pass. Separate
+  four-family scalar quadrature is 36/36 (3.9s). Fresh Sol review finds the
+  current all-five-family, one-joint-design G2 scope clear. This does NOT
+  establish frozen-R parity, phylogenetic formula admission, recovery,
+  coverage, full/core regression, or programme completion.
+
 - Actual JuliaCall tree35981/pedigree42583 run in parallel, both exit0 with numerical/map/12CI checks and Rcandidate conversion passing. Receipts bind input/environment/converter hashes and preserve rawRDS before assertions. Fresh readback PASS; public gllvmTMB formula/fit/extractor route and independent S4 review remain open, admissionclosed. No dependencies or R engine changed.
 
 - Scoped R candidate normalizer: red11394 missing function, final79405 bounded Rtests pass and actual saved JuliaCall12row result normalizes successfully. Preserves partial/unavailable diagnostics, labels, matrix shapes, closedadmission; rejects invalid endpoints/lengths/names/shape/status and nonconverged available intervals. Existing opt-in subprocess test remains skipped, separately retained bridge evidence unchanged. New converter only; public fitting/extractor wiring and review still open.
