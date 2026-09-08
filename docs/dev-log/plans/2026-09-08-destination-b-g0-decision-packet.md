@@ -1,8 +1,10 @@
 # Destination B G0 decision packet — pending owner response
 
-**Status:** `PENDING — NOT AN AUTHORISATION`. This packet makes the five
-handover decisions explicit. It does not unlock a model, alter the frozen R
-reference, promote a capability, or change the public bridge claim.
+**Status:** `RESOLVED 2026-09-08 — scope authority recorded in
+docs/dev-log/decisions/2026-09-08-destination-b-g0-authorisation.md`.
+This packet remains the decision aid; the separate authorization record binds
+only the five stated lines. It does not alter the frozen R reference, promote
+a capability, or change the public bridge claim.
 
 ## Why G0 is required
 
@@ -90,9 +92,11 @@ No push, merge, release, registry action, 0.7.1 expansion, or coverage campaign
 is authorised by this response.
 ```
 
-## Non-authorisation boundary
+## Authorisation boundary
 
-Until the owner supplies a direct G0 response, the only work represented here
-is decision preparation. Do not treat this document, its recommendations, or
-the prior B1 source-alignment commit as permission to start B1, S3b, S4, dense
-`vcv`, FRK, a compute campaign, a release, or a public parity claim.
+The owner directly approved B1, bridge-only S3b, conditional Gaussian S4, and
+the stated dense-`vcv` contract on 2026-09-08; FRK remains parked. The approval
+does **not** authorise R/C++ engine work, a second Julia inversion, a generic
+bridge admission, non-Gaussian phylogeny, a coverage campaign, a push, merge,
+release, registry action, 0.7.1 expansion, or a public parity claim. B1 source
+alignment remains evidence only, not B1 qualification.

@@ -18598,3 +18598,13 @@ bridge/gate evidence and recommended defaults, but remains explicitly
 non-binding until a direct owner response is recorded. No source, R bridge,
 model, public capability, Unlazy gate, compute campaign, push, merge, or
 release changed.
+
+# 2026-09-08 — Destination B G0 authorisation receipt
+
+The maintainer directly authorised the bounded B1 grouping programme, scoped
+R `phylo_rr` S3b adapter/test work, conditional Gaussian S4, and the canonical
+R-ridged-once dense-`vcv` transport contract. FRK remains parked at
+`gllvmTMB#1275`. The receipt preserves the frozen `gllvmTMB` 0.7.0 reference,
+no R/C++ engine work, no independent Julia inversion, no 0.7 parity claim, and
+all existing evidence gates. It changes execution authority only; no capability
+row or parent gate is qualified by this record.
