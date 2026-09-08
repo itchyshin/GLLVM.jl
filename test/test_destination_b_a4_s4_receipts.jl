@@ -141,9 +141,11 @@ function _a4_s4_raw_document()
             "ci_status" => is_dense ? "not_requested" : "available",
             "ci_target_names" => copy(row["interval_target"]["target_names"]),
             "ci_target_methods" => is_dense ? String[] : fill("transformed_wald", 12),
-            "ci_statuses" => is_dense ? String[] : fill("available", 12))
+            "ci_statuses" => is_dense ? String[] : fill("available", 12),
+            "ci_payload_attestation_status" => "runner_recorded_unverified")
         row["ci_request"] = row["fixture"]["kind"] == "dense" ? "none" : "wald"
         row["raw_rds_sha256"] = _A4_S4_SHA
+        row["raw_artifact"] = Dict("attestation_status" => "runner_recorded_unverified")
     end
     document["execution_provenance"] = Dict(
         "attestation_status" => "runner_recorded_unverified",
@@ -163,7 +165,7 @@ end
     @test !checked["qualified"]
     raw = _a4_s4_raw_document()
     raw_checked = verify_a4_s4_paired_matrix(raw)
-    @test raw_checked["status"] == "verified_raw_candidate_schema_only_unqualified"
+    @test raw_checked["status"] == "schema_valid_raw_candidate_unqualified"
     @test !raw_checked["qualified"]
 
     partial = deepcopy(raw)
@@ -174,7 +176,7 @@ end
     partial["rows"][1]["interval_target"]["status"] = "partial"
     partial["rows"][1]["interval_target"]["method"] = "bridge_reported"
     @test verify_a4_s4_paired_matrix(partial)["status"] ==
-        "verified_raw_candidate_schema_only_unqualified"
+        "schema_valid_raw_candidate_unqualified"
 
     unavailable_ci = deepcopy(raw)
     unavailable_bridge = unavailable_ci["rows"][2]["bridge_result"]
@@ -184,7 +186,7 @@ end
     unavailable_ci["rows"][2]["interval_target"]["status"] = "not_converged"
     unavailable_ci["rows"][2]["interval_target"]["method"] = "bridge_reported"
     @test verify_a4_s4_paired_matrix(unavailable_ci)["status"] ==
-        "verified_raw_candidate_schema_only_unqualified"
+        "schema_valid_raw_candidate_unqualified"
 
     for mutate in (
         x -> x["rows"][1]["reference"]["source_pin"] = "0" ^ 40,
@@ -242,6 +244,12 @@ end
         x -> delete!(x, "execution_provenance"),
         x -> x["execution_provenance"]["attestation_status"] = "authenticated_engine_evidence",
         x -> x["rows"][1]["raw_rds_sha256"] = true,
+        x -> x["rows"][1]["raw_artifact"]["attestation_status"] = "authenticated",
+        x -> x["rows"][1]["raw_artifact"]["attestation_status"] = "bound",
+        x -> x["rows"][1]["raw_artifact"]["attestation_status"] = "verified",
+        x -> x["rows"][1]["bridge_result"]["ci_payload_attestation_status"] = "authenticated",
+        x -> x["rows"][1]["bridge_result"]["ci_payload_attestation_status"] = "bound",
+        x -> x["rows"][1]["bridge_result"]["ci_payload_attestation_status"] = "verified",
         x -> begin
             bridge = x["rows"][1]["bridge_result"]
             bridge["ci_status"] = "qualified"

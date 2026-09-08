@@ -181,6 +181,9 @@ function _a4raw_interval_target(object, kind, bridge, where)
     bridge_targets = _a4string_vector(bridge, "ci_target_names", "$(where).bridge_result")
     methods = _a4string_vector(bridge, "ci_target_methods", "$(where).bridge_result")
     statuses = _a4string_vector(bridge, "ci_statuses", "$(where).bridge_result")
+    _a4string(bridge, "ci_payload_attestation_status", "$(where).bridge_result") ==
+        "runner_recorded_unverified" ||
+        _a4fail("$(where) CI payload cannot claim authentication or binding")
     status = _a4string(object, "status", where)
     bridge_status = _a4string(bridge, "ci_status", "$(where).bridge_result")
     targets == bridge_targets || _a4fail("$(where) target names differ from bridge output")
@@ -190,7 +193,7 @@ function _a4raw_interval_target(object, kind, bridge, where)
             _a4fail("dense raw record must retain no-CI unavailable status")
     else
         bridge_status in union(Set(["available", "partial"]), _A4_S4_WALD_CI_FAILURES) ||
-            _a4fail("$(where) bridge CI status is not emitted by the private bridge")
+            _a4fail("$(where) bridge CI status is not in the private bridge schema")
         targets == _A4_S4_TARGETS && length(methods) == 12 && length(statuses) == 12 ||
             _a4fail("$(where) bridge CI arrays do not retain the 12-target contract")
         if bridge_status == "available"
@@ -268,6 +271,9 @@ function _a4execution_provenance(object)
 end
 
 function _a4raw_artifact(object, id)
+    artifact = _a4dict(_a4get(object, "raw_artifact", "$(id)"), "$(id).raw_artifact")
+    _a4string(artifact, "attestation_status", "$(id).raw_artifact") == "runner_recorded_unverified" ||
+        _a4fail("$(id) raw artifact cannot claim authentication or binding")
     _a4sha(_a4get(object, "raw_rds_sha256", "$(id)"), "$(id).raw_rds_sha256")
     return nothing
 end
@@ -417,7 +423,7 @@ function verify_a4_s4_paired_matrix(document)
             ("matched_point", "own_optimum", "artifact_bindings")) ||
             _a4fail("paired evidence availability cannot overstate absent artifacts")
     end
-    return Dict("status" => raw ? "verified_raw_candidate_schema_only_unqualified" :
+    return Dict("status" => raw ? "schema_valid_raw_candidate_unqualified" :
         "paired_evidence_unavailable", "qualified" => false,
         "rows_verified" => sort(ids), "julia_source_sha256" => julia_source)
 end

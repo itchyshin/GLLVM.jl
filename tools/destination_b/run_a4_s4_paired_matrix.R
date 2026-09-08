@@ -151,8 +151,9 @@ tryCatch({
     raw_rds_path <- paste0(raw_output, ".", kind)
     saveRDS(fit, raw_rds_path)
 
-    # A terminal record is emitted only after real bridge return.  It remains
-    # unqualified: neither this runner nor its verifier opens R admission.
+    # The terminal record preserves runner-reported return metadata. Its RDS
+    # SHA and CI payload are not independently authenticated evidence, and
+    # neither this runner nor its verifier opens R admission.
     result$rows[[length(result$rows) + 1L]] <- list(
       row_id = switch(kind, tree = "tree_height4_nonunit_ultrametric",
         pedigree = "pedigree_12_nodes_8_observed_4_unobserved",
@@ -176,8 +177,10 @@ tryCatch({
       bridge_result = list(status = "returned", admission_status = fit$admission_status,
         ci_status = fit$ci_status, ci_target_names = as.character(fit$ci_target_names),
         ci_target_methods = as.character(fit$ci_target_methods),
-        ci_statuses = as.character(fit$ci_statuses)),
+        ci_statuses = as.character(fit$ci_statuses),
+        ci_payload_attestation_status = "runner_recorded_unverified"),
       raw_rds_sha256 = sha(raw_rds_path),
+      raw_artifact = list(attestation_status = "runner_recorded_unverified"),
       ci_request = ci_request, elapsed_seconds = elapsed,
       interval_target = raw_interval_target(fit, kind),
       qualification = list(qualified = FALSE, r_public_admission = "closed")
