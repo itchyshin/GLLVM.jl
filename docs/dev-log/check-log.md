@@ -18589,3 +18589,12 @@ Destination B completion.
 The 2026-09-07 handover's G0 remains explicitly unresolved.  These source
 alignment gates are not a named B1 disposition and do not authorise a next
 grouping, S3b/S4, dense-`vcv`, or FRK leaf.
+
+# 2026-09-08 — Destination B G0 decision packet (non-binding)
+
+Prepared a source-linked owner decision packet covering the five G0 labels:
+grouping B1, R `phylo_rr` S3b, S4, dense `vcv`, and FRK. It records current
+bridge/gate evidence and recommended defaults, but remains explicitly
+non-binding until a direct owner response is recorded. No source, R bridge,
+model, public capability, Unlazy gate, compute campaign, push, merge, or
+release changed.
