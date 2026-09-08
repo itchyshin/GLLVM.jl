@@ -17,6 +17,11 @@ const _A4_S4_ROWS = Dict(
 )
 const _A4_S4_INHERITED_Q_SCALE = Dict("tree" => 4.0, "pedigree" => 1.0, "dense" => 1.0)
 const _A4_S4_N_AUGMENTED = Dict("tree" => 14, "pedigree" => 12, "dense" => 8)
+const _A4_S4_SPECIES_AUGMENTED = Dict(
+    "tree" => [13, 6, 11, 8, 12, 7, 10, 9],
+    "pedigree" => [11, 4, 8, 6, 9, 5, 10, 7],
+    "dense" => collect(0:7),
+)
 const _A4_S4_LOGDET = Dict("tree" => 15.706819081565975,
     "pedigree" => 5.966390909555864, "dense" => 7.861154398716261)
 
@@ -98,7 +103,7 @@ function _a4map(object, where)
         _a4fail("$(where) has an invalid augmented observation index")
     all(observation_map[i] == species_map[species_id[i]] for i in eachindex(species_id)) ||
         _a4fail("$(where) observation map does not follow species_id")
-    return n_aug, n_species, n_observations
+    return n_aug, n_species, n_observations, species_map
 end
 
 function _a4interval_target(object, kind, where)
@@ -119,6 +124,31 @@ function _a4interval_target(object, kind, where)
         status == "available" && method == "transformed_wald" ||
             _a4fail("$(where) is not the retained transformed-Wald contract")
     end
+    return nothing
+end
+
+function _a4raw_interval_target(object, kind, bridge, where)
+    object = _a4dict(object, where)
+    targets = String.(collect(_a4get(object, "target_names", where)))
+    bridge_targets = String.(collect(_a4get(bridge, "ci_target_names", "$(where).bridge_result")))
+    methods = String.(collect(_a4get(bridge, "ci_target_methods", "$(where).bridge_result")))
+    status = _a4string(object, "status", where)
+    bridge_status = _a4string(bridge, "ci_status", "$(where).bridge_result")
+    targets == bridge_targets || _a4fail("$(where) target names differ from bridge output")
+    if kind == "dense"
+        isempty(targets) && isempty(methods) && status == "unavailable" &&
+            bridge_status == "not_requested" && _a4string(object, "method", where) == "not_run" ||
+            _a4fail("dense raw record must retain no-CI unavailable status")
+    elseif bridge_status == "available"
+        length(targets) == 12 && length(methods) == 12 && all(==("transformed_wald"), methods) &&
+            status == "available" && _a4string(object, "method", where) == "transformed_wald" ||
+            _a4fail("$(where) available target does not match transformed-Wald bridge output")
+    else
+        status == bridge_status && _a4string(object, "method", where) == "bridge_reported" ||
+            _a4fail("$(where) availability claim differs from bridge output")
+    end
+    _a4string(object, "gate", where) == "not_assessed" ||
+        _a4fail("$(where) cannot qualify an interval gate")
     return nothing
 end
 
@@ -169,9 +199,11 @@ function _a4row(object; raw = false)
     else
         ridge == 0.0 && !ridge_once || _a4fail("$(id) cannot declare a dense ridge")
     end
-    n_aug, n_species, _ = _a4map(_a4get(object, "map", "row"), "$(id).map")
+    n_aug, n_species, _, species_map = _a4map(_a4get(object, "map", "row"), "$(id).map")
     n_aug == _A4_S4_N_AUGMENTED[kind] && n_species == 8 ||
         _a4fail("$(id) does not retain the prescribed augmented-node map")
+    species_map == _A4_S4_SPECIES_AUGMENTED[kind] ||
+        _a4fail("$(id) species-to-augmented-node map differs from its canonical fixture")
     if raw
         !haskey(object, "matched_point") && !haskey(object, "own_optimum") ||
             _a4fail("$(id) raw record must not pose as paired evidence")
@@ -186,6 +218,8 @@ function _a4row(object; raw = false)
         kind != "dense" ||
             _a4string(bridge, "ci_status", "$(id).bridge_result") == "not_requested" ||
             _a4fail("dense bridge result records an interval computation")
+        _a4raw_interval_target(_a4get(object, "interval_target", "row"), kind, bridge,
+            "$(id).interval_target")
     else
         matched = _a4dict(_a4get(object, "matched_point", "row"), "$(id).matched_point")
         r_nll = _a4number(matched, "r_marginal_nll", "$(id).matched_point")
@@ -198,7 +232,7 @@ function _a4row(object; raw = false)
         _a4optimizer(_a4get(own, "r", "$(id).own_optimum"), "$(id).own_optimum.r")
         _a4optimizer(_a4get(own, "julia", "$(id).own_optimum"), "$(id).own_optimum.julia")
     end
-    _a4interval_target(_a4get(object, "interval_target", "row"), kind, "$(id).interval_target")
+    raw || _a4interval_target(_a4get(object, "interval_target", "row"), kind, "$(id).interval_target")
     qualification = _a4dict(_a4get(object, "qualification", "row"), "$(id).qualification")
     !_a4bool(qualification, "qualified", "$(id).qualification") || _a4fail("$(id) cannot be qualified")
     _a4string(qualification, "r_public_admission", "$(id).qualification") == "closed" ||

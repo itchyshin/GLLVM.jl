@@ -107,3 +107,18 @@ unqualified even if point-objective diagnostics later agree.
 - The runner now passes `options$species_id = bundle$species_id`, uses the
   flat payload's `log_det`, and requests `ci_method = "none"` for dense.  No
   live fit batch was run.
+
+## Repair TDD receipt (raw interval truthfulness)
+
+- RED: a raw tree/pedigree record with bridge `ci_status = "unavailable"` or
+  `"partial"` still claimed an available transformed-Wald target; the focused
+  verifier did not compare the target to the bridge result.
+- GREEN: the runner now derives the raw target names, status, and method from
+  the returned bridge CI fields.  The verifier requires equality with those
+  fields: only an all-target available transformed-Wald result can be recorded
+  as available; other returned statuses use `bridge_reported`.  Dense is
+  separately fixed to `ci_method = "none"`, bridge `not_requested`, and an
+  unavailable/no-target record.
+- The verifier also now locks the exact eight-species-to-augmented-node maps:
+  tree `[13,6,11,8,12,7,10,9]`, pedigree `[11,4,8,6,9,5,10,7]`, and dense
+  `[0,1,2,3,4,5,6,7]`.  No live fit batch was run.

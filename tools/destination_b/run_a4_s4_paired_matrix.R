@@ -67,6 +67,22 @@ fixture_descriptor <- function(kind) switch(kind,
   pedigree = list(kind = "pedigree", n_nodes = 12L, n_observed = 8L,
     n_unobserved_ancestors = 4L),
   dense = list(kind = "dense", ridge_operation = "A + 1e-8 I; solve once"))
+raw_interval_target <- function(fit, kind) {
+  if (identical(kind, "dense")) {
+    return(list(target_names = character(), method = "not_run", status = "unavailable",
+      gate = "not_assessed"))
+  }
+  status <- as.character(fit$ci_status)
+  names <- as.character(fit$ci_target_names)
+  methods <- as.character(fit$ci_target_methods)
+  if (identical(status, "available") && length(names) == 12L &&
+      length(methods) == 12L && all(methods == "transformed_wald")) {
+    return(list(target_names = names, method = "transformed_wald", status = status,
+      gate = "not_assessed"))
+  }
+  list(target_names = names, method = "bridge_reported", status = status,
+    gate = "not_assessed")
+}
 
 # The only permitted bridge call.  In particular, there is no gllvmTMB(), no
 # formula object, and no public-admission option in this runner.
@@ -128,11 +144,10 @@ tryCatch({
         n_augmented = precision$n_aug, n_species_observed = precision$n_leaves,
         n_observations = length(species_id)),
       bridge_result = list(status = "returned", admission_status = fit$admission_status,
-        ci_status = fit$ci_status), ci_request = ci_request, elapsed_seconds = elapsed,
-      interval_target = if (identical(kind, "dense"))
-        list(target_names = character(), method = "not_run", status = "unavailable", gate = "not_assessed") else
-        list(target_names = as.character(fit$ci_target_names), method = "transformed_wald",
-          status = "available", gate = "not_assessed"),
+        ci_status = fit$ci_status, ci_target_names = as.character(fit$ci_target_names),
+        ci_target_methods = as.character(fit$ci_target_methods)),
+      ci_request = ci_request, elapsed_seconds = elapsed,
+      interval_target = raw_interval_target(fit, kind),
       qualification = list(qualified = FALSE, r_public_admission = "closed")
     )
   }

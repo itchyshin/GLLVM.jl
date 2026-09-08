@@ -92,8 +92,11 @@ function _a4_s4_raw_document()
     for row in document["rows"]
         delete!(row, "matched_point")
         delete!(row, "own_optimum")
+        is_dense = row["fixture"]["kind"] == "dense"
         row["bridge_result"] = Dict("status" => "returned", "admission_status" => "closed",
-            "ci_status" => row["fixture"]["kind"] == "dense" ? "not_requested" : "available")
+            "ci_status" => is_dense ? "not_requested" : "available",
+            "ci_target_names" => copy(row["interval_target"]["target_names"]),
+            "ci_target_methods" => is_dense ? String[] : fill("transformed_wald", 12))
         row["ci_request"] = row["fixture"]["kind"] == "dense" ? "none" : "wald"
     end
     return document
@@ -137,6 +140,13 @@ end
         x -> x["rows"][3]["ci_request"] = "wald",
         x -> x["rows"][3]["bridge_result"]["ci_status"] = "available",
         x -> x["rows"][3]["interval_target"]["status"] = "available",
+        x -> x["rows"][1]["bridge_result"]["ci_status"] = "unavailable",
+        x -> x["rows"][2]["bridge_result"]["ci_status"] = "partial",
+        x -> begin
+            map = x["rows"][1]["map"]
+            map["observed_species_to_augmented_zero_based"][1:2] = [6, 13]
+            map["observation_to_augmented_zero_based"][1:4] = [6, 6, 13, 13]
+        end,
         x -> x["rows"][1]["map"]["observation_to_augmented_zero_based"][2] = 6,
         x -> x["rows"][1]["map"]["n_augmented"] = 8,
     )
