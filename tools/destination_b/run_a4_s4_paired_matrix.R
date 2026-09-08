@@ -52,20 +52,15 @@ if (!file.exists(project_toml)) {
 }
 source_tree_commit <- trimws(git_output(c("-C", project, "rev-parse", "HEAD"))[[1L]])
 source_tree_dirty <- length(git_output(c("-C", project, "status", "--porcelain"))) > 0L
-row_path <- function(kind) file.path(core070, switch(kind,
-  tree = "destination-b-tree/r-bfgs-attempt-01.json",
-  pedigree = "destination-b-pedigree-fit/r-bfgs-attempt-01.json",
-  dense = "destination-b-s3b-pilot/r-attempt-02.json"))
 precision_source_path <- function(kind) file.path(core070, switch(kind,
   tree = "destination-b-tree/precision-reference.json",
   pedigree = "destination-b-pedigree/precision-reference.json",
   dense = "destination-b-s3b-pilot/r-attempt-02.json"))
 
 fixtures_path <- file.path(core070, "destination-b-adapter/fixtures-01.json")
-fixtures <- jsonlite::fromJSON(fixtures_path, simplifyVector = FALSE)
-if (!all(c("tree", "pedigree", "dense") %in% names(fixtures$bundles))) {
-  stop("the retained fixture bundle does not contain tree, pedigree, and dense rows", call. = FALSE)
-}
+# This boundary must complete before JuliaCall setup. Invalid retained JSON or
+# observation maps are R-side input failures, never a reason to initialize Julia.
+retained_payloads <- a4_s4_preflight_payloads(core070, fixtures_path = fixtures_path)
 
 result <- list(
   schema_version = "destination-b-a4-s4-paired-matrix-1",
@@ -123,26 +118,19 @@ tryCatch({
     "import Pkg; Pkg.activate(%s); using GLLVM", encodeString(project, quote = '"')))
 
   for (kind in c("tree", "pedigree", "dense")) {
-    reference_path <- row_path(kind)
-    reference <- jsonlite::fromJSON(reference_path, simplifyVector = FALSE)
-    bundle <- fixtures$bundles[[kind]]
-    precision <- bundle$precision
-    Y_payload <- if (identical(kind, "dense")) reference$response$Y_traits_by_observations else
-      reference$Y_traits_by_observations
-    Y <- a4_s4_decode_json_matrix(Y_payload, sprintf("%s retained response", kind))
-    if (!identical(dim(Y), c(3L, 16L)) || any(!is.finite(Y))) {
-      stop(sprintf("%s retained response must be a finite 3-by-16 numeric matrix", kind), call. = FALSE)
-    }
+    payload <- retained_payloads[[kind]]
+    reference_path <- payload$reference_path
+    reference <- payload$reference
+    bundle <- payload$bundle
+    precision <- payload$precision
+    Y <- payload$Y
     source_pin <- if (identical(kind, "dense")) reference$provenance$frozen_source_pin else reference$source_pin
     dll_hash <- if (identical(kind, "dense")) reference$provenance$dll_sha256 else reference$dll_sha256
     data_hash <- if (identical(kind, "dense")) reference$response$data_sha256 else reference$data_sha256
     if (!identical(source_pin, frozen_pin) || !identical(dll_hash, frozen_dll)) {
       stop(sprintf("%s does not name the frozen R source/DLL", kind), call. = FALSE)
     }
-    species_id <- as.integer(bundle$species_id)
-    if (length(species_id) != ncol(Y) || any(!species_id %in% seq_len(precision$n_leaves))) {
-      stop(sprintf("%s fixture has no valid observation-level species_id map", kind), call. = FALSE)
-    }
+    species_id <- payload$species_id
     ci_request <- if (identical(kind, "dense")) "none" else "wald"
     ridge_evidence <- if (identical(kind, "dense")) {
       operation <- reference$source_covariance$ridge_operation

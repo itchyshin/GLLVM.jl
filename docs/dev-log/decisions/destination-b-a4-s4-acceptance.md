@@ -211,3 +211,17 @@ private transport remains schema-validatable and unqualified.
 - The runner now sources this decoder and rejects any response not exactly a
   finite `3 x 16` matrix before species-map validation or JuliaCall.  No Julia
   setup, bridge call, fit, RDS readback, or public admission was run.
+
+## Pre-Julia retained-input preflight TDD receipt
+
+- RED: the R runner test failed with
+  `could not find function "a4_s4_preflight_payloads"` after it required a
+  single preflight to load all three retained references and validate their
+  fixtures before any Julia setup.
+- GREEN: `Rscript test/test_destination_b_a4_s4_runner.R` prints
+  `A4_S4_JSON_MATRIX_OK` while asserting three named payloads, finite numeric
+  `3 x 16` response matrices, and 16-entry species maps.  Dependency-injected
+  malformed fixture and ragged reference JSON both fail in this R-only test.
+- The runner calls this preflight before `JuliaCall::julia_setup` and later
+  consumes only its returned payloads.  No Julia setup, bridge call, fit, or
+  pilot retry was run.

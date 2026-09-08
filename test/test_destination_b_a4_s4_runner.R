@@ -27,6 +27,29 @@ for (kind in names(reference_paths)) {
     all(is.finite(Y)), isTRUE(all.equal(Y[1L, 1L], expected_first[[kind]], tolerance = 1e-14)))
 }
 
+core070 <- file.path("docs", "dev-log", "core070")
+preflight <- a4_s4_preflight_payloads(core070)
+stopifnot(identical(sort(names(preflight)), c("dense", "pedigree", "tree")))
+for (kind in names(preflight)) {
+  stopifnot(is.matrix(preflight[[kind]]$Y), is.numeric(preflight[[kind]]$Y),
+    identical(dim(preflight[[kind]]$Y), c(3L, 16L)),
+    length(preflight[[kind]]$species_id) == 16L)
+}
+
+bad_fixture <- jsonlite::fromJSON(file.path(core070, "destination-b-adapter", "fixtures-01.json"),
+  simplifyVector = FALSE)
+bad_fixture$bundles$tree$species_id <- bad_fixture$bundles$tree$species_id[-1L]
+bad_fixture_path <- tempfile(fileext = ".json")
+jsonlite::write_json(bad_fixture, bad_fixture_path, auto_unbox = TRUE)
+expect_error(a4_s4_preflight_payloads(core070, fixtures_path = bad_fixture_path), "malformed fixture")
+
+bad_reference_path <- tempfile(fileext = ".json")
+jsonlite::write_json(list(Y_traits_by_observations = list(list(1, 2), list(3))),
+  bad_reference_path, auto_unbox = TRUE)
+bad_references <- reference_paths
+bad_references[["tree"]] <- bad_reference_path
+expect_error(a4_s4_preflight_payloads(core070, reference_paths = bad_references), "malformed reference")
+
 expect_error(a4_s4_decode_json_matrix(list(c(1, 2), c(3)), "ragged"), "ragged rows")
 expect_error(a4_s4_decode_json_matrix(list(c(1, 2), c("x", "y")), "nonnumeric"), "nonnumeric rows")
 expect_error(a4_s4_decode_json_matrix(1, "malformed"), "non-list payload")
