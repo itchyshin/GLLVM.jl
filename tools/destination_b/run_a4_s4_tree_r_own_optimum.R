@@ -564,7 +564,7 @@ a4_s4_tree_r_own_optimum_cli <- function(args) {
     return(a4_s4_tree_r_own_optimum_probe_run(args[[2L]], args[[3L]], args[[4L]], args[[5L]]))
   if (length(args) != 4L) a4_s4_tree_r_own_optimum_stop(paste(
     "usage: Rscript --vanilla run_a4_s4_tree_r_own_optimum.R",
-    "<frozen-library> <core070-dir> <output-rds> <expected-build-receipt-sha256>"))
+    "[--probe] <frozen-library> <core070-dir> <output-rds> <expected-build-receipt-sha256>"))
   a4_s4_tree_r_own_optimum_run(args[[1L]], args[[2L]], args[[3L]], args[[4L]])
 }
 if (sys.nframe() == 0L) a4_s4_tree_r_own_optimum_cli(commandArgs(trailingOnly = TRUE))
