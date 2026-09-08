@@ -15,7 +15,7 @@ review, not a passing paired-evidence result.
 
 Raw bridge transport uses the distinct schema
 `destination-b-a4-s4-private-bridge-raw-1` with status
-`raw_bridge_returns_recorded`.  The verifier recognizes that schema, checks
+`raw_bridge_returns_recorded_unqualified`.  The verifier recognizes that schema, checks
 its provenance, canonical precision, repeated observation map, closed bridge
 admission, and CI-request boundary, then returns an explicitly unqualified
 raw-candidate verdict.  It cannot be passed off as the full
