@@ -31,13 +31,27 @@ requires matched-point and own-optimum evidence.
 | `dense_vcv_ridged_once` | dense VCV source | form `A + 1e-8 I`, invert once, then consume that canonical `Q`; inherited scale 1 | unavailable; do not synthesize 12 intervals |
 
 The frozen R source pin is `b4d5fee64def88bc768dda1f1f77c29b295edd86`.
-The frozen DLL SHA-256 is
+The historical fixture DLL SHA-256 is
 `91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb`.
-The verifier rejects a substituted frozen source, DLL, response hash, precision
-log determinant, inherited scale, map, or dense ridge rule.  The Julia source
-hash is dynamic runner metadata: it is checked for same-document consistency
-only and is explicitly `runner_recorded_unverified`, not immutable source
-proof.
+It identifies only the retained legacy bridge fixture and remains the correct
+binding for records that explicitly use that fixture.  It is not a universal
+bitwise identity requirement for a fresh source-attested 0.7.0 build.
+
+For source-attested R records, the required binary binding is instead the
+actual loaded package DLL SHA-256 plus an externally supplied digest of the
+fresh build's `build.json`; that receipt must attest the exact source pin,
+archive, source tree, installed tree, marker, and install log.  A later
+source-attested paired Julia receipt must carry those two observed R-build
+fields from its raw R input.  It must not reject an otherwise attested build
+solely because its DLL differs from the historical fixture hash.  This preserves
+the legacy fixture's provenance while preventing it from being misrepresented
+as a reproducible compiler binary.
+
+Every verifier rejects a substituted source/build binding, response hash,
+precision log determinant, inherited scale, map, or dense ridge rule within
+its declared provenance class.  The Julia source hash is dynamic runner
+metadata: it is checked for same-document consistency only and is explicitly
+`runner_recorded_unverified`, not immutable source proof.
 The `species_id` passed to the private bridge is the fixture's repeated
 16-observation, one-based tip map; `species_aug_id` is separately retained as
 the eight-tip-to-augmented-node map.  The tree has 14 augmented nodes, the
