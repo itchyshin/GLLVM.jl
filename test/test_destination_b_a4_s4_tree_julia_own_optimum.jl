@@ -226,4 +226,39 @@ end
     @test_throws ArgumentError a4_s4_validate_tree_julia_sizing_probe_receipt(malformed_failed)
 end
 
+@testset "A4/S4 tree sizing probe preserves raw bytes through decoding" begin
+    # Exercise the public sizing-probe pre-fit path in an isolated Julia
+    # process.  A more-specific test-only fitter makes the route stop only
+    # after the snapshot is taken, so this never invokes an optimizer.
+    mktempdir() do directory
+        output = joinpath(directory, "injected-sizing-probe.json")
+        runner = joinpath(@__DIR__, "..", "tools", "destination_b",
+            "run_a4_s4_tree_julia_own_optimum.jl")
+        summary = joinpath(_A4S4_TREE_OWN_ROOT, "destination-b-a4-s4",
+            "raw-frozen-r-02-summary.json")
+        repository = normpath(joinpath(@__DIR__, ".."))
+        script = """
+        using GLLVM
+        include($(repr(runner)))
+        @eval GLLVM begin
+            function fit_gllvm(Y::Matrix{Float64}; kwargs...)
+                throw(ErrorException("injected no-optimizer sizing-probe stop"))
+            end
+        end
+        receipt = run_a4_s4_tree_julia_sizing_probe($(repr(summary)), $(repr(output));
+            core070 = $(repr(_A4S4_TREE_OWN_ROOT)))
+        receipt["result"]["outcome"] == "failed" || error("injected fitter was not recorded")
+        occursin("injected no-optimizer sizing-probe stop", receipt["result"]["error"]) ||
+            error("injected fitter failure was not retained")
+        isfile($(repr(output))) || error("sizing receipt was not published")
+        """
+        run(`$(Base.julia_cmd()) --startup-file=no --history-file=no --project=$repository -e $script`)
+        receipt = _a4s4_json_read(read(output, String))
+        @test receipt["result"]["outcome"] == "failed"
+        @test occursin("injected no-optimizer sizing-probe stop", receipt["result"]["error"])
+        @test receipt["source_lineage"]["raw_summary_sha256"] ==
+            bytes2hex(sha256(read(summary)))
+    end
+end
+
 println("A4_S4_TREE_JULIA_OWN_OPTIMUM_OK")

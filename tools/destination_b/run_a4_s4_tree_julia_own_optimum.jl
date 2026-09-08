@@ -689,7 +689,9 @@ function run_a4_s4_tree_julia_sizing_probe(raw_summary_path::AbstractString, rec
     isfile(raw_summary_path) && !islink(raw_summary_path) ||
         throw(ArgumentError("raw summary must be a regular non-symlink JSON file"))
     raw_summary_bytes = read(raw_summary_path)
-    summary = _a4s4_json_read(String(raw_summary_bytes))
+    # `String(::Vector{UInt8})` takes ownership of and empties its input on
+    # Julia 1.10.  Preserve the pre-fit attestation bytes before decoding.
+    summary = _a4s4_json_read(String(copy(raw_summary_bytes)))
     checked = a4_s4_tree_julia_own_optimum_input(summary; core070)
     snapshot = _a4s4_tree_own_pre_fit_snapshot(raw_summary_path, raw_summary_bytes; validated_input = checked)
     started = time_ns()
@@ -717,7 +719,8 @@ function run_a4_s4_tree_julia_own_optimum(raw_summary_path::AbstractString, rece
     isfile(raw_summary_path) && !islink(raw_summary_path) ||
         throw(ArgumentError("raw summary must be a regular non-symlink JSON file"))
     raw_summary_bytes = read(raw_summary_path)
-    summary = _a4s4_json_read(String(raw_summary_bytes))
+    # Keep the original raw bytes intact for the temporal source fence.
+    summary = _a4s4_json_read(String(copy(raw_summary_bytes)))
     checked = a4_s4_tree_julia_own_optimum_input(summary; core070)
     snapshot = _a4s4_tree_own_pre_fit_snapshot(raw_summary_path, raw_summary_bytes; validated_input = checked)
     # No `start` keyword is passed: this is deliberately the public route's
