@@ -32,11 +32,18 @@ The initial grouped family set is Gaussian, Poisson-log, Binomial-logit, Beta-lo
 
 ## Separate website task — visible GLLVM.jl logo
 
-Requested by Shinichi on 2026-09-07, with GLLVM.jl and DRM.jl homepage screenshots as the visual reference. Status: QUEUED; not implemented or visually verified.
+Requested by Shinichi on 2026-09-07, with GLLVM.jl and DRM.jl homepage screenshots as the visual reference. Status: **locally implemented and rendered** in commit `cc8b95b0`; not deployed.
 
-Reuse GLLVM.jl's existing logo, rather than designing a replacement. Give it comparable prominence to DRM.jl: large beside the homepage heading on wide screens, and above the heading on narrower screens. It must remain visible in split-screen windows and at increased browser zoom, not disappear at a responsive breakpoint. Preserve the small navigation logo as well.
+The response-structure mark is now a semantic, normal-flow VitePress hero
+image with accessible alternative text.  It remains visible at narrower widths
+rather than relying on the former desktop-only CSS pseudo-element; the small
+navigation logo is unchanged.
 
-Acceptance: inspect the rendered homepage at wide, split-screen and mobile widths, including 120% browser zoom; verify no clipping, overlap or horizontal overflow and an accessible image label. Keep current capability limitations unchanged. This is a separate presentation task, not an additional Destination B statistical row, and does not authorise deployment or push.
+Local `docs/make.jl --local` and the generated-asset/HTML checks pass.  This
+does not substitute for browser screenshots at every physical device or a live
+deployment; those remain deliberately unclaimed.  The presentation task is not
+an additional Destination B statistical row and does not authorise deployment
+or push.
 
 ## Interval contract
 
