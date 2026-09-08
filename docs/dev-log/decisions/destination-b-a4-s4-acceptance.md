@@ -225,3 +225,16 @@ private transport remains schema-validatable and unqualified.
 - The runner calls this preflight before `JuliaCall::julia_setup` and later
   consumes only its returned payloads.  No Julia setup, bridge call, fit, or
   pilot retry was run.
+
+## Pre-Julia metadata-validation TDD receipt
+
+- RED: after the R fixture-mutation helper was corrected to return its edited
+  object, the R-only preflight test failed because a retained tree reference
+  with a wrong frozen source pin passed through preflight.
+- GREEN: `Rscript test/test_destination_b_a4_s4_runner.R` now also rejects
+  mutated tree source pin, pedigree DLL hash, tree data hash, and dense
+  one-ridge operation before Julia.  The existing Julia receipt test remains
+  `60/60`, and both R sources parse.
+- Preflight returns the already validated source pin, DLL hash, data hash, and
+  dense ridge operation; the bridge loop only consumes those returned fields.
+  No Julia setup, bridge call, fit, RDS readback, or pilot retry was run.

@@ -32,6 +32,22 @@ a4_s4_reference_paths <- function(core070) {
   )
 }
 
+a4_s4_frozen_source_pin <- "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+a4_s4_frozen_dll_sha256 <- "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb"
+a4_s4_expected_data_sha256 <- c(
+  tree = "a096e8a4f4408923ea0e906defef936f133b92b65202a9baac9fff0d197373c2",
+  pedigree = "025d9ca79375962ef4110c3ce62f84b30cdeea2939957e03f7235e2352e5142b",
+  dense = "e33fcb6d2b391e70b1a8a19d8285c6d0205bdf80d97f35c65d82395d9eef3243"
+)
+a4_s4_dense_ridge_operation <- "A_ridged = A_original + 1e-8 * I; Q_canonical = solve(A_ridged)"
+
+a4_s4_sha256 <- function(value, label) {
+  if (!is.character(value) || length(value) != 1L || !grepl("^[0-9a-f]{64}$", value)) {
+    stop(sprintf("%s must be a lowercase SHA-256", label), call. = FALSE)
+  }
+  value
+}
+
 a4_s4_integer_vector <- function(value, label, lower, upper) {
   values <- unlist(value, recursive = TRUE, use.names = FALSE)
   if (!length(values) || !is.numeric(values) || any(!is.finite(values)) ||
@@ -77,6 +93,22 @@ a4_s4_preflight_payloads <- function(core070, fixtures_path = NULL, reference_pa
     if (!identical(dim(Y), c(3L, 16L)) || any(!is.finite(Y))) {
       stop(sprintf("%s retained response must be a finite 3-by-16 numeric matrix", kind), call. = FALSE)
     }
+    source_pin <- if (identical(kind, "dense")) reference$provenance$frozen_source_pin else reference$source_pin
+    dll_sha256 <- if (identical(kind, "dense")) reference$provenance$dll_sha256 else reference$dll_sha256
+    data_sha256 <- if (identical(kind, "dense")) reference$response$data_sha256 else reference$data_sha256
+    if (!identical(source_pin, a4_s4_frozen_source_pin) ||
+        !identical(dll_sha256, a4_s4_frozen_dll_sha256)) {
+      stop(sprintf("%s retained reference does not name the frozen R source/DLL", kind), call. = FALSE)
+    }
+    a4_s4_sha256(data_sha256, sprintf("%s retained data hash", kind)) == a4_s4_expected_data_sha256[[kind]] ||
+      stop(sprintf("%s retained data hash differs from its frozen reference", kind), call. = FALSE)
+    ridge_operation <- NULL
+    if (identical(kind, "dense")) {
+      ridge_operation <- reference$source_covariance$ridge_operation
+      if (!identical(ridge_operation, a4_s4_dense_ridge_operation)) {
+        stop("dense retained source does not document the canonical one-ridge operation", call. = FALSE)
+      }
+    }
     bundle <- fixtures$bundles[[kind]]
     if (!is.list(bundle) || !is.list(bundle$precision)) {
       stop(sprintf("%s retained fixture lacks a precision payload", kind), call. = FALSE)
@@ -95,7 +127,8 @@ a4_s4_preflight_payloads <- function(core070, fixtures_path = NULL, reference_pa
       stop(sprintf("%s retained fixture has no valid observation-level species map", kind), call. = FALSE)
     }
     list(reference_path = reference_path, reference = reference, bundle = bundle,
-      precision = precision, Y = Y, species_id = species_id)
+      precision = precision, Y = Y, species_id = species_id, source_pin = source_pin,
+      dll_sha256 = dll_sha256, data_sha256 = data_sha256, ridge_operation = ridge_operation)
   })
   names(payloads) <- kinds
   payloads

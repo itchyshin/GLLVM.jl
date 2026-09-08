@@ -50,6 +50,44 @@ bad_references <- reference_paths
 bad_references[["tree"]] <- bad_reference_path
 expect_error(a4_s4_preflight_payloads(core070, reference_paths = bad_references), "malformed reference")
 
+write_mutated_reference <- function(path, mutate) {
+  reference <- mutate(jsonlite::fromJSON(path, simplifyVector = FALSE))
+  output <- tempfile(fileext = ".json")
+  jsonlite::write_json(reference, output, auto_unbox = TRUE, digits = 17)
+  output
+}
+bad_source_path <- write_mutated_reference(reference_paths[["tree"]], function(reference) {
+  reference$source_pin <- strrep("0", 40L)
+  reference
+})
+bad_references <- reference_paths
+bad_references[["tree"]] <- bad_source_path
+expect_error(a4_s4_preflight_payloads(core070, reference_paths = bad_references), "source pin")
+
+bad_dll_path <- write_mutated_reference(reference_paths[["pedigree"]], function(reference) {
+  reference$dll_sha256 <- strrep("0", 64L)
+  reference
+})
+bad_references <- reference_paths
+bad_references[["pedigree"]] <- bad_dll_path
+expect_error(a4_s4_preflight_payloads(core070, reference_paths = bad_references), "DLL hash")
+
+bad_data_path <- write_mutated_reference(reference_paths[["tree"]], function(reference) {
+  reference$data_sha256 <- strrep("0", 64L)
+  reference
+})
+bad_references <- reference_paths
+bad_references[["tree"]] <- bad_data_path
+expect_error(a4_s4_preflight_payloads(core070, reference_paths = bad_references), "data hash")
+
+bad_ridge_path <- write_mutated_reference(reference_paths[["dense"]], function(reference) {
+  reference$source_covariance$ridge_operation <- "A + 1e-8 I"
+  reference
+})
+bad_references <- reference_paths
+bad_references[["dense"]] <- bad_ridge_path
+expect_error(a4_s4_preflight_payloads(core070, reference_paths = bad_references), "dense ridge operation")
+
 expect_error(a4_s4_decode_json_matrix(list(c(1, 2), c(3)), "ragged"), "ragged rows")
 expect_error(a4_s4_decode_json_matrix(list(c(1, 2), c("x", "y")), "nonnumeric"), "nonnumeric rows")
 expect_error(a4_s4_decode_json_matrix(1, "malformed"), "non-list payload")

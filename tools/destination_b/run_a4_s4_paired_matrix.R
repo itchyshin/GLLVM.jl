@@ -120,26 +120,16 @@ tryCatch({
   for (kind in c("tree", "pedigree", "dense")) {
     payload <- retained_payloads[[kind]]
     reference_path <- payload$reference_path
-    reference <- payload$reference
-    bundle <- payload$bundle
     precision <- payload$precision
     Y <- payload$Y
-    source_pin <- if (identical(kind, "dense")) reference$provenance$frozen_source_pin else reference$source_pin
-    dll_hash <- if (identical(kind, "dense")) reference$provenance$dll_sha256 else reference$dll_sha256
-    data_hash <- if (identical(kind, "dense")) reference$response$data_sha256 else reference$data_sha256
-    if (!identical(source_pin, frozen_pin) || !identical(dll_hash, frozen_dll)) {
-      stop(sprintf("%s does not name the frozen R source/DLL", kind), call. = FALSE)
-    }
+    source_pin <- payload$source_pin
+    dll_hash <- payload$dll_sha256
+    data_hash <- payload$data_sha256
     species_id <- payload$species_id
     ci_request <- if (identical(kind, "dense")) "none" else "wald"
     ridge_evidence <- if (identical(kind, "dense")) {
-      operation <- reference$source_covariance$ridge_operation
-      expected_operation <- "A_ridged = A_original + 1e-8 * I; Q_canonical = solve(A_ridged)"
-      if (!identical(operation, expected_operation)) {
-        stop("dense retained source does not document the canonical one-ridge operation", call. = FALSE)
-      }
       list(source_covariance_reference_sha256 = sha(reference_path),
-        source_covariance_operation = operation)
+        source_covariance_operation = payload$ridge_operation)
     } else NULL
     started <- proc.time()[["elapsed"]]
     fit <- bridge_one(Y, precision, species_id, ci_request)
