@@ -1,0 +1,32 @@
+{
+  "schema_version": "destination-b-a4-s4-paired-matrix-1",
+  "status": "error",
+  "provenance": {
+    "frozen_source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "frozen_dll_sha256": "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb",
+    "julia_source_sha256": "889e240011e0b4bf6205a61b46e5519d655997f55a0bb07ea520c7edd004c5e0",
+    "julia_source_attestation_status": "runner_recorded_unverified"
+  },
+  "execution_provenance": {
+    "attestation_status": "runner_recorded_unverified",
+    "julia_executable_sha256": "fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30",
+    "project_toml_sha256": "6d5942217bd246e2967d04ac1db20f069be7d784a8ff8c812d11b5b3f77f5686",
+    "manifest_toml_sha256": "3621f6adfa039a8cf2d38d24aaf08f9182c41ff66cdb652c888aefba8cb2546d",
+    "source_tree_commit": "77ddaa95ef53b30ce99b8708920b2a0eda725be7",
+    "source_tree_dirty": true
+  },
+  "route": {
+    "entrypoint": "GLLVM.bridge_fit",
+    "phylo_model": "multivariate",
+    "private_candidate_only": true,
+    "public_formula_admission": "closed"
+  },
+  "qualification": {
+    "qualified": false,
+    "r_public_admission": "closed",
+    "note": "candidate evidence only; no admission is qualified"
+  },
+  "rows": [],
+  "warnings": [],
+  "error": "missing value where TRUE/FALSE needed"
+}

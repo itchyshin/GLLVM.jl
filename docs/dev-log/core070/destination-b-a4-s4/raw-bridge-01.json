@@ -1,0 +1,32 @@
+{
+  "schema_version": "destination-b-a4-s4-paired-matrix-1",
+  "status": "error",
+  "provenance": {
+    "frozen_source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "frozen_dll_sha256": "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb",
+    "julia_source_sha256": "889e240011e0b4bf6205a61b46e5519d655997f55a0bb07ea520c7edd004c5e0",
+    "julia_source_attestation_status": "runner_recorded_unverified"
+  },
+  "execution_provenance": {
+    "attestation_status": "runner_recorded_unverified",
+    "julia_executable_sha256": "fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30",
+    "project_toml_sha256": "6d5942217bd246e2967d04ac1db20f069be7d784a8ff8c812d11b5b3f77f5686",
+    "manifest_toml_sha256": "3621f6adfa039a8cf2d38d24aaf08f9182c41ff66cdb652c888aefba8cb2546d",
+    "source_tree_commit": "77ddaa95ef53b30ce99b8708920b2a0eda725be7",
+    "source_tree_dirty": true
+  },
+  "route": {
+    "entrypoint": "GLLVM.bridge_fit",
+    "phylo_model": "multivariate",
+    "private_candidate_only": true,
+    "public_formula_admission": "closed"
+  },
+  "qualification": {
+    "qualified": false,
+    "r_public_admission": "closed",
+    "note": "candidate evidence only; no admission is qualified"
+  },
+  "rows": [],
+  "warnings": [],
+  "error": "Error happens in Julia.\nIOError: open(\"/Users/z3437171/.julia/logs/manifest_usage.toml.pid\", 2562, 292): operation not permitted (EPERM)\nStacktrace:\n  [1] uv_error\n    @ Base ./libuv.jl:100 [inlined]\n  [2] open(path::String, flags::UInt32, mode::UInt16)\n    @ Base.Filesystem ./filesystem.jl:121\n  [3] tryopen_exclusive(path::String, mode::UInt16)\n    @ FileWatching.Pidfile ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:212\n  [4] open_exclusive(path::String; mode::UInt16, poll_interval::Int64, wait::Bool, stale_age::Int64, refresh::Float64)\n    @ FileWatching.Pidfile ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:239\n  [5] open_exclusive\n    @ ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:232 [inlined]\n  [6] mkpidlock(at::String, pid::Int32; stale_age::Int64, refresh::Float64, kwopts::@Kwargs{})\n    @ FileWatching.Pidfile ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:67\n  [7] mkpidlock\n    @ ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:62 [inlined]\n  [8] mkpidlock(f::Pkg.Types.var\"#51#54\"{String, String, Dates.DateTime, String}, at::String, pid::Int32; kwopts::@Kwargs{stale_age::Int64})\n    @ FileWatching.Pidfile ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:91\n  [9] mkpidlock\n    @ ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:90 [inlined]\n [10] mkpidlock\n    @ ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/FileWatching/src/pidfile.jl:88 [inlined]\n [11] write_env_usage(source_file::String, usage_filepath::String)\n    @ Pkg.Types ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/Pkg/src/Types.jl:539\n [12] Pkg.Types.EnvCache(env::Nothing)\n    @ Pkg.Types ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/Pkg/src/Types.jl:377\n [13] Pkg.Types.EnvCache(env::Nothing)\n    @ Pkg.Types ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/Pkg/src/Types.jl:356 [inlined]\n [14] add_snapshot_to_undo(env::Nothing)\n    @ Pkg.API ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/Pkg/src/API.jl:2183\n [15] add_snapshot_to_undo(env::Nothing)\n    @ Pkg.API ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/Pkg/src/API.jl:2179 [inlined]\n [16] activate(path::String; shared::Bool, temp::Bool, io::Base.PipeEndpoint)\n    @ Pkg.API ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/Pkg/src/API.jl:1966\n [17] activate(path::String)\n    @ Pkg.API ~/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/share/julia/stdlib/v1.10/Pkg/src/API.jl:1925\n [18] top-level scope\n    @ none:1\n [19] eval\n    @ Core ./boot.jl:385 [inlined]\n [20] eval_string(x::String)\n    @ Main.JuliaCall ~/Library/R/arm64/4.6/library/JuliaCall/julia/setup.jl:203\n [21] docall(call1::Ptr{Nothing})\n    @ Main.JuliaCall ~/Library/R/arm64/4.6/library/JuliaCall/julia/setup.jl:0"
+}

@@ -21,8 +21,8 @@ hero:
       link: /gllvmtmb-parity
 
 features:
-  - title: "Start with a response matrix"
-    details: "Responses are rows and sites are columns: p × n. The first route makes that orientation explicit before fitting."
+  - title: "Start with a Gaussian response matrix"
+    details: "Responses are rows and sites are columns: p × n. This landing-page route fits and interprets Gaussian multivariate data."
   - title: "Read the covariance first"
     details: "Use model-implied Sigma, correlation, and the shared-variance fraction before attaching meaning to a rotated loading axis."
   - title: "A companion, not a replacement"
@@ -32,13 +32,14 @@ features:
 
 # Start with the response matrix
 
-Fast Generalised Linear Latent Variable Models in Julia for multivariate
-response matrices.
+This landing page introduces GLLVM.jl through a Gaussian multivariate
+response-matrix route: fit a response matrix, then interpret its model-implied
+covariance and correlation.
 
 !!! warning "Matrix Orientation: $p \times n$ in Julia vs $n \times p$ in R"
     **GLLVM.jl expects species/traits in rows and sites/observations in columns ($p \times n$).**
 
-    If you are importing data formatted for R packages such as `gllvm` or `gllvmTMB` (which use the $n \times p$ convention with sites in rows and species in columns), you must transpose your matrix (`Y'`) before passing it to `fit_gllvm`, `fit_gaussian_gllvm`, or any other GLLVM.jl fitter.
+    If you are importing data formatted for R packages such as `gllvm` or `gllvmTMB` (which use the $n \times p$ convention with sites in rows and species in columns), transpose your matrix (`Y'`) before passing it to the Gaussian fitters used here.
 
 ## Install
 
@@ -125,29 +126,15 @@ For the per-response residual fit used above, use the explicit `Σ`, `c²`, and
 - Response-family choice: [Response families](response-families.md).
 - R twin comparison: [Capability parity](gllvmtmb-parity.md).
 
-## Current Status
+## Landing-page scope
 
-!!! tip "What works today"
-    - One-part fits through `fit_gllvm`: Gaussian, Binomial, Poisson,
-      NegativeBinomial, Beta, Ordinal (logit or probit), Gamma, Exponential, and
-      Tweedie — plus dedicated drivers for NB1 (`fit_nb1_gllvm`), beta-binomial
-      (`fit_beta_binomial_gllvm`), and a heteroscedastic / per-species-variance
-      Gaussian (`fit_gaussian_pervar_gllvm`).
-    - Per-species / grouped dispersion (gllvm's `disp.group`) for NB2, NB1, Beta,
-      Gamma, and Tweedie via the `_grouped` drivers.
-    - Two-part / mixture fitters: Delta-lognormal, Delta-Gamma, Hurdle-Poisson,
-      Hurdle-NB, beta-hurdle, ordered-beta, ZIP, ZINB, and ZIB.
-    - A variational (VA / ELBO) estimator alongside Laplace, with VA-based SEs;
-      the ordination trio (unconstrained / concurrent / constrained-RRR);
-      species-specific covariates, fourth-corner, fixed and random row effects,
-      and quadratic response.
-    - Structured latent fields: SPDE / Matérn spatial (with kriging) and
-      phylogenetic, including a phylogenetic GLM fit (`fit_phylo_glm`) for
-      non-Gaussian families.
-    - The `@formula` front-end, and non-Gaussian confidence intervals (Wald /
-      profile / bootstrap) via `confint(fit, Y; method=…)` for scalar-dispersion
-      and grouped-dispersion NB2/NB1/Beta/Gamma routes; per-trait ordinal
-      cutpoint CIs remain a bridge-status follow-up.
+This landing page makes a Gaussian-only promise: the shared-residual and
+per-response-residual Gaussian routes shown above. It does not establish
+support for non-Gaussian, mixture, variational (VA/ELBO), SPDE, or
+phylogenetic-GLM workflows. Those are separate routes, and a method being
+mentioned elsewhere in the repository is not evidence that it is ready for an
+applied analysis. Check [Capability parity](gllvmtmb-parity.md) and the
+route-specific documentation before relying on a workflow beyond this page.
 
 ## Relation To gllvmTMB
 

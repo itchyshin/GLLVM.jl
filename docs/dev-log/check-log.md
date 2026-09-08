@@ -18418,3 +18418,23 @@ Local `docs/make.jl --local` exits0 and VitePress reports `build complete in
 showing response columns connected by shared latent structure">`; the output
 contains the non-symlink public asset and `RENDERED_HERO_LOGO_ASSET_PASS`.
 No deploy, push, or capability claim.
+
+# 2026-09-07 — A4/S4 raw candidate receipt and frozen-R validation contract
+
+Retained `raw-bridge-01` (sandbox Julia-log lock failure), `raw-bridge-02`
+(JSON row-decoding failure), and `raw-bridge-03` (three returned private bridge
+rows).  The final raw receipt is independently checked through R/jsonlite/RDS
+and JuliaCall: 87/87 receipt comparisons and Julia verdict
+`schema_valid_raw_candidate_unqualified`.  Tree/pedigree retain their returned
+12-target transformed-Wald payloads; dense retains the explicit no-CI boundary.
+All rows remain `qualified = false` and public admission remains closed.
+
+The new frozen-R helper validates the exact three-row Gaussian request,
+provenance, repeated maps, inherited precision scale, one-ridge dense rule, and
+seven-coordinate R packing, but deliberately performs no objective evaluation.
+Its direct R test exits 0 (`A4_S4_FROZEN_R_EVALUATOR_OK`); the Julia A4/S4
+receipt schema test is 60/60.  A direct 290-file core attempt reached 655 pass,
+3 expected broken, then errored because root `--project=.` lacks the correctly
+test-only `StableRNGs` dependency.  The canonical `Pkg.test()` test-environment
+run remains approval-gated (>30 minutes).  No A4/S4 admission, paired R--Julia
+objective result, 0.7.1 parity, or Destination B completion is claimed.
