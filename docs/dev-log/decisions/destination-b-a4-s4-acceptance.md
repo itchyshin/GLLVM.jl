@@ -238,3 +238,19 @@ private transport remains schema-validatable and unqualified.
 - Preflight returns the already validated source pin, DLL hash, data hash, and
   dense ridge operation; the bridge loop only consumes those returned fields.
   No Julia setup, bridge call, fit, RDS readback, or pilot retry was run.
+
+## Immutable-input identity TDD receipt
+
+- RED: the R-only preflight test failed because a real temporary tree
+  reference with one changed numeric response value and its unchanged embedded
+  data hash was accepted.  A temporary fixture with changed precision triplet,
+  log determinant, and species-to-augmented map was likewise not yet gated.
+- GREEN: preflight now statically checks the retained reference bytes, fixture
+  bytes, and precision-source bytes.  It recomputes each decoded response hash
+  as SHA-256 of R's `writeBin(as.double(c(Y)), ..., size = 8, endian =
+  "little")` raw stream, and checks the exact canonical augmented map,
+  node count, log determinant, and scale.  The R-only test verifies all three
+  known response hashes and rejects both real temporary mutations before Julia.
+- This is deliberately fail-closed: an altered file normally stops at the
+  immutable file hash before later semantic checks.  No Julia setup, bridge
+  call, fit, RDS readback, or retry was run.

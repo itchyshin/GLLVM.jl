@@ -34,6 +34,8 @@ for (kind in names(preflight)) {
   stopifnot(is.matrix(preflight[[kind]]$Y), is.numeric(preflight[[kind]]$Y),
     identical(dim(preflight[[kind]]$Y), c(3L, 16L)),
     length(preflight[[kind]]$species_id) == 16L)
+  stopifnot(identical(a4_s4_response_sha256(preflight[[kind]]$Y),
+    a4_s4_expected_data_sha256[[kind]]))
 }
 
 bad_fixture <- jsonlite::fromJSON(file.path(core070, "destination-b-adapter", "fixtures-01.json"),
@@ -87,6 +89,29 @@ bad_ridge_path <- write_mutated_reference(reference_paths[["dense"]], function(r
 bad_references <- reference_paths
 bad_references[["dense"]] <- bad_ridge_path
 expect_error(a4_s4_preflight_payloads(core070, reference_paths = bad_references), "dense ridge operation")
+
+bad_response_path <- write_mutated_reference(reference_paths[["tree"]], function(reference) {
+  reference$Y_traits_by_observations[[1L]][[1L]] <-
+    reference$Y_traits_by_observations[[1L]][[1L]] + 0.25
+  reference
+})
+bad_references <- reference_paths
+bad_references[["tree"]] <- bad_response_path
+expect_error(a4_s4_preflight_payloads(core070, reference_paths = bad_references),
+  "changed response with stale embedded hash")
+
+bad_precision_fixture <- jsonlite::fromJSON(file.path(core070, "destination-b-adapter", "fixtures-01.json"),
+  simplifyVector = FALSE)
+bad_precision_fixture$bundles$tree$precision$log_det <-
+  bad_precision_fixture$bundles$tree$precision$log_det + 0.25
+bad_precision_fixture$bundles$tree$precision$x[[1L]] <-
+  bad_precision_fixture$bundles$tree$precision$x[[1L]] + 0.25
+bad_precision_fixture$bundles$tree$precision$species_aug_id[c(1L, 2L)] <-
+  bad_precision_fixture$bundles$tree$precision$species_aug_id[c(2L, 1L)]
+bad_precision_fixture_path <- tempfile(fileext = ".json")
+jsonlite::write_json(bad_precision_fixture, bad_precision_fixture_path, auto_unbox = TRUE, digits = 17)
+expect_error(a4_s4_preflight_payloads(core070, fixtures_path = bad_precision_fixture_path),
+  "changed precision triplet/map")
 
 expect_error(a4_s4_decode_json_matrix(list(c(1, 2), c(3)), "ragged"), "ragged rows")
 expect_error(a4_s4_decode_json_matrix(list(c(1, 2), c("x", "y")), "nonnumeric"), "nonnumeric rows")
