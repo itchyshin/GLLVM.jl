@@ -8,6 +8,9 @@
 # The batch is expected to take 10--20 minutes in the already prepared local
 # environment.  It refuses to overwrite either terminal JSON or raw RDS.
 
+runner_file <- sub("^--file=", "", commandArgs(FALSE)[grep("^--file=", commandArgs(FALSE))][[1L]])
+source(file.path(dirname(normalizePath(runner_file, mustWork = TRUE)), "a4_s4_json_matrix.R"))
+
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 4L) {
   stop("usage: run_a4_s4_paired_matrix.R CORE070 PROJECT JULIA_BIN OUTPUT_JSON", call. = FALSE)
@@ -124,8 +127,12 @@ tryCatch({
     reference <- jsonlite::fromJSON(reference_path, simplifyVector = FALSE)
     bundle <- fixtures$bundles[[kind]]
     precision <- bundle$precision
-    Y <- if (identical(kind, "dense")) reference$response$Y_traits_by_observations else
+    Y_payload <- if (identical(kind, "dense")) reference$response$Y_traits_by_observations else
       reference$Y_traits_by_observations
+    Y <- a4_s4_decode_json_matrix(Y_payload, sprintf("%s retained response", kind))
+    if (!identical(dim(Y), c(3L, 16L)) || any(!is.finite(Y))) {
+      stop(sprintf("%s retained response must be a finite 3-by-16 numeric matrix", kind), call. = FALSE)
+    }
     source_pin <- if (identical(kind, "dense")) reference$provenance$frozen_source_pin else reference$source_pin
     dll_hash <- if (identical(kind, "dense")) reference$provenance$dll_sha256 else reference$dll_sha256
     data_hash <- if (identical(kind, "dense")) reference$response$data_sha256 else reference$data_sha256

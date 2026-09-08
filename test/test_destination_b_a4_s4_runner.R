@@ -1,0 +1,34 @@
+helper <- file.path("tools", "destination_b", "a4_s4_json_matrix.R")
+source(helper)
+
+expect_error <- function(expression, label) {
+  failed <- FALSE
+  tryCatch(force(expression), error = function(error) failed <<- TRUE)
+  if (!failed) stop(sprintf("expected decoder failure for %s", label), call. = FALSE)
+}
+
+reference_paths <- c(
+  tree = file.path("docs", "dev-log", "core070", "destination-b-tree", "r-bfgs-attempt-01.json"),
+  pedigree = file.path("docs", "dev-log", "core070", "destination-b-pedigree-fit", "r-bfgs-attempt-01.json"),
+  dense = file.path("docs", "dev-log", "core070", "destination-b-s3b-pilot", "r-attempt-02.json")
+)
+expected_first <- c(
+  tree = -0.578147955781614,
+  pedigree = -0.468356678610928,
+  dense = -0.204875288969302
+)
+
+for (kind in names(reference_paths)) {
+  reference <- jsonlite::fromJSON(reference_paths[[kind]], simplifyVector = FALSE)
+  payload <- if (identical(kind, "dense")) reference$response$Y_traits_by_observations else
+    reference$Y_traits_by_observations
+  Y <- a4_s4_decode_json_matrix(payload, sprintf("%s retained response", kind))
+  stopifnot(is.matrix(Y), is.numeric(Y), identical(dim(Y), c(3L, 16L)),
+    all(is.finite(Y)), isTRUE(all.equal(Y[1L, 1L], expected_first[[kind]], tolerance = 1e-14)))
+}
+
+expect_error(a4_s4_decode_json_matrix(list(c(1, 2), c(3)), "ragged"), "ragged rows")
+expect_error(a4_s4_decode_json_matrix(list(c(1, 2), c("x", "y")), "nonnumeric"), "nonnumeric rows")
+expect_error(a4_s4_decode_json_matrix(1, "malformed"), "non-list payload")
+
+cat("A4_S4_JSON_MATRIX_OK\n")

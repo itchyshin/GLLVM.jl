@@ -196,3 +196,18 @@ private transport remains schema-validatable and unqualified.
   vectors reject both `true` and `false` before their range/map checks.
 - No live fit, RDS readback, public formula admission, or paired-evidence
   qualification was attempted.
+
+## JSON response-decoding TDD receipt
+
+- RED: `Rscript test/test_destination_b_a4_s4_runner.R` failed because the
+  required reusable decoder did not exist.  The retained-reference diagnostic
+  confirmed the cause: with `simplifyVector = FALSE`, each response is three
+  trait rows represented as lists of 16 numeric scalars, not an R matrix.
+- GREEN: the same test prints `A4_S4_JSON_MATRIX_OK` after decoding tree,
+  pedigree, and dense retained responses as finite numeric `3 x 16` matrices,
+  checking their first entries, and rejecting malformed, ragged, and
+  non-numeric payloads.  The pre-existing focused Julia receipt test remains
+  `60/60` and both R sources parse.
+- The runner now sources this decoder and rejects any response not exactly a
+  finite `3 x 16` matrix before species-map validation or JuliaCall.  No Julia
+  setup, bridge call, fit, RDS readback, or public admission was run.
