@@ -8,6 +8,7 @@ qualified admission verdict.
 
 const _A4_S4_SCHEMA = "destination-b-a4-s4-paired-matrix-1"
 const _A4_S4_RAW_SCHEMA = "destination-b-a4-s4-private-bridge-raw-1"
+const _A4_S4_RAW_STATUS = "raw_bridge_returns_recorded_unqualified"
 const _A4_S4_FROZEN_PIN = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
 const _A4_S4_FROZEN_DLL = "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb"
 const _A4_S4_ROWS = Dict(
@@ -50,6 +51,8 @@ const _A4_S4_JULIA_COORDINATES = ["beta[1]", "beta[2]", "beta[3]",
     "pack_lambda(Lambda)[1]", "pack_lambda(Lambda)[2]", "pack_lambda(Lambda)[3]",
     "log_sd_residual_shared"]
 const _A4_S4_DENSE_RIDGE_OPERATION = "A_ridged = A_original + 1e-8 * I; Q_canonical = solve(A_ridged)"
+const _A4_S4_WALD_CI_FAILURES = Set(["not_converged", "nonidentifiable",
+    "invalid_objective", "not_stationary", "invalid_curvature"])
 
 _a4fail(message) = throw(ArgumentError("A4/S4 paired matrix: " * message))
 
@@ -82,6 +85,25 @@ function _a4number(object, key, where)
     return Float64(value)
 end
 
+function _a4integer(object, key, where)
+    value = _a4get(object, key, where)
+    value isa Integer && !(value isa Bool) && typemin(Int) <= value <= typemax(Int) ||
+        _a4fail("$(where).$(key) is not a machine integer")
+    return Int(value)
+end
+
+function _a4vector(value, where)
+    value isa AbstractVector || _a4fail("$(where) is not a vector")
+    return value
+end
+
+function _a4string_vector(object, key, where)
+    values = _a4vector(_a4get(object, key, where), "$(where).$(key)")
+    all(value -> value isa AbstractString && !isempty(value), values) ||
+        _a4fail("$(where).$(key) is not a nonempty string vector")
+    return String.(values)
+end
+
 function _a4sha(value, where)
     value isa AbstractString && occursin(r"^[0-9a-f]{64}$", value) ||
         _a4fail("$(where) is not a lowercase SHA-256")
@@ -109,14 +131,16 @@ end
 
 function _a4map(object, where)
     object = _a4dict(object, where)
-    n_aug = Int(_a4number(object, "n_augmented", where))
-    n_species = Int(_a4number(object, "n_species_observed", where))
-    n_observations = Int(_a4number(object, "n_observations", where))
+    n_aug = _a4integer(object, "n_augmented", where)
+    n_species = _a4integer(object, "n_species_observed", where)
+    n_observations = _a4integer(object, "n_observations", where)
     n_aug >= n_species > 0 && n_observations == 16 ||
         _a4fail("$(where) has invalid dimensions")
-    species_map = collect(_a4get(object, "observed_species_to_augmented_zero_based", where))
-    species_id = collect(_a4get(object, "species_id_one_based", where))
-    observation_map = collect(_a4get(object, "observation_to_augmented_zero_based", where))
+    species_map = _a4vector(_a4get(object, "observed_species_to_augmented_zero_based", where),
+        "$(where).observed_species_to_augmented_zero_based")
+    species_id = _a4vector(_a4get(object, "species_id_one_based", where), "$(where).species_id_one_based")
+    observation_map = _a4vector(_a4get(object, "observation_to_augmented_zero_based", where),
+        "$(where).observation_to_augmented_zero_based")
     length(species_map) == n_species || _a4fail("$(where) species map length mismatch")
     length(species_id) == n_observations || _a4fail("$(where) species_id length mismatch")
     length(observation_map) == n_observations || _a4fail("$(where) observation map length mismatch")
@@ -134,9 +158,7 @@ end
 
 function _a4interval_target(object, kind, where)
     object = _a4dict(object, where)
-    targets = collect(_a4get(object, "target_names", where))
-    all(x -> x isa AbstractString && !isempty(x), targets) ||
-        _a4fail("$(where).target_names is malformed")
+    targets = _a4string_vector(object, "target_names", where)
     gate = _a4string(object, "gate", where)
     gate == "not_assessed" || _a4fail("$(where) cannot qualify an interval gate")
     status = _a4string(object, "status", where)
@@ -145,7 +167,7 @@ function _a4interval_target(object, kind, where)
         isempty(targets) && status == "unavailable" && method == "not_run" ||
             _a4fail("dense uncertainty must remain unavailable")
     else
-        String.(targets) == _A4_S4_TARGETS ||
+        targets == _A4_S4_TARGETS ||
             _a4fail("$(where) must name the full 12-target interval contract")
         status == "available" && method == "transformed_wald" ||
             _a4fail("$(where) is not the retained transformed-Wald contract")
@@ -155,23 +177,38 @@ end
 
 function _a4raw_interval_target(object, kind, bridge, where)
     object = _a4dict(object, where)
-    targets = String.(collect(_a4get(object, "target_names", where)))
-    bridge_targets = String.(collect(_a4get(bridge, "ci_target_names", "$(where).bridge_result")))
-    methods = String.(collect(_a4get(bridge, "ci_target_methods", "$(where).bridge_result")))
+    targets = _a4string_vector(object, "target_names", where)
+    bridge_targets = _a4string_vector(bridge, "ci_target_names", "$(where).bridge_result")
+    methods = _a4string_vector(bridge, "ci_target_methods", "$(where).bridge_result")
+    statuses = _a4string_vector(bridge, "ci_statuses", "$(where).bridge_result")
     status = _a4string(object, "status", where)
     bridge_status = _a4string(bridge, "ci_status", "$(where).bridge_result")
     targets == bridge_targets || _a4fail("$(where) target names differ from bridge output")
     if kind == "dense"
-        isempty(targets) && isempty(methods) && status == "unavailable" &&
+        isempty(targets) && isempty(methods) && isempty(statuses) && status == "unavailable" &&
             bridge_status == "not_requested" && _a4string(object, "method", where) == "not_run" ||
             _a4fail("dense raw record must retain no-CI unavailable status")
-    elseif bridge_status == "available"
-        targets == _A4_S4_TARGETS && length(methods) == 12 && all(==("transformed_wald"), methods) &&
-            status == "available" && _a4string(object, "method", where) == "transformed_wald" ||
-            _a4fail("$(where) available target does not match transformed-Wald bridge output")
     else
-        status == bridge_status && _a4string(object, "method", where) == "bridge_reported" ||
-            _a4fail("$(where) availability claim differs from bridge output")
+        bridge_status in union(Set(["available", "partial"]), _A4_S4_WALD_CI_FAILURES) ||
+            _a4fail("$(where) bridge CI status is not emitted by the private bridge")
+        targets == _A4_S4_TARGETS && length(methods) == 12 && length(statuses) == 12 ||
+            _a4fail("$(where) bridge CI arrays do not retain the 12-target contract")
+        if bridge_status == "available"
+            all(==("available"), statuses) && all(==("transformed_wald"), methods) &&
+                status == "available" && _a4string(object, "method", where) == "transformed_wald" ||
+                _a4fail("$(where) available CI status does not match its targets")
+        elseif bridge_status == "partial"
+            all(value -> value in ("available", "target_unavailable"), statuses) &&
+                any(==("target_unavailable"), statuses) &&
+                all(i -> statuses[i] == "available" ? methods[i] == "transformed_wald" : methods[i] == "unavailable",
+                    eachindex(statuses)) && status == "partial" &&
+                _a4string(object, "method", where) == "bridge_reported" ||
+                _a4fail("$(where) partial CI statuses do not match their methods")
+        else
+            all(==(bridge_status), statuses) && all(==("unavailable"), methods) &&
+                status == bridge_status && _a4string(object, "method", where) == "bridge_reported" ||
+                _a4fail("$(where) unavailable CI statuses do not match the bridge result")
+        end
     end
     _a4string(object, "gate", where) == "not_assessed" ||
         _a4fail("$(where) cannot qualify an interval gate")
@@ -180,16 +217,16 @@ end
 
 function _a4coordinate_contract(object, where)
     object = _a4dict(object, where)
-    String.(collect(_a4get(object, "r_parameter_names", where))) == _A4_S4_R_COORDINATES ||
+    _a4string_vector(object, "r_parameter_names", where) == _A4_S4_R_COORDINATES ||
         _a4fail("$(where) R coordinate order differs from the frozen contract")
-    String.(collect(_a4get(object, "julia_parameter_names", where))) == _A4_S4_JULIA_COORDINATES ||
+    _a4string_vector(object, "julia_parameter_names", where) == _A4_S4_JULIA_COORDINATES ||
         _a4fail("$(where) Julia coordinate order differs from the frozen contract")
     _a4number(object, "sigma2_phy", where) == 1.0 || _a4fail("$(where) does not lock sigma2_phy at one")
     return nothing
 end
 
 function _a4finite_vector(object, key, where)
-    values = collect(_a4get(object, key, where))
+    values = _a4vector(_a4get(object, key, where), "$(where).$(key)")
     length(values) == 7 || _a4fail("$(where).$(key) has the wrong coordinate length")
     all(x -> x isa Real && !(x isa Bool) && isfinite(x), values) ||
         _a4fail("$(where).$(key) is not a finite numeric vector")
@@ -200,17 +237,38 @@ function _a4fixture(object, id, kind, where)
     object = _a4dict(object, where)
     _a4string(object, "kind", where) == kind || _a4fail("$(where).kind mismatch")
     if kind == "tree"
-        Int(_a4number(object, "height", where)) == 4 || _a4fail("tree must have height four")
+        _a4integer(object, "height", where) == 4 || _a4fail("tree must have height four")
         !_a4bool(object, "unit_ultrametric", where) || _a4fail("tree must be nonunit ultrametric")
     elseif kind == "pedigree"
-        Int(_a4number(object, "n_nodes", where)) == 12 || _a4fail("pedigree must have 12 nodes")
-        Int(_a4number(object, "n_observed", where)) == 8 || _a4fail("pedigree must have 8 observed nodes")
-        Int(_a4number(object, "n_unobserved_ancestors", where)) == 4 ||
+        _a4integer(object, "n_nodes", where) == 12 || _a4fail("pedigree must have 12 nodes")
+        _a4integer(object, "n_observed", where) == 8 || _a4fail("pedigree must have 8 observed nodes")
+        _a4integer(object, "n_unobserved_ancestors", where) == 4 ||
             _a4fail("pedigree must retain 4 unobserved ancestors")
     else
         _a4string(object, "ridge_operation", where) == "A + 1e-8 I; solve once" ||
             _a4fail("dense covariance operation is not canonical")
     end
+    return nothing
+end
+
+function _a4execution_provenance(object)
+    object = _a4dict(object, "execution_provenance")
+    _a4string(object, "attestation_status", "execution_provenance") == "runner_recorded_unverified" ||
+        _a4fail("execution provenance must remain runner-recorded and unverified")
+    for key in ("julia_executable_sha256", "project_toml_sha256")
+        _a4sha(_a4get(object, key, "execution_provenance"), "execution_provenance.$(key)")
+    end
+    manifest = _a4get(object, "manifest_toml_sha256", "execution_provenance")
+    manifest == "unavailable" || _a4sha(manifest, "execution_provenance.manifest_toml_sha256")
+    commit = _a4get(object, "source_tree_commit", "execution_provenance")
+    commit isa AbstractString && occursin(r"^[0-9a-f]{40}$", commit) ||
+        _a4fail("execution_provenance.source_tree_commit is not a Git commit")
+    _a4bool(object, "source_tree_dirty", "execution_provenance")
+    return nothing
+end
+
+function _a4raw_artifact(object, id)
+    _a4sha(_a4get(object, "raw_rds_sha256", "$(id)"), "$(id).raw_rds_sha256")
     return nothing
 end
 
@@ -263,6 +321,7 @@ function _a4row(object; raw = false, unavailable = false)
     if raw
         !haskey(object, "matched_point") && !haskey(object, "own_optimum") ||
             _a4fail("$(id) raw record must not pose as paired evidence")
+        _a4raw_artifact(object, id)
         bridge = _a4dict(_a4get(object, "bridge_result", "row"), "$(id).bridge_result")
         _a4string(bridge, "status", "$(id).bridge_result") == "returned" ||
             _a4fail("$(id) bridge did not return")
@@ -318,7 +377,7 @@ function verify_a4_s4_paired_matrix(document)
     unavailable = schema == _A4_S4_SCHEMA &&
         _a4string(document, "status", "document") == "paired_evidence_unavailable"
     schema == _A4_S4_SCHEMA || raw || _a4fail("wrong schema version")
-    _a4string(document, "status", "document") == (raw ? "raw_bridge_returns_recorded" : "paired_evidence_unavailable") ||
+    _a4string(document, "status", "document") == (raw ? _A4_S4_RAW_STATUS : "paired_evidence_unavailable") ||
         _a4fail("receipt status does not match its schema")
     provenance = _a4dict(_a4get(document, "provenance", "document"), "provenance")
     _a4source_pin(_a4get(provenance, "frozen_source_pin", "provenance"), "provenance.frozen_source_pin")
@@ -330,7 +389,13 @@ function verify_a4_s4_paired_matrix(document)
     _a4string(route, "phylo_model", "route") == "multivariate" || _a4fail("wrong phylo model")
     _a4bool(route, "private_candidate_only", "route") || _a4fail("route is not private")
     _a4string(route, "public_formula_admission", "route") == "closed" || _a4fail("public formula gate is not closed")
-    rows = collect(_a4get(document, "rows", "document"))
+    if raw
+        _a4execution_provenance(_a4get(document, "execution_provenance", "document"))
+    else
+        !haskey(document, "execution_provenance") ||
+            _a4fail("schema-only paired record cannot claim execution provenance")
+    end
+    rows = _a4vector(_a4get(document, "rows", "document"), "document.rows")
     length(rows) == length(_A4_S4_ROWS) || _a4fail("must contain exactly three Gaussian rows")
     ids = [_a4row(row; raw = raw, unavailable = unavailable) for row in rows]
     length(unique(ids)) == length(ids) && Set(ids) == Set(keys(_A4_S4_ROWS)) ||
@@ -352,7 +417,7 @@ function verify_a4_s4_paired_matrix(document)
             ("matched_point", "own_optimum", "artifact_bindings")) ||
             _a4fail("paired evidence availability cannot overstate absent artifacts")
     end
-    return Dict("status" => raw ? "verified_raw_candidate_input_only" :
+    return Dict("status" => raw ? "verified_raw_candidate_schema_only_unqualified" :
         "paired_evidence_unavailable", "qualified" => false,
         "rows_verified" => sort(ids), "julia_source_sha256" => julia_source)
 end

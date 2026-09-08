@@ -157,3 +157,21 @@ private transport remains separately verifiable and unqualified.
   added.  `Rscript -e 'parse(file="tools/destination_b/run_a4_s4_paired_matrix.R")'`
   also parsed successfully.
 - No live fit, simulation, or candidate-success receipt was run or written.
+
+## Raw-provenance and CI TDD receipt
+
+- RED: the focused receipt test failed (`36` passed, `7` failed) when it
+  required execution provenance, a SHA-256 for each saved raw RDS, source-real
+  CI status/method arrays, and `ArgumentError` for malformed dimensions and
+  containers.  The pre-repair verifier either accepted those invented fields
+  or leaked `InexactError`/`MethodError`.
+- GREEN: `julia --project=. test/test_destination_b_a4_s4_receipts.jl` passed
+  `45/45`.  Raw execution provenance now records the Julia executable and
+  Project/Manifest hashes plus Git commit and dirty state as
+  `runner_recorded_unverified`; it is intentionally not authenticated engine
+  evidence.  Every persisted raw RDS receives a terminal-row SHA-256 binding.
+- Tree/pedigree CI records permit only the statuses emitted by the private
+  bridge (`available`, `partial`, `not_converged`, `nonidentifiable`,
+  `invalid_objective`, `not_stationary`, or `invalid_curvature`) with their
+  corresponding per-target status/method contracts. Dense alone remains
+  `not_requested` with no targets. No live fit was run.

@@ -132,7 +132,7 @@ end
 function _a4_s4_raw_document()
     document = _a4_s4_document()
     document["schema_version"] = "destination-b-a4-s4-private-bridge-raw-1"
-    document["status"] = "raw_bridge_returns_recorded"
+    document["status"] = "raw_bridge_returns_recorded_unqualified"
     for row in document["rows"]
         pop!(row, "matched_point", nothing)
         pop!(row, "own_optimum", nothing)
@@ -140,9 +140,19 @@ function _a4_s4_raw_document()
         row["bridge_result"] = Dict("status" => "returned", "admission_status" => "closed",
             "ci_status" => is_dense ? "not_requested" : "available",
             "ci_target_names" => copy(row["interval_target"]["target_names"]),
-            "ci_target_methods" => is_dense ? String[] : fill("transformed_wald", 12))
+            "ci_target_methods" => is_dense ? String[] : fill("transformed_wald", 12),
+            "ci_statuses" => is_dense ? String[] : fill("available", 12))
         row["ci_request"] = row["fixture"]["kind"] == "dense" ? "none" : "wald"
+        row["raw_rds_sha256"] = _A4_S4_SHA
     end
+    document["execution_provenance"] = Dict(
+        "attestation_status" => "runner_recorded_unverified",
+        "julia_executable_sha256" => _A4_S4_SHA,
+        "project_toml_sha256" => _A4_S4_SHA,
+        "manifest_toml_sha256" => "unavailable",
+        "source_tree_commit" => "b" ^ 40,
+        "source_tree_dirty" => false,
+    )
     return document
 end
 
@@ -153,8 +163,28 @@ end
     @test !checked["qualified"]
     raw = _a4_s4_raw_document()
     raw_checked = verify_a4_s4_paired_matrix(raw)
-    @test raw_checked["status"] == "verified_raw_candidate_input_only"
+    @test raw_checked["status"] == "verified_raw_candidate_schema_only_unqualified"
     @test !raw_checked["qualified"]
+
+    partial = deepcopy(raw)
+    partial_bridge = partial["rows"][1]["bridge_result"]
+    partial_bridge["ci_status"] = "partial"
+    partial_bridge["ci_statuses"][1] = "target_unavailable"
+    partial_bridge["ci_target_methods"][1] = "unavailable"
+    partial["rows"][1]["interval_target"]["status"] = "partial"
+    partial["rows"][1]["interval_target"]["method"] = "bridge_reported"
+    @test verify_a4_s4_paired_matrix(partial)["status"] ==
+        "verified_raw_candidate_schema_only_unqualified"
+
+    unavailable_ci = deepcopy(raw)
+    unavailable_bridge = unavailable_ci["rows"][2]["bridge_result"]
+    unavailable_bridge["ci_status"] = "not_converged"
+    unavailable_bridge["ci_statuses"] .= "not_converged"
+    unavailable_bridge["ci_target_methods"] .= "unavailable"
+    unavailable_ci["rows"][2]["interval_target"]["status"] = "not_converged"
+    unavailable_ci["rows"][2]["interval_target"]["method"] = "bridge_reported"
+    @test verify_a4_s4_paired_matrix(unavailable_ci)["status"] ==
+        "verified_raw_candidate_schema_only_unqualified"
 
     for mutate in (
         x -> x["rows"][1]["reference"]["source_pin"] = "0" ^ 40,
@@ -200,6 +230,26 @@ end
         end,
         x -> x["rows"][1]["map"]["observation_to_augmented_zero_based"][2] = 6,
         x -> x["rows"][1]["map"]["n_augmented"] = 8,
+        x -> x["rows"][1]["map"]["n_augmented"] = 14.5,
+        x -> x["rows"][1]["map"]["species_id_one_based"] = 1,
+    )
+        bad = deepcopy(raw)
+        mutate(bad)
+        @test_throws ArgumentError verify_a4_s4_paired_matrix(bad)
+    end
+
+    for mutate in (
+        x -> delete!(x, "execution_provenance"),
+        x -> x["execution_provenance"]["attestation_status"] = "authenticated_engine_evidence",
+        x -> x["rows"][1]["raw_rds_sha256"] = true,
+        x -> begin
+            bridge = x["rows"][1]["bridge_result"]
+            bridge["ci_status"] = "qualified"
+            x["rows"][1]["interval_target"]["status"] = "qualified"
+            x["rows"][1]["interval_target"]["method"] = "bridge_reported"
+        end,
+        x -> x["rows"][1]["bridge_result"]["ci_statuses"] = fill("qualified", 12),
+        x -> x["rows"][1]["bridge_result"]["ci_target_names"] = Dict("not" => "a vector"),
     )
         bad = deepcopy(raw)
         mutate(bad)

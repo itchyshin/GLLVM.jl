@@ -33,6 +33,22 @@ if (!identical(normalizePath(Sys.getenv("JULIA_PROJECT"), mustWork = TRUE), proj
 frozen_pin <- "b4d5fee64def88bc768dda1f1f77c29b295edd86"
 frozen_dll <- "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb"
 sha <- function(path) unname(tools::sha256sum(path))[[1L]]
+git_output <- function(args) {
+  output <- suppressWarnings(system2("git", args, stdout = TRUE, stderr = TRUE))
+  status <- attr(output, "status")
+  if (!is.null(status) && status != 0L) {
+    stop(sprintf("git %s failed while recording execution provenance",
+      paste(args, collapse = " ")), call. = FALSE)
+  }
+  output
+}
+project_toml <- file.path(project, "Project.toml")
+manifest_toml <- file.path(project, "Manifest.toml")
+if (!file.exists(project_toml)) {
+  stop("the supplied Julia project has no Project.toml", call. = FALSE)
+}
+source_tree_commit <- trimws(git_output(c("-C", project, "rev-parse", "HEAD"))[[1L]])
+source_tree_dirty <- length(git_output(c("-C", project, "status", "--porcelain"))) > 0L
 row_path <- function(kind) file.path(core070, switch(kind,
   tree = "destination-b-tree/r-bfgs-attempt-01.json",
   pedigree = "destination-b-pedigree-fit/r-bfgs-attempt-01.json",
@@ -53,6 +69,10 @@ result <- list(
   status = "error",
   provenance = list(frozen_source_pin = frozen_pin, frozen_dll_sha256 = frozen_dll,
     julia_source_sha256 = sha(file.path(project, "src", "bridge_precision_multivariate.jl"))),
+  execution_provenance = list(attestation_status = "runner_recorded_unverified",
+    julia_executable_sha256 = sha(julia_bin), project_toml_sha256 = sha(project_toml),
+    manifest_toml_sha256 = if (file.exists(manifest_toml)) sha(manifest_toml) else "unavailable",
+    source_tree_commit = source_tree_commit, source_tree_dirty = source_tree_dirty),
   route = list(entrypoint = "GLLVM.bridge_fit", phylo_model = "multivariate",
     private_candidate_only = TRUE, public_formula_admission = "closed"),
   qualification = list(qualified = FALSE, r_public_admission = "closed",
@@ -128,7 +148,8 @@ tryCatch({
     started <- proc.time()[["elapsed"]]
     fit <- bridge_one(Y, precision, species_id, ci_request)
     elapsed <- proc.time()[["elapsed"]] - started
-    saveRDS(fit, paste0(raw_output, ".", kind))
+    raw_rds_path <- paste0(raw_output, ".", kind)
+    saveRDS(fit, raw_rds_path)
 
     # A terminal record is emitted only after real bridge return.  It remains
     # unqualified: neither this runner nor its verifier opens R admission.
@@ -154,7 +175,9 @@ tryCatch({
         n_observations = length(species_id)),
       bridge_result = list(status = "returned", admission_status = fit$admission_status,
         ci_status = fit$ci_status, ci_target_names = as.character(fit$ci_target_names),
-        ci_target_methods = as.character(fit$ci_target_methods)),
+        ci_target_methods = as.character(fit$ci_target_methods),
+        ci_statuses = as.character(fit$ci_statuses)),
+      raw_rds_sha256 = sha(raw_rds_path),
       ci_request = ci_request, elapsed_seconds = elapsed,
       interval_target = raw_interval_target(fit, kind),
       qualification = list(qualified = FALSE, r_public_admission = "closed")
@@ -164,7 +187,7 @@ tryCatch({
   # matrix: the independent R own-optimum diagnostics must be supplied by a
   # subsequent evidence writer rather than inferred or fabricated here.
   result$schema_version <- "destination-b-a4-s4-private-bridge-raw-1"
-  result$status <- "raw_bridge_returns_recorded"
+  result$status <- "raw_bridge_returns_recorded_unqualified"
   jsonlite::write_json(result, output, auto_unbox = TRUE, pretty = TRUE,
     digits = 17L, null = "null", na = "null")
   cat("A4_S4_PRIVATE_BRIDGE_RETURNS_RECORDED_UNQUALIFIED\n")
