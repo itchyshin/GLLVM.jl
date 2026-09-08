@@ -70,12 +70,12 @@ fixture_descriptor <- function(kind) switch(kind,
 
 # The only permitted bridge call.  In particular, there is no gllvmTMB(), no
 # formula object, and no public-admission option in this runner.
-bridge_one <- function(Y, precision) {
+bridge_one <- function(Y, precision, species_id, ci_method) {
   do.call(JuliaCall::julia_call, list("GLLVM.bridge_fit", y = Y,
     family = "gaussian", d = 1L, phylo = precision,
     options = list(phylo_model = "multivariate", mode = "barelowrank",
-      residual_mode = "shared", ci_method = "wald", g_tol = 1e-5,
-      iterations = 400L)))
+      residual_mode = "shared", species_id = as.integer(species_id),
+      ci_method = ci_method, g_tol = 1e-5, iterations = 400L)))
 }
 
 tryCatch({
@@ -97,8 +97,13 @@ tryCatch({
     if (!identical(source_pin, frozen_pin) || !identical(dll_hash, frozen_dll)) {
       stop(sprintf("%s does not name the frozen R source/DLL", kind), call. = FALSE)
     }
+    species_id <- as.integer(bundle$species_id)
+    if (length(species_id) != ncol(Y) || any(!species_id %in% seq_len(precision$n_leaves))) {
+      stop(sprintf("%s fixture has no valid observation-level species_id map", kind), call. = FALSE)
+    }
+    ci_request <- if (identical(kind, "dense")) "none" else "wald"
     started <- proc.time()[["elapsed"]]
-    fit <- bridge_one(Y, precision)
+    fit <- bridge_one(Y, precision, species_id, ci_request)
     elapsed <- proc.time()[["elapsed"]] - started
     saveRDS(fit, paste0(raw_output, ".", kind))
 
@@ -114,12 +119,16 @@ tryCatch({
         julia_source_sha256 = result$provenance$julia_source_sha256,
         data_sha256 = data_hash, reference_file_sha256 = sha(reference_path)),
       precision = list(canonical_q_sha256 = q_sha(precision),
-        log_det_Q = precision$log_det_Q, scale = precision$scale,
+        log_det_Q = precision$log_det, scale = precision$scale,
         ridge = if (identical(kind, "dense")) 1e-8 else 0,
         ridge_applied_once = identical(kind, "dense")),
-      map = list(observed_to_augmented_zero_based = precision$species_aug_id,
-        n_augmented = precision$n_aug, n_observed = length(precision$species_aug_id)),
-      bridge_result = fit, elapsed_seconds = elapsed,
+      map = list(observed_species_to_augmented_zero_based = precision$species_aug_id,
+        species_id_one_based = species_id,
+        observation_to_augmented_zero_based = precision$species_aug_id[species_id],
+        n_augmented = precision$n_aug, n_species_observed = precision$n_leaves,
+        n_observations = length(species_id)),
+      bridge_result = list(status = "returned", admission_status = fit$admission_status,
+        ci_status = fit$ci_status), ci_request = ci_request, elapsed_seconds = elapsed,
       interval_target = if (identical(kind, "dense"))
         list(target_names = character(), method = "not_run", status = "unavailable", gate = "not_assessed") else
         list(target_names = as.character(fit$ci_target_names), method = "transformed_wald",
@@ -130,6 +139,7 @@ tryCatch({
   # This JSON is a raw transport record, deliberately not a verified paired
   # matrix: the independent R own-optimum diagnostics must be supplied by a
   # subsequent evidence writer rather than inferred or fabricated here.
+  result$schema_version <- "destination-b-a4-s4-private-bridge-raw-1"
   result$status <- "raw_bridge_returns_recorded"
   jsonlite::write_json(result, output, auto_unbox = TRUE, pretty = TRUE,
     digits = 17L, null = "null", na = "null")

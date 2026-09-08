@@ -7,6 +7,7 @@ qualified admission verdict.
 """
 
 const _A4_S4_SCHEMA = "destination-b-a4-s4-paired-matrix-1"
+const _A4_S4_RAW_SCHEMA = "destination-b-a4-s4-private-bridge-raw-1"
 const _A4_S4_FROZEN_PIN = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
 const _A4_S4_FROZEN_DLL = "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb"
 const _A4_S4_ROWS = Dict(
@@ -15,6 +16,9 @@ const _A4_S4_ROWS = Dict(
     "dense_vcv_ridged_once" => "dense",
 )
 const _A4_S4_INHERITED_Q_SCALE = Dict("tree" => 4.0, "pedigree" => 1.0, "dense" => 1.0)
+const _A4_S4_N_AUGMENTED = Dict("tree" => 14, "pedigree" => 12, "dense" => 8)
+const _A4_S4_LOGDET = Dict("tree" => 15.706819081565975,
+    "pedigree" => 5.966390909555864, "dense" => 7.861154398716261)
 
 _a4fail(message) = throw(ArgumentError("A4/S4 paired matrix: " * message))
 
@@ -75,14 +79,26 @@ end
 function _a4map(object, where)
     object = _a4dict(object, where)
     n_aug = Int(_a4number(object, "n_augmented", where))
-    n_observed = Int(_a4number(object, "n_observed", where))
-    n_aug >= n_observed > 0 || _a4fail("$(where) has invalid dimensions")
-    values = collect(_a4get(object, "observed_to_augmented_zero_based", where))
-    length(values) == n_observed || _a4fail("$(where) length does not equal n_observed")
-    all(x -> x isa Integer && 0 <= x < n_aug, values) ||
-        _a4fail("$(where) has an invalid augmented-node index")
-    length(unique(values)) == length(values) || _a4fail("$(where) is not one-to-one")
-    return n_aug, n_observed
+    n_species = Int(_a4number(object, "n_species_observed", where))
+    n_observations = Int(_a4number(object, "n_observations", where))
+    n_aug >= n_species > 0 && n_observations == 16 ||
+        _a4fail("$(where) has invalid dimensions")
+    species_map = collect(_a4get(object, "observed_species_to_augmented_zero_based", where))
+    species_id = collect(_a4get(object, "species_id_one_based", where))
+    observation_map = collect(_a4get(object, "observation_to_augmented_zero_based", where))
+    length(species_map) == n_species || _a4fail("$(where) species map length mismatch")
+    length(species_id) == n_observations || _a4fail("$(where) species_id length mismatch")
+    length(observation_map) == n_observations || _a4fail("$(where) observation map length mismatch")
+    all(x -> x isa Integer && 0 <= x < n_aug, species_map) ||
+        _a4fail("$(where) has an invalid augmented species index")
+    length(unique(species_map)) == n_species || _a4fail("$(where) species map is not one-to-one")
+    all(x -> x isa Integer && 1 <= x <= n_species, species_id) ||
+        _a4fail("$(where) has an invalid one-based species id")
+    all(x -> x isa Integer && 0 <= x < n_aug, observation_map) ||
+        _a4fail("$(where) has an invalid augmented observation index")
+    all(observation_map[i] == species_map[species_id[i]] for i in eachindex(species_id)) ||
+        _a4fail("$(where) observation map does not follow species_id")
+    return n_aug, n_species, n_observations
 end
 
 function _a4interval_target(object, kind, where)
@@ -124,7 +140,7 @@ function _a4fixture(object, id, kind, where)
     return nothing
 end
 
-function _a4row(object)
+function _a4row(object; raw = false)
     object = _a4dict(object, "row")
     id = _a4string(object, "row_id", "row")
     haskey(_A4_S4_ROWS, id) || _a4fail("unknown row $(id)")
@@ -142,7 +158,8 @@ function _a4row(object)
     _a4fixture(_a4get(object, "fixture", "row"), id, kind, "$(id).fixture")
     precision = _a4dict(_a4get(object, "precision", "row"), "$(id).precision")
     _a4sha(_a4get(precision, "canonical_q_sha256", "$(id).precision"), "$(id).precision.canonical_q_sha256")
-    _a4number(precision, "log_det_Q", "$(id).precision")
+    isapprox(_a4number(precision, "log_det_Q", "$(id).precision"), _A4_S4_LOGDET[kind];
+        rtol = 1e-12, atol = 0) || _a4fail("$(id) log determinant differs from canonical Q")
     _a4number(precision, "scale", "$(id).precision") == _A4_S4_INHERITED_Q_SCALE[kind] ||
         _a4fail("$(id) does not preserve its inherited Q scale")
     ridge = _a4number(precision, "ridge", "$(id).precision")
@@ -152,19 +169,35 @@ function _a4row(object)
     else
         ridge == 0.0 && !ridge_once || _a4fail("$(id) cannot declare a dense ridge")
     end
-    n_aug, n_observed = _a4map(_a4get(object, "map", "row"), "$(id).map")
-    kind == "pedigree" && (n_aug == 12 && n_observed == 8) ||
-        kind != "pedigree" || _a4fail("pedigree map does not retain its augmented ancestry")
-    matched = _a4dict(_a4get(object, "matched_point", "row"), "$(id).matched_point")
-    r_nll = _a4number(matched, "r_marginal_nll", "$(id).matched_point")
-    julia_nll = _a4number(matched, "julia_marginal_nll", "$(id).matched_point")
-    absdiff = _a4number(matched, "absolute_difference", "$(id).matched_point")
-    isapprox(absdiff, abs(r_nll - julia_nll); atol = 1e-12, rtol = 0) ||
-        _a4fail("$(id) matched-point difference is inconsistent")
-    absdiff <= 1e-6 || _a4fail("$(id) matched-point objective does not agree")
-    own = _a4dict(_a4get(object, "own_optimum", "row"), "$(id).own_optimum")
-    _a4optimizer(_a4get(own, "r", "$(id).own_optimum"), "$(id).own_optimum.r")
-    _a4optimizer(_a4get(own, "julia", "$(id).own_optimum"), "$(id).own_optimum.julia")
+    n_aug, n_species, _ = _a4map(_a4get(object, "map", "row"), "$(id).map")
+    n_aug == _A4_S4_N_AUGMENTED[kind] && n_species == 8 ||
+        _a4fail("$(id) does not retain the prescribed augmented-node map")
+    if raw
+        !haskey(object, "matched_point") && !haskey(object, "own_optimum") ||
+            _a4fail("$(id) raw record must not pose as paired evidence")
+        bridge = _a4dict(_a4get(object, "bridge_result", "row"), "$(id).bridge_result")
+        _a4string(bridge, "status", "$(id).bridge_result") == "returned" ||
+            _a4fail("$(id) bridge did not return")
+        _a4string(bridge, "admission_status", "$(id).bridge_result") == "closed" ||
+            _a4fail("$(id) bridge admission is not closed")
+        ci_request = _a4string(object, "ci_request", "row")
+        (kind == "dense" ? ci_request == "none" : ci_request == "wald") ||
+            _a4fail("$(id) CI request violates its raw route contract")
+        kind != "dense" ||
+            _a4string(bridge, "ci_status", "$(id).bridge_result") == "not_requested" ||
+            _a4fail("dense bridge result records an interval computation")
+    else
+        matched = _a4dict(_a4get(object, "matched_point", "row"), "$(id).matched_point")
+        r_nll = _a4number(matched, "r_marginal_nll", "$(id).matched_point")
+        julia_nll = _a4number(matched, "julia_marginal_nll", "$(id).matched_point")
+        absdiff = _a4number(matched, "absolute_difference", "$(id).matched_point")
+        isapprox(absdiff, abs(r_nll - julia_nll); atol = 1e-12, rtol = 0) ||
+            _a4fail("$(id) matched-point difference is inconsistent")
+        absdiff <= 1e-6 || _a4fail("$(id) matched-point objective does not agree")
+        own = _a4dict(_a4get(object, "own_optimum", "row"), "$(id).own_optimum")
+        _a4optimizer(_a4get(own, "r", "$(id).own_optimum"), "$(id).own_optimum.r")
+        _a4optimizer(_a4get(own, "julia", "$(id).own_optimum"), "$(id).own_optimum.julia")
+    end
     _a4interval_target(_a4get(object, "interval_target", "row"), kind, "$(id).interval_target")
     qualification = _a4dict(_a4get(object, "qualification", "row"), "$(id).qualification")
     !_a4bool(qualification, "qualified", "$(id).qualification") || _a4fail("$(id) cannot be qualified")
@@ -175,8 +208,11 @@ end
 
 function verify_a4_s4_paired_matrix(document)
     document = _a4dict(document, "document")
-    _a4string(document, "schema_version", "document") == _A4_S4_SCHEMA || _a4fail("wrong schema version")
-    _a4string(document, "status", "document") == "recorded" || _a4fail("receipt is not recorded")
+    schema = _a4string(document, "schema_version", "document")
+    raw = schema == _A4_S4_RAW_SCHEMA
+    schema == _A4_S4_SCHEMA || raw || _a4fail("wrong schema version")
+    _a4string(document, "status", "document") == (raw ? "raw_bridge_returns_recorded" : "recorded") ||
+        _a4fail("receipt status does not match its schema")
     provenance = _a4dict(_a4get(document, "provenance", "document"), "provenance")
     _a4source_pin(_a4get(provenance, "frozen_source_pin", "provenance"), "provenance.frozen_source_pin")
     _a4sha(_a4get(provenance, "frozen_dll_sha256", "provenance"), "provenance.frozen_dll_sha256") ==
@@ -189,7 +225,7 @@ function verify_a4_s4_paired_matrix(document)
     _a4string(route, "public_formula_admission", "route") == "closed" || _a4fail("public formula gate is not closed")
     rows = collect(_a4get(document, "rows", "document"))
     length(rows) == length(_A4_S4_ROWS) || _a4fail("must contain exactly three Gaussian rows")
-    ids = [_a4row(row) for row in rows]
+    ids = [_a4row(row; raw = raw) for row in rows]
     length(unique(ids)) == length(ids) && Set(ids) == Set(keys(_A4_S4_ROWS)) ||
         _a4fail("row identifiers do not equal the prescribed A4/S4 matrix")
     for row in rows
@@ -202,6 +238,6 @@ function verify_a4_s4_paired_matrix(document)
     _a4string(qualification, "r_public_admission", "qualification") == "closed" ||
         _a4fail("candidate receipt does not preserve closed R admission")
     _a4string(qualification, "note", "qualification")
-    return Dict("status" => "verified_candidate_input_only", "qualified" => false,
+    return Dict("status" => raw ? "verified_raw_candidate_input_only" : "verified_candidate_input_only", "qualified" => false,
         "rows_verified" => sort(ids), "julia_source_sha256" => julia_source)
 end

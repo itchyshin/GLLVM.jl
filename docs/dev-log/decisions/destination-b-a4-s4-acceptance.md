@@ -13,6 +13,15 @@ Every terminal record must retain `qualified = false` and
 `r_public_admission = "closed"`.  A raw bridge return is an input to later
 review, not a passing paired-evidence result.
 
+Raw bridge transport uses the distinct schema
+`destination-b-a4-s4-private-bridge-raw-1` with status
+`raw_bridge_returns_recorded`.  The verifier recognizes that schema, checks
+its provenance, canonical precision, repeated observation map, closed bridge
+admission, and CI-request boundary, then returns an explicitly unqualified
+raw-candidate verdict.  It cannot be passed off as the full
+`destination-b-a4-s4-paired-matrix-1` paired-evidence schema, which also
+requires matched-point and own-optimum evidence.
+
 ## Prescribed rows
 
 | Row id | Fixed fixture fact | Canonical precision fact | Interval state |
@@ -26,6 +35,11 @@ The frozen DLL SHA-256 is
 `91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb`.
 The verifier rejects a substituted source, DLL, Julia source hash, response
 hash, precision log determinant, inherited scale, map, or dense ridge rule.
+The `species_id` passed to the private bridge is the fixture's repeated
+16-observation, one-based tip map; `species_aug_id` is separately retained as
+the eight-tip-to-augmented-node map.  The tree has 14 augmented nodes, the
+pedigree 12, and the dense VCV 8.  A runner may not replace either map with an
+eight-row observation map.
 
 ## Coordinate alignment
 
@@ -79,3 +93,17 @@ unqualified even if point-objective diagnostics later agree.
   target, and an attempted qualification.
 - No candidate fit or successful paired-evidence receipt was run or written in
   this slice.
+
+## Repair TDD receipt (bridge contract)
+
+- RED: after adding a runner-shaped raw document, the focused test failed
+  because the first verifier incorrectly required the old one-to-one
+  eight-item map (`missing ... map.n_observed`).
+- GREEN: the focused command passed `25/25` after validation was changed to
+  the real 16-observation `species_id` map, fixed tree/pedigree/dense node
+  counts, and the locked finite signed `log_det` values.  The test also rejects
+  a changed finite log determinant, sign reversal, malformed repeated map,
+  wrong tree node count, and a dense Wald request.
+- The runner now passes `options$species_id = bundle$species_id`, uses the
+  flat payload's `log_det`, and requests `ci_method = "none"` for dense.  No
+  live fit batch was run.
