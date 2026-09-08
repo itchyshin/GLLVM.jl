@@ -18470,3 +18470,24 @@ receipt schema test is 60/60.  A direct 290-file core attempt reached 655 pass,
 test-only `StableRNGs` dependency.  The canonical `Pkg.test()` test-environment
 run remains approval-gated (>30 minutes).  No A4/S4 admission, paired R--Julia
 objective result, 0.7.1 parity, or Destination B completion is claimed.
+
+# 2026-09-08 — A4/S4 source-attested fixed-coordinate kernel check
+
+The raw-R-only `raw-frozen-r-02.rds` record is now transported by a strict,
+no-fit RDS-to-JSON adapter to a private Julia kernel evaluator.  The adapter
+rejects altered source/build markers, row maps, determinants, scales, dense
+ridge metadata, response hashes, `sdreport` state, and any open/qualified
+claim.  The Julia side first SHA-binds the retained fixture, row reference,
+precision source, and decoded Float64 response before constructing its sparse
+precision object.  Mutation tests cover all three byte sources.
+
+Fresh focused checks pass: R summary export `A4_S4_FROZEN_R_RAW_SUMMARY_OK`;
+Julia evaluator `45/45`, `A4_S4_FIXED_COORDINATE_EVALUATOR_OK`; retained v2
+receipt check `A4_S4_FIXED_COORDINATE_V2_RETAINED_RECEIPT_OK`.  The retained
+tree/pedigree/dense NLL deltas at the one declared coordinate are `0`,
+`7.1054273576010019e-15`, and `5.3290705182007514e-15`.  An independent review
+found the initial missing byte binding, then signed the repaired v2 record
+CLEAN.  This remains `private_kernel_cross_evaluation`, `qualified = false`,
+and admission-closed—not a bridge return, independent optimum, interval,
+paired-evidence, public formula, S3b/S4 qualification, 0.7.1 parity, or
+Destination B completion.
