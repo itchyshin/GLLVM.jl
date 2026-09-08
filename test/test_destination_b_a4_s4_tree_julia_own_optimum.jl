@@ -161,6 +161,58 @@ end
     end
 end
 
+@testset "A4/S4 tree persisted receipt JSON round trips" begin
+    # The repository JSON decoder intentionally represents every JSON number
+    # as Float64.  These are retained receipts, so the validators must accept
+    # JSON-decoded integral values while continuing to reject fractions and
+    # booleans.  No optimizer is invoked in this regression.
+    @test _a4s4_tree_own_integer(5.0, "test integer") == 5
+    for invalid in (5.5, true, Inf, NaN, 1e100)
+        @test_throws ArgumentError _a4s4_tree_own_integer(invalid, "test integer")
+    end
+
+    final = _a4s4_json_read(_a4s4_json_write(a4_s4_tree_julia_own_optimum_receipt_fixture()))
+    @test final["route"]["requested_iterations"] isa Float64
+    @test final["fit"]["iterations"] isa Float64
+    @test a4_s4_validate_tree_julia_own_optimum_receipt(final) === nothing
+
+    returned = _a4s4_json_read(_a4s4_json_write(a4_s4_tree_julia_sizing_probe_receipt_fixture()))
+    @test returned["route"]["iterations"] isa Float64
+    @test returned["result"]["iterations"] isa Float64
+    @test a4_s4_validate_tree_julia_sizing_probe_receipt(returned) === nothing
+
+    failed = _a4s4_json_read(_a4s4_json_write(
+        a4_s4_tree_julia_sizing_probe_receipt_fixture(; outcome = :failed)))
+    @test failed["result"]["iterations"] === nothing
+    @test a4_s4_validate_tree_julia_sizing_probe_receipt(failed) === nothing
+
+    for mutate in (
+        x -> x["route"]["rank"] = true,
+        x -> x["route"]["requested_iterations"] = 400.5,
+        x -> x["route"]["requested_iterations"] = true,
+        x -> x["fit"]["iterations"] = 1.5,
+        x -> x["fit"]["iterations"] = true,
+    )
+        malformed = a4_s4_tree_julia_own_optimum_receipt_fixture()
+        mutate(malformed)
+        @test_throws ArgumentError a4_s4_validate_tree_julia_own_optimum_receipt(
+            _a4s4_json_read(_a4s4_json_write(malformed)))
+    end
+
+    for mutate in (
+        x -> x["route"]["rank"] = true,
+        x -> x["route"]["iterations"] = 5.5,
+        x -> x["route"]["iterations"] = true,
+        x -> x["result"]["iterations"] = 4.5,
+        x -> x["result"]["iterations"] = true,
+    )
+        malformed = a4_s4_tree_julia_sizing_probe_receipt_fixture()
+        mutate(malformed)
+        @test_throws ArgumentError a4_s4_validate_tree_julia_sizing_probe_receipt(
+            _a4s4_json_read(_a4s4_json_write(malformed)))
+    end
+end
+
 @testset "A4/S4 pre-fit temporal snapshot fence" begin
     mktempdir() do directory
         raw = joinpath(directory, "raw-summary.json")

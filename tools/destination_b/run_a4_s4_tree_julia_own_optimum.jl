@@ -55,13 +55,21 @@ function _a4s4_tree_own_finite(x, label)
     _a4s4_tree_own_require(x isa Real && !(x isa Bool) && isfinite(x), "$(label) must be finite")
     return Float64(x)
 end
+function _a4s4_tree_own_integer(x, label)
+    value = _a4s4_tree_own_finite(x, label)
+    _a4s4_tree_own_require(value == round(value), "$(label) must be an integer")
+    try
+        return Int(value)
+    catch error
+        error isa InexactError || rethrow()
+        throw(ArgumentError("$(label) must fit in a Julia Int"))
+    end
+end
 function _a4s4_tree_own_int_vector(x, expected, label)
     _a4s4_tree_own_require(x isa AbstractVector && length(x) == length(expected), "$(label) has wrong length")
     got = Int[]
     for value in x
-        _a4s4_tree_own_require(value isa Real && !(value isa Bool) && isfinite(value) &&
-            Float64(value) == round(Float64(value)), "$(label) must contain finite integers")
-        push!(got, Int(value))
+        push!(got, _a4s4_tree_own_integer(value, "$(label) entry"))
     end
     _a4s4_tree_own_require(got == expected, "$(label) differs from immutable tree map")
     return got
@@ -419,11 +427,12 @@ function a4_s4_validate_tree_julia_own_optimum_receipt(receipt::AbstractDict)
         "receipt is outside the unqualified native-Julia own-optimum boundary")
     route = _a4s4_tree_own_keys(receipt["route"], ["entrypoint", "family", "rank", "phylo_mode",
         "residual_mode", "sigma2_phy", "requested_iterations", "requested_g_tol"], "native Julia route")
+    rank = _a4s4_tree_own_integer(route["rank"], "phylogenetic rank")
+    requested_iterations = _a4s4_tree_own_integer(route["requested_iterations"], "requested iterations")
     _a4s4_tree_own_require(route["entrypoint"] == "GLLVM.fit_gllvm" && route["family"] == "Normal" &&
-        route["rank"] == 1 && route["phylo_mode"] == "barelowrank" && route["residual_mode"] == "shared" &&
+        rank == 1 && route["phylo_mode"] == "barelowrank" && route["residual_mode"] == "shared" &&
         _a4s4_tree_own_finite(route["sigma2_phy"], "sigma2_phy") == 1.0 &&
-        route["requested_iterations"] isa Integer && !(route["requested_iterations"] isa Bool) &&
-        route["requested_iterations"] >= 0 && _a4s4_tree_own_finite(route["requested_g_tol"], "requested g_tol") > 0,
+        requested_iterations >= 0 && _a4s4_tree_own_finite(route["requested_g_tol"], "requested g_tol") > 0,
         "receipt did not use the required native fit route")
     initialization = _a4s4_tree_own_keys(receipt["initialization"], ["kind", "start_keyword_supplied",
         "r_coordinates_used", "r_nll_compared"], "native Julia initialization")
@@ -489,9 +498,9 @@ function a4_s4_validate_tree_julia_own_optimum_receipt(receipt::AbstractDict)
         "hessian_condition_number", "direct_nll", "direct_nll_absolute_difference", "direct_nll_identity",
         "parameters", "parameter_labels"],
         "native Julia fit diagnostics")
+    fit_iterations = _a4s4_tree_own_integer(fit["iterations"], "fit iterations")
     _a4s4_tree_own_require(fit["converged"] === true && fit["hessian_positive_definite"] === true &&
-        fit["direct_nll_identity"] === true && fit["iterations"] isa Integer && !(fit["iterations"] isa Bool) &&
-        fit["iterations"] >= 0 && fit["iterations"] <= route["requested_iterations"] &&
+        fit["direct_nll_identity"] === true && fit_iterations >= 0 && fit_iterations <= requested_iterations &&
         fit["stopping_reason"] == "converged" &&
         _a4s4_tree_own_finite(fit["gradient_max"], "FD gradient") >= 0 &&
         _a4s4_tree_own_finite(fit["gradient_max"], "FD gradient") <=
@@ -593,10 +602,12 @@ function a4_s4_validate_tree_julia_sizing_probe_receipt(receipt::AbstractDict)
         "sizing probe receipt is outside its closed, nonpaired, non-interval boundary")
     route = _a4s4_tree_own_keys(receipt["route"], ["entrypoint", "family", "rank", "phylo_mode",
         "residual_mode", "sigma2_phy", "iterations", "g_tol"], "native Julia sizing probe route")
+    rank = _a4s4_tree_own_integer(route["rank"], "probe phylogenetic rank")
+    probe_iterations = _a4s4_tree_own_integer(route["iterations"], "probe iterations")
     _a4s4_tree_own_require(route["entrypoint"] == "GLLVM.fit_gllvm" && route["family"] == "Normal" &&
-        route["rank"] == 1 && route["phylo_mode"] == "barelowrank" && route["residual_mode"] == "shared" &&
+        rank == 1 && route["phylo_mode"] == "barelowrank" && route["residual_mode"] == "shared" &&
         _a4s4_tree_own_finite(route["sigma2_phy"], "probe sigma2_phy") == 1.0 &&
-        route["iterations"] == 5 && _a4s4_tree_own_finite(route["g_tol"], "probe g_tol") == 1e-5,
+        probe_iterations == 5 && _a4s4_tree_own_finite(route["g_tol"], "probe g_tol") == 1e-5,
         "sizing probe did not use the fixed five-iteration native route")
     initialization = _a4s4_tree_own_keys(receipt["initialization"], ["kind", "start_keyword_supplied",
         "r_coordinates_used", "r_nll_compared"], "native Julia sizing probe initialization")
@@ -614,9 +625,9 @@ function a4_s4_validate_tree_julia_sizing_probe_receipt(receipt::AbstractDict)
     result = _a4s4_tree_own_keys(receipt["result"], ["outcome", "converged", "iterations", "stopping_reason",
         "marginal_nll", "loglik", "gradient_max", "error_type", "error"], "sizing probe result")
     if result["outcome"] == "returned"
+        result_iterations = _a4s4_tree_own_integer(result["iterations"], "probe result iterations")
         _a4s4_tree_own_require(receipt["status"] == "native_julia_sizing_probe_recorded_unqualified" &&
-            result["converged"] isa Bool && result["iterations"] isa Integer && !(result["iterations"] isa Bool) &&
-            0 <= result["iterations"] <= 5 && result["stopping_reason"] isa AbstractString &&
+            result["converged"] isa Bool && 0 <= result_iterations <= 5 && result["stopping_reason"] isa AbstractString &&
             _a4s4_tree_own_finite(result["marginal_nll"], "probe marginal NLL") isa Float64 &&
             _a4s4_tree_own_finite(result["loglik"], "probe log likelihood") isa Float64 &&
             isapprox(_a4s4_tree_own_finite(result["loglik"], "probe log likelihood"),
