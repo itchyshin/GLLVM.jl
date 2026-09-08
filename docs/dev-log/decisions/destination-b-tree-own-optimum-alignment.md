@@ -94,8 +94,8 @@ approved comparison contract.
 The initial source-attested R `nlminb` run is retained as a failed,
 unqualified diagnostic: its convergence code was nonzero.  It is not repaired
 by relaxing that gate or by changing the meaning of its receipt.  A distinct
-R-only BFGS diagnostic may be evaluated because a historic BFGS lead reached
-an interior optimum, but that historic run used a different DLL and is not
+R-only BFGS diagnostic was evaluated because a historic BFGS lead reached an
+interior optimum, but that historic run used a different DLL and is not
 evidence for this slice.
 
 The new BFGS request has its own schema and records all of the following
@@ -120,6 +120,21 @@ DLL value from it as an input.  The newly executing binary remains the fresh,
 source-attested DLL named above.  BFGS records are still R-only,
 `qualified = false`, `public_formula_admission = "closed"`, with no interval,
 paired comparison, recovery, coverage, or public-formula conclusion.
+
+The retained five-iteration probe is source-pinned PASS with process receipt
+SHA `37971f0564c8a5ce319cba3414b1ac3af27b6478ddbff8de2ac4e628386f063a`
+and RDS SHA
+`5cf21032faca8dfeb50ca5e9184d5fe64acaaed5f0018009f15b4318c245b262`.
+It intentionally stopped nonconverged after five BFGS iterations.  The final
+source-pinned process is also PASS with process receipt SHA
+`b02e63bb14449ac8f509188ebe2d3f8e13567787c8f43e8fecacde653ca65f75`
+and RDS SHA
+`227ea7852f7a6aa602f2678ccdc4e883af2da14daf506895a65e8c3074eb912c`.
+That final R-only record has convergence zero, finite direct-objective
+identity, maximum gradient `6.5851062902577e-7`, and a positive observed
+Hessian.  These are independent R diagnostics only: no R--Julia comparison or
+signed-loading conclusion is derived from their numerical resemblance to any
+historic result.
 
 ## Receipt boundary and sizing
 

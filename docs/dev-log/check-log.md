@@ -18505,7 +18505,16 @@ current frozen build/DLL independently.
 Focused R unit checks pass (`A4_S4_TREE_R_OWN_OPTIMUM_UNIT_OK`). Fresh
 independent review found and the repair closed three malformed-receipt holes:
 inconsistent direct objectives, stale gradient norms, and stale curvature
-summaries now fail for both receipt schemas. This is a contract-only result:
-no BFGS probe or final fit has been run yet, and there is no parity, interval,
-recovery, coverage, public admission, S3b/S4 qualification, 0.7.1 parity, or
-Destination B completion claim.
+summaries now fail for both receipt schemas. The current-attested five-step
+probe passes its supervisor and persisted-RDS checks (process
+`37971f0564c8a5ce319cba3414b1ac3af27b6478ddbff8de2ac4e628386f063a`, RDS
+`5cf21032faca8dfeb50ca5e9184d5fe64acaaed5f0018009f15b4318c245b262`) and
+intentionally remains nonconverged. The separate final process also passes
+with source unchanged (process
+`b02e63bb14449ac8f509188ebe2d3f8e13567787c8f43e8fecacde653ca65f75`, RDS
+`227ea7852f7a6aa602f2678ccdc4e883af2da14daf506895a65e8c3074eb912c`):
+convergence 0, direct marginal NLL `12.7509239715045`, maximum gradient
+`6.5851062902577e-7`, positive Hessian, and 68/25 function/gradient
+evaluations. This earns only a private, source-attested R-only own-optimum
+record. There is no parity, interval, recovery, coverage, public admission,
+S3b/S4 qualification, 0.7.1 parity, or Destination B completion claim.
