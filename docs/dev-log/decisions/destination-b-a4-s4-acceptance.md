@@ -33,8 +33,11 @@ requires matched-point and own-optimum evidence.
 The frozen R source pin is `b4d5fee64def88bc768dda1f1f77c29b295edd86`.
 The frozen DLL SHA-256 is
 `91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb`.
-The verifier rejects a substituted source, DLL, Julia source hash, response
-hash, precision log determinant, inherited scale, map, or dense ridge rule.
+The verifier rejects a substituted frozen source, DLL, response hash, precision
+log determinant, inherited scale, map, or dense ridge rule.  The Julia source
+hash is dynamic runner metadata: it is checked for same-document consistency
+only and is explicitly `runner_recorded_unverified`, not immutable source
+proof.
 The `species_id` passed to the private bridge is the fixture's repeated
 16-observation, one-based tip map; `species_aug_id` is separately retained as
 the eight-tip-to-augmented-node map.  The tree has 14 augmented nodes, the
@@ -178,3 +181,18 @@ private transport remains schema-validatable and unqualified.
   corresponding per-target status/method schema.  This is semantic validation,
   not source authentication. Dense alone remains `not_requested` with no
   targets. No live fit was run.
+
+## Dynamic-source and map-type TDD receipt
+
+- RED: the focused test failed (`54` passed, `6` failed) when a Julia source
+  hash claimed `authenticated`, `bound`, or `verified`, and when dense map
+  vectors carried Boolean indices.  The first Boolean fixture assigned into an
+  integer vector was corrected to an `Any` vector so the verifier actually saw
+  Boolean payloads rather than coerced `0`/`1` values.
+- GREEN: `julia --project=. test/test_destination_b_a4_s4_receipts.jl` passed
+  `60/60`.  `julia_source_sha256` is now explicitly
+  `runner_recorded_unverified` dynamic metadata; the verifier preserves only
+  same-document equality between the row and provenance fields.  All three map
+  vectors reject both `true` and `false` before their range/map checks.
+- No live fit, RDS readback, public formula admission, or paired-evidence
+  qualification was attempted.

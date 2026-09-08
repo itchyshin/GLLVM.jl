@@ -103,7 +103,8 @@ function _a4_s4_document()
         "status" => "paired_evidence_unavailable",
         "provenance" => Dict("frozen_source_pin" => _A4_S4_PIN,
             "frozen_dll_sha256" => _A4_S4_DLL,
-            "julia_source_sha256" => _A4_S4_SHA),
+            "julia_source_sha256" => _A4_S4_SHA,
+            "julia_source_attestation_status" => "runner_recorded_unverified"),
         "route" => Dict("entrypoint" => "GLLVM.bridge_fit",
             "phylo_model" => "multivariate",
             "private_candidate_only" => true,
@@ -192,6 +193,9 @@ end
         x -> x["rows"][1]["reference"]["source_pin"] = "0" ^ 40,
         x -> x["rows"][1]["reference"]["dll_sha256"] = "0" ^ 64,
         x -> x["rows"][1]["reference"]["julia_source_sha256"] = "0" ^ 64,
+        x -> x["provenance"]["julia_source_attestation_status"] = "authenticated",
+        x -> x["provenance"]["julia_source_attestation_status"] = "bound",
+        x -> x["provenance"]["julia_source_attestation_status"] = "verified",
         x -> x["rows"][1]["data_sha256"] = "0" ^ 64,
         x -> begin x["rows"][1]["data_sha256"] = _A4_S4_TEST_DATA_SHA["pedigree"];
             x["rows"][1]["reference"]["data_sha256"] = _A4_S4_TEST_DATA_SHA["pedigree"] end,
@@ -234,6 +238,18 @@ end
         x -> x["rows"][1]["map"]["n_augmented"] = 8,
         x -> x["rows"][1]["map"]["n_augmented"] = 14.5,
         x -> x["rows"][1]["map"]["species_id_one_based"] = 1,
+        x -> begin map = x["rows"][3]["map"];
+            map["observed_species_to_augmented_zero_based"] = Any[false, map["observed_species_to_augmented_zero_based"][2:end]...] end,
+        x -> begin map = x["rows"][3]["map"];
+            map["observed_species_to_augmented_zero_based"] = Any[true, map["observed_species_to_augmented_zero_based"][2:end]...] end,
+        x -> begin map = x["rows"][3]["map"];
+            map["species_id_one_based"] = Any[false, map["species_id_one_based"][2:end]...] end,
+        x -> begin map = x["rows"][3]["map"];
+            map["species_id_one_based"] = Any[true, map["species_id_one_based"][2:end]...] end,
+        x -> begin map = x["rows"][3]["map"];
+            map["observation_to_augmented_zero_based"] = Any[false, map["observation_to_augmented_zero_based"][2:end]...] end,
+        x -> begin map = x["rows"][3]["map"];
+            map["observation_to_augmented_zero_based"] = Any[true, map["observation_to_augmented_zero_based"][2:end]...] end,
     )
         bad = deepcopy(raw)
         mutate(bad)

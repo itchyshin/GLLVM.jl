@@ -144,12 +144,12 @@ function _a4map(object, where)
     length(species_map) == n_species || _a4fail("$(where) species map length mismatch")
     length(species_id) == n_observations || _a4fail("$(where) species_id length mismatch")
     length(observation_map) == n_observations || _a4fail("$(where) observation map length mismatch")
-    all(x -> x isa Integer && 0 <= x < n_aug, species_map) ||
+    all(x -> x isa Integer && !(x isa Bool) && 0 <= x < n_aug, species_map) ||
         _a4fail("$(where) has an invalid augmented species index")
     length(unique(species_map)) == n_species || _a4fail("$(where) species map is not one-to-one")
-    all(x -> x isa Integer && 1 <= x <= n_species, species_id) ||
+    all(x -> x isa Integer && !(x isa Bool) && 1 <= x <= n_species, species_id) ||
         _a4fail("$(where) has an invalid one-based species id")
-    all(x -> x isa Integer && 0 <= x < n_aug, observation_map) ||
+    all(x -> x isa Integer && !(x isa Bool) && 0 <= x < n_aug, observation_map) ||
         _a4fail("$(where) has an invalid augmented observation index")
     all(observation_map[i] == species_map[species_id[i]] for i in eachindex(species_id)) ||
         _a4fail("$(where) observation map does not follow species_id")
@@ -390,6 +390,9 @@ function verify_a4_s4_paired_matrix(document)
     _a4sha(_a4get(provenance, "frozen_dll_sha256", "provenance"), "provenance.frozen_dll_sha256") ==
         _A4_S4_FROZEN_DLL || _a4fail("provenance DLL differs from frozen R")
     julia_source = _a4sha(_a4get(provenance, "julia_source_sha256", "provenance"), "provenance.julia_source_sha256")
+    _a4string(provenance, "julia_source_attestation_status", "provenance") ==
+        "runner_recorded_unverified" ||
+        _a4fail("Julia source hash cannot claim authentication or binding")
     route = _a4dict(_a4get(document, "route", "document"), "route")
     _a4string(route, "entrypoint", "route") == "GLLVM.bridge_fit" || _a4fail("wrong Julia entrypoint")
     _a4string(route, "phylo_model", "route") == "multivariate" || _a4fail("wrong phylo model")
