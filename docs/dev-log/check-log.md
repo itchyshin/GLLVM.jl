@@ -18540,3 +18540,23 @@ failure without treating difficult boundary cases as successes. This is one
 deterministic Julia interval-feasibility cell only—not frozen-R pairing,
 recovery, coverage, public R bridge admission, all-design robustness, 0.7.1
 parity, or Destination B completion.
+
+# 2026-09-08 — U3 phylogenetic-uncertainty CLI rejection seal
+
+Added a standalone Pkg-test-environment CLI regression for the existing
+tree/pedigree uncertainty comparator. It copies a sealed tree R JSON, makes a
+valid-JSON one-byte hash mutation, invokes the real Julia CLI with a fresh
+receipt path, and requires a nonzero exit plus status = error, qualified =
+false, and the unsealed-input diagnostic. It then repeats against the existing
+receipt path and requires a second nonzero exit with byte-identical retained
+evidence. The old in-memory source-integrity test stays unchanged: it is
+currently blocked by a foreign dirty source hash, so U3 is isolated rather
+than weakening that guard.
+
+The CI-shaped shard 164/292 passes 9/9. A dedicated valid Unlazy leaf ledger
+records the exact command and reruns it cleanly: GATES:U3 passes once at 8.3 s,
+again at 6.8 s, and after the ledger audit at 7.3 s. This is only a negative
+regression seal for a private
+checker. It does not establish a successful paired comparison, interval
+feasibility, recovery, dense-vcv support, S3b/S4 admission, B1 grouping
+parity, 0.7.1 parity, FRK, or Destination B completion.
