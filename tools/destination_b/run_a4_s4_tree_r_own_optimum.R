@@ -7,6 +7,7 @@
 # with native default data-derived initialization and no externally supplied coordinate.
 
 a4_s4_tree_r_own_optimum_schema <- "destination-b-a4-s4-tree-r-own-optimum-1"
+a4_s4_tree_r_bfgs_own_optimum_schema <- "destination-b-a4-s4-tree-r-bfgs-own-optimum-1"
 a4_s4_tree_r_own_optimum_pin <- "b4d5fee64def88bc768dda1f1f77c29b295edd86"
 a4_s4_tree_r_own_optimum_archive_sha256 <- "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
 a4_s4_tree_r_own_optimum_namespace_sha256 <- "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c"
@@ -57,6 +58,63 @@ a4_s4_tree_r_own_optimum_contract <- function() {
     precision = list(log_det_Q = 15.706819081565975, scale = 4,
       ridge = 0, ridge_applied_once = FALSE, ridge_operation = NULL)
   )
+}
+
+a4_s4_tree_r_bfgs_own_optimum_control <- function(mode) {
+  if (!identical(mode, "final") && !identical(mode, "probe"))
+    a4_s4_tree_r_own_optimum_stop("BFGS mode must be final or probe")
+  list(n_init = 1L, optimizer = "optim", method = "BFGS",
+    maxit = if (identical(mode, "final")) 400L else 5L, reltol = 1e-12,
+    start_policy = "native_default_data_derived_no_external_coordinate",
+    REML = FALSE, engine = "tmb")
+}
+a4_s4_tree_r_bfgs_own_optimum_control_args <- function(mode) {
+  contract <- a4_s4_tree_r_bfgs_own_optimum_control(mode)
+  list(n_init = contract$n_init, optimizer = contract$optimizer, se = FALSE,
+    optArgs = list(method = contract$method,
+      control = list(maxit = contract$maxit, reltol = contract$reltol)))
+}
+
+a4_s4_tree_r_bfgs_own_optimum_validate_request <- function(request) {
+  expected <- c("schema_version", "row_id", "package_version", "source_pin",
+    "build_receipt_sha256", "hashes", "map", "precision", "fixture_lineage_fields",
+    "external_start_supplied", "engine", "start_policy",
+    "optimizer", "mode", "qualified", "public_formula_admission", "intervals", "paired_comparison")
+  a4_s4_tree_r_own_optimum_exact_names(request, expected, "tree BFGS own-optimum request")
+  contract <- a4_s4_tree_r_own_optimum_contract()
+  if (!identical(request$schema_version, a4_s4_tree_r_bfgs_own_optimum_schema) ||
+      !identical(request$row_id, contract$row_id) ||
+      !identical(request$package_version, contract$package_version) ||
+      !identical(request$source_pin, contract$source_pin) ||
+      !identical(request$hashes, contract$hashes) || !identical(request$map, contract$map) ||
+      !identical(request$precision, contract$precision) || !identical(request$engine, "tmb") ||
+      !identical(request$fixture_lineage_fields, c("Y_traits_by_observations", "trait_names")) ||
+      !identical(request$external_start_supplied, FALSE) ||
+      !identical(request$start_policy, "native_default_data_derived_no_external_coordinate") ||
+      !identical(request$optimizer, a4_s4_tree_r_bfgs_own_optimum_control(request$mode)) ||
+      !identical(request$qualified, FALSE) ||
+      !identical(request$public_formula_admission, "closed") ||
+      !identical(request$intervals, "not_computed") ||
+      !identical(request$paired_comparison, "not_computed"))
+    a4_s4_tree_r_own_optimum_stop("request differs from the frozen tree-only BFGS own-optimum contract")
+  if (!identical(a4_s4_tree_r_own_optimum_digest(request$build_receipt_sha256, "build receipt digest"),
+      a4_s4_tree_r_own_optimum_build_receipt_sha256))
+    a4_s4_tree_r_own_optimum_stop("request build receipt digest differs from retained source-attested alignment")
+  request
+}
+a4_s4_tree_r_bfgs_own_optimum_request <- function(build_receipt_sha256, mode) {
+  c <- a4_s4_tree_r_own_optimum_contract()
+  optimizer <- a4_s4_tree_r_bfgs_own_optimum_control(mode)
+  a4_s4_tree_r_bfgs_own_optimum_validate_request(list(
+    schema_version = a4_s4_tree_r_bfgs_own_optimum_schema,
+    row_id = c$row_id, package_version = c$package_version, source_pin = c$source_pin,
+    build_receipt_sha256 = a4_s4_tree_r_own_optimum_digest(build_receipt_sha256, "build receipt digest"),
+    hashes = c$hashes, map = c$map, precision = c$precision,
+    fixture_lineage_fields = c("Y_traits_by_observations", "trait_names"),
+    external_start_supplied = FALSE, engine = optimizer$engine,
+    start_policy = optimizer$start_policy, optimizer = optimizer, mode = mode, qualified = FALSE,
+    public_formula_admission = "closed", intervals = "not_computed",
+    paired_comparison = "not_computed"))
 }
 
 a4_s4_tree_r_own_optimum_validate_request <- function(request) {
@@ -467,6 +525,18 @@ a4_s4_tree_r_own_optimum_validate_record <- function(record, request) {
       !is.logical(record$fit$curvature$positive_definite) || length(record$fit$curvature$positive_definite) != 1L ||
       !isTRUE(record$fit$curvature$positive_definite) || record$fit$curvature$min_eigenvalue <= 0)
     a4_s4_tree_r_own_optimum_stop("tree own-optimum receipt is incomplete, non-finite, or outside scope")
+  gradient <- record$fit$gradient$values
+  gradient_l2 <- sqrt(sum(gradient^2)); gradient_inf <- max(abs(gradient))
+  hessian <- record$fit$curvature$hessian
+  hessian_symmetry_error <- max(abs(hessian - t(hessian)))
+  eigenvalues <- eigen(hessian, symmetric = TRUE, only.values = TRUE)$values
+  if (!isTRUE(all.equal(record$fit$gradient$l2_norm, gradient_l2, tolerance = 1e-12)) ||
+      !isTRUE(all.equal(record$fit$gradient$infinity_norm, gradient_inf, tolerance = 1e-12)) ||
+      gradient_inf > 1e-5 || hessian_symmetry_error > 1e-8 ||
+      !isTRUE(all.equal(record$fit$curvature$min_eigenvalue, min(eigenvalues), tolerance = 1e-10)) ||
+      !isTRUE(all.equal(record$fit$curvature$max_eigenvalue, max(eigenvalues), tolerance = 1e-10)) ||
+      !identical(record$fit$curvature$positive_definite, min(eigenvalues) > 0))
+    a4_s4_tree_r_own_optimum_stop("tree own-optimum receipt has inconsistent gradient or curvature diagnostics")
   record
 }
 a4_s4_tree_r_own_optimum_probe_diagnostics <- function(fit, elapsed_seconds) {
@@ -508,7 +578,108 @@ a4_s4_tree_r_own_optimum_validate_probe_record <- function(record, request) {
       any(!is.finite(record$probe$gradient$values)) || !is.finite(record$probe$gradient$l2_norm) ||
       !is.finite(record$probe$gradient$infinity_norm))
     a4_s4_tree_r_own_optimum_stop("five-iteration probe receipt is incomplete or exceeds its non-final scope")
+  if (!isTRUE(all.equal(record$probe$reported_objective, record$probe$direct_objective, tolerance = 1e-10)))
+    a4_s4_tree_r_own_optimum_stop("five-iteration probe has no direct-objective identity")
+  gradient <- record$probe$gradient$values
+  gradient_l2 <- sqrt(sum(gradient^2)); gradient_inf <- max(abs(gradient))
+  if (!isTRUE(all.equal(record$probe$gradient$l2_norm, gradient_l2, tolerance = 1e-12)) ||
+      !isTRUE(all.equal(record$probe$gradient$infinity_norm, gradient_inf, tolerance = 1e-12)))
+    a4_s4_tree_r_own_optimum_stop("five-iteration probe has inconsistent gradient diagnostics")
   record
+}
+
+a4_s4_tree_r_bfgs_own_optimum_validate_record <- function(record, request) {
+  a4_s4_tree_r_bfgs_own_optimum_validate_request(request)
+  expected <- c("schema_version", "status", "request", "frozen", "fit", "qualified",
+    "public_formula_admission", "intervals", "paired_comparison", "executable_provenance")
+  a4_s4_tree_r_own_optimum_exact_names(record, expected, "tree BFGS own-optimum receipt")
+  if (!identical(request$mode, "final") ||
+      !identical(record$schema_version, a4_s4_tree_r_bfgs_own_optimum_schema) ||
+      !identical(record$status, "r_tree_bfgs_own_optimum_recorded_unqualified") ||
+      !identical(record$request, request) ||
+      !identical(record$executable_provenance, "loaded_attested_frozen_build"))
+    a4_s4_tree_r_own_optimum_stop("tree BFGS final receipt has the wrong schema, status, or optimizer mode")
+  evaluations <- record$fit$optimizer$evaluations
+  if (!identical(names(record$fit$optimizer), c("convergence", "message", "par", "evaluations")) ||
+      !is.list(evaluations) || !identical(names(evaluations), c("function", "gradient")) ||
+      !all(vapply(evaluations, function(x) is.numeric(x) && length(x) == 1L && is.finite(x) &&
+        x >= 0 && x == as.integer(x), logical(1L))))
+    a4_s4_tree_r_own_optimum_stop("tree BFGS final receipt has no valid function and gradient evaluation counts")
+  gradient <- record$fit$gradient$values
+  gradient_l2 <- sqrt(sum(gradient^2)); gradient_inf <- max(abs(gradient))
+  hessian <- record$fit$curvature$hessian
+  hessian_symmetry_error <- max(abs(hessian - t(hessian)))
+  eigenvalues <- eigen(hessian, symmetric = TRUE, only.values = TRUE)$values
+  if (!isTRUE(all.equal(record$fit$gradient$l2_norm, gradient_l2, tolerance = 1e-12)) ||
+      !isTRUE(all.equal(record$fit$gradient$infinity_norm, gradient_inf, tolerance = 1e-12)) ||
+      gradient_inf > 1e-5 || hessian_symmetry_error > 1e-12 ||
+      !isTRUE(all.equal(record$fit$curvature$min_eigenvalue, min(eigenvalues), tolerance = 1e-12)) ||
+      !isTRUE(all.equal(record$fit$curvature$max_eigenvalue, max(eigenvalues), tolerance = 1e-12)) ||
+      !identical(record$fit$curvature$positive_definite, min(eigenvalues) > 0))
+    a4_s4_tree_r_own_optimum_stop("tree BFGS final receipt has inconsistent gradient or curvature diagnostics")
+  nlminb_request <- a4_s4_tree_r_own_optimum_request(request$build_receipt_sha256)
+  nlminb_record <- record
+  nlminb_record$schema_version <- a4_s4_tree_r_own_optimum_schema
+  nlminb_record$status <- "r_tree_own_optimum_recorded_unqualified"
+  nlminb_record$request <- nlminb_request
+  nlminb_record$executable_provenance <- NULL
+  a4_s4_tree_r_own_optimum_validate_record(nlminb_record, nlminb_request)
+  record
+}
+a4_s4_tree_r_bfgs_own_optimum_validate_probe_record <- function(record, request) {
+  a4_s4_tree_r_bfgs_own_optimum_validate_request(request)
+  expected <- c("schema_version", "status", "request", "frozen", "probe", "qualified",
+    "public_formula_admission", "intervals", "paired_comparison", "finality", "executable_provenance")
+  a4_s4_tree_r_own_optimum_exact_names(record, expected, "five-iteration BFGS probe receipt")
+  if (!identical(request$mode, "probe") ||
+      !identical(record$schema_version, a4_s4_tree_r_bfgs_own_optimum_schema) ||
+      !identical(record$status, "r_tree_bfgs_five_iteration_probe_unqualified") ||
+      !identical(record$request, request) ||
+      !identical(record$executable_provenance, "loaded_attested_frozen_build"))
+    a4_s4_tree_r_own_optimum_stop("five-iteration BFGS probe has the wrong schema, status, or optimizer mode")
+  evaluations <- record$probe$optimizer_evaluations
+  if (!identical(names(record$probe), c("status", "elapsed_seconds", "reported_objective", "direct_objective",
+      "optimizer_convergence", "optimizer_par", "gradient", "optimizer_evaluations")) ||
+      !is.list(evaluations) || !identical(names(evaluations), c("function", "gradient")) ||
+      !all(vapply(evaluations, function(x) is.numeric(x) && length(x) == 1L && is.finite(x) &&
+        x >= 0 && x == as.integer(x), logical(1L))))
+    a4_s4_tree_r_own_optimum_stop("five-iteration BFGS probe has no valid function and gradient evaluation counts")
+  if (!isTRUE(all.equal(record$probe$reported_objective, record$probe$direct_objective, tolerance = 1e-10)))
+    a4_s4_tree_r_own_optimum_stop("five-iteration BFGS probe has no direct-objective identity")
+  nlminb_request <- a4_s4_tree_r_own_optimum_request(request$build_receipt_sha256)
+  nlminb_record <- record
+  nlminb_record$schema_version <- a4_s4_tree_r_own_optimum_schema
+  nlminb_record$status <- "r_tree_five_iteration_probe_unqualified"
+  nlminb_record$request <- nlminb_request
+  nlminb_record$probe$optimizer_evaluations <- NULL
+  nlminb_record$executable_provenance <- NULL
+  a4_s4_tree_r_own_optimum_validate_probe_record(nlminb_record, nlminb_request)
+  record
+}
+a4_s4_tree_r_bfgs_own_optimum_evaluations <- function(fit) {
+  # The source-attested gllvmTMB `optim` adapter exposes raw `optim` counts as
+  # `iterations` (function) and `evaluations` (gradient).  BFGS receipts
+  # relabel both explicitly and never present either as an iteration count.
+  counts <- c("function" = fit$opt$iterations, gradient = fit$opt$evaluations)
+  if (!is.numeric(counts) || any(!is.finite(counts)) || any(counts < 0) ||
+      any(counts != as.integer(counts)))
+    a4_s4_tree_r_own_optimum_stop("BFGS fit has no valid function and gradient evaluation counts")
+  as.list(setNames(as.integer(counts), names(counts)))
+}
+a4_s4_tree_r_bfgs_own_optimum_diagnostics <- function(fit) {
+  diagnostics <- a4_s4_tree_r_own_optimum_diagnostics(fit)
+  hessian <- (diagnostics$curvature$hessian + t(diagnostics$curvature$hessian)) / 2
+  eigenvalues <- eigen(hessian, symmetric = TRUE, only.values = TRUE)$values
+  diagnostics$curvature <- list(hessian = unname(hessian), min_eigenvalue = min(eigenvalues),
+    max_eigenvalue = max(eigenvalues), positive_definite = min(eigenvalues) > 0)
+  diagnostics$optimizer$iterations <- NULL
+  diagnostics$optimizer$evaluations <- a4_s4_tree_r_bfgs_own_optimum_evaluations(fit)
+  diagnostics
+}
+a4_s4_tree_r_bfgs_own_optimum_probe_diagnostics <- function(fit, elapsed_seconds) {
+  diagnostics <- a4_s4_tree_r_own_optimum_probe_diagnostics(fit, elapsed_seconds)
+  diagnostics$optimizer_evaluations <- a4_s4_tree_r_bfgs_own_optimum_evaluations(fit)
+  diagnostics
 }
 a4_s4_tree_r_own_optimum_fit <- function(inputs, data, control) {
   gllvmTMB::gllvmTMB(value ~ 0 + trait + phylo_latent(species, d = 1, tree = inputs$tree,
@@ -559,12 +730,65 @@ a4_s4_tree_r_own_optimum_probe_run <- function(frozen_library, core070, output, 
   a4_s4_tree_r_own_optimum_assert_frozen_unchanged(frozen)
   a4_s4_tree_r_own_optimum_publish(record, output)
 }
+a4_s4_tree_r_bfgs_own_optimum_fit <- function(inputs, data, mode) {
+  control <- do.call(gllvmTMBcontrol, a4_s4_tree_r_bfgs_own_optimum_control_args(mode))
+  a4_s4_tree_r_own_optimum_fit(inputs, data, control = control)
+}
+a4_s4_tree_r_bfgs_own_optimum_run <- function(frozen_library, core070, output, expected_build_sha256) {
+  output <- a4_s4_tree_r_own_optimum_output_fence(output)
+  request <- a4_s4_tree_r_bfgs_own_optimum_request(expected_build_sha256, "final")
+  if (!requireNamespace("ape", quietly = TRUE)) a4_s4_tree_r_own_optimum_stop("ape is required")
+  frozen <- a4_s4_tree_r_own_optimum_frozen_package(frozen_library, expected_build_sha256)
+  inputs <- a4_s4_tree_r_own_optimum_inputs(core070,
+    a4_s4_tree_r_own_optimum_request(expected_build_sha256))
+  data <- a4_s4_tree_r_own_optimum_long_data(inputs)
+  # Native data-derived initialization is used; no R/Julia fitted coordinate is supplied.
+  fit <- a4_s4_tree_r_bfgs_own_optimum_fit(inputs, data, "final")
+  a4_s4_tree_r_own_optimum_assert_no_sdreport(fit)
+  a4_s4_tree_r_own_optimum_assert_fit_binding(fit, inputs,
+    a4_s4_tree_r_own_optimum_request(expected_build_sha256), data)
+  record <- list(schema_version = a4_s4_tree_r_bfgs_own_optimum_schema,
+    status = "r_tree_bfgs_own_optimum_recorded_unqualified", request = request, frozen = frozen,
+    fit = a4_s4_tree_r_bfgs_own_optimum_diagnostics(fit), qualified = FALSE,
+    public_formula_admission = "closed", intervals = "not_computed",
+    paired_comparison = "not_computed", executable_provenance = "loaded_attested_frozen_build")
+  a4_s4_tree_r_bfgs_own_optimum_validate_record(record, request)
+  a4_s4_tree_r_own_optimum_assert_frozen_unchanged(frozen)
+  a4_s4_tree_r_own_optimum_publish(record, output)
+}
+a4_s4_tree_r_bfgs_own_optimum_probe_run <- function(frozen_library, core070, output, expected_build_sha256) {
+  output <- a4_s4_tree_r_own_optimum_output_fence(output)
+  request <- a4_s4_tree_r_bfgs_own_optimum_request(expected_build_sha256, "probe")
+  if (!requireNamespace("ape", quietly = TRUE)) a4_s4_tree_r_own_optimum_stop("ape is required")
+  frozen <- a4_s4_tree_r_own_optimum_frozen_package(frozen_library, expected_build_sha256)
+  inputs <- a4_s4_tree_r_own_optimum_inputs(core070,
+    a4_s4_tree_r_own_optimum_request(expected_build_sha256))
+  data <- a4_s4_tree_r_own_optimum_long_data(inputs)
+  started <- proc.time()[["elapsed"]]
+  fit <- a4_s4_tree_r_bfgs_own_optimum_fit(inputs, data, "probe")
+  elapsed <- proc.time()[["elapsed"]] - started
+  a4_s4_tree_r_own_optimum_assert_no_sdreport(fit)
+  a4_s4_tree_r_own_optimum_assert_fit_binding(fit, inputs,
+    a4_s4_tree_r_own_optimum_request(expected_build_sha256), data)
+  record <- list(schema_version = a4_s4_tree_r_bfgs_own_optimum_schema,
+    status = "r_tree_bfgs_five_iteration_probe_unqualified", request = request, frozen = frozen,
+    probe = a4_s4_tree_r_bfgs_own_optimum_probe_diagnostics(fit, elapsed), qualified = FALSE,
+    public_formula_admission = "closed", intervals = "not_computed", paired_comparison = "not_computed",
+    finality = "non_final_probe", executable_provenance = "loaded_attested_frozen_build")
+  a4_s4_tree_r_bfgs_own_optimum_validate_probe_record(record, request)
+  a4_s4_tree_r_own_optimum_assert_frozen_unchanged(frozen)
+  a4_s4_tree_r_own_optimum_publish(record, output)
+}
 a4_s4_tree_r_own_optimum_cli <- function(args) {
+  if (length(args) == 5L && identical(args[[1L]], "--bfgs"))
+    return(a4_s4_tree_r_bfgs_own_optimum_run(args[[2L]], args[[3L]], args[[4L]], args[[5L]]))
+  if (length(args) == 5L && identical(args[[1L]], "--bfgs-probe"))
+    return(a4_s4_tree_r_bfgs_own_optimum_probe_run(args[[2L]], args[[3L]], args[[4L]], args[[5L]]))
   if (length(args) == 5L && identical(args[[1L]], "--probe"))
     return(a4_s4_tree_r_own_optimum_probe_run(args[[2L]], args[[3L]], args[[4L]], args[[5L]]))
   if (length(args) != 4L) a4_s4_tree_r_own_optimum_stop(paste(
     "usage: Rscript --vanilla run_a4_s4_tree_r_own_optimum.R",
-    "[--probe] <frozen-library> <core070-dir> <output-rds> <expected-build-receipt-sha256>"))
+    "[--probe|--bfgs|--bfgs-probe] <frozen-library> <core070-dir> <output-rds> <expected-build-receipt-sha256>"))
   a4_s4_tree_r_own_optimum_run(args[[1L]], args[[2L]], args[[3L]], args[[4L]])
 }
 if (sys.nframe() == 0L) a4_s4_tree_r_own_optimum_cli(commandArgs(trailingOnly = TRUE))

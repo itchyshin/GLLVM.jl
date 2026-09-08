@@ -89,6 +89,38 @@ predeclared, and rank-one loading signs are indeterminate.  A future paired
 evidence decision would need both own-optimum records plus its own separately
 approved comparison contract.
 
+## Separate R BFGS contingency
+
+The initial source-attested R `nlminb` run is retained as a failed,
+unqualified diagnostic: its convergence code was nonzero.  It is not repaired
+by relaxing that gate or by changing the meaning of its receipt.  A distinct
+R-only BFGS diagnostic may be evaluated because a historic BFGS lead reached
+an interior optimum, but that historic run used a different DLL and is not
+evidence for this slice.
+
+The new BFGS request has its own schema and records all of the following
+policy rather than inheriting the `nlminb` request: `REML = FALSE`,
+`engine = "tmb"`, `se = FALSE`, native data-derived initialization with no
+external coordinate, `n_init = 1`, `optimizer = "optim"`,
+`method = "BFGS"`, and `reltol = 1e-12`.  Its five-iteration sizing probe
+uses `maxit = 5`; only after that retained probe passes its structural checks
+may its final diagnostic use `maxit = 400`.  The final BFGS receipt is valid
+only when `optim` returns convergence code zero, the direct marginal objective
+matches the reported objective, the maximum absolute gradient is at most
+\(10^{-5}\), and `optimHess` is finite positive definite.  It records its
+function and gradient evaluation counts explicitly; it does not reinterpret
+an `optim` count as an `nlminb` iteration count.
+
+The legacy `r-bfgs-attempt-01.json` is a **response/trait fixture lineage
+only** for this new route.  The runner may read exactly
+`Y_traits_by_observations` and `trait_names`, verifies that document's frozen
+SHA and the response SHA, and records `external_start_supplied = false`.
+It may not read a fitted coordinate, objective, gradient, Hessian, or historic
+DLL value from it as an input.  The newly executing binary remains the fresh,
+source-attested DLL named above.  BFGS records are still R-only,
+`qualified = false`, `public_formula_admission = "closed"`, with no interval,
+paired comparison, recovery, coverage, or public-formula conclusion.
+
 ## Receipt boundary and sizing
 
 Both receipt schemas are permanently labelled

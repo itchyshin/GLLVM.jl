@@ -18491,3 +18491,21 @@ CLEAN.  This remains `private_kernel_cross_evaluation`, `qualified = false`,
 and admission-closed—not a bridge return, independent optimum, interval,
 paired-evidence, public formula, S3b/S4 qualification, 0.7.1 parity, or
 Destination B completion.
+
+# 2026-09-08 — source-attested tree BFGS diagnostic contract
+
+The failed source-attested `nlminb` tree diagnostic remains retained as failed:
+its nonzero convergence code was not relaxed or reclassified. A separate
+R-only BFGS final/probe contract now pins `optim`/`BFGS`, `n_init = 1`, native
+data-derived initialization, `REML = FALSE`, `engine = "tmb"`, `se = FALSE`,
+`reltol = 1e-12`, and distinct five-iteration/final budgets. It records the
+legacy JSON only as response/trait fixture lineage and verifies the executing
+current frozen build/DLL independently.
+
+Focused R unit checks pass (`A4_S4_TREE_R_OWN_OPTIMUM_UNIT_OK`). Fresh
+independent review found and the repair closed three malformed-receipt holes:
+inconsistent direct objectives, stale gradient norms, and stale curvature
+summaries now fail for both receipt schemas. This is a contract-only result:
+no BFGS probe or final fit has been run yet, and there is no parity, interval,
+recovery, coverage, public admission, S3b/S4 qualification, 0.7.1 parity, or
+Destination B completion claim.

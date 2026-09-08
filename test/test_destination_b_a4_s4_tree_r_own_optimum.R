@@ -76,9 +76,11 @@ record_mutations <- list(
   objective = function(x) { x$fit$direct_objective <- 12.6; x },
   gradient = function(x) { x$fit$gradient$values[1L] <- NaN; x },
   gradient_norm = function(x) { x$fit$gradient$infinity_norm <- 1e-4; x },
+  inconsistent_gradient_norms = function(x) { x$fit$gradient$values <- rep(0.1, 7L); x },
   curvature = function(x) { x$fit$curvature$hessian[1L, 1L] <- Inf; x },
   non_pd = function(x) { x$fit$curvature$positive_definite <- FALSE; x },
   nonpositive_eigen = function(x) { x$fit$curvature$min_eigenvalue <- 0; x },
+  inconsistent_hessian_eigen = function(x) { x$fit$curvature$hessian <- -diag(7L); x },
   qualification = function(x) { x$qualified <- TRUE; x },
   admission = function(x) { x$public_formula_admission <- "open"; x },
   intervals = function(x) { x$intervals <- "computed"; x },
@@ -127,6 +129,101 @@ expect_error(a4_s4_tree_r_own_optimum_validate_probe_record(transform(probe_reco
   "probe finality")
 bad_probe <- probe_record; bad_probe$probe$optimizer_par <- theta[-1L]
 expect_error(a4_s4_tree_r_own_optimum_validate_probe_record(bad_probe, request), "probe coordinates")
+bad_probe_identity <- probe_record; bad_probe_identity$probe$direct_objective <- 112.5
+expect_error(a4_s4_tree_r_own_optimum_validate_probe_record(bad_probe_identity, request),
+  "nlminb probe direct-objective identity")
+bad_probe_gradient <- probe_record; bad_probe_gradient$probe$gradient$values <- rep(0.2, 7L)
+expect_error(a4_s4_tree_r_own_optimum_validate_probe_record(bad_probe_gradient, request),
+  "nlminb probe gradient norms")
+
+# The BFGS route is deliberately a separate receipt contract, rather than a
+# relabelled nlminb result.  This first assertion defines its immutable
+# final/probe optimizer budgets without invoking a fit.
+bfgs_final_control <- a4_s4_tree_r_bfgs_own_optimum_control("final")
+bfgs_probe_control <- a4_s4_tree_r_bfgs_own_optimum_control("probe")
+stopifnot(identical(a4_s4_tree_r_bfgs_own_optimum_schema,
+    "destination-b-a4-s4-tree-r-bfgs-own-optimum-1"),
+  identical(bfgs_final_control, list(n_init = 1L, optimizer = "optim", method = "BFGS",
+    maxit = 400L, reltol = 1e-12,
+    start_policy = "native_default_data_derived_no_external_coordinate",
+    REML = FALSE, engine = "tmb")),
+  identical(bfgs_probe_control, utils::modifyList(bfgs_final_control, list(maxit = 5L))))
+
+# A BFGS receipt carries the exact control contract and has its own labels.
+# Its final form remains as strict as the nlminb receipt, while the probe is
+# intentionally non-final and may retain a nonzero convergence code.
+bfgs_request <- a4_s4_tree_r_bfgs_own_optimum_request(build_sha, "final")
+stopifnot(identical(a4_s4_tree_r_bfgs_own_optimum_validate_request(bfgs_request), bfgs_request),
+  identical(bfgs_request$optimizer, bfgs_final_control),
+  identical(bfgs_request$fixture_lineage_fields, c("Y_traits_by_observations", "trait_names")),
+  identical(bfgs_request$external_start_supplied, FALSE))
+stopifnot(identical(a4_s4_tree_r_bfgs_own_optimum_control_args("final"), list(
+  n_init = 1L, optimizer = "optim", se = FALSE,
+  optArgs = list(method = "BFGS", control = list(maxit = 400L, reltol = 1e-12)))),
+  identical(a4_s4_tree_r_bfgs_own_optimum_control_args("probe")$optArgs$control$maxit, 5L))
+bfgs_fit_counts <- list(opt = list(iterations = 13L, evaluations = 9L))
+stopifnot(identical(a4_s4_tree_r_bfgs_own_optimum_evaluations(bfgs_fit_counts),
+  list("function" = 13L, gradient = 9L)))
+bad_bfgs_fit_counts <- bfgs_fit_counts; bad_bfgs_fit_counts$opt$evaluations <- -1L
+expect_error(a4_s4_tree_r_bfgs_own_optimum_evaluations(bad_bfgs_fit_counts),
+  "invalid BFGS evaluation count")
+bfgs_request_mutations <- list(
+  method = function(x) { x$optimizer$method <- "Nelder-Mead"; x },
+  maxit = function(x) { x$optimizer$maxit <- 401L; x },
+  reltol = function(x) { x$optimizer$reltol <- 1e-8; x },
+  n_init = function(x) { x$optimizer$n_init <- 2L; x },
+  start = function(x) { x$optimizer$start_policy <- "external_coordinate"; x }
+)
+for (label in names(bfgs_request_mutations)) expect_error(
+  a4_s4_tree_r_bfgs_own_optimum_validate_request(bfgs_request_mutations[[label]](bfgs_request)),
+  paste("BFGS", label, "control"))
+
+bfgs_record <- record
+bfgs_record$schema_version <- a4_s4_tree_r_bfgs_own_optimum_schema
+bfgs_record$status <- "r_tree_bfgs_own_optimum_recorded_unqualified"
+bfgs_record$request <- bfgs_request
+bfgs_record$executable_provenance <- "loaded_attested_frozen_build"
+bfgs_record$fit$optimizer$iterations <- NULL
+bfgs_record$fit$optimizer$evaluations <- list("function" = 15L, gradient = 15L)
+stopifnot(identical(a4_s4_tree_r_bfgs_own_optimum_validate_record(bfgs_record, bfgs_request), bfgs_record))
+bfgs_record_mutations <- list(
+  old_dll = function(x) { x$frozen$dll_sha256 <- strrep("0", 64L); x },
+  old_build = function(x) { x$frozen$oracle_build_receipt_sha256 <- strrep("0", 64L); x },
+  historical_dll_claim = function(x) { x$executable_provenance <- "historical_reference_dll"; x },
+  nonzero_convergence = function(x) { x$fit$optimizer$convergence <- 1L; x },
+  bad_gradient = function(x) { x$fit$gradient$infinity_norm <- 1e-4; x },
+  inconsistent_gradient_norms = function(x) { x$fit$gradient$values <- rep(0.1, 7L); x },
+  bad_hessian = function(x) { x$fit$curvature$min_eigenvalue <- 0; x },
+  inconsistent_hessian_eigen = function(x) { x$fit$curvature$hessian <- -diag(7L); x },
+  no_direct_identity = function(x) { x$fit$direct_objective <- 12.6; x },
+  bad_evaluations = function(x) { x$fit$optimizer$evaluations$gradient <- -1L; x },
+  qualified_claim = function(x) { x$qualified <- TRUE; x },
+  public_claim = function(x) { x$public_formula_admission <- "open"; x },
+  interval_claim = function(x) { x$intervals <- "computed"; x },
+  pairing_claim = function(x) { x$paired_comparison <- "computed"; x }
+)
+for (label in names(bfgs_record_mutations)) expect_error(
+  a4_s4_tree_r_bfgs_own_optimum_validate_record(bfgs_record_mutations[[label]](bfgs_record), bfgs_request),
+  paste("BFGS final", label))
+
+bfgs_probe_request <- a4_s4_tree_r_bfgs_own_optimum_request(build_sha, "probe")
+bfgs_probe_record <- probe_record
+bfgs_probe_record$schema_version <- a4_s4_tree_r_bfgs_own_optimum_schema
+bfgs_probe_record$status <- "r_tree_bfgs_five_iteration_probe_unqualified"
+bfgs_probe_record$request <- bfgs_probe_request
+bfgs_probe_record$executable_provenance <- "loaded_attested_frozen_build"
+bfgs_probe_record$probe$optimizer_evaluations <- list("function" = 5L, gradient = 5L)
+stopifnot(identical(a4_s4_tree_r_bfgs_own_optimum_validate_probe_record(
+  bfgs_probe_record, bfgs_probe_request), bfgs_probe_record),
+  identical(bfgs_probe_record$probe$optimizer_convergence, 1L))
+bad_bfgs_probe_identity <- bfgs_probe_record
+bad_bfgs_probe_identity$probe$direct_objective <- bad_bfgs_probe_identity$probe$direct_objective + 100
+expect_error(a4_s4_tree_r_bfgs_own_optimum_validate_probe_record(
+  bad_bfgs_probe_identity, bfgs_probe_request), "BFGS probe direct-objective identity")
+bad_bfgs_probe_gradient <- bfgs_probe_record
+bad_bfgs_probe_gradient$probe$gradient$values <- rep(0.2, 7L)
+expect_error(a4_s4_tree_r_bfgs_own_optimum_validate_probe_record(
+  bad_bfgs_probe_gradient, bfgs_probe_request), "BFGS probe gradient norms")
 
 publish_dir <- tempfile("tree-r-own-optimum-")
 dir.create(publish_dir)
@@ -148,5 +245,13 @@ stopifnot(grepl("engine = \"tmb\"", source_text, fixed = TRUE),
   !grepl("confint", source_text, fixed = TRUE), !grepl("raw-frozen-r", source_text, fixed = TRUE),
   !grepl("readRDS", source_text, fixed = TRUE), !grepl("file.rename", source_text, fixed = TRUE),
   !grepl("pedigree", source_text, fixed = TRUE), !grepl("dense", source_text, fixed = TRUE))
+stopifnot(grepl("a4_s4_tree_r_bfgs_own_optimum_run <- function", source_text, fixed = TRUE),
+  grepl("a4_s4_tree_r_bfgs_own_optimum_probe_run <- function", source_text, fixed = TRUE),
+  grepl("r_tree_bfgs_own_optimum_recorded_unqualified", source_text, fixed = TRUE),
+  grepl("r_tree_bfgs_five_iteration_probe_unqualified", source_text, fixed = TRUE),
+  grepl("--bfgs-probe", source_text, fixed = TRUE),
+  grepl("a4_s4_tree_r_bfgs_own_optimum_control_args", source_text, fixed = TRUE),
+  !grepl("qualified_bfgs", source_text, fixed = TRUE),
+  !grepl("public_bfgs", source_text, fixed = TRUE))
 
 cat("A4_S4_TREE_R_OWN_OPTIMUM_UNIT_OK\n")
