@@ -1,0 +1,32 @@
+{
+  "schema_version": "destination-b-a4-s4-public-r-formula-receipt-1",
+  "status": "awaiting_fresh_r_formula_receipt",
+  "claim_status": "receipt_valid_not_publicly_promoted",
+  "public_r_formula": {
+    "constructor": "gllvmTMB::gllvmTMB",
+    "formula": "cbind(trait_1, trait_2) ~ 1",
+    "family": "gaussian",
+    "observed_marginal": true,
+    "n_traits": 2,
+    "tree": {
+      "n_tips": 3,
+      "unit_ultrametric": false
+    }
+  },
+  "r_attestation": {
+    "status": "UNEXECUTED",
+    "source_pin": "REQUIRED_FRESH_CLEAN_R_SOURCE_PIN",
+    "dll_sha256": "REQUIRED_INSTALLED_R_DLL_SHA256",
+    "source_tree_dirty": false,
+    "formula_evaluated": false,
+    "captured_at_utc": "REQUIRED_UTC_TIMESTAMP"
+  },
+  "julia_attestation": {
+    "source_commit": "REQUIRED_GLLVM_JL_COMMIT",
+    "formula_adapter_evaluated": false
+  },
+  "r_endpoints": [],
+  "julia_endpoints": [],
+  "endpoint_atol": 0.0001,
+  "template_status": "UNEXECUTED: not valid input to the validator and not evidence"
+}
