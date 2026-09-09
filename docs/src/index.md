@@ -6,6 +6,9 @@ hero:
   name: "GLLVM.jl"
   text: "Which responses vary together?"
   tagline: "A matrix-first Julia companion for separating shared multivariate structure from response-specific variation."
+  image:
+    src: "/gllvmjl-mark-logo-image25.png"
+    alt: "GLLVM.jl mark showing four response nodes connected by shared latent structure"
   actions:
     - theme: brand
       text: Fit the first Gaussian model

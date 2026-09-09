@@ -2,6 +2,17 @@ using Documenter
 using DocumenterVitepress
 using GLLVM
 
+# Documenter validates local image links before DocumenterVitepress moves the
+# generated source tree into `build/.documenter`. Seed its normal build asset
+# path so that validation sees the same static images VitePress later serves.
+let source_assets = joinpath(@__DIR__, "src", "assets"),
+    build_assets = joinpath(@__DIR__, "build", "assets")
+    mkpath(build_assets)
+    for asset in readdir(source_assets; join = true)
+        cp(asset, joinpath(build_assets, basename(asset)); force = true)
+    end
+end
+
 makedocs(;
     root = @__DIR__,
     remotes = "--local" in ARGS ? nothing : Dict(),

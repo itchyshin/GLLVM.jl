@@ -18135,3 +18135,16 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   `/goal`, `.unlazy/.../GATES.md`, campaign, R-engine edit, or merge.
 - Deliberately not run: Julia tests, R tests, parity fits, Totoro/DRAC,
   Documenter, or any production implementation.
+
+## 2026-09-09 — Image 2.5 landing-page mark and VitePress asset build path
+
+- Isolated the selected Image 2.5 hero/nav mark from unrelated Destination B
+  commits before publication.
+- `docs/make.jl --local` now seeds the normal build asset path before
+  Documenter's cross-reference stage; it passes the existing figure links and
+  the new hero image without changing the VitePress `build/.documenter` to
+  `build/1` deployment layout. The output retains both public image routes
+  with identical SHA-256 hashes.
+- The final local VitePress subprocess stalled before its JavaScript bundle;
+  normal documentation CI is the remaining render/deployment verification.
+- No model, bridge, parity, interval, release, or registry claim changed.
