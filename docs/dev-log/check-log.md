@@ -18844,3 +18844,28 @@ qualification, a joint grouping result, latent/full cluster2 covariance,
 interval/recovery/coverage evidence, S3b/S4, dense `vcv`, FRK,
 `engine = "julia"` admission, 0.7.1 or broad 0.7 parity, or Destination B
 completion.
+
+# 2026-09-10 — B1 joint Gaussian four-source optimizer diagnostic
+
+The first all-four-source Gaussian fixture combines a rank-one `unit` latent
+term with diagonal nested `unit_obs`, crossed `cluster`, and crossed
+`cluster2` terms. It locks frozen gllvmTMB 0.7.0 at
+`b4d5fee64def88bc768dda1f1f77c29b295edd86`, archive SHA-256
+`0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc`, and
+isolated shared-library SHA-256
+`3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30`.
+
+The fixture evaluates Julia exactly at frozen R's retained coordinates and
+gets the same marginal log likelihood. It also proves that non-bijectively
+changing either a crossed `cluster2` or a valid nested `unit_obs` membership
+changes the joint likelihood. It is intentionally **not** a paired-fit
+acceptance: R's nominally converged default point has maximum outer gradient
+`2.1410189650930688e-5`; tighter same-start `nlminb` returns the same point
+with singular convergence, and same-start BFGS is less stationary. The Julia
+independent fit is logged only as a separate convergence diagnostic.
+
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 Pkg.test()` passes `39/39`
+in 6.8 s. This is a retained optimizer barrier for the joint model, not
+matched-parameter R-to-Julia parity, B1 qualification, interval/recovery/
+coverage evidence, S3b/S4, dense `vcv`, FRK, `engine = "julia"` admission,
+0.7.1 or broad 0.7 parity, or Destination B completion.
