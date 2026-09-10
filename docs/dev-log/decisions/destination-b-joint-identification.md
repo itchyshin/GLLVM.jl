@@ -85,13 +85,14 @@ If observed-marginal intervals are computationally feasible, call
 `grouped_gaussian_intervals` with the exact fit response and labels. The
 predeclared criterion was `:available`, with finite ordered intervals for the
 four predeclared variance targets. The 400-iteration repair fit reaches the
-point-convergence criterion and its coarser fit-time finite-difference Hessian
-happens to be positive, but that does not override the four-versus-three count.
-Its interval construction
-returns `:invalid_curvature`: its finer marginal finite-difference Hessian is
-indefinite. This is retained as an unavailable-interval diagnostic, not
-relabelled as an interval pass. Invalid curvature, stationarity, or boundary
-diagnostics are failures to report, not values to discard or repair.
+point-convergence criterion, but the four-versus-three count still controls
+identification. The fit-time and interval finite-difference Hessians use
+different stencils and can give opposite signs to their shared near-null
+direction; neither sign is a portable identification criterion. The interval
+construction returns `:nonidentifiable`, so this is retained as an
+unavailable-interval diagnostic, not relabelled as an interval pass.
+Nonidentification, invalid curvature, stationarity, or boundary diagnostics are
+failures to report, not values to discard or repair.
 
 ## Separately predeclared identifiable reparameterization diagnostic
 
@@ -121,9 +122,8 @@ remain failed: fitted `unit_obs` unique variance 2 is `0.0058748` versus no
 defined simulated unique-variance target (total variance 2 is `0.35`); the
 smallest first-fit Hessian eigenvector loads `0.9940834` on
 `unit_obs.log_sd_unique[2]`. The interval constructor uses a different, finer
-finite-difference stencil than the fit-time curvature check; its near-zero
-negative direction is `-1.78e-7` (loading `0.9941782`) while the coarser check
-can label the direction positive. Second-derivative finite differences have a
-roundoff/truncation trade-off, so this sign difference does not establish that
-either stencil is more accurate. The independent four-versus-three dimension
-count proves the redundancy and withholds the original interval claim.
+finite-difference stencil than the fit-time curvature check. Second-derivative
+finite differences have a roundoff/truncation trade-off, so a sign for this
+near-null direction is not a portable identification result. The independent
+four-versus-three dimension count proves the redundancy and withholds the
+original interval claim.

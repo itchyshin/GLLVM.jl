@@ -18679,3 +18679,25 @@ green. No tolerance was changed.
 This is a local implementation and evidence-boundary integration only. It
 does not qualify B1--B5, S3b, S4, dense-`vcv`, `engine = "julia"`, FRK,
 coverage, 0.7 parity, 0.7.1 parity, or Destination B completion.
+
+# 2026-09-10 — Destination B joint-identification sign-invariant receipt
+
+The four-term two-trait rank-one-plus-unique fixture has four fitted
+coordinates for each of `unit` and `unit_obs`, while a symmetric two-trait
+covariance has only three. Its finite-difference Hessian therefore contains a
+near-null structural-redundancy direction. A fresh Pkg-test shard showed that
+the fit-time and interval stencils can give it opposite signs, so the prior
+fixed-sign assertions were not portable acceptance conditions. The test now
+requires the stable conditions: explicit structural warning, converged
+point-fit diagnostic, finite reported curvature diagnostic, and
+`grouped_gaussian_intervals(...).status == :nonidentifiable` with unavailable
+component intervals. No likelihood code, optimizer control, or numerical
+tolerance changed.
+
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=89/293 Pkg.test()` passes `64/64` in
+14.1 s. The receipt retains the expected warnings for the two redundant
+sources and records the interval stencil's finite near-null eigenvalue
+(`-7.956013500611833e-7`) as a diagnostic, not a sign gate. This resolves only
+the merge-barrier assertion defect. It is not interval feasibility, live R
+pairing, recovery, B1--B5 qualification, S3b/S4 admission, 0.7 parity, or
+Destination B completion.

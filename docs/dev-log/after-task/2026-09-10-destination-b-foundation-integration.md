@@ -39,7 +39,9 @@ ridged-once canonical precision; it does not reinvert in Julia. See
   `src/grouped_fit.jl` additionally makes unique variances concrete.
 - `test/`: grouped, precision, interval, bridge and S4 contract coverage;
   `test/runtests.jl` includes the S4 validator; the new concrete-container
-  assertion is in `test/test_grouped_gaussian.jl`.
+  assertion is in `test/test_grouped_gaussian.jl`; the joint-identification
+  test now checks the structural nonidentifiability diagnostic rather than a
+  platform-sensitive finite-difference sign.
 - `docs/`: Destination B contracts, retained non-promotional evidence,
   grouping/precision guides, check log, and this report. `README.md` now
   repeats the experimental partial R-to-Julia, not-0.7-parity boundary.
@@ -51,6 +53,11 @@ ridged-once canonical precision; it does not reinvert in Julia. See
   passes and exercises the explicit failure paths.
 - Grouped concrete-unique container: failed before the repair with
   `Any === Union{Nothing,Vector{Float64}}`; now passes.
+- Joint-identification sign gate: the prior fixed Hessian-sign expectations
+  failed under the same structurally redundant four-coordinate/two-trait
+  model. The replacement preserves finite curvature output but requires the
+  actual invariant, `:nonidentifiable` intervals and unavailable component
+  intervals. No optimizer or tolerance was changed.
 - Existing grouped dense-oracle and precision sparse-vs-dense tests remain the
   independent-calculation safeguards for the imported numerical kernels.
 
@@ -80,6 +87,9 @@ its interval mapping are not admitted.
 - `test/test_destination_b_a4_s4_public_r_formula_receipt.jl`: 29 passed,
   0 failed, 0 errored (0.8 s).
 - `test/test_grouped_gaussian.jl`: 26 passed, 0 failed, 0 errored (3.3 s).
+- `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=89/293 Pkg.test()`: 64 passed,
+  0 failed, 0 errored (14.1 s); expected warnings identify the redundant
+  `unit` and `unit_obs` sources.
 - Earlier integrated focused cohort: 292 passed assertions across grouped
   Gaussian/fitter/public/fixed-coordinate, four-level interval, and
   multivariate precision tests.
@@ -90,8 +100,9 @@ its interval mapping are not admitted.
   `test_grouped_profile_dense_oracle.jl`. The missing test dependency was
   added, then the CI-style `GLLVM_TEST_SHARD=23/294 Pkg.test()` passed
   15/15 in 8.3 s. The repaired unsharded run passed that point but showed an
-  EM-Louis tolerance miss and two joint-identification Hessian assertions;
-  it was stopped after 18 minutes of CPU activity, beyond the measured
+  EM-Louis tolerance miss and a sign-sensitive joint-identification assertion
+  defect; the exact joint shard now passes after the test-only invariant
+  repair. It was stopped after 18 minutes of CPU activity, beyond the measured
   estimate. A repaired full-suite receipt remains pending.
 
 ## Consistency Audit
@@ -114,9 +125,10 @@ receipt used fresh-attestation labels. Independent review caught it before
 promotion. The retained full `Pkg.test()` receipt then exposed a missing
 `Optim` declaration for an imported dense-oracle test. The exact CI-style
 shard passes after the minimal dependency repair. The full rerun also revealed
-an EM-Louis tolerance miss and two Destination-B joint-identification Hessian
-expectation mismatches; it was stopped after its measured runtime overrun,
-without changing tolerances.
+an EM-Louis tolerance miss and sign-sensitive Destination-B
+joint-identification expectations. The latter now have a passing 64/64
+focused receipt against the stable nonidentifiability invariant; the rerun was
+stopped after its measured runtime overrun, without changing tolerances.
 
 ## Remaining Risks and Next Command
 
