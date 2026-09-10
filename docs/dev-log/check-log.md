@@ -18733,3 +18733,33 @@ requires a changed likelihood. Both returned objects must retain
 counterfactual was added. This is fixed-coordinate public Julia transport
 coverage only: it does not execute R, fit an optimizer, return S3b/S4
 user-workflow evidence, validate intervals, or qualify dense `vcv`.
+
+# 2026-09-10 — B1 paired Gaussian `unit` fit
+
+The retained source-alignment record's temporary R library had been purged, so
+the candidate rebuilt a detached worktree at frozen `gllvmTMB` 0.7.0 commit
+`b4d5fee64def88bc768dda1f1f77c29b295edd86`, not the active dirty 0.7.1
+checkout. The Git archive SHA-256 was
+`0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc`; the
+fresh isolated shared library SHA-256 was
+`3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30`.
+
+The retained machine-readable record is
+`docs/dev-log/core070/destination-b-b1/frozen-r070-unit-gaussian-paired-receipt-20260910.json`.
+It locks the runner hash, R version, source/archive/shared-library hashes,
+input MD5 and long response/mapping, and R fitted quantities. The tiny
+Gaussian `value ~ 0 + trait + latent(0 + trait | site, d = 1, unique = FALSE)`
+fit used seed `20260908`, four repeated units, two observations per unit, and
+two traits. It converged in R in 0.46 s at marginal log likelihood
+`-6.6816691133163673`. The registered Julia regression reads that receipt,
+refits through public `fit_gllvm`, and compares the marginal likelihood, trait
+intercepts, rotation-invariant `Sigma_unit`, and residual SD. Its
+fixed-R-coordinate path also matches the R likelihood, while a
+one-observation changed-unit control does not.
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=154/295 Pkg.test()` passes 20/20 in
+5.6 s.
+
+This is one paired Gaussian `unit` fit. It is not B1 qualification, an
+interval/recovery/coverage result, a test of `unit_obs`, `cluster`, or
+`cluster2`, generic `engine = "julia"` admission, S3b/S4 evidence, dense
+`vcv` qualification, 0.7 parity, or Destination B completion.

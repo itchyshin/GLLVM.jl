@@ -253,6 +253,8 @@ receipt <- list(
                        control = list(n_init = 1L, se = FALSE), n_site = n_site, n_replicate = n_replicate,
                        n_trait = n_trait, n_observation = n_site * n_replicate,
                        row_order = "site, site_species replicate, trait", seed = 20260908L, data_md5 = data_md5),
+  response_long = list(value = as_receipt_value(data$value), trait = as.character(data$trait),
+                       site = as.character(data$site), site_species = as.character(data$site_species)),
   mapping = NULL,
   fit = NULL,
   failure = list(present = FALSE)
@@ -278,6 +280,12 @@ if (inherits(fit, "error")) {
   report <- fit_field(fit, "report")
   opt <- fit_field(fit, "opt")
   tmb_data <- fit_field(fit, "tmb_data")
+  opt_par <- if (is.list(opt) && "par" %in% names(opt)) opt$par else NULL
+  fitted_parameters <- if (!is.null(opt_par)) {
+    tryCatch(fit$tmb_obj$env$parList(opt_par), error = function(e) NULL)
+  } else {
+    NULL
+  }
   mapping <- list(
     trait_id = tmb_field(tmb_data, "trait_id"),
     site_id = tmb_field(tmb_data, "site_id"),
@@ -288,6 +296,11 @@ if (inherits(fit, "error")) {
   if (any(vapply(mapping, is.null, logical(1L)))) {
     stop("Frozen-R fit did not retain the required trait/site/site_species mapping payload.")
   }
+  if (!is.list(fitted_parameters) || any(vapply(
+      c("b_fix", "log_sigma_eps", "theta_rr_B"),
+      function(name) is.null(fitted_parameters[[name]]), logical(1L)))) {
+    stop("Frozen-R fit did not expose the required named optimum coordinates.")
+  }
   fit_convergence <- if (is.list(opt) && "convergence" %in% names(opt)) as_receipt_value(opt$convergence) else NULL
   fit_message <- if (is.list(opt) && "message" %in% names(opt)) as_receipt_value(opt$message) else NULL
   receipt$fit <- list(
@@ -297,6 +310,9 @@ if (inherits(fit, "error")) {
     optimizer_message = fit_message,
     report_fields = if (is.list(report)) unname(names(report)) else NULL,
     fit_fields = unname(names(fit)),
+    b_fix = as_receipt_value(fitted_parameters$b_fix),
+    log_sigma_eps = as_receipt_value(fitted_parameters$log_sigma_eps),
+    theta_rr_B = as_receipt_value(fitted_parameters$theta_rr_B),
     Lambda_B = report_field(report, "Lambda_B"),
     Sigma_B = report_field(report, "Sigma_B"),
     sigma_eps = report_field(report, "sigma_eps")

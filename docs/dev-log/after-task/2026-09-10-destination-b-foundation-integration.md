@@ -42,10 +42,14 @@ ridged-once canonical precision; it does not reinvert in Julia. See
   assertion is in `test/test_grouped_gaussian.jl`; the joint-identification
   test now checks the structural nonidentifiability diagnostic rather than a
   platform-sensitive finite-difference sign. The A4/S4 public dense-precision
-  bridge regression is now registered in the normal test runner.
+  bridge regression and the receipt-backed frozen-R B1 same-data paired
+  unit-fit regression are now registered in the normal test runner.
 - `docs/`: Destination B contracts, retained non-promotional evidence,
   grouping/precision guides, check log, and this report. `README.md` now
   repeats the experimental partial R-to-Julia, not-0.7-parity boundary.
+- `tools/destination_b/b1_unit_gaussian_reference.R`: the frozen-R runner now
+  retains the actual long response and named fitted coordinates required by
+  the paired receipt; it neither changes nor rebuilds the R engine source.
 
 ## Tests Added
 
@@ -63,6 +67,11 @@ ridged-once canonical precision; it does not reinvert in Julia. See
   through public `bridge_fit` at fixed Julia coordinates. A symmetric
   twice-ridged counterfactual must change the likelihood, while both paths
   retain the closed `R phylo_rr` admission fence.
+- B1 paired Gaussian `unit`: a machine-readable fresh frozen-R receipt binds
+  source, archive, shared library, runner, data, mapping, and named fit
+  quantities. The normal test reconstructs its exact response, validates those
+  locks, checks a fixed-R-coordinate Julia objective and an independent Julia
+  refit, and rejects a changed unit membership.
 - Existing grouped dense-oracle and precision sparse-vs-dense tests remain the
   independent-calculation safeguards for the imported numerical kernels.
 
@@ -73,8 +82,12 @@ speed claim or benchmark comparison was made.
 
 ## R-Parity Verdict
 
-Not qualified. The frozen R 0.7.0 records are retained provenance and fixed
-coordinate checks, not a fresh paired fit/recovery result. S3b/S4 public
+Not qualified. One fresh source-attested B1 `unit` Gaussian paired fit now
+exists: frozen R 0.7.0 at `b4d5fee64def88bc768dda1f1f77c29b295edd86` and the
+Julia public grouped route share the same retained 2-trait × 8-observation
+response, unit partition, marginal log likelihood, trait intercepts,
+rotation-invariant unit covariance, and residual SD. It is a single tiny
+Gaussian interior fit, with no interval or recovery evidence. S3b/S4 public
 admission remains closed because `phylo_dep()` structured Julia transport and
 its interval mapping are not admitted.
 
@@ -103,6 +116,15 @@ its interval mapping are not admitted.
   0 failed, 0 errored (7.5 s), exercising the public canonical-dense bridge
   plus its twice-ridged negative control. Fresh review found no P0/P1/P2
   issue in the registered test.
+- Fresh frozen-R B1 rebuild: detached `b4d5fee64def88bc768dda1f1f77c29b295edd86`
+  source, archive SHA-256 `0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc`,
+  and a new isolated shared library SHA-256
+  `3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30`.
+  The R fit converged in 0.46 s with log likelihood `-6.6816691133163673`.
+  `docs/dev-log/core070/destination-b-b1/frozen-r070-unit-gaussian-paired-receipt-20260910.json`
+  retains the exact source/build/input/fit fields. `OPENBLAS_NUM_THREADS=1
+  GLLVM_TEST_SHARD=154/295 Pkg.test()` then passed 20/20 in 5.6 s, including
+  the same-data Julia refit and changed-membership negative control.
 - Earlier integrated focused cohort: 292 passed assertions across grouped
   Gaussian/fitter/public/fixed-coordinate, four-level interval, and
   multivariate precision tests.
@@ -147,16 +169,19 @@ tolerance. The aggregate rerun was stopped after its measured runtime overrun.
 The retained A4/S4 evaluator was deliberately not normal-suite-safe because it
 launches CLI subprocesses; its public dense bridge coverage now lives in a
 small separate registered test rather than making routine CI depend on those
-subprocesses.
+subprocesses. The earlier B1 source-attested R library had been purged from
+`/private/tmp`; it was rebuilt only from the exact frozen Git object into a
+new isolated temporary library, never from the dirty 0.7.1 working checkout.
 
 ## Remaining Risks and Next Command
 
 This candidate is not a Destination B qualification. Required next work is a
-reviewed structured `phylo_dep()` Julia transport/interval route, live paired
-R--Julia receipts, independent recovery, and a retained full-suite quality
-receipt. If a fresh controlled full run reproduces its earlier EM message, it
-must be investigated as a load-order/environment effect rather than repaired
-by a tolerance change. Resume with:
+paired Gaussian `unit_obs` B1 fit, then `cluster` and `cluster2`; a reviewed
+structured `phylo_dep()` Julia transport/interval route; independent recovery;
+and a retained full-suite quality receipt. If a fresh controlled full run
+reproduces its earlier EM message, it must be investigated as a
+load-order/environment effect rather than repaired by a tolerance change.
+Resume with:
 
 ```sh
 julia --project=. -e 'using Pkg; Pkg.test()'

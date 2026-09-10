@@ -98,9 +98,12 @@ would overparameterise the three-coordinate symmetric unit covariance.
 
 ## Evidence boundary
 
-This contract makes a source-attested fixed-coordinate identity test possible.
-It does **not** establish optimizer agreement, a fitted R--Julia likelihood
-comparison, parameter recovery, valid confidence intervals, non-Gaussian
-grouping, `unit_obs`/`cluster`/`cluster2`, S3b/S4, dense `vcv`, FRK, 0.7.1
-parity, or Destination B completion. A frozen-R receipt records the R side;
-it does not by itself upgrade any of those boundaries.
+The retained 2026-09-10 paired receipt now establishes one source-attested,
+same-data fitted R--Julia Gaussian `unit` comparison. At the R optimum and
+after a separate Julia refit, it checks marginal likelihood, trait intercepts,
+the rotation-invariant `Lambda Lambda'`, residual SD, and a changed-membership
+negative control. It does **not** establish parameter recovery, valid
+confidence intervals, non-Gaussian grouping, `unit_obs`/`cluster`/`cluster2`,
+S3b/S4, dense `vcv`, FRK, 0.7.1 parity, broad 0.7 parity, or Destination B
+completion. One tiny pair is evidence for this exact model and fixture, not a
+general grouping admission.
