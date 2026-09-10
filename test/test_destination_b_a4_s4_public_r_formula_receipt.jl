@@ -87,6 +87,15 @@ end
     @test checked["endpoint_atol"] == 1e-4
     @test checked["n_targets"] == 7
 
+    tagless = deepcopy(receipt)
+    pop!(tagless, "fixture_kind")
+    @test_throws ArgumentError validate_a4_s4_public_r_formula_receipt(tagless;
+        allow_synthetic = true)
+    retagged = deepcopy(receipt)
+    retagged["fixture_kind"] = "recorded_receipt"
+    @test_throws ArgumentError validate_a4_s4_public_r_formula_receipt(retagged;
+        allow_synthetic = true)
+
     for tamper in (
         x -> x["r_attestation"]["source_pin"] = "0" ^ 40,
         x -> x["r_attestation"]["dll_sha256"] = "0" ^ 64,
@@ -113,6 +122,7 @@ end
     )
         tampered = deepcopy(receipt)
         tamper(tampered)
-        @test_throws ArgumentError validate_a4_s4_public_r_formula_receipt(tampered)
+        @test_throws ArgumentError validate_a4_s4_public_r_formula_receipt(tampered;
+            allow_synthetic = true)
     end
 end

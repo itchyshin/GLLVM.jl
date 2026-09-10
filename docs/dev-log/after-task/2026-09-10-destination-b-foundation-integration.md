@@ -17,7 +17,9 @@ remains the only landing hero. The S4 receipt test is now part of
 
 Fresh review then corrected two candidate defects. Synthetic in-memory
 attestations can now be used only with `allow_synthetic = true` and return a
-synthetic status; the default validator rejects them. The grouped unpacker now
+synthetic status; the default validator rejects them. A non-synthetic
+structural receipt must name an explicit kind and retained artifact, and the
+validator never labels a structural dictionary fresh. The grouped unpacker now
 uses a concrete unique-variance vector rather than `Any[]`.
 
 ## Mathematical Contract
@@ -44,9 +46,9 @@ ridged-once canonical precision; it does not reinvert in Julia. See
 
 ## Tests Added
 
-- S4 synthetic-fixture rejection: failed before the repair because the
-  default validator accepted invented attestations; now passes and exercises
-  the explicit failure path.
+- S4 synthetic-fixture and retagging rejection: failed before the repair
+  because the default validator accepted missing/changed provenance tags; now
+  passes and exercises the explicit failure paths.
 - Grouped concrete-unique container: failed before the repair with
   `Any === Union{Nothing,Vector{Float64}}`; now passes.
 - Existing grouped dense-oracle and precision sparse-vs-dense tests remain the
@@ -69,12 +71,13 @@ its interval mapping are not admitted.
 - JET: not separately run for the new grouped unpacker in this slice; the
   concrete-container regression test addresses the reviewed hot-path finding.
 - Allocs: not measured; no allocation or speed claim is made.
-- Aqua: `Pkg.test()` was launched in its quality environment, but this session
-  lost the final child-process terminal receipt; do not treat it as green.
+- Aqua: not reached in the retained full-suite run, which stopped earlier on a
+  missing `Optim` declaration in `test/Project.toml`; a repaired full-suite
+  receipt is still required.
 
 ## Checks Run
 
-- `test/test_destination_b_a4_s4_public_r_formula_receipt.jl`: 27 passed,
+- `test/test_destination_b_a4_s4_public_r_formula_receipt.jl`: 29 passed,
   0 failed, 0 errored (0.8 s).
 - `test/test_grouped_gaussian.jl`: 26 passed, 0 failed, 0 errored (3.3 s).
 - Earlier integrated focused cohort: 292 passed assertions across grouped
@@ -82,7 +85,14 @@ its interval mapping are not admitted.
   multivariate precision tests.
 - `julia --project=. test/runtests.jl`: unsharded driver listed 294 files and
   returned cleanly; the environment did not preserve a per-assertion tally.
-- `Pkg.test()`: launched but not counted as a verdict, as above.
+- Retained `Pkg.test()` receipt: 776 passed, 0 failed, 1 errored, 3 broken;
+  the error was `Package Optim not found` at
+  `test_grouped_profile_dense_oracle.jl`. The missing test dependency was
+  added, then the CI-style `GLLVM_TEST_SHARD=23/294 Pkg.test()` passed
+  15/15 in 8.3 s. The repaired unsharded run passed that point but showed an
+  EM-Louis tolerance miss and two joint-identification Hessian assertions;
+  it was stopped after 18 minutes of CPU activity, beyond the measured
+  estimate. A repaired full-suite receipt remains pending.
 
 ## Consistency Audit
 
@@ -101,9 +111,12 @@ gllvmTMB#1275.
 
 The initial merged S4 test could be misread as evidence because its fabricated
 receipt used fresh-attestation labels. Independent review caught it before
-promotion. The outer `Pkg.test()` launcher yielded control before its child
-produced a durable terminal receipt, so full quality status remains explicitly
-unverified.
+promotion. The retained full `Pkg.test()` receipt then exposed a missing
+`Optim` declaration for an imported dense-oracle test. The exact CI-style
+shard passes after the minimal dependency repair. The full rerun also revealed
+an EM-Louis tolerance miss and two Destination-B joint-identification Hessian
+expectation mismatches; it was stopped after its measured runtime overrun,
+without changing tolerances.
 
 ## Remaining Risks and Next Command
 

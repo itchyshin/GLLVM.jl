@@ -1,5 +1,6 @@
 {
   "schema_version": "destination-b-a4-s4-public-r-formula-receipt-2",
+  "fixture_kind": "recorded_receipt",
   "status": "awaiting_structured_julia_transport",
   "claim_status": "receipt_valid_not_publicly_promoted",
   "public_r_formula": {
@@ -53,6 +54,10 @@
     "bridge_status": "GJL-GATE-STRUCTURED-TERMS",
     "source_commit": "REQUIRED_GLLVM_JL_COMMIT",
     "formula_adapter_evaluated": false
+  },
+  "evidence_artifact": {
+    "path": "REQUIRED_RETAINED_EVIDENCE_ARTIFACT",
+    "sha256": "REQUIRED_EVIDENCE_ARTIFACT_SHA256"
   },
   "r_endpoints": [],
   "julia_endpoints": [],

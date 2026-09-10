@@ -74,5 +74,7 @@ The structural check is intentionally available without R:
 It validates the exact schema and mutation failures with an explicitly tagged
 synthetic in-memory fixture. The validator rejects that fixture by default;
 the test must opt in with `allow_synthetic = true`, and its result is labelled
-synthetic rather than a fresh receipt. It does not run R, load `gllvmTMB`, or
-fit either implementation.
+synthetic rather than a fresh receipt. A non-synthetic structural receipt must
+also name a retained evidence artifact, but this validator does not load or
+authenticate it. It does not run R, load `gllvmTMB`, or fit either
+implementation.

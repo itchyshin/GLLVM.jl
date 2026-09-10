@@ -18651,21 +18651,30 @@ Independent review caught a false-evidence hazard before this candidate was
 considered ready: the S4 validator accepted an invented in-memory receipt as a
 fresh R/Julia record. The test fixture is now tagged synthetic, rejected by
 default, and accepted only with an explicit test-only `allow_synthetic = true`
-opt-in; it reports a synthetic status. A second review found an `Any[]` unique
+opt-in; it reports a synthetic status. Recorded structural receipts must name
+an explicit kind and retained-artifact reference, and this validator never
+calls a structural dictionary fresh. A second review found an `Any[]` unique
 variance container on the grouped objective path. It is now
 `Union{Nothing,Vector{T}}[]`, with a regression assertion that failed before
 the repair.
 
-Focused checks: S4 validator boundary `27/27` in 0.8 s; grouped Gaussian
+Focused checks: S4 validator boundary `29/29` in 0.8 s; grouped Gaussian
 kernel plus concrete-unique container `26/26` in 3.3 s. Before the two-line
 repair, the integrated grouping/precision focused cohort recorded 292 passing
 assertions across grouped Gaussian/fitter/public-route/fixed-coordinate,
 four-level interval, and multivariate-precision tests. The unsharded
 `test/runtests.jl` driver started all 294 listed files and returned cleanly.
-`Pkg.test()` was launched for the full quality environment; its temporary
-environment was cleaned after the child ended, but this session did not retain
-its final terminal receipt, so it is not counted as a passing full-suite
-verdict.
+A retained full `Pkg.test()` receipt then reached 776 passing assertions before
+failing at the imported dense-oracle test because `Optim` was absent from the
+isolated `test/Project.toml`. Adding that declared test dependency makes the
+real CI-style shard `23/294` pass `15/15` in 8.3 s. A new full-suite receipt is
+still required; the earlier error is not counted as green. The repaired
+unsharded rerun passed that point, then exposed a pre-existing-looking
+EM-Louis tolerance miss (`0.0010560201922229443 > 0.001`) and two
+Destination-B joint-identification Hessian assertions with opposite expected
+definiteness. It remained CPU-active after 18 minutes, beyond its measured
+estimate, so it was interrupted under the compute rule rather than called
+green. No tolerance was changed.
 
 This is a local implementation and evidence-boundary integration only. It
 does not qualify B1--B5, S3b, S4, dense-`vcv`, `engine = "julia"`, FRK,
