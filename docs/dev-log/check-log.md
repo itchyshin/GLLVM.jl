@@ -19047,3 +19047,10 @@ push, merge, or qualification claim was made.
 - **Focused public test:** `/Users/z3437171/.juliaup/bin/julia --startup-file=no --history-file=no --project=. test/test_destination_b_public.jl` passed **39/39** in **10.0 s**: 9 existing public grouping checks, 22 mixed-B1 formula/extraction/interval-status checks, and 8 fixed-coordinate unit-oracle checks.
 - The new B1 check uses `iterations=0`; it proves formula-to-direct incidence/packing equality and named covariance extraction, while explicitly requiring intervals to be unavailable rather than making an inference claim.
 - No likelihood, optimizer, interval implementation, R bridge, frozen-R run, parity receipt, recovery, coverage, push, merge, or qualification changed.
+
+## 2026-09-10 — B1 fixed-coordinate curvature pre-run protocol
+
+- **TDD red:** the focused static test first failed because its verifier file did not exist. It then exposed and repaired a test-only JSON dependency, leaving a stdlib-only (`SHA`, `TOML`) verifier.
+- **Static green:** `test/test_b1_fixed_coordinate_curvature_protocol.jl` passes **4/4**: the pinned receipt verifies, while temporary source-hash, raw-coordinate-order, and `n_observation` drift each fail closed. The standalone verifier also passes, and `git diff --check` is clean.
+- The protocol pins the retained 180-wide-row / 360-long-row negative stationary-candidate receipt, formula, fixed source/archive/DLL/runner/module identities, every raw coordinate, four grouping blocks, and a one-objective/one-gradient/one-Hessian, zero-optimizer future contract. It estimates 10 seconds with a 60-second hard stop and requires fresh authorization.
+- No R/TMB objective, gradient, Hessian, `gllvmTMB` call, optimizer, Julia fit, source-engine edit, recovery, interval inference, paired result, push, merge, or B1 qualification occurred or is claimed.
