@@ -18148,3 +18148,16 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - The final local VitePress subprocess stalled before its JavaScript bundle;
   normal documentation CI is the remaining render/deployment verification.
 - No model, bridge, parity, interval, release, or registry claim changed.
+
+## 2026-09-10 — Image 2.5 public hero render correction
+
+- The first published browser inspection confirmed the selected Image 2.5
+  navigation mark but showed no landing hero mark at a 1280 px desktop
+  viewport. Browser DOM inspection found that nested VitePress `hero.image`
+  emitted no image node, while the site's existing decorative hero
+  pseudo-element still pointed at the old SVG and was hidden below 1320 px.
+- The landing page now uses that established pseudo-element with the selected
+  root-served PNG and hides it only below 960 px. This keeps the mark
+  decorative and leaves the visible GLLVM.jl title as the accessible name.
+- Pending: fresh Documenter deployment and a public desktop screenshot. No
+  model, bridge, parity, interval, release, or registry claim changed.

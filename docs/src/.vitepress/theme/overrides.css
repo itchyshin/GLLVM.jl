@@ -20,13 +20,13 @@
   position: absolute;
   top: 3rem;
   right: clamp(3rem, 9vw, 11rem);
-  width: min(12rem, 16vw);
+  width: clamp(10rem, 16vw, 16rem);
   aspect-ratio: 1;
-  background: url("/assets/gllvmjl-mark.svg") center / contain no-repeat;
+  background: url("/gllvmjl-mark-logo-image25.png") center / contain no-repeat;
   pointer-events: none;
 }
 
-@media (max-width: 1320px) {
+@media (max-width: 960px) {
   .VPHomeHero .container::after {
     display: none;
   }
