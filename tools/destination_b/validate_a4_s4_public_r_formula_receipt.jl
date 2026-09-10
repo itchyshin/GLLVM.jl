@@ -4,7 +4,7 @@ gllvmTMB, or GLLVM.  This is a fail-closed artifact check only: a valid receipt
 is deliberately *not* a public parity promotion.
 """
 
-const _S4_PUBLIC_R_FORMULA_SCHEMA = "destination-b-a4-s4-public-r-formula-receipt-1"
+const _S4_PUBLIC_R_FORMULA_SCHEMA = "destination-b-a4-s4-public-r-formula-receipt-2"
 const _S4_PUBLIC_R_FORMULA_TARGETS = [
     "beta[1]", "beta[2]", "phylo_cov[1,1]", "phylo_cov[2,1]",
     "phylo_cov[2,2]", "residual_var_shared[1]", "residual_var_shared[2]",
@@ -80,13 +80,44 @@ function _s4_receipt_endpoints(rows, where)
     return by_target
 end
 
+function _s4_retained_invalid_cbind_diagnostic(receipt)
+    rows = _s4_receipt_get(receipt, "retained_pre_run_diagnostics", "receipt")
+    rows isa AbstractVector && length(rows) == 2 ||
+        _s4_receipt_fail("receipt does not retain both pre-run diagnostics")
+    row = _s4_receipt_dict(rows[1], "receipt.retained_pre_run_diagnostics[1]")
+    _s4_receipt_string(row, "kind", "receipt.retained_pre_run_diagnostics[1]") ==
+        "invalid_cbind_formula_rejection" || _s4_receipt_fail("wrong retained pre-run kind")
+    _s4_receipt_string(row, "formula", "receipt.retained_pre_run_diagnostics[1]") ==
+        "cbind(trait_1, trait_2) ~ 1" || _s4_receipt_fail("wrong retained invalid formula")
+    _s4_receipt_integer(row, "exit_status", "receipt.retained_pre_run_diagnostics[1]") == 1 ||
+        _s4_receipt_fail("retained invalid formula did not fail")
+    _s4_receipt_number(row, "elapsed_seconds", "receipt.retained_pre_run_diagnostics[1]") == 0.62 ||
+        _s4_receipt_fail("retained invalid formula timing drifted")
+    _s4_receipt_bool(row, "not_a_receipt", "receipt.retained_pre_run_diagnostics[1]") ||
+        _s4_receipt_fail("invalid formula diagnostic is mislabeled as a receipt")
+    tree_row = _s4_receipt_dict(rows[2], "receipt.retained_pre_run_diagnostics[2]")
+    _s4_receipt_string(tree_row, "kind", "receipt.retained_pre_run_diagnostics[2]") ==
+        "nonultrametric_tree_rejection" || _s4_receipt_fail("wrong retained tree diagnostic")
+    _s4_receipt_string(tree_row, "formula", "receipt.retained_pre_run_diagnostics[2]") ==
+        "traits(trait_1, trait_2) ~ 1 + phylo_dep(1 | species, tree = tree)" ||
+        _s4_receipt_fail("wrong retained tree diagnostic formula")
+    _s4_receipt_integer(tree_row, "exit_status", "receipt.retained_pre_run_diagnostics[2]") == 1 ||
+        _s4_receipt_fail("retained tree probe did not fail")
+    _s4_receipt_number(tree_row, "elapsed_seconds", "receipt.retained_pre_run_diagnostics[2]") == 1.25 ||
+        _s4_receipt_fail("retained tree probe timing drifted")
+    _s4_receipt_bool(tree_row, "not_a_receipt", "receipt.retained_pre_run_diagnostics[2]") ||
+        _s4_receipt_fail("tree diagnostic is mislabeled as a receipt")
+    return nothing
+end
+
 """
     validate_a4_s4_public_r_formula_receipt(receipt)
 
-Fail closed unless `receipt` records a directly evaluated public
-`gllvmTMB::gllvmTMB` two-trait Gaussian formula on a non-unit three-tip tree,
-with fresh R source/DLL attestation and all seven observed-marginal
-transformed-Wald endpoints agreeing with Julia within `1e-4`.
+Fail closed unless `receipt` records the directly evaluated public
+`traits()` plus `phylo_dep()` two-trait Gaussian formula on a non-unit
+ultrametric three-tip tree, retains both failed pre-run diagnostics, and has all seven
+observed-marginal transformed-Wald endpoints agreeing with a separately
+implemented structured Julia transport within `1e-4`.
 
 The returned value only says that the receipt has this structure.  It never
 authorizes a public parity claim, release, or change to gllvmTMB.
@@ -105,19 +136,45 @@ function validate_a4_s4_public_r_formula_receipt(receipt)
     _s4_receipt_string(formula, "constructor", "receipt.public_r_formula") == "gllvmTMB::gllvmTMB" ||
         _s4_receipt_fail("receipt does not use the public gllvmTMB constructor")
     _s4_receipt_string(formula, "formula", "receipt.public_r_formula") ==
-        "cbind(trait_1, trait_2) ~ 1" || _s4_receipt_fail("unexpected public R formula")
+        "traits(trait_1, trait_2) ~ 1 + phylo_dep(1 | species, tree = tree)" ||
+        _s4_receipt_fail("unexpected public R formula")
+    _s4_receipt_string(formula, "resolved_long_formula", "receipt.public_r_formula") ==
+        "value ~ 0 + trait + phylo_dep(0 + trait | species, tree = tree)" ||
+        _s4_receipt_fail("unexpected resolved long R formula")
+    _s4_receipt_string(formula, "data_layout", "receipt.public_r_formula") == "wide_traits" ||
+        _s4_receipt_fail("receipt does not use wide traits data")
+    _s4_receipt_string(formula, "unit", "receipt.public_r_formula") == "individual" ||
+        _s4_receipt_fail("receipt does not use individual rows")
+    _s4_receipt_string(formula, "cluster", "receipt.public_r_formula") == "species" ||
+        _s4_receipt_fail("receipt does not cluster on species")
     _s4_receipt_string(formula, "family", "receipt.public_r_formula") == "gaussian" ||
         _s4_receipt_fail("receipt is not Gaussian")
     _s4_receipt_bool(formula, "observed_marginal", "receipt.public_r_formula") ||
         _s4_receipt_fail("receipt is not observed-marginal")
+    _s4_receipt_string(formula, "phylo_covariance", "receipt.public_r_formula") ==
+        "full_unstructured" || _s4_receipt_fail("receipt lacks full phylogenetic covariance")
     _s4_receipt_integer(formula, "n_traits", "receipt.public_r_formula") == 2 ||
         _s4_receipt_fail("receipt does not have two traits")
     tree = _s4_receipt_dict(_s4_receipt_get(formula, "tree", "receipt.public_r_formula"),
         "receipt.public_r_formula.tree")
     _s4_receipt_integer(tree, "n_tips", "receipt.public_r_formula.tree") == 3 ||
         _s4_receipt_fail("receipt does not have a three-tip tree")
+    _s4_receipt_bool(tree, "ultrametric", "receipt.public_r_formula.tree") ||
+        _s4_receipt_fail("receipt tree is not ultrametric")
     !_s4_receipt_bool(tree, "unit_ultrametric", "receipt.public_r_formula.tree") ||
         _s4_receipt_fail("receipt tree is unit-ultrametric")
+    target_mapping = _s4_receipt_dict(_s4_receipt_get(receipt, "target_mapping", "receipt"),
+        "receipt.target_mapping")
+    _s4_receipt_string(target_mapping, "beta", "receipt.target_mapping") ==
+        "0 + trait intercepts in trait_1, trait_2 order" || _s4_receipt_fail("wrong beta mapping")
+    _s4_receipt_string(target_mapping, "phylo_cov", "receipt.target_mapping") ==
+        "extract_Sigma(level = 'phy', part = 'total', link_residual = 'none')\$Sigma lower triangle" ||
+        _s4_receipt_fail("wrong phylogenetic covariance mapping")
+    _s4_receipt_string(target_mapping, "residual_var_shared", "receipt.target_mapping") ==
+        "sigma_eps^2 replicated for both trait labels" || _s4_receipt_fail("wrong residual mapping")
+    _s4_receipt_bool(target_mapping, "shared_across_traits", "receipt.target_mapping") ||
+        _s4_receipt_fail("residual variance must be shared across traits")
+    _s4_retained_invalid_cbind_diagnostic(receipt)
 
     r_attestation = _s4_receipt_dict(_s4_receipt_get(receipt, "r_attestation", "receipt"),
         "receipt.r_attestation")
@@ -137,6 +194,9 @@ function validate_a4_s4_public_r_formula_receipt(receipt)
 
     julia_attestation = _s4_receipt_dict(
         _s4_receipt_get(receipt, "julia_attestation", "receipt"), "receipt.julia_attestation")
+    _s4_receipt_string(julia_attestation, "bridge_status", "receipt.julia_attestation") ==
+        "structured_transport_evaluated" ||
+        _s4_receipt_fail("Julia structured transport remains gated")
     _s4_receipt_sha(_s4_receipt_get(julia_attestation, "source_commit", "receipt.julia_attestation"),
         "receipt.julia_attestation.source_commit", 40)
     _s4_receipt_bool(julia_attestation, "formula_adapter_evaluated", "receipt.julia_attestation") ||

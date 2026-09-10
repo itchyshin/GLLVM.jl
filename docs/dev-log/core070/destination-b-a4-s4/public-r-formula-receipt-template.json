@@ -1,18 +1,46 @@
 {
-  "schema_version": "destination-b-a4-s4-public-r-formula-receipt-1",
-  "status": "awaiting_fresh_r_formula_receipt",
+  "schema_version": "destination-b-a4-s4-public-r-formula-receipt-2",
+  "status": "awaiting_structured_julia_transport",
   "claim_status": "receipt_valid_not_publicly_promoted",
   "public_r_formula": {
     "constructor": "gllvmTMB::gllvmTMB",
-    "formula": "cbind(trait_1, trait_2) ~ 1",
+    "formula": "traits(trait_1, trait_2) ~ 1 + phylo_dep(1 | species, tree = tree)",
+    "resolved_long_formula": "value ~ 0 + trait + phylo_dep(0 + trait | species, tree = tree)",
+    "data_layout": "wide_traits",
+    "unit": "individual",
+    "cluster": "species",
     "family": "gaussian",
     "observed_marginal": true,
+    "phylo_covariance": "full_unstructured",
     "n_traits": 2,
     "tree": {
       "n_tips": 3,
+      "ultrametric": true,
       "unit_ultrametric": false
     }
   },
+  "target_mapping": {
+    "beta": "0 + trait intercepts in trait_1, trait_2 order",
+    "phylo_cov": "extract_Sigma(level = 'phy', part = 'total', link_residual = 'none')$Sigma lower triangle",
+    "residual_var_shared": "sigma_eps^2 replicated for both trait labels",
+    "shared_across_traits": true
+  },
+  "retained_pre_run_diagnostics": [
+    {
+      "kind": "invalid_cbind_formula_rejection",
+      "formula": "cbind(trait_1, trait_2) ~ 1",
+      "exit_status": 1,
+      "elapsed_seconds": 0.62,
+      "not_a_receipt": true
+    },
+    {
+      "kind": "nonultrametric_tree_rejection",
+      "formula": "traits(trait_1, trait_2) ~ 1 + phylo_dep(1 | species, tree = tree)",
+      "exit_status": 1,
+      "elapsed_seconds": 1.25,
+      "not_a_receipt": true
+    }
+  ],
   "r_attestation": {
     "status": "UNEXECUTED",
     "source_pin": "REQUIRED_FRESH_CLEAN_R_SOURCE_PIN",
@@ -22,11 +50,12 @@
     "captured_at_utc": "REQUIRED_UTC_TIMESTAMP"
   },
   "julia_attestation": {
+    "bridge_status": "GJL-GATE-STRUCTURED-TERMS",
     "source_commit": "REQUIRED_GLLVM_JL_COMMIT",
     "formula_adapter_evaluated": false
   },
   "r_endpoints": [],
   "julia_endpoints": [],
   "endpoint_atol": 0.0001,
-  "template_status": "UNEXECUTED: not valid input to the validator and not evidence"
+  "template_status": "UNEXECUTED: formula scaffold only; not valid input to the paired validator and not evidence"
 }
