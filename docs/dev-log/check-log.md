@@ -18159,5 +18159,8 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - The landing page now uses that established pseudo-element with the selected
   root-served PNG and hides it only below 960 px. This keeps the mark
   decorative and leaves the visible GLLVM.jl title as the accessible name.
-- Pending: fresh Documenter deployment and a public desktop screenshot. No
-  model, bridge, parity, interval, release, or registry claim changed.
+- Documenter run `34433564735` completed successfully from `58f5fea`.
+  Direct retrieval of its new hashed stylesheet contains the selected image
+  route and the 960 px breakpoint; the PNG returns HTTP 200. A fresh desktop
+  screenshot remains pending while the local screen is locked. No model,
+  bridge, parity, interval, release, or registry claim changed.
