@@ -174,3 +174,39 @@ using JSON3
         end
     end
 end
+
+@testset "Destination B B1 stationary four-source frozen-R Gaussian candidate is retained when it fails" begin
+    receipt_path = joinpath(@__DIR__, "..", "docs", "dev-log", "core070", "destination-b-b1",
+        "frozen-r070-joint-gaussian-stationary-paired-receipt-20260910.json")
+    @test isfile(receipt_path)
+
+    receipt = JSON3.read(read(receipt_path, String))
+    raw_names = String.(receipt.fit.raw_opt_par.names)
+
+    @test String(receipt.receipt_kind) == "frozen_R_to_Julia_joint_gaussian_stationary_reference"
+    @test String(receipt.source.git_sha) == "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+    @test String(receipt.source.archive_sha256) == "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+    @test String(receipt.installed.shared_library_sha256) == "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+    @test String(receipt.r_runner.path) == "tools/destination_b/b1_joint_gaussian_stationary_reference.R"
+    @test String(receipt.r_runner.sha256) == "9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585"
+    @test String(receipt.r_runner.fixture_attestation_module_sha256) == "61009033b613bd1eb8f97b42c073e180ad71418d758d9da97aa8f8cd5a793924"
+    @test receipt.failure.present === false
+    @test receipt.acceptance.matched_parameter === false
+    @test Float64(receipt.acceptance.source_gradient_threshold) == 1e-6
+    @test receipt.fit.convergence == 1
+    @test Float64(receipt.fit.gradient_max_abs) ≈ 9.9329370235209566e-5 atol = 1e-16 rtol = 0
+    @test Float64(receipt.fit.gradient_max_abs) > Float64(receipt.acceptance.source_gradient_threshold)
+    @test String(receipt.fit.optimizer_message) == "singular convergence (7)"
+    @test Int(receipt.specification.n_trait) == 2
+    @test Int(receipt.specification.n_unit) == 12
+    @test Int(receipt.specification.n_unit_obs_per_unit) == 3
+    @test Int(receipt.specification.n_replicate) == 5
+    @test Int(receipt.specification.n_cluster) == 8
+    @test Int(receipt.specification.n_cluster2) == 7
+    @test Int(receipt.specification.n_observation) == 180
+    @test Int(receipt.specification.seed) == 20260914
+    @test String(receipt.specification.data_md5) == "8d61143f2ce6102bb8460fb1575cc249"
+    @test raw_names == ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B",
+        "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species",
+        "theta_diag_cluster2", "theta_diag_cluster2"]
+end

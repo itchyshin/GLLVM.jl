@@ -18917,3 +18917,42 @@ coverage evidence, S3b/S4, dense `vcv`, FRK, `engine = "julia"` admission,
   `git diff --check` is clean.  No full suite, JET, Aqua,
   allocation check, coverage campaign, release, push, merge, registry action,
   or gllvmTMB engine edit was performed.
+
+## 2026-09-10 — B1 joint Gaussian stationary-candidate reference (negative)
+
+Before execution, `2026-09-10-destination-b-b1-joint-gaussian-stationary-symbolic-alignment.md`
+fixed a new two-trait, four-source Gaussian ML design: 12 units, three nested
+observations per unit, five replicates, eight `cluster` levels, seven
+`cluster2` levels, seed `20260914L`, and a strict source-gradient gate of
+`1e-6`. The retained p=2, n=36 diagnostic and its shared fixture module are
+unchanged.
+
+One `Rscript --vanilla tools/destination_b/b1_joint_gaussian_stationary_reference.R`
+run against frozen gllvmTMB 0.7.0 source
+`b4d5fee64def88bc768dda1f1f77c29b295edd86` completed in 0.77 s and wrote the
+no-clobber receipt. It is a negative result: `nlminb` returned `singular
+convergence (7)` and maximum source gradient `9.9329370235209566e-5`, about
+99 times the registered threshold. No tolerance, seed, data, restart, or
+post-hoc start change was made; the conditional Julia paired covariance and
+incidence checks were not run.
+
+The receipt input data MD5 is `8d61143f2ce6102bb8460fb1575cc249` and runner
+SHA-256 is `9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585`.
+The exact command was:
+
+```sh
+Rscript --vanilla tools/destination_b/b1_joint_gaussian_stationary_reference.R --source /private/tmp/destination-b-b1-r070-rebuild --library /private/tmp/gllvmTMB-frozen-r070-b1-library-20260910 --output docs/dev-log/core070/destination-b-b1/frozen-r070-joint-gaussian-stationary-paired-receipt-20260910.json
+```
+
+The new gradient is worse than both retained p=2,n=36 comparison points:
+`2.1410189650930688e-5` at that receipt's default point and
+`1.8505189364190403e-6` at its best documented BFGS probe. That comparison
+does not license changing either fixture or threshold.
+
+`Rscript --vanilla test/test_destination_b_b1_joint_receipt_io.R` passed;
+static receipt assertions and the unchanged-diagnostic check passed; and
+`git diff --check` passed. The absolute Julia 1.10.0 runtime then ran the
+registered `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 Pkg.test()` shard:
+**154/154** in **7.7 s**. It verifies the recorded negative receipt, not a
+stationary or paired-fit claim. No full suite, JET, Aqua, allocation check,
+R-engine edit, push, merge, or qualification claim was made.
