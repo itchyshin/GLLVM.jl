@@ -24,5 +24,9 @@ const B1_CURVATURE_PROTOCOL = joinpath(@__DIR__, "..", "docs", "dev-log", "proto
         dimension_drift = joinpath(temporary_dir, "dimension-drift.toml")
         write(dimension_drift, replace(protocol_text, "n_observation = 180" => "n_observation = 181"))
         @test_throws ArgumentError verify_b1_fixed_coordinate_curvature_protocol(dimension_drift)
+
+        status_drift = joinpath(temporary_dir, "status-drift.toml")
+        write(status_drift, replace(protocol_text, "status = \"PRE_RUN_ONLY\"" => "status = \"AUTHORIZED\""))
+        @test_throws ArgumentError verify_b1_fixed_coordinate_curvature_protocol(status_drift)
     end
 end

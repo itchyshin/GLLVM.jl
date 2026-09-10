@@ -31,6 +31,7 @@ function verify_b1_fixed_coordinate_curvature_protocol(protocol_path;
         repository_root::AbstractString = REPOSITORY_ROOT)
     protocol = TOML.parsefile(protocol_path)
     require_equal(protocol["protocol"]["kind"], "B1_fixed_coordinate_curvature_pre_run", "protocol kind")
+    require_equal(protocol["protocol"]["status"], "PRE_RUN_ONLY", "protocol status")
     require_equal(protocol["protocol"]["authorization"], "fresh_authorization_required", "authorization state")
 
     inputs = protocol["inputs"]
