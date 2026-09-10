@@ -18968,3 +18968,15 @@ push, merge, or qualification claim was made.
 - **TDD red:** the focused construction gate initially printed `RED: fixture construction missing` and exited nonzero.
 - **Static green:** the dependency-free Julia fixture test verifies 3,600 wide / 7,200 long rows, the fixed DGP response digest, tensor-kernel rank 10, and minimum eigenvalue `0.3408784387221166 >= 0.30`.
 - No frozen-R or Julia fit/optimizer, receipt, recovery, coverage, paired result, or B1 qualification was run or claimed.
+
+### Review repair — formula data and immutable frozen-R provenance
+
+- **TDD red:** the first repair test had `27 passed, 1 failed, 4 errors` because
+  long rows lacked formula-exact `cluster_id`/`cluster2_id`, no unique full
+  wide tuple table existed, and no frozen provenance mapping was present.
+- **Static green:** the focused fixture test passes **43/43**. It verifies the
+  formula columns, unique `(unit,obs,cluster_id,cluster2_id)` wide tuples,
+  trait-qualified long tuple uniqueness, and the retrieved b4d5fee/source
+  archive/DLL/stationary-runner values plus a no-fit preflight helper.
+- The helper was not run against frozen inputs. No R/Julia optimizer or fit,
+  pre-run, receipt, or B1 result was executed or claimed.

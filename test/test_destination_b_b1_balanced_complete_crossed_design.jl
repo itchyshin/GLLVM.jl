@@ -28,10 +28,36 @@ include("fixtures/destination_b_b1_balanced_complete_crossed_design.jl")
     @test length(unique(fixture.cluster2)) == 10
     @test all(count(==(pair), zip(fixture.cluster, fixture.cluster2)) == 36 for pair in unique(zip(fixture.cluster, fixture.cluster2)))
     @test all(count(==(pair), zip(fixture.unit, fixture.obs)) == 100 for pair in unique(zip(fixture.unit, fixture.obs)))
-    @test fixture.wide_labels[1] == (unit = "u_01", obs = "u_01_w_01", cluster = "c_01", cluster2 = "d_01")
-    @test fixture.wide_labels[end] == (unit = "u_12", obs = "u_12_w_03", cluster = "c_10", cluster2 = "d_10")
+    @test fixture.wide_formula[1] == (unit = "u_01", obs = "u_01_w_01", cluster_id = "c_01", cluster2_id = "d_01")
+    @test fixture.wide_formula[end] == (unit = "u_12", obs = "u_12_w_03", cluster_id = "c_10", cluster2_id = "d_10")
     @test [row.trait for row in fixture.long[1:2]] == ["trait_1", "trait_2"]
-    @test all(fixture.long[(2i - 1)].unit == fixture.long[2i].unit && fixture.long[(2i - 1)].obs == fixture.long[2i].obs && fixture.long[(2i - 1)].cluster == fixture.long[2i].cluster && fixture.long[(2i - 1)].cluster2 == fixture.long[2i].cluster2 for i in 1:fixture.nwide)
+    @test all(fixture.long[(2i - 1)].unit == fixture.long[2i].unit && fixture.long[(2i - 1)].obs == fixture.long[2i].obs && fixture.long[(2i - 1)].cluster_id == fixture.long[2i].cluster_id && fixture.long[(2i - 1)].cluster2_id == fixture.long[2i].cluster2_id for i in 1:fixture.nwide)
     @test fixture.tensor.rank == 10
     @test fixture.tensor.minimum_eigenvalue >= 0.30
+
+    # The long table must expose the exact formula names.  The grouping tuple
+    # is unique per wide row; its trait-qualified long-row version is unique.
+    @test all(name in propertynames(first(fixture.long)) for name in (:unit, :obs, :cluster_id, :cluster2_id))
+    wide_tuples = [(row.unit, row.obs, row.cluster_id, row.cluster2_id) for row in fixture.wide_formula]
+    long_tuples = [(row.unit, row.obs, row.cluster_id, row.cluster2_id) for row in fixture.long]
+    trait_qualified_long_tuples = [(row.unit, row.obs, row.cluster_id, row.cluster2_id, row.trait) for row in fixture.long]
+    @test length(unique(wide_tuples)) == fixture.nwide
+    @test all(count(==(key), long_tuples) == 2 for key in unique(long_tuples))
+    @test length(unique(trait_qualified_long_tuples)) == fixture.nlong
+
+    @test fixture.frozen_r.git_sha == "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+    @test fixture.frozen_r.archive_sha256 == "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+    @test fixture.frozen_r.shared_library_sha256 == "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+    @test fixture.frozen_r.runner_sha256 == "9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585"
+    repository_root = normpath(joinpath(@__DIR__, ".."))
+    preflight_path = joinpath(repository_root, fixture.frozen_r.preflight_path)
+    @test isfile(preflight_path)
+    @test bytes2hex(sha256(read(joinpath(repository_root, fixture.frozen_r.reference_runner_path)))) == fixture.frozen_r.runner_sha256
+    preflight_source = read(preflight_path, String)
+    @test occursin(fixture.frozen_r.git_sha, preflight_source)
+    @test occursin(fixture.frozen_r.archive_sha256, preflight_source)
+    @test occursin(fixture.frozen_r.shared_library_sha256, preflight_source)
+    @test occursin(fixture.frozen_r.runner_sha256, preflight_source)
+    @test all(occursin(field, preflight_source) for field in ("source_sha", "source_version", "source_archive_sha256", "installed_shared_library_sha256"))
+    @test !occursin("gllvmTMB::gllvmTMB", preflight_source)
 end

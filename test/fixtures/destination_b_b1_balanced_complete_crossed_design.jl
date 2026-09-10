@@ -21,6 +21,18 @@ const _B1_BALANCED_COMPLETE_CROSSED = (
     reml = false,
 )
 
+# Retrieved from the retained stationary frozen-R B1 receipt.  These values are
+# provenance inputs, not an assertion that the retained candidate qualified.
+const _B1_BALANCED_COMPLETE_CROSSED_FROZEN_R = (
+    git_sha = "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    description_version = "0.7.0",
+    archive_sha256 = "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc",
+    shared_library_sha256 = "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30",
+    reference_runner_path = "tools/destination_b/b1_joint_gaussian_stationary_reference.R",
+    runner_sha256 = "9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585",
+    preflight_path = "tools/destination_b/b1_balanced_complete_crossed_preflight.R",
+)
+
 function _b1_complete_crossed_inner(left, nleft::Int, right, nright::Int, nwide::Int)
     if left === :residual || right === :residual
         return nwide
@@ -76,7 +88,7 @@ function destination_b_b1_balanced_complete_crossed_design()
     obs = Vector{Int}(undef, nwide)
     cluster = Vector{Int}(undef, nwide)
     cluster2 = Vector{Int}(undef, nwide)
-    wide_labels = Vector{NamedTuple{(:unit, :obs, :cluster, :cluster2),Tuple{String,String,String,String}}}(undef, nwide)
+    wide_formula = Vector{NamedTuple{(:unit, :obs, :cluster_id, :cluster2_id),Tuple{String,String,String,String}}}(undef, nwide)
     index = 0
     for u in 1:spec.n_unit, w in 1:spec.n_obs_per_unit, c in 1:spec.n_cluster, d in 1:spec.n_cluster2
         index += 1
@@ -84,7 +96,7 @@ function destination_b_b1_balanced_complete_crossed_design()
         obs[index] = (u - 1) * spec.n_obs_per_unit + w
         cluster[index] = c
         cluster2[index] = d
-        wide_labels[index] = (unit = "u_$(lpad(u, 2, '0'))", obs = "u_$(lpad(u, 2, '0'))_w_$(lpad(w, 2, '0'))", cluster = "c_$(lpad(c, 2, '0'))", cluster2 = "d_$(lpad(d, 2, '0'))")
+        wide_formula[index] = (unit = "u_$(lpad(u, 2, '0'))", obs = "u_$(lpad(u, 2, '0'))_w_$(lpad(w, 2, '0'))", cluster_id = "c_$(lpad(c, 2, '0'))", cluster2_id = "d_$(lpad(d, 2, '0'))")
     end
 
     rng = MersenneTwister(spec.seed)
@@ -99,10 +111,10 @@ function destination_b_b1_balanced_complete_crossed_design()
             cluster2_effect[:, cluster2[i]] .+ spec.sd_residual .* randn(rng, spec.n_trait)
     end
     trait = repeat(["trait_1", "trait_2"], nwide)
-    long = [(value = response_wide[t, i], trait = trait[(i - 1) * spec.n_trait + t], unit = wide_labels[i].unit,
-             obs = wide_labels[i].obs, cluster = wide_labels[i].cluster, cluster2 = wide_labels[i].cluster2)
+    long = [(value = response_wide[t, i], trait = trait[(i - 1) * spec.n_trait + t], unit = wide_formula[i].unit,
+             obs = wide_formula[i].obs, cluster_id = wide_formula[i].cluster_id, cluster2_id = wide_formula[i].cluster2_id)
             for i in 1:nwide for t in 1:spec.n_trait]
     tensor = _b1_complete_crossed_tensor_kernel(unit, obs, cluster, cluster2, spec)
     return (; specification = spec, nwide, nlong = length(long), unit, obs, cluster, cluster2,
-        wide_labels, response_wide, long, tensor)
+        wide_formula, response_wide, long, tensor, frozen_r = _B1_BALANCED_COMPLETE_CROSSED_FROZEN_R)
 end

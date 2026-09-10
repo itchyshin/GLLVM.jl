@@ -28,3 +28,23 @@ If explicitly authorized later, run **one** frozen-R ML control only:
 `rel_tol=x_tol=xf_tol=1e-12`. It passes only with `convergence == 0` and
 `max(abs(gr)) <= 1e-6`. Otherwise stop and retain the nonqualifying receipt:
 no reseed, restart, optimizer/data/tolerance change, or paired Julia fit.
+
+## Formula-column and frozen provenance repair
+
+The long construction now exposes formula-exact `cluster_id` and `cluster2_id`
+columns (not ambiguous aliases). The grouping tuple `(unit, obs, cluster_id,
+cluster2_id)` occurs once in the 3,600-row wide construction; it necessarily
+occurs twice in long form because each wide row has two traits, while the
+trait-qualified long tuple occurs once. The focused test asserts all three
+facts.
+
+Before any future fit, the no-fit helper
+`tools/destination_b/b1_balanced_complete_crossed_preflight.R` must verify the
+frozen source commit, DESCRIPTION version, archive SHA, installed DLL SHA,
+four frozen-library marker fields, and the retained stationary reference-runner
+SHA. Those values are retrieved from the retained B1 stationary receipt:
+`b4d5fee64def88bc768dda1f1f77c29b295edd86`, version `0.7.0`, archive
+`0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc`, DLL
+`3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30`, and
+runner `9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585`.
+The helper imports no `gllvmTMB` namespace and calls no fit.
