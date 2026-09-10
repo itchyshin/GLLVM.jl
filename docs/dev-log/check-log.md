@@ -18715,3 +18715,21 @@ directly, rather than inferring its result from the interrupted aggregate run.
 candidate, and no source or tolerance change was made. The prior aggregate
 observation remains an unreproduced possible load-order/environment effect;
 it does not make the interrupted full `Pkg.test()` run a passing receipt.
+
+# 2026-09-10 — A4/S4 public dense-precision bridge regression
+
+The retained A4/S4 fixed-coordinate evaluator was a standalone CLI/integrity
+test and was not included by `test/runtests.jl`. A small normal-suite regression
+now exercises the actual public `bridge_fit(..., phylo_model = "multivariate")`
+candidate at the retained dense R-to-Julia packed coordinate, with
+`iterations = 0`. It verifies the canonical dense `Q`, map, scale, and log
+determinant are consumed unchanged; it also sends an explicitly symmetric
+twice-ridged precision counterfactual through the same public route and
+requires a changed likelihood. Both returned objects must retain
+`admission_status == "closed"` and `admission_scope == "R phylo_rr"`.
+
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=163/294 Pkg.test()` passes `12/12` in
+7.5 s. A fresh independent review found no P0/P1/P2 issue after the
+counterfactual was added. This is fixed-coordinate public Julia transport
+coverage only: it does not execute R, fit an optimizer, return S3b/S4
+user-workflow evidence, validate intervals, or qualify dense `vcv`.

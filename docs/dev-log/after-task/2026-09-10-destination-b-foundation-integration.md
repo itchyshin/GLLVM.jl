@@ -41,7 +41,8 @@ ridged-once canonical precision; it does not reinvert in Julia. See
   `test/runtests.jl` includes the S4 validator; the new concrete-container
   assertion is in `test/test_grouped_gaussian.jl`; the joint-identification
   test now checks the structural nonidentifiability diagnostic rather than a
-  platform-sensitive finite-difference sign.
+  platform-sensitive finite-difference sign. The A4/S4 public dense-precision
+  bridge regression is now registered in the normal test runner.
 - `docs/`: Destination B contracts, retained non-promotional evidence,
   grouping/precision guides, check log, and this report. `README.md` now
   repeats the experimental partial R-to-Julia, not-0.7-parity boundary.
@@ -58,6 +59,10 @@ ridged-once canonical precision; it does not reinvert in Julia. See
   model. The replacement preserves finite curvature output but requires the
   actual invariant, `:nonidentifiable` intervals and unavailable component
   intervals. No optimizer or tolerance was changed.
+- Public dense-precision bridge: a retained R-canonical dense payload is fed
+  through public `bridge_fit` at fixed Julia coordinates. A symmetric
+  twice-ridged counterfactual must change the likelihood, while both paths
+  retain the closed `R phylo_rr` admission fence.
 - Existing grouped dense-oracle and precision sparse-vs-dense tests remain the
   independent-calculation safeguards for the imported numerical kernels.
 
@@ -94,6 +99,10 @@ its interval mapping are not admitted.
   0 failed, 0 errored (4.1 s). This isolates the EM-Louis file reported in
   the interrupted aggregate run; its current candidate gate is reproducibly
   green, with no tolerance change.
+- `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=163/294 Pkg.test()`: 12 passed,
+  0 failed, 0 errored (7.5 s), exercising the public canonical-dense bridge
+  plus its twice-ridged negative control. Fresh review found no P0/P1/P2
+  issue in the registered test.
 - Earlier integrated focused cohort: 292 passed assertions across grouped
   Gaussian/fitter/public/fixed-coordinate, four-level interval, and
   multivariate precision tests.
@@ -135,6 +144,10 @@ joint-identification expectations. The latter now have a passing 64/64
 focused receipt against the stable nonidentifiability invariant. The EM-Louis
 file also passes its exact package-test shard, 31/31; neither repair changed a
 tolerance. The aggregate rerun was stopped after its measured runtime overrun.
+The retained A4/S4 evaluator was deliberately not normal-suite-safe because it
+launches CLI subprocesses; its public dense bridge coverage now lives in a
+small separate registered test rather than making routine CI depend on those
+subprocesses.
 
 ## Remaining Risks and Next Command
 
