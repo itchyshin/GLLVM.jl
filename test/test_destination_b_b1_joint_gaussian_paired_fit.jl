@@ -11,6 +11,7 @@ using JSON3
     r_gradient_max_abs = Float64(receipt.fit.gradient_max_abs)
     r_tight = receipt.fit.nlminb_tight_same_start
     r_bfgs = receipt.fit.optim_bfgs_same_start
+    r_multistart = receipt.fit.nlminb_multistart_5
     raw_names = String.(receipt.fit.raw_opt_par.names)
     raw_values = Float64.(receipt.fit.raw_opt_par.values)
     r_theta_in_julia_order = [r_beta; Float64.(receipt.fit.theta_rr_B);
@@ -41,7 +42,7 @@ using JSON3
     @test String(receipt.source.archive_sha256) == "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
     @test String(receipt.installed.shared_library_sha256) == "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
     @test String(receipt.specification.data_md5) == "cb7cb72ff26acbe6782f8731b40ce680"
-    @test String(receipt.r_runner.sha256) == "018e5976729278e6a72d2e2e76a51a146e9b57cd5e13b1e3745ca612aec3ef90"
+    @test String(receipt.r_runner.sha256) == "84046a365c31898defaa59e55346b21d6a3843be0dc97029775685fbc112a0e8"
     @test receipt.specification.REML === false
     @test receipt.acceptance.matched_parameter === false
     @test Float64(receipt.acceptance.source_gradient_threshold) == 1e-6
@@ -53,6 +54,12 @@ using JSON3
     @test Float64.(r_tight.raw_opt_par.values) ≈ raw_values atol = 1e-12 rtol = 0
     @test Float64(r_bfgs.logLik) < r_loglik - 1e-9
     @test Float64(r_bfgs.gradient_max_abs) > r_gradient_max_abs
+    @test r_multistart.convergence == 0
+    @test Float64(r_multistart.logLik) ≈ -32.847374868303177 atol = 1e-12 rtol = 0
+    @test Float64(r_multistart.gradient_max_abs) ≈ 1.8152100309904722e-5 atol = 1e-14 rtol = 0
+    @test Float64(r_multistart.logLik) > r_loglik + 1e-10
+    @test Float64(r_multistart.gradient_max_abs) < r_gradient_max_abs
+    @test Float64(r_multistart.gradient_max_abs) > Float64(receipt.acceptance.source_gradient_threshold)
     @test size(Y) == (2, 36)
     @test String.(receipt.mapping.trait_levels) == ["trait_1", "trait_2"]
     @test String.(receipt.mapping.x_fix_names) == ["traittrait_1", "traittrait_2"]

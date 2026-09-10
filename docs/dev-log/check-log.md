@@ -18863,8 +18863,10 @@ acceptance: R's nominally converged default point has maximum outer gradient
 `2.1410189650930688e-5`; tighter same-start `nlminb` returns the same point
 with singular convergence, and same-start BFGS is less stationary. The Julia
 independent fit is logged only as a separate convergence diagnostic.
+The frozen-R-recommended same-data `n_init = 5` attempt improves the score only
+to `1.8152100309904722e-5`, still above the retained `1e-6` threshold.
 
-`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 Pkg.test()` passes `39/39`
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 Pkg.test()` passes `47/47`
 in 6.8 s. This is a retained optimizer barrier for the joint model, not
 matched-parameter R-to-Julia parity, B1 qualification, interval/recovery/
 coverage evidence, S3b/S4, dense `vcv`, FRK, `engine = "julia"` admission,

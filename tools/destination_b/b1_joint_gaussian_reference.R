@@ -111,8 +111,8 @@ receipt <- list(receipt_kind = "frozen_R_to_Julia_joint_gaussian_optimizer_diagn
   source = list(path = source_dir, git_sha = expected_sha, description_version = expected_version, archive_sha256 = archive_sha256),
   installed = list(library = library_dir, loaded_path = loaded_path, loaded_version = expected_version, marker_path = marker_path, shared_library = shared, shared_library_sha256 = shared_sha256),
   r_runner = list(path = "tools/destination_b/b1_joint_gaussian_reference.R", sha256 = sha256_file(runner_path), R_version = as.character(getRversion())),
-  specification = list(formula = formula_text, family = "gaussian()", trait = "trait", unit = "unit", unit_obs = "obs", cluster = "cluster_id", cluster2 = "cluster2_id", REML = FALSE, control = list(n_init = 1L, se = FALSE), optimizer_attempts = list(default = "nlminb", nlminb_tight_same_start = list(eval_max = 10000L, iter_max = 10000L, rel_tol = 1e-12, x_tol = 1e-12, xf_tol = 1e-12), optim_bfgs_same_start = "BFGS"), n_trait = n_trait, n_unit = n_unit, n_unit_obs_per_unit = n_obs_per_unit, n_replicate = n_rep, n_cluster = n_cluster, n_cluster2 = n_cluster2, n_observation = nrow(design), row_order = "unit, unit_obs, replicate, trait", seed = 20260913L, data_md5 = data_md5),
-  response_long = list(value = as_value(data$value), trait = as.character(data$trait), unit = as.character(data$unit), obs = as.character(data$obs), cluster_id = as.character(data$cluster_id), cluster2_id = as.character(data$cluster2_id), replicate = data$replicate), mapping = NULL, fit = NULL, acceptance = list(matched_parameter = FALSE, source_gradient_threshold = 1e-6, reason = "Frozen R outer gradient exceeds the stationary-reference threshold."), failure = list(present = FALSE))
+  specification = list(formula = formula_text, family = "gaussian()", trait = "trait", unit = "unit", unit_obs = "obs", cluster = "cluster_id", cluster2 = "cluster2_id", REML = FALSE, control = list(n_init = 1L, se = FALSE), optimizer_attempts = list(default = "nlminb", nlminb_tight_same_start = list(eval_max = 10000L, iter_max = 10000L, rel_tol = 1e-12, x_tol = 1e-12, xf_tol = 1e-12), optim_bfgs_same_start = "BFGS", nlminb_multistart_5 = list(n_init = 5L, init_jitter = 0.3)), n_trait = n_trait, n_unit = n_unit, n_unit_obs_per_unit = n_obs_per_unit, n_replicate = n_rep, n_cluster = n_cluster, n_cluster2 = n_cluster2, n_observation = nrow(design), row_order = "unit, unit_obs, replicate, trait", seed = 20260913L, data_md5 = data_md5),
+  response_long = list(value = as_value(data$value), trait = as.character(data$trait), unit = as.character(data$unit), obs = as.character(data$obs), cluster_id = as.character(data$cluster_id), cluster2_id = as.character(data$cluster2_id), replicate = data$replicate), mapping = NULL, fit = NULL, acceptance = list(matched_parameter = FALSE, source_gradient_threshold = 1e-6, reason = "Default, tight-control, BFGS, and documented five-start frozen-R attempts do not establish a stationary reference."), failure = list(present = FALSE))
 
 fit_formula <- value ~ 0 + trait + latent(0 + trait | unit, d = 1, unique = FALSE) + indep(0 + trait | obs) + indep(0 + trait | cluster_id) + indep(0 + trait | cluster2_id)
 fit_seed <- .Random.seed
@@ -147,6 +147,8 @@ if (inherits(fit, "error")) {
   bfgs_control <- gllvmTMB::gllvmTMBcontrol(n_init = 1L, se = FALSE,
     optimizer = "optim", optArgs = list(method = "BFGS"))
   bfgs_attempt <- run_fit(bfgs_control, fit_seed)
+  multistart_control <- gllvmTMB::gllvmTMBcontrol(n_init = 5L, se = FALSE)
+  multistart_attempt <- run_fit(multistart_control, fit_seed)
   tight_record <- if (inherits(tight_attempt$fit, "error")) {
     list(failure = TRUE, class = class(tight_attempt$fit), message = conditionMessage(tight_attempt$fit), fit_seconds = tight_attempt$fit_seconds)
   } else {
@@ -158,6 +160,13 @@ if (inherits(fit, "error")) {
     bfgs_record <- fit_record(bfgs_attempt$fit, bfgs_attempt$fit_seconds)
     bfgs_record$mapping <- NULL
     receipt$fit <- c(default_record, list(nlminb_tight_same_start = tight_record, optim_bfgs_same_start = bfgs_record))
+  }
+  if (inherits(multistart_attempt$fit, "error")) {
+    receipt$fit$nlminb_multistart_5 <- list(failure = TRUE, class = class(multistart_attempt$fit), message = conditionMessage(multistart_attempt$fit), fit_seconds = multistart_attempt$fit_seconds)
+  } else {
+    multistart_record <- fit_record(multistart_attempt$fit, multistart_attempt$fit_seconds)
+    multistart_record$mapping <- NULL
+    receipt$fit$nlminb_multistart_5 <- multistart_record
   }
 }
 writeLines(jsonlite::toJSON(receipt, auto_unbox = TRUE, pretty = TRUE, digits = 16, na = "null"), output_path)

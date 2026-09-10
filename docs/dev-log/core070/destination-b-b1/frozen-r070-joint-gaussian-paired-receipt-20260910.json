@@ -17,7 +17,7 @@
   },
   "r_runner": {
     "path": "tools/destination_b/b1_joint_gaussian_reference.R",
-    "sha256": "018e5976729278e6a72d2e2e76a51a146e9b57cd5e13b1e3745ca612aec3ef90",
+    "sha256": "84046a365c31898defaa59e55346b21d6a3843be0dc97029775685fbc112a0e8",
     "R_version": "4.6.0"
   },
   "specification": {
@@ -42,7 +42,11 @@
         "x_tol": 9.9999999999999998e-13,
         "xf_tol": 9.9999999999999998e-13
       },
-      "optim_bfgs_same_start": "BFGS"
+      "optim_bfgs_same_start": "BFGS",
+      "nlminb_multistart_5": {
+        "n_init": 5,
+        "init_jitter": 0.29999999999999999
+      }
     },
     "n_trait": 2,
     "n_unit": 6,
@@ -74,7 +78,7 @@
     "cluster2_id": [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2]
   },
   "fit": {
-    "fit_seconds": 0.50517988204956055,
+    "fit_seconds": 0.46334695816040039,
     "logLik": -32.847374868499401,
     "convergence": 0,
     "optimizer_message": "relative convergence (4)",
@@ -109,7 +113,7 @@
     ],
     "sigma_eps": 0.23610402689105778,
     "nlminb_tight_same_start": {
-      "fit_seconds": 0.029242992401123047,
+      "fit_seconds": 0.026983022689819336,
       "logLik": -32.847374868499401,
       "convergence": 1,
       "optimizer_message": "singular convergence (7)",
@@ -145,7 +149,7 @@
       "sigma_eps": 0.23610402689105778
     },
     "optim_bfgs_same_start": {
-      "fit_seconds": 0.041820049285888672,
+      "fit_seconds": 0.038676977157592773,
       "logLik": -32.847374877478018,
       "convergence": 0,
       "optimizer_message": "",
@@ -179,12 +183,48 @@
         [0, 0.023698652047186936]
       ],
       "sigma_eps": 0.2361038931901206
+    },
+    "nlminb_multistart_5": {
+      "fit_seconds": 0.082230091094970703,
+      "logLik": -32.847374868303177,
+      "convergence": 0,
+      "optimizer_message": "relative convergence (4)",
+      "gradient": [2.8379426402252083e-06, 8.6079071443007586e-07, -8.7670246289574641e-06, 1.7127268829357342e-05, 1.8152100309904722e-05, 4.7054368085777929e-06, -1.5596722174268798e-06, 4.4652493611328061e-06, -1.6802582794733817e-06, 1.2045925626463607e-06, -7.2638542210936326e-06],
+      "gradient_max_abs": 1.8152100309904722e-05,
+      "raw_opt_par": {
+        "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+        "values": [-0.80138266483668774, 0.34897575318444729, -1.4434828887481126, 0.85776696997934621, -0.61810521058006462, -1.6733978370247642, -1.3927380218573462, -1.8370365055707183, -1.8045979826940897, -1.098443433907027, -1.8711424114171351]
+      },
+      "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "sd_W", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "sd_q", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+      "b_fix": [-0.80138266483668774, 0.34897575318444729],
+      "log_sigma_eps": -1.4434828887481126,
+      "theta_rr_B": [0.85776696997934621, -0.61810521058006462],
+      "theta_diag_W": [-1.6733978370247642, -1.3927380218573462],
+      "theta_diag_species": [-1.8370365055707183, -1.8045979826940897],
+      "theta_diag_cluster2": [-1.098443433907027, -1.8711424114171351],
+      "Sigma_unit": [
+        [0.73576417478754863, -0.53019023360770778],
+        [-0.53019023360770778, 0.38205405134622605]
+      ],
+      "Sigma_unit_obs": [
+        [0.035196956117581044, 0],
+        [0, 0.061699710279451744]
+      ],
+      "Sigma_cluster": [
+        [0.025372915034059761, 0],
+        [0, 0.027073606234014762]
+      ],
+      "Sigma_cluster2": [
+        [0.11114864072804953, 0],
+        [0, 0.02369989117001059]
+      ],
+      "sigma_eps": 0.23610400101815857
     }
   },
   "acceptance": {
     "matched_parameter": false,
     "source_gradient_threshold": 9.9999999999999995e-07,
-    "reason": "Frozen R outer gradient exceeds the stationary-reference threshold."
+    "reason": "Default, tight-control, BFGS, and documented five-start frozen-R attempts do not establish a stationary reference."
   },
   "failure": {
     "present": false

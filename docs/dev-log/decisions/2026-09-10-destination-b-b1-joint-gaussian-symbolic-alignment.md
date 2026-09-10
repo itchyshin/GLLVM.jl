@@ -95,6 +95,14 @@ slightly higher likelihood, while its first fixed effect differs by more than
 these facts as an optimizer diagnostic; they must not be rewritten as a paired
 parameter-match result.
 
+The frozen R manual recommends 5--10 starts for this reduced-rank shape, so a
+same-data `n_init = 5` attempt was also retained. It improves the log
+likelihood slightly and reduces the maximum gradient to
+\(1.8152100309904722\times10^{-5}\), but remains above the predeclared
+stationary-reference threshold. Thus neither a one-start failure nor the
+documented multi-start protocol is silently selected as matched-parameter
+evidence.
+
 This receipt establishes one mixed-covariance Gaussian joint four-source
 optimizer diagnostic at this p=2, n=36 design. It does not establish all B1
 covariance forms, non-Gaussian joint fits, interval feasibility, recovery,

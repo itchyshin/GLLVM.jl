@@ -44,9 +44,12 @@ symbolic alignment record, `test/test_destination_b_b1_joint_gaussian_paired_fit
 Frozen R 4.6.0 on gllvmTMB 0.7.0 recorded default maximum outer gradient
 `2.1410189650930688e-5` at log likelihood `-32.847374868499401`. Tight
 same-start `nlminb` returned the same point with convergence code 1; same-start
-BFGS gave a lower log likelihood and larger gradient.
+BFGS gave a lower log likelihood and larger gradient. The frozen-R-documented
+same-data `n_init = 5` attempt improved the score to
+`1.8152100309904722e-5`, but did not reach the `1e-6` stationary-reference
+threshold.
 
-`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 Pkg.test()` passed 39/39 in
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 Pkg.test()` passed 47/47 in
 6.8 s. Full `Pkg.test()`, JET, Aqua, benchmarks, recovery, coverage, and
 deployment were not run; they are neither necessary nor authorised for this
 focused diagnostic.
@@ -79,7 +82,8 @@ The initial independent Julia refit differed from frozen R by more than the
 one-micro-unit parameter tolerance despite objective agreement. Direct score
 inspection showed that R's nominal convergence flag masked a non-negligible
 outer gradient. Tighter same-start `nlminb` and BFGS did not repair this; the
-test was rewritten to retain the barrier instead of hiding it.
+documented five-start attempt reduced but did not repair it. The test was
+rewritten to retain the barrier instead of hiding it.
 
 ## 10. Known Residuals
 
