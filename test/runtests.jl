@@ -253,6 +253,7 @@ println(_SHARD === nothing ?
     _shard_include("test_destination_b_tree_precision.jl")
     _shard_include("test_destination_b_tree_reference_checker.jl")
     _shard_include("test_destination_b_a4_s4_tree_julia_own_optimum.jl")
+    _shard_include("test_destination_b_a4_s4_public_r_formula_receipt.jl")
     _shard_include("test_destination_b_phylo_uncertainty.jl")
     _shard_include("test_destination_b_phylo_uncertainty_cli.jl")
     _shard_include("test_destination_b_dense_uncertainty.jl")
