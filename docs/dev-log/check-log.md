@@ -18980,3 +18980,9 @@ push, merge, or qualification claim was made.
   archive/DLL/stationary-runner values plus a no-fit preflight helper.
 - The helper was not run against frozen inputs. No R/Julia optimizer or fit,
   pre-run, receipt, or B1 result was executed or claimed.
+
+## 2026-09-10 — B1 mixed public formula/extractor route
+
+- **Focused public test:** `/Users/z3437171/.juliaup/bin/julia --startup-file=no --history-file=no --project=. test/test_destination_b_public.jl` passed **39/39** in **10.0 s**: 9 existing public grouping checks, 22 mixed-B1 formula/extraction/interval-status checks, and 8 fixed-coordinate unit-oracle checks.
+- The new B1 check uses `iterations=0`; it proves formula-to-direct incidence/packing equality and named covariance extraction, while explicitly requiring intervals to be unavailable rather than making an inference claim.
+- No likelihood, optimizer, interval implementation, R bridge, frozen-R run, parity receipt, recovery, coverage, push, merge, or qualification changed.

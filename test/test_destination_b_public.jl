@@ -20,6 +20,55 @@ using Test, GLLVM, StatsModels, LinearAlgebra
         grouping=terms, unit=:unit, X=zeros(12,2))
 end
 
+@testset "Destination B public mixed B1 grouping route" begin
+    # This is deliberately a construction/API check, not B1 source-alignment
+    # evidence: the frozen-R paired control has its own pre-registered gate.
+    Y = [0.20 -0.10 0.35 0.40 -0.25 0.15 0.05 -0.30;
+         0.55  0.10 0.25 0.70 -0.15 0.05 0.45 -0.20]
+    data = (
+        unit = repeat([:u1, :u2], inner = 4),
+        obs = repeat(Symbol.("o" .* string.(1:4)), inner = 2),
+        cluster_id = repeat([:c1, :c2], 4),
+        cluster2_id = [:d1, :d2, :d1, :d2, :d2, :d1, :d2, :d1],
+    )
+    terms = [
+        GroupingTerm(:unit; mode = :latent, rank = 1, unique = false),
+        GroupingTerm(:unit_obs; mode = :indep),
+        GroupingTerm(:cluster; mode = :indep),
+        GroupingTerm(:cluster2; mode = :indep),
+    ]
+    direct = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+        unit = data.unit, unit_obs = data.obs, cluster = data.cluster_id,
+        cluster2 = data.cluster2_id, iterations = 0)
+    routed = gllvm(@formula(y ~ 1), Y, data;
+        grouping = terms, unit = :unit, unit_obs = :obs,
+        cluster = :cluster_id, cluster2 = :cluster2_id, iterations = 0)
+
+    @test routed isa GroupedGaussianFit
+    @test getfield.(routed.terms, :name) == [:unit, :unit_obs, :cluster, :cluster2]
+    @test routed.terms == direct.terms
+    @test routed.incidences == direct.incidences
+    @test routed.mean_design == direct.mean_design
+    @test routed.parameters == direct.parameters
+    @test routed.loglik == direct.loglik
+
+    for source in (:unit, :unit_obs, :cluster, :cluster2)
+        extracted = extract_Sigma(routed; level = source)
+        @test extracted.level === source
+        @test extracted.part === :total
+        @test extracted.Sigma == routed.term_covariances[findfirst(==(source),
+            getfield.(routed.terms, :name))]
+    end
+
+    # At iterations=0 the fit is not converged, so interval availability is
+    # correctly withheld rather than silently supplying stale curvature output.
+    intervals = grouped_gaussian_intervals(Y, routed; unit = data.unit,
+        unit_obs = data.obs, cluster = data.cluster_id, cluster2 = data.cluster2_id)
+    @test !routed.converged
+    @test intervals.status === :not_converged
+    @test all(row -> row.status === intervals.status, intervals.intervals)
+end
+
 @testset "Destination B public latent unit fixed-coordinate oracle" begin
     p, n = 2, 8
     Y = [1.30 1.72 0.48 0.83 1.91 1.19 0.72 1.54;
