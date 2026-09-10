@@ -18788,3 +18788,29 @@ nested diagonal Gaussian `unit_obs` pair—not crossed or
 latent W support, interval/recovery/coverage evidence, full B1, S3b/S4, dense
 `vcv`, FRK, generic Julia-engine admission, 0.7 parity, or Destination B
 completion.
+
+# 2026-09-10 — B1 paired Gaussian crossed `cluster` fit
+
+The retained third B1 pair uses frozen `gllvmTMB` 0.7.0 at
+`b4d5fee64def88bc768dda1f1f77c29b295edd86`, archive SHA-256
+`0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc`, and the
+isolated shared-library SHA-256
+`3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30`.
+The runner deterministically constructs a 2-trait × 48-observation crossed
+design: the same four unit labels recur in every one of six cluster labels,
+with two repeats per unit--cluster cell. No unit term is selected; the pair is
+the diagonal `indep(0 + trait | cluster_id)` / `GroupingTerm(:cluster;
+mode=:indep)` route only.
+
+Frozen R converged at marginal log likelihood `-9.3696900475934175`. The
+registered Julia regression locks the source/build/input/runner identities,
+matches the R likelihood at retained coordinates and after a public refit,
+matches beta, diagonal cluster Sigma, and residual SD, and changes a cluster
+membership as a negative control. `OPENBLAS_NUM_THREADS=1
+GLLVM_TEST_SHARD=156/297 Pkg.test()` passes `20/20` in 5.8 s.
+
+This is one crossed, diagonal Gaussian `cluster` pair. It is not B1
+qualification, a joint grouping result, latent/full cluster covariance,
+interval/recovery/coverage evidence, `cluster2`, S3b/S4, dense `vcv`, FRK,
+`engine = "julia"` admission, 0.7.1 or broad 0.7 parity, or Destination B
+completion.

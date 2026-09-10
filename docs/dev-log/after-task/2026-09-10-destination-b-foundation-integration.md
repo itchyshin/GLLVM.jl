@@ -176,7 +176,7 @@ new isolated temporary library, never from the dirty 0.7.1 working checkout.
 ## Remaining Risks and Next Command
 
 This candidate is not a Destination B qualification. Required next work is a
-paired Gaussian `unit_obs` B1 fit, then `cluster` and `cluster2`; a reviewed
+paired Gaussian `cluster2` B1 fit and joint-grouping evidence; a reviewed
 structured `phylo_dep()` Julia transport/interval route; independent recovery;
 and a retained full-suite quality receipt. If a fresh controlled full run
 reproduces its earlier EM message, it must be investigated as a
@@ -206,7 +206,28 @@ Pkg.test()` passes 23/23 in 6.1 s.
 
 Independent numerical review found no P0/P2 issue. Its two P1 evidence
 findings (missing provenance locks and stale future-tense alignment wording)
-were repaired and rerun. Rose's programme verdict remains **FAIL**: this is
-only one nested diagonal Gaussian `unit_obs` fit, with no crossed/latent W,
-interval, recovery, coverage, cluster, cluster2, S3b/S4, dense-`vcv`, generic
-Julia-engine, broad 0.7 parity, or Destination B completion claim.
+were repaired and rerun. Rose's programme verdict remains **FAIL**: this
+addendum records the nested diagonal Gaussian `unit_obs` fit. The subsequent
+crossed diagonal `cluster` pair is recorded below; latent W, intervals,
+recovery, coverage, `cluster2`, S3b/S4, dense-`vcv`, generic Julia-engine,
+broad 0.7 parity, and Destination B completion remain absent.
+
+## Addendum — B1 crossed `cluster` paired receipt
+
+The candidate now retains a third distinct B1 Gaussian pair at
+`docs/dev-log/core070/destination-b-b1/frozen-r070-cluster-gaussian-paired-receipt-20260910.json`.
+It is frozen-R 0.7.0 source/build attested and uses a deterministic crossed,
+replicated diagonal cluster-tier design: two traits, six clusters, the same
+four unit labels recurring in every cluster, and two measurements per
+unit--cluster cell. No unit covariance is selected. The R fit converged at
+`-9.3696900475934175`; the normal Julia package test locks source, archive,
+shared-library, data, runner, formula and convergence provenance, matches its
+fixed coordinates and independent Julia refit, and detects a changed cluster
+incidence. `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=156/297 Pkg.test()` passes
+20/20 in 5.8 s.
+
+Independent re-review found no P0/P1/P2 issue after the fixture was corrected
+from an accidentally nested first draft. Rose's programme verdict remains
+**FAIL**: these are three individual B1 Gaussian source-alignment pairs, not
+joint grouping, `cluster2`, interval/recovery/coverage, S3b/S4, dense-`vcv`,
+generic Julia-engine, broad 0.7 parity, or Destination B completion evidence.
