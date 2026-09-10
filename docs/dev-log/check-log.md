@@ -18701,3 +18701,17 @@ sources and records the interval stencil's finite near-null eigenvalue
 the merge-barrier assertion defect. It is not interval feasibility, live R
 pairing, recovery, B1--B5 qualification, S3b/S4 admission, 0.7 parity, or
 Destination B completion.
+
+# 2026-09-10 — EM-Louis focused package-test clarification
+
+The interrupted full-suite output had reported a small EM-Louis relative-error
+comparison above `0.001`. A read-only source audit found no candidate-specific
+tolerance change: both the candidate and `origin/main` carry the current
+`p = 10` gate of `1e-2`. The existing deterministic package shard was then run
+directly, rather than inferring its result from the interrupted aggregate run.
+
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=48/293 Pkg.test()` passes `31/31` in
+4.1 s. Thus there is no individually reproducible EM-Louis failure in this
+candidate, and no source or tolerance change was made. The prior aggregate
+observation remains an unreproduced possible load-order/environment effect;
+it does not make the interrupted full `Pkg.test()` run a passing receipt.

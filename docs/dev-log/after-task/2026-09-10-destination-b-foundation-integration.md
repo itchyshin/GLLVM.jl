@@ -90,6 +90,10 @@ its interval mapping are not admitted.
 - `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=89/293 Pkg.test()`: 64 passed,
   0 failed, 0 errored (14.1 s); expected warnings identify the redundant
   `unit` and `unit_obs` sources.
+- `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=48/293 Pkg.test()`: 31 passed,
+  0 failed, 0 errored (4.1 s). This isolates the EM-Louis file reported in
+  the interrupted aggregate run; its current candidate gate is reproducibly
+  green, with no tolerance change.
 - Earlier integrated focused cohort: 292 passed assertions across grouped
   Gaussian/fitter/public/fixed-coordinate, four-level interval, and
   multivariate precision tests.
@@ -100,10 +104,11 @@ its interval mapping are not admitted.
   `test_grouped_profile_dense_oracle.jl`. The missing test dependency was
   added, then the CI-style `GLLVM_TEST_SHARD=23/294 Pkg.test()` passed
   15/15 in 8.3 s. The repaired unsharded run passed that point but showed an
-  EM-Louis tolerance miss and a sign-sensitive joint-identification assertion
-  defect; the exact joint shard now passes after the test-only invariant
-  repair. It was stopped after 18 minutes of CPU activity, beyond the measured
-  estimate. A repaired full-suite receipt remains pending.
+  an apparent EM-Louis tolerance miss and a sign-sensitive
+  joint-identification assertion defect. The exact EM-Louis (31/31) and joint
+  (64/64) shards now pass; the latter has the test-only invariant repair. The
+  aggregate run was stopped after 18 minutes of CPU activity, beyond the
+  measured estimate. A fresh full-suite receipt remains pending.
 
 ## Consistency Audit
 
@@ -127,15 +132,18 @@ promotion. The retained full `Pkg.test()` receipt then exposed a missing
 shard passes after the minimal dependency repair. The full rerun also revealed
 an EM-Louis tolerance miss and sign-sensitive Destination-B
 joint-identification expectations. The latter now have a passing 64/64
-focused receipt against the stable nonidentifiability invariant; the rerun was
-stopped after its measured runtime overrun, without changing tolerances.
+focused receipt against the stable nonidentifiability invariant. The EM-Louis
+file also passes its exact package-test shard, 31/31; neither repair changed a
+tolerance. The aggregate rerun was stopped after its measured runtime overrun.
 
 ## Remaining Risks and Next Command
 
 This candidate is not a Destination B qualification. Required next work is a
 reviewed structured `phylo_dep()` Julia transport/interval route, live paired
 R--Julia receipts, independent recovery, and a retained full-suite quality
-receipt. Resume with:
+receipt. If a fresh controlled full run reproduces its earlier EM message, it
+must be investigated as a load-order/environment effect rather than repaired
+by a tolerance change. Resume with:
 
 ```sh
 julia --project=. -e 'using Pkg; Pkg.test()'
