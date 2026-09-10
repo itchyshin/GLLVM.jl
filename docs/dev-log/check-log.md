@@ -19030,6 +19030,12 @@ push, merge, or qualification claim was made.
   `/Users/z3437171/.juliaup/bin/julia --startup-file=no --history-file=no
   --project=. test/test_destination_b_b1_balanced_complete_crossed_design.jl`
   (43/43). `git diff --check` passed.
+- **Auditability repair (no execution):** the original receipt remains
+  byte-identical. Its new immutable audit sidecar fixes receipt/marker/raw-log
+  SHA-256 values, archive/DLL/stationary-runner/preflight-helper/control-runner
+  identities, and the observed same-device/same-inode hardlink relationship
+  (link count 2). The expanded no-fit receipt-I/O verifier passed, as did the
+  no-clobber I/O test and `git diff --check`; no preflight or model ran.
 
 ## 2026-09-10 — B1 mixed public formula/extractor route
 

@@ -96,3 +96,18 @@ The fit returned `status = "success"` but is **not qualified**:
 receipt records neither a paired result nor B1 qualification. It ends this
 protocol: no retry, reseed, restart, start/mapping/optimizer/data/tolerance
 change, or Julia paired fit is authorized.
+
+## Negative-receipt audit sidecar
+
+The original negative receipt remains byte-for-byte unchanged. Its immutable
+audit sidecar, `frozen-r070-b1-balanced-complete-crossed-single-control-20260910-02.audit.json`,
+binds the receipt and hard-linked no-clobber marker to their fixed SHA-256,
+both raw-log SHA-256 values, and the frozen source commit/archive, installed
+DLL, stationary-reference runner, preflight-helper, and control-runner
+identities. At audit, receipt and marker were the same device/inode and each
+had link count 2. The sidecar itself has SHA-256
+`9cd5fb359a6d1cfb9c3d6c8a625191fe05b0f4eb9a54de76c9330b4e5faa6a60`.
+
+This is an auditability repair only: it runs no preflight or model, changes no
+receipt bytes or scientific claim, and preserves the negative/no-paired/no-B1
+qualification boundary.

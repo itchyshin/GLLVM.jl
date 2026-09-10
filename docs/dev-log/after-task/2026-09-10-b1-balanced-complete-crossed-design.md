@@ -88,3 +88,17 @@ paired result or B1 qualification.
 
 Rose verdict: FAIL for B1 qualification; PASS for the one-control execution
 protocol and fail-closed stop boundary.
+
+## Negative-receipt Auditability Repair
+
+The original JSON receipt was not overwritten. A separate immutable audit
+sidecar records all previously omitted frozen provenance: archive SHA, shared
+library/DLL SHA, stationary-reference runner SHA, preflight-helper SHA, and
+control-runner SHA. It also fixes the receipt/marker/raw-log SHA-256 values and
+records the observed same-device/same-inode hardlink relation with link count
+2. The expanded no-fit verifier checks every identity and fixed artifact hash,
+then checks the live receipt/marker inode equality and link counts. It passed,
+as did the existing no-clobber I/O test and `git diff --check`.
+
+No preflight or model was run for this repair. The B1 negative receipt remains
+nonqualifying; no paired result or B1 qualification is claimed.
