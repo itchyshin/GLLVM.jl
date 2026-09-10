@@ -1,3 +1,175 @@
+## 2026-09-07 — A4/S4 source-attested raw frozen-R receipt (unqualified)
+
+- Fresh R-only runner `run_a4_s4_frozen_r_raw.R` validates the exact frozen
+  source/archive/tree fields, externally supplied `build.json` SHA-256,
+  installed marker/tree, exact regular package DLL, runtime helper hashes, and
+  checks the marginal TMB object before two declared-coordinate evaluations.
+  It explicitly requests `se = FALSE` and rejects a retained `sd_report`, so
+  the raw evaluation cannot inherit construction-time standard-error output.
+  The legacy fixture DLL `91bfa6…` stays fixture lineage only; fresh build DLL
+  `5d8a9c…` is bound at receipt level through build receipt
+  `ecb2bf37e4bc5ec4cbe60be777f9e46c4b7812387ee381e71077609872254b8a`.
+- `Rscript --vanilla test/test_destination_b_a4_s4_frozen_r_raw.R`,
+  `test_destination_b_a4_s4_frozen_r_evaluator.R`, and
+  `test_destination_b_a4_s4_runner.R` all exit 0 with their respective
+  `A4_S4_*_OK` markers.  Regression controls cover symlink/exact DLL paths,
+  self-refreshed marker/tree tampering, post-validation DLL mutation, nested
+  pedigree scalar lists, and dense JSON list-matrix decoding.
+- Raw invocation with the point-only control exits 0 in 2.1 s and retains
+  `destination-b-a4-s4/raw-frozen-r-02.rds` (SHA-256
+  `63c087dad7c4d3cdcaffa349d732fbee721c25e69abd2ca2f1db5d0a349fe599`).
+  Independent RDS inspection confirms three finite repeated objectives,
+  `sdreport_requested = false`, `qualified = false`, closed public admission,
+  and no per-row legacy DLL field.  `raw-frozen-r-01.rds` is preserved as the
+  pre-correction receipt and is not the current raw-evidence artifact.
+  `core070_build_oracle.py verify` exits 0 after the run.
+- Two initial live attempts stopped before publication at pedigree/dense JSON
+  representation boundaries; both defects were fixed test-first and reviewed
+  independently.  This is raw R-only material: no Julia value/delta, own
+  optimum, interval, recovery, coverage, public formula admission, 0.7.1
+  parity, or Destination B completion is claimed.  FRK remains parked at
+  `gllvmTMB#1275`.
+
+## 2026-09-07 — Destination B internal fitter integration (ongoing)
+
+- G2 aggregate current-head receipt: isolated quality environment at
+  `cc8b95b0`, StableRNGs direct, exit0. Public four-source `fit_gllvm` checks:
+  Gaussian63/63 (12.3s), Poisson46/46 (4.8s), Binomial58/58 (2.3s),
+  Beta63/63 (3.7s), NB2 n=96 55/55 (2.4s) and replicated NB2 n=384 61/61
+  (2.0s), followed by `DESTINATION_B_G2_PASS`. The n=96 NB2
+  `:partial`/target-unavailable source intervals remain a deliberate boundary
+  receipt; they were not relabelled as a pass. Separate
+  four-family scalar quadrature is 36/36 (3.9s). Fresh Sol review finds the
+  current all-five-family, one-joint-design G2 scope clear. This does NOT
+  establish frozen-R parity, phylogenetic formula admission, recovery,
+  coverage, full/core regression, or programme completion.
+
+- Actual JuliaCall tree35981/pedigree42583 run in parallel, both exit0 with numerical/map/12CI checks and Rcandidate conversion passing. Receipts bind input/environment/converter hashes and preserve rawRDS before assertions. Fresh readback PASS; public gllvmTMB formula/fit/extractor route and independent S4 review remain open, admissionclosed. No dependencies or R engine changed.
+
+- Scoped R candidate normalizer: red11394 missing function, final79405 bounded Rtests pass and actual saved JuliaCall12row result normalizes successfully. Preserves partial/unavailable diagnostics, labels, matrix shapes, closedadmission; rejects invalid endpoints/lengths/names/shape/status and nonconverged available intervals. Existing opt-in subprocess test remains skipped, separately retained bridge evidence unchanged. New converter only; public fitting/extractor wiring and review still open.
+
+- JuliaCall environment repair: manifest evidence identifies global LogExpFunctions0.3.26 versus GLLVM0.3.29 switch. Isolated offline combined environment5383 resolves; startup21684 asserts0.3.29/loglogistic/loadedextension, exit0. Corrected dense actual transport45507 exits0 with closedadmission/maps/12CI rows verified. Global/package manifests unchanged; environment artifacts retained. Public setup/wrapper routing still pending.
+
+- Saved JuliaCall readback passes without refit: strips only JuliaNamedTuple class, preserves matrices/maps/twelve interval endpoint pairs and JSON roundtrip. Pure R checker passes12 successes; first synthetic JSON fixture failed on untyped emptylist, restored documented numeric empty slot. Pilot reuses validator and refuses existing raw RDS. Dependency extension error still unresolved; no public R wrapper/admission claim.
+
+- JuliaCall97894 installation-disabled startup/matrix roundtrip passes. Dense67782 overruns estimate during dependency extension load; ultimately returns raw fit but exits1 serializing JuliaNamedTuple. RDS preserved before assertions, readback convergedTRUE/admissionclosed/12targets; no JSON or transportPASS claim. Exact process inspection finds terminal before stop signal. Next reanalyse saved result rather than refit, fix serialization and isolate dependency environment. Parallel skill loaded; agent dispatch still awaits scoped transmission approval.
+
+- Actual adapter87205 exports tree/pedigree/dense payloads matching frozenQ/determinants/maps/scales. Bridge21001 runs allthree and preserves flat outputs;94pass/3test-mapfail (zero-based input versus one-based output). Corrected assertion, final28020 97/97PASS8.3s. Earlier22489 keyword-call error occurred before fit. All numerical/interval comparisons pass, admission_status remainsclosed; no JuliaCall/public R wrapper or overall S3b/S4 claim.
+
+- Dense refinement: nlminb60677/42384 remains failed at original gradient. BFGS same-data convergescode0/gradient2.9915e-7. Metadata assumptions corrected after inspecting normalized RDS optimizer; failed exports retained, exact replay checked. Final87577/45831 exit0; matched covariance relative4.445e-6, ownopt4.489e-6, maxendpoint1.075e-5 of Rhalfwidth. No Julia refit or threshold change; public derived intervals/review/admission still open.
+
+- Dense uncertainty replay88175 exit0 preserves original Y/Q/fitted coordinates, adds production sdreport/publicvcov sidecar. Comparator87652 exits1 at measured Rgradient1.177556e-4 > predeclared1e-4. Failed receipt retained, no dense uncertainty pass; shared comparator refactored without tolerance changes. Same-data optimizer investigation is next, not model/seed selection.
+
+- Frozen marginal uncertainty: tree75225/pedigree95000 production sdreport exports and public vcov block checks exit0. Independent checker uses full nuisance covariance, fixed R-to-Julia permutation and analytic LLprime/residual target gradients. Final tree78064/pedigree61975 matched covariance relative errors3.882e-6/2.113e-6, ownopt3.839e-6/2.157e-6, maximum link-endpoint errors7.848e-6/4.407e-6 of Rhalfwidth; signed tolerances unchanged. Checker95094 passes24/24 corruption/valid assertions. Hash-bound receipts retained; derived R intervals are diagnostics, not an admitted public extractor. Dense-vcv uncertainty, review, recovery and broad suites remain owed.
+
+- Tree fitted follow-on: R37237 exact canonical Q/maps/blocks but convergence1 retained; independent Julia65969 converges25iterations/gradient3.961e-6 with all12displayed Waldrows available, condition122.9505. Same-data predeclared R BFGS87715 code0/gradient6.585e-7; own-optimum NLLdifference about6.4e-14, same-point9517 difference1.066e-14. Checker2580 passes27/27 (15cross-evaluation/corruption plus12retained-policy/interval assertions). No R engine edit, Julia refit, coverage or S3b/S4 admission claim. Durable tree receipts retain both R outcomes and exact hashes.
+
+- Height4 tree precursor: frozen export67459 exits0 with14root-dropped nodes, six retained internal nodes, shuffled eight-tip mapping, exact correlation/native precision ratio4 and non-ultrametric rejection. Independent path-covariance/actual marginal consumer22144 exits0,19/19PASS3.3s; wrong physical scale, map and internal-node conditioning discriminate. Registered in fullrunner, but fullsuite not run. No fitting or tree admission claim.
+
+- Pedigree optimizer diagnosis: exact nlminb replay8233 retains status1 and positive marginal curvature. Predeclared public BFGS36491 on unchanged model/data/Q converges from R defaults, gradient1.857232e-7. Same-point comparator11112 differs1.244e-14; retained independent Julia optimum differs1.865e-13 with aligned loading relative difference1.632e-7. Checker95556 exits0 with23/23 assertions, including policy-corruption negatives. Baseline failure remains failed; no engine change, Julia refit, review bypass, interval certification or public admission.
+
+- Final local evidence cohort32549 exit0 PHYLO_EVIDENCE_COHORT_PASS: dense checker41, receipt18, pedigree precision22, pedigree fitted checker15 (96passing assertions); one opt-in integration skip remains explicitly excluded. Actual dense/pedigree fit receipts are separate runs, not inferred from this skip. No full/core-suite or independent-review claim.
+
+- Pedigree fitted pilot: direct Ainv route61755 fails before optimization; parser diagnostic1286 proves unexported helper lookup failure, frozen source unchanged. Same-data pedigree route75861 records exact fullQ/maps/3-1-3blocks but R convergence1(singular), gradient8.847e-5. Both attempts retained. Checker23779 passes15/15 and actual29128 marginal differences0/1.776e-15. Independent public Julia33236 converges21iterations, gradient4.426e-6, NLLdifference-4.806e-11, all12displayed intervalrows available (10distinct targets), condition161.94. R failure is not erased; no paired-fit/admission qualification. Durable receipts under core070/destination-b-pedigree-fit/; R optimizer investigation and external review remain open.
+
+- Pedigree precursor: frozen R export56292 exit0,12augmented nodes/8observed/four unobserved founders, exact canonical sparse entries retained. Fixed inbred pedigree independent structural-equation oracle5526 passes22/22 in3.6s: Q*A, determinant, inbreeding, shuffled/repeated maps and multivariate marginal NLL. Dropped-ancestor and wrong-map controls discriminate. Initial R whole-object identity failed only on Matrix factor cache; exact storage comparison fixes that without tolerance. Initial Julia test had an unqualified non-exported kernel and then wrong low-level matrix orientation; both failed visibly and were corrected using documented interface. No engine change or pedigree fitted/interval/admission claim.
+
+- Independent public Julia fit1226 exit0/recorded: default Julia start (not R-derived),25iterations, gradient1.6867523167504743e-6; own-optimum NLL difference-2.4076740601230995e-11, max beta difference2.392495413727769e-7, max covariance difference1.7018479564478994e-7. All12 displayed Wald rows available (10distinct targets), condition249.2738756; fit1.295s+interval1.639s excluding startup. Receipt71249873... retained with full hashes. First attempt89204 failed before optimization (missing Normal import), retained; explicit import and fresh standalone smoke5809 plus18/18pure receipt checks verified repair. No paired R-interval/recovery/overall qualification; independent external review still awaits permission.
+
+- Frozen-R/Julia cross-evaluation56010 exit0: fixed marginal NLL7.627081699167345 exactly equal; at R-fitted parameters R-1.4478358644291198 vs Julia-1.4478358644291305, difference1.0658141036401503e-14 (gate1e-6 unchanged). Independent checker83799 passes41/41 in6.1s, including malformed provenance, data, mappings, scale, ridge, covariance, determinant, objective and receipt-overwrite cases. Commands/hashes retained in .unlazy/destination-b-s3b-pilot/GATES.md. This is NOT an independent Julia fit or interval verdict. Sol source review was safety-rejected before launch, pending explicit scoped transmission approval; no workaround used.
+
+- R attempt02 (46661 exit0) fixes NULL/count metadata only. JSON SHA2565166bd887d8e85a962d551fd8670bc6f095d7b7cfff22d927b04cba34f3b981f; fresh comparison confirms identical response and matched/fitted values/NLLs against retained attempt01. Gradient null and actual optimizer counts46/35 now serialize correctly. Attempt01 remains retained and schema-invalid rather than silently replaced.
+
+- First frozen R-only pilot6929 exit0:3traits8tips2rep, seed20260803, exact3/1/3activeblocks, ML/TMB, long-row/design/canonical-Q/sign/JSON-bit checks pass. R convergence0, fit0.10271s, no fit warnings; JSON hash0c4a234b1b5722203f18b003dc60a8274d2ea5b09f0c776e9172f180ac08cef7. Stored under ignored s3b-pilot/r-attempt-01 with attemptRDS/log. Independent checker tests and Julia paired comparison pending; this is not likelihood-parity qualification.
+
+- Frozen exporter integrated and preflight58849 exits0 against exact private0.7.0 DLL; deliberate user-library0.7.1 preflight exits1 before any fit. Parent found jsonlite digits=NA is not bit-lossless (1/3,pi probe, SHA changed); digits17 passes probe and exporter now validates actual response/hash roundtrip before publishing. Source explicitly selects ML/TMB and checks engine trait-intercept design/long-row permutation. Checker draft required stronger schema/mapping/block checks; being repaired before any paired run.
+
+- Sol59607 terminal APPROVED bounded precision-repair source scope, no blocking findings; seven reviewed SHA256 hashes stable and rechecked by parent. Static independent review only; did not claim tests/full suites/paired recovery or R admission. Approval covers raw precision admission, actual covariance tangent aliases and public inference refusal, shared residual packing/full-nuisance forwarding, and retained signal/admission boundaries. Numerical receipts above/below remain separately scoped.
+
+- Frozen R source exported to private build, no R edits; session41530 R CMD INSTALL exit0, verified fresh loaded gllvmTMB0.7.0/private DLL hash in destination-b-frozen-r-build.md. User0.7.1 installation and frozen checkout untouched. Offline evidence env27424 completed with JSON3/GLLVM, runtime Project.toml unchanged. First paired marginal pilot ledger authored before fitting; R exporter and independent Julia checker under construction. No paired fit has run yet.
+
+- Parent24195 unchanged64tip18PASS10.7s preserves the original/refined interval outcomes after alias gating. Docs82698 terminal0 with Documenter checks and Vitepress7.49s, deployment disabled. Scope checker again preserves32 named rows and rejects invented-ten expansion. Sol59607 is the only live review; its verdict remains outstanding. No numerical sessions live, no full/core/frozen pairing/recovery claim.
+
+- Parent19967 integrated admission37/shared19/tangent18 PASS (2.0s/0.7s/0.3s), exit0 `PRECISION_REPAIR_INTEGRATION_PASS`. Parent45586 final public alias15/dense Gram10/bridge shared27 PASS (6.8s/0.7s/2.2s), exit0 `REPAIR_PUBLIC_INTEGRATION_PASS`; exact aliases override even non-convergence and preserve finite kernel values. Parent81999 quality12/12 PASS9.6s (existing JET targets, not new hot-path qualification). Docs82698 and Sol read-only repair review59607 remain live. Builder was interrupted by model capacity before final64tip receipt; parent runs unchanged fixture directly, no missing receipt counted as pass.
+
+- Local WIP checkpoint `89eac4c1` retained implementation without push/merge. Sol22599 did not approve joint public routes: malformed precision admission and covariance aliases required repair. Added once-per-fit owned precision validation; independent actual-MAIN test37/37 passes, including both public routes. Joint tangent diagnostic18/18 passes in worker checks; fit/inference integration still pending.
+- Shared residual mode is a distinct precision-only parameter layout, preserving trait default. Worker fresh-MAIN tests19/19 plus existing precision44/44 and failure5/5 pass. Shared fixed-effect uncertainty objective now forwards the mode. Bridge option/metadata and integrated final recheck remain pending. Historical Stan artifacts identify themselves as gllvmTMB0.6.0, not frozen0.7.0 receipts; current frozen source independently grounds the shared residual layout. No paired qualification follows from these tests.
+
+- Docs57288 terminalPASS after missing-summary entry repair: Documenter checks plus Vitepress7.52s, deployment disabled. Bounded profile slice ledger now records G1–G6 checks met; this does not close full/core regression, recovery, frozen-R pairing or programme requirements. Jointnumericalreview22599 and read-only S3breferenceinventory93189 remain live.
+
+- Parent72312 Julia bridge regressions39+5+80PASS (6.1s/10.3s/1.6s) after shared precision guard/public dispatch changes. Frozen R checkout reverified clean at b4d5fee64def88bc768dda1f1f77c29b295edd86; not built or fitted. Docs missing-summary repair rebuild57288 pending, numerical jointreview22599 live.
+
+- Parent73686 precision/public grouping cohort29+9+20PASS; public jointinterior78011 18PASS9.5s with same original/refined gradient receipts. Quality81903 12PASS9.8s. Docs63227 failed exactly one missing manual entry for Base.summary(JointPhyloGroupedGaussianFit,AbstractMatrix); added canonical low-level entry, rebuild underway. Numerical jointreview22599 still pending.
+
+- Public profile30608 8PASS6.7s and docs3311 PASS7.30s. Luna14483 approved scope with two cleanup requests: removed the TDD conditional guard and stale private-only file comment (the export assertion already made missing export fail). Parent61150 actual precision failure repair44+5PASS plus publicprofile8PASS, preserving signal-not-admitted semantics; parent28601 jointpostfit29PASS6.7s. Subsequent public precision dispatch and docs changes still require candidate recheck.
+- Native precision-only and joint Gaussian grouping routing added to fit_gllvm/formula, with explicit precision/rank/mode/map and conflict guards. Independent public test first RED missingK oldfallthrough, worker29PASS after route. Exports/types/interval docstrings/API/README/bridgeguide updated; parent73686 dispatch+neighbour regressions running. Same64tip interval refinement now exercises public fit_gllvm instead of private fitter; fixture/start/tolerances unchanged.
+
+- Sol4622 independently APPROVED callback layer after79/79 verification. Parent51026 focused profile foundation/refit/callback/wrapper/oracle cohort208PASS with PROFILE_FOCUSED_PASS, exit0. Added exported grouped_gaussian_variance_profile after public red64111, explicit natural-variance target metadata, docstring/tutorial/API/README; public test30608 and final docs pending.
+
+- Parent46391 passed receipt3/callback76 then stopped at missing direct Optim in qualityenv. Separate mainenv39950 independent dense endpoint oracle14PASS1.3s; no package dependency changes. Parent99637 joint interior18PASS9.9s: original loose-fit gradient1.511e-4 givesnot_stationary, same-data tighterfit7.419e-6 givesavailable intervals with condition340.15. No seed/model/threshold change; no recovery certification.
+- Second Sol review4815 caught failed-status laundering and unbound receipt provenance; parent repaired and independent regressions passed. Final review4622 pending. Public profile test64111 deliberately RED (missing export); public wrapper not yet implemented or runner-registered.
+
+- Parent96855 actual profile wrapper21PASS6.3s, with actual nuisance refits, exact-zero evaluation and both endpoint receipts. Independent endpoint oracle and code review remain open; no public profile route yet. Quality59586 terminal12PASS10.4s; docs86384 terminal0 with Documenter checks and Vitepress7.28s rendering, deployment disabled. These are not full/core-suite results.
+
+- Parent9389 joint kernel18/private fitter26PASS (4.7s/0.5s). Shared failure sentinel, finite full-rank mean design and caller-provenance snapshots verified; parent repaired closure's remaining original-term reference. Interval availability is not required by this tiny diagnostic fixture; separate interior test pending.
+- Parent13836 callback receipt3/inversion66PASS (0.2s/1.6s), including all three discriminating Sol-review regressions. Independent re-review4815 live. Private actual profile wrapper now integrated with explicit fitted center on both sides; independent endpoint likelihood check pending.
+
+- Profile-refit factory integrated: parent9614 exits0 with foundation44+4 and actual constrained-refit46PASS (4.7s/0.1s/1.9s). Tests reject stale log-likelihood, relaxed gradient gates and positive-underflow-to-zero; all nuisance attempts retained. This is not an interval endpoint check.
+- Independent Sol62559 requested changes to callback inversion: historical points bypassed validation, re-entry origin could be a later inside bracket, and tolerance could exceed cutoff. G2/G3 reopened; parent repairs and independent discriminating tests underway. Earlier51PASS is insufficient for approval.
+
+- Integrated profile foundation and joint Gaussian phylo/grouping kernel after builder repairs: parent31726 exits0 with44/44 and18/18PASS (5.1s/2.7s). Removed worker private source includes and fixture environment fallback; registered both tests and helper docs. Neither is yet a fitted joint public route or a profile interval.
+- Independent callback profile-inversion tests ran red60687 with6missinghelpererrors; parent implemented finite accepted-bracket LR inversion, explicitnegativeLR guard, lower-zero handling, finalrefitverification and outwardreentryrefusal. Parent55763 exits0:51/51PASS1.1s. Independent Sol code review62559 in progress; no Gaussian interval admission yet.
+- Parent Float64 edge tests found3additional foundation failures (17147:44+1PASS,3FAIL): overflowingreducedvectoraccessor, overflowingdata accepted byconstructor, positivevarianceunderflow silentlybecomingzero. Added conversion guards and explicit underflow refusal; combined rerun underway. This does not relax inference tolerances.
+
+- Fixed-effect cohort final85524 exits0:25+29+38PASS; quality18623 exits0:12PASS10.7s; docs34648 exits0:Vitepress8.26s. Exact subsequent public fixed-effect example75903 exits0 with inference=:available,vcov size(1,1),onefixedrow. It is a deterministic interface example, not recovery.
+- Joint phylogeny/grouping contract and independent dense fixture added before production implementation. Parent42300 exits0: direct covariance equals augmented-prior covariance within1e-12, NLL8.59559088480814. Includes retained ancestors,repeatedtips,crossedordinarygroup,phylogeneticunique and separate observationresidual. Production kernel still under construction; no joint fit/admission claim.
+- Gaussian independent-variance profile contract received separate mathematical and numerical Sol approvals, with exact LR, gradient, and numerical-rank defaults recorded before implementation. Foundation tests/code remain in worker review; no profile endpoint returned yet. Full/core package suites are documented over30minutes (`2026-08-31-core070-aghq-public-binomial.md:93`) and remain awaiting sized remote pre-run approval.
+
+- Non-aliased four-group invariance fixture integrated: parent12079 21/21PASS4.1s. A weaker unintegrated draft had unit and unit_obs incidence identical; revised fixed fixture has distinct nested replicated levels and explicit non-alias assertion. Wrong cluster2 membership changes the objective by0.04196084710542536; bijective label changes and consistent observation/design permutations remain invariant.
+- Added full fixed-effect covariance/stderror and structured95%Wald summaries for grouped Gaussian, grouped non-Gaussian and multivariate precision fits. Reuses shared marginal-curvature guards and slices the inverse FULL information, not inverse fixed-only information. Removed worker absolute include; added public docstrings/reference/tutorial/README. Focused parent85524 reports25/25PASS8.1s; neighbouring postfit checks follow in the same run. Existing legacy `postfit.jl` diagonal-only fallback is outside this new-fit slice and remains D4 audit work.
+
+- Frozen R extractor audit found the signal placeholder's proposed observation-variance ratio was not the species-level latent ratio in frozen `R/extract-omega.R:325–625`. No signal estimate had been returned. Replaced unavailable placeholder with `estimand_not_admitted`, exact reference definition and explicit exclusion of observation residual; matching non-phylogenetic species decomposition remains owed. Red60784:40PASS/4FAIL; corrected56289 exits0:44fitter+36bridge+5public-dispatchPASS. Added final outgoing-payload assertions; follow-up in progress. No likelihood changed.
+- Corrected stale private-route and Hessian-stopping wording in early grouped model contracts to reflect current public development routes and separate point/interval diagnostics. No qualification promoted.
+
+- Parent NB2 conditional-replication rerun80953 exits0:61/61PASS,10.480s fit/interval and11.2s test time. Original96-response prefix SHA-256 is frozen;384 responses preserve effects/labels while increasing within-level replication. All four source and both trait-size intervals are available. The original small-data partial fixture remains counted, not replaced. Test registered in core/full runner; no recovery/coverage claim.
+- Other-family parent37702 exits0: Binomial58/58 and Beta63/63 with all-source intervals; NB2 small-data55/55 are boundary-diagnostic assertions, NOT all-source interval qualification. Poisson parent31566:46/46PASS. Exact commands are the named test files under the isolated quality environment (StableRNGs direct).
+- Latest package-quality check80602:12/12PASS (existing Aqua/JET targets, not new-hotpath performance certification). Documenter4204 exits0,Vitepress7.51s, deployment disabled. Separate phylo28422:41/41PASS. Interim report canonical structure check passes; full Unlazy programme acceptance remains pending.
+
+- Integrated all-four Gaussian diagnostic parent rerun63/63 PASS12.7s; tests explicitly retain non-identifiable factor-plus-unique interval failures and verify same-data non-redundant `:dep` covariance intervals. They do not turn failed original cells green. Shared identification/phylo regression10+41 PASS10.5s.
+- Integrated per-trait dispersion rerun63/63 PASS14.4s. Retains original NB2 size-boundary draw and separately declared overdispersed interior; no recovery claim. Public non-Gaussian route prewritten tests errored5 at the Gaussian-only guard; after dispatch/exports,20/20 plus Gaussian9/9 PASS9.3s/1.2s. Formula route, trait dispersion defaults and zero-budget interval diagnostics covered. Full fitted/public-workflow qualification still pending; postfit methods under separate implementation.
+
+- New structural-identification test first errored on missing helper; warning implementation passed8/8 and Gaussian fitter39/39 (11.4s). A p2 rank1-plus-two-unique decomposition has4 coordinates for3 covariance entries: this is structural redundancy, not merely small-N curvature. Same diagnostic now also applies to the phylogenetic and non-Gaussian fitters; further recheck in progress. No ridge/tolerance repair or silent covariance substitution.
+- Sol transport review finished: no static scaling/indexing/determinant/inversion defect; paired frozen fits remain missing. Candidate flat results lacked explicit admission status; added tests first errored34pass/2error, then new `admission_status="closed"`, `admission_scope="R phylo_rr"` restored36/36 plus public dispatch5/5. These fields label—not earn—admission. Final independent programme review still pending.
+
+- Documentation rebuild session23962 exits0 after new bridge guide: all Documenter checks and Vitepress rendering pass (8.50s bundling/rendering); rendered `docs/build/1/precision-bridge-development.html` verified. Deployment disabled. The next trait-dispersion source copy occurred after this build started, so its new interface/docs still require final-candidate validation.
+
+- Independent scalar quadrature integrated in runner: parent quality-env check `using GLLVM; include("test/test_destination_b_quadrature.jl")` exits0, 36/36 PASS3.8s. Four fixed shared-effect Laplace approximation errors are below predeclared0.01 nats; zero-effect conditional constants agree to1e-12. This is numerical anchoring, not coverage or fitted multi-source evidence.
+- Public Julia precision-bridge development guide added, linked in README/navigation. Its exact code block ran from main, exit0: `(converged = true, ci_status = "not_requested", n_aug = 6)`. No intervals or recovery claim for this small example. StableRNGs1.0.4 added only to isolated quality environment and test/Project.toml for the independent joint-group fixture.
+- Frozen R source checkout `/private/tmp/destination-b-20260907-r-frozen` is clean at approved `b4d5fee64def88bc768dda1f1f77c29b295edd86`; not yet built. Fresh Sol read-only adapter/consumer review dispatched with retained model/effort receipt. Public R admission stays closed.
+
+- Explicit multivariate bridge helper copied and included after bridge.jl. Prewritten public-dispatch check first failed at old univariate diagnostic route; new options `phylo_model="multivariate"` dispatch verified helper34 + dispatch5 + existing precision80 assertions PASS (6.1s/9.7s/1.6s). Missing payload, incompatible arguments and maps fail explicitly; R public admission remains closed.
+- Added QuadGK as a test-only dependency for independent quadrature evidence; isolated quality environment resolves it directly. No runtime dependency change. Outer per-trait Beta/NB2 dispersion work in progress; parent kernel now supports validated homogeneous per-response marker vectors with distinct parameters.
+
+- Sol numerical review completed read-only; actual family-marker and saturation-status defects repaired, convergence-reason/curvature separation tightened, independent conditional normalizations added. Fixed NB2 perturbation failure first reproduced33/38, naive observed Newton regressed29/38; roundoff-only score-decreasing step repair restored unchanged suite38/38. Final normalization/marker kernel55/55 + outer38/38 PASS3.2s/9.1s. No seed, fixture, convergence or interval tolerance change. Scalar quadrature/multi-source fitted evidence remains owed.
+- Local docs first failed21 missing manual docstrings, then passed after adding development-only low-level entries. Session80093 exit0, Vitepress build8.17s after examples/document checks. Command uses isolated docs env and `docs/make.jl --local`; no deployment. Later solver changes require final-candidate recheck.
+
+- Actual quality check: isolated `/private/tmp/destination-b-quality-g8dtHV` environment with local GLLVM, Aqua0.8.16 and JET0.9.18; `OPENBLAS_NUM_THREADS=1 julia --startup-file=no --project=/private/tmp/destination-b-quality-g8dtHV -e 'include("/private/tmp/destination-b-20260907-main/test/test_quality.jl")'` exits0, 12/12, 10.0s. The earlier bare-project run skipped2 checks and is not counted. JET coverage is the existing Takahashi kernel gate, not a new grouped-kernel type-stability certification. Full Pkg.test still owed. No tracked package dependency changes.
+
+- Integrated private non-Gaussian outer fitter and Gaussian postfit source/test/decisions: native main module command exits0; `test_grouped_nongaussian_fit.jl`26/26 (10.9s), `test_destination_b_postfit.jl`29/29 (1.2s). Poisson/Beta interval wiring, Binomial/NB2 smoke; stronger Binomial/NB2 and all-four-group fixtures remain under work. Public non-Gaussian route still closed. Postfit is explicitly population-only.
+- R canonical preparation now consumes tree, sparse precision with ancestors, and dense covariance using frozen conventions; direct source tests35 PASS with paired opt-in skip. Ledger rerun pending. No R likelihood edits.
+
+- Revised phylogenetic candidate integrated and independently rerun: kernel19 + fitter41 + independent crosscheck7 PASS, exit0 (2.9s/8.6s/1.2s). Exact `using GLLVM, Test` command includes precision kernel, precision fitter, then crosscheck from main project. Fitter tests retain the 16/32-tip boundary failures as expected invalid-curvature outcomes and add one declared 128-tip interior cell plus an independent simulator-covariance check. This replaces neither the failed receipt nor the outstanding recovery gate.
+
+- Public Gaussian grouping slice: new `test_destination_b_public.jl` first failed (missing export/dispatch); after implementation and dictionary-iteration repair, 9/9 PASS, 7.7s. Ledger G11 reverified 9/9, 7.6s with success marker. `fit_gllvm` and `gllvm` now accept explicit `grouping`; non-Gaussian public route remains gated. README, docstrings, API page and new tutorial updated locally, docs build pending.
+- Neighboring `test_formula_input.jl` + `test_formula_structured_terms.jl`: exit0, 95 assertions across nine testsets; expected scalar deprecation warning retained. This is not the full formula/core suite.
+
+- Integration cwd `/private/tmp/destination-b-20260907-main`, base `8ef0851f`; no public admission or completion claim.
+- `OPENBLAS_NUM_THREADS=1 julia --startup-file=no --project=. -e 'using GLLVM, Test; include("test/test_grouped_gaussian.jl"); include("test/test_grouped_fit.jl"); include("test/test_marginal_target_intervals.jl"); include("test/test_destination_b_kernel_crosscheck.jl")'`: exit0; 24+34+19+7 assertions passed. Subsequent failed-stencil guard recheck of `test_grouped_fit.jl`: exit0, 36/36, 11.6s.
+- `OPENBLAS_NUM_THREADS=1 julia --startup-file=no --project=. -e 'using GLLVM, Test; include("test/test_grouped_laplace.jl")'`: exit0, 47/47, 2.9s. Includes independent conditional finite-difference derivatives for all four non-Gaussian families and explicit saturated-domain failure.
+- R bridge worktree ledger with explicit `--cwd /private/tmp/destination-b-20260907-r-bridge`: opt-in paired transport G3 exit0, 26/26, no warnings/skips. Initial wrong-ledger-directory attempt failed before sourcing; corrected and retained separately. Public fitted frozen-R parity remains untested.
+- `git diff --check`: exit0. Full package/core/docs and recovery remain pending; see active checkpoint and interim FAIL/not-closed report.
+- Integrated precision kernel/fitter command: kernel19 PASS, fitter31 PASS/2 FAIL, exit1. Interior interval status `:invalid_curvature` contradicts isolated worker result; retained as a failed gate and returned for diagnosis. Subsequent crosscheck in that command was not reached.
+
 ## 2026-09-07 — M3-PHY-S3-ANIMAL pedigree Ainv fixture
 
 - Branch `cursor/m3-phy-s3-animal-20260907` from `origin/main` `5d1c9a6c` (#312).
@@ -18123,6 +18295,16 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   NEWS-equivalent edit.
 - Unlazy `.unlazy/julia-fixed-dense-kernel/GATES.md` J5 is the closeout
   row. Not claiming true parity or Class-1 promotion.
+## 2026-09-07 — Destination B implementation foundation (ACTIVE, not qualified)
+
+- Integration branch `codex/destination-b-20260907`, base `8ef0851f`; R adapter branch `codex/destination-b-r-bridge-20260907`, base `3e646cbf2`. Shared dirty checkouts preserved. No push/merge/release.
+- Scope history checker: `node tools/destination_b_scope_check.mjs` exit0, `SCOPE_HISTORY_AND_NEGATIVE_CONTROLS_PASS`; proposal/signature both enumerate32, not42; no invented rows.
+- Julia command in `/private/tmp/destination-b-20260907-main`: `OPENBLAS_NUM_THREADS=1 julia --startup-file=no --project=. -e 'using GLLVM, Test; include("test/test_grouped_gaussian.jl"); include("test/test_precision_multivariate.jl"); include("test/test_destination_b_reference.jl"); include("test/test_destination_b_kernel_crosscheck.jl"); include("test/test_marginal_target_intervals.jl")'`: exit0; 11+11+17+18+7+13=77 assertions passed. Existing precision payload80/80 plus S1 22/22 passed separately. These are internal model/interval checks, not live R or fitted-model recovery evidence.
+- R command in `/private/tmp/destination-b-20260907-r-bridge`: `Rscript --vanilla -e 'source("R/julia-bridge.R"); testthat::test_file("tests/testthat/test-julia-bridge-destination-b.R", stop_on_failure=TRUE)'`: exit0,23 passes,0 warnings. Public phylo_rr gate remains closed; R/C++ likelihood untouched.
+- Sol numerical review found correct multivariate Gaussian algebra but required unique-field count/structured assembly/doc/test repairs; builder repairs are integrated and included in17 checks. Curie's initial oracle had cluster2/ancestor model-identity defects; replaced before crosscheck, obsolete scalar target explicitly invalidated.
+- Exact targeted convention scan: `rg -n 'log_det_A_phy_rr|shipped.*log.det' src/phylo_precision.jl docs/dev-log/core070/phylo-transport* test/test_bridge_phylo_precision.jl`. R covariance determinant has opposite sign to native precision checksum; tip map and repeated observation map also differ. Recorded in `decisions/destination-b-transport-conventions.md`.
+- Not yet run: full/core suites, JET/Aqua/allocation battery, Documenter, frozen-R fits, Totoro/DRAC campaigns, recovery or nominal coverage. Missing compute sockets flagged once; no new authentication attempted. Gaussian fitter/interval workers continue; see recovery checkpoint.
+
 ## 2026-09-06 — parity destination super ultra-plan
 
 - Added `docs/dev-log/plans/2026-09-06-ultra-plan-parity-destination.md`.
@@ -18164,3 +18346,294 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   route and the 960 px breakpoint; the PNG returns HTTP 200. A fresh desktop
   screenshot remains pending while the local screen is locked. No model,
   bridge, parity, interval, release, or registry claim changed.
+# 2026-09-07 — closed precision candidate target completeness
+
+R candidate converter rejects missing, unknown and wrong-residual-mode interval
+targets. Three red assertions reproduced; frozen-namespace scoped test file
+passes after repair (one opt-in skip). Saved actual tree/pedigree JuliaCall
+results retain 12 rows. No fits rerun; no public admission or programme claim.
+# 2026-09-07 — stored R precision interval reader
+
+Red reproduced the candidate/legacy CI field mismatch. Scoped R test passes
+with selection, partial-status and recomputation guards; one opt-in skip.
+Saved tree/pedigree results pass direct stored confint method checks with exact
+endpoint preservation. Public fit construction and admission remain incomplete.
+# 2026-09-07 — R precision candidate object assembly
+
+Internal constructor and separate covariance summaries tested, including printed
+limitations and explicit prediction boundary. Scoped R test exit0 (one opt-in
+skip); actual saved tree/pedigree object checks exit0. No public admission.
+# 2026-09-07 — conditional precision mean kernel
+
+Independent dense posterior-mean oracle added before implementation. Missing
+helper reproduced (92687 exit1); shared sparse evaluator green (5433 exit0),
+23/23 kernel tests, 0.9s test time. Startup Multinomial conflict warning retained
+as an observation. Public bridge prediction still pending; source change requires
+affected final-candidate verification before reusing qualification claims.
+# 2026-09-07 — bridge conditional fitted values
+
+Dense-reference tests verify conditional fitted values with repeated nodes,
+ancestors and nonzero fixed-effect design. Red missing fields reproduced;
+extended bridge test20343 passes43+5 tests. R reader/actual transport pending.
+# 2026-09-07 — R conditional prediction round trip
+
+Malformed prediction payload tests and R fitted/predict checks pass. Fresh tree
+JuliaCall8336 passes: fit7.972s, independent dense prediction maxabs2.220446e-15.
+Initial dependency-path failure happened before fitting; preserved in checkpoint.
+Public formula admission and wider workflow validation remain incomplete.
+# 2026-09-07 — pedigree/dense prediction transport
+
+Parallel local JuliaCall2948/86591 exit0. Pedigree/dense conditional means match
+independent dense oracle at1.332268e-15/3.719247e-15; fits7.787/7.82s.
+Fresh -02 receipts retained, no public gate changes. Interim report updated.
+# 2026-09-07 — R residual/simulation readers
+
+Red all-NA residuals and missing Gaussian scale reproduced. Scoped R check
+749119 passes with exact conditional draws and response/Pearson residuals,
+plus malformed-input controls (one opt-in skip). No refits or public admission.
+# 2026-09-07 — installed R generic readers
+
+Private frozen-source adapter overlay installs with unchanged DLL (--no-libs).
+fec884 exit0: registered generic reader checks pass for tree/pedigree/dense
+saved candidates. Hash-bound receipt retained; public fitting gate still closed.
+# 2026-09-07 — canonical R invocation arguments
+
+R argument builder tested for exact precision/map preservation and malformed
+rank/mapping/CI requests. Final961645 exit0; one opt-in skip. Pilot integration
+edited but not yet executed; no fresh cross-language claim for that edit.
+# 2026-09-07 — R invocation live check and X transport contract
+
+Tree66458 through canonical argument builder passes (8.24s fit). Subsequent
+X argument tests pass after red unused-argument failure; no live X claim yet.
+Fresh tree-03 receipt retained separately from prior immutable attempts.
+# 2026-09-07 — bounded R fitting wrapper
+
+Startup-environment guard test passes; live tree wrapper80462 exit0 verifies
+full source retention, likelihood, fitted means and12storedCI rows. Receipt
+retained. No dependency installation/project switch/public formula admission.
+# 2026-09-07 — live X wrapper transport
+
+88711 exit0: equivalent matrix/array mean designs pass actual JuliaCall fits,
+13interval rows and dense likelihood/prediction checks. Errors2.13e-14/3.00e-15.
+JSON/raw fits retained; this is not R paired-X/recovery evidence or admission.
+# 2026-09-07 — frozen phylogenetic formula mapping
+
+Exact frozen desugar/parser fixtures exercise single latent and linked unique
+companion. Red missing helper reproduced; scoped R tests a6b49c pass, opt-in
+skip remains. Mismatched sources and duplicate latent terms rejected.
+# 2026-09-07 — replicated phylogenetic long data
+
+Internal packing preserves shuffled response/design rows and species mapping.
+Missing replication/conflicting species rejected. Finald5e632 exit0 (one skip).
+Numeric+column-name test avoids incidental model.matrix attribute mismatch.
+No public formula route qualification yet.
+# 2026-09-07 — frozen-R formula packing pair
+
+28104 exit0: exact response/design/node mapping versus frozen R engine receipt,
+then matching internal-wrapper fit with12availableCI rows (12.074s). Evidence
+retained; public dispatch and broader formula sources remain incomplete.
+# 2026-09-07 — formula source coverage and unsupported options
+
+Frozen dense/pedigree parser objects preserved. Red ignored rho/offset failures
+fixed;07689b exit0 scoped R tests, one skip. Public routing still pending.
+# 2026-09-07 — pedigree formula packing pair
+
+Namespace-only pilot fails before fit; attached-package retry45810 passes exact
+frozen response/design/node mapping and matched internal fit. Both receipts
+retained. No frozen parser changes or public admission.
+
+# 2026-09-07 — controlled closed phylogenetic precision candidate/readback
+
+The ordinary `gllvmTMB(..., engine = "julia")` phylogenetic-precision formula
+route rejects with `GJL-GATE-PRECISION-ADMISSION` before data packing or Julia
+startup. Only a private, per-process candidate option in a disposable frozen
+0.7.0 source overlay makes the three controlled evidence calls. Hash-bound
+`controlled-dispatch-{tree,pedigree,dense}-03.json` receipts retain tree,
+sparse-pedigree-with-ancestors, and supplied-dense-`vcv` outcomes, each with
+exact candidate likelihood/conditional-fit checks, 12 stored interval rows,
+formula-labelled public readers, installed-R hashes, and matching requested /
+in-process Julia executable SHA-256
+`fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30`.
+
+Fresh no-fit generic readbacks (`controlled-readers-03.json` and
+`installed-readers-05.json`) re-open all three saved objects, re-hash the live
+Julia executable, and exercise `coef`, `summary`, `confint`, `fitted`,
+`predict`, both residual types, and conditional simulation. Deliberately
+corrupted-digest controls are retained and fail at the digest assertion. A
+fresh independent review found no remaining A3 blocker. This records A3 as
+**tested only**: every object remains `qualified = false` with
+`admission_status = "closed"`; the candidate option is not a public interface.
+Not claiming S3b/S4 qualification, frozen-R estimation parity, recovery,
+coverage, broad interval validation, 0.7.1 parity, or Destination B completion.
+# 2026-09-07 — responsive GLLVM.jl homepage identity mark
+
+The existing GLLVM.jl response-structure mark is now a semantic VitePress hero
+image rather than an absolutely positioned CSS pseudo-element.  The former
+desktop-only pseudo-element was hidden at 1320px; the regular hero image follows
+the theme's ordinary stacked layout below 959px.  The public-root SVG is a real
+file, not a symlink, so DocumenterVitepress copies it safely.
+
+Local `docs/make.jl --local` exits0 and VitePress reports `build complete in
+7.21s` after the documentation/doctest stages.  The rendered homepage contains
+`<img class="VPImage image-src" src="/gllvmjl-mark-logo.svg" alt="GLLVM.jl mark
+showing response columns connected by shared latent structure">`; the output
+contains the non-symlink public asset and `RENDERED_HERO_LOGO_ASSET_PASS`.
+No deploy, push, or capability claim.
+
+# 2026-09-07 — A4/S4 raw candidate receipt and frozen-R validation contract
+
+Retained `raw-bridge-01` (sandbox Julia-log lock failure), `raw-bridge-02`
+(JSON row-decoding failure), and `raw-bridge-03` (three returned private bridge
+rows).  The final raw receipt is independently checked through R/jsonlite/RDS
+and JuliaCall: 87/87 receipt comparisons and Julia verdict
+`schema_valid_raw_candidate_unqualified`.  Tree/pedigree retain their returned
+12-target transformed-Wald payloads; dense retains the explicit no-CI boundary.
+All rows remain `qualified = false` and public admission remains closed.
+
+The new frozen-R helper validates the exact three-row Gaussian request,
+provenance, repeated maps, inherited precision scale, one-ridge dense rule, and
+seven-coordinate R packing, but deliberately performs no objective evaluation.
+Its direct R test exits 0 (`A4_S4_FROZEN_R_EVALUATOR_OK`); the Julia A4/S4
+receipt schema test is 60/60.  A direct 290-file core attempt reached 655 pass,
+3 expected broken, then errored because root `--project=.` lacks the correctly
+test-only `StableRNGs` dependency.  The canonical `Pkg.test()` test-environment
+run remains approval-gated (>30 minutes).  No A4/S4 admission, paired R--Julia
+objective result, 0.7.1 parity, or Destination B completion is claimed.
+
+# 2026-09-08 — A4/S4 source-attested fixed-coordinate kernel check
+
+The raw-R-only `raw-frozen-r-02.rds` record is now transported by a strict,
+no-fit RDS-to-JSON adapter to a private Julia kernel evaluator.  The adapter
+rejects altered source/build markers, row maps, determinants, scales, dense
+ridge metadata, response hashes, `sdreport` state, and any open/qualified
+claim.  The Julia side first SHA-binds the retained fixture, row reference,
+precision source, and decoded Float64 response before constructing its sparse
+precision object.  Mutation tests cover all three byte sources.
+
+Fresh focused checks pass: R summary export `A4_S4_FROZEN_R_RAW_SUMMARY_OK`;
+Julia evaluator `45/45`, `A4_S4_FIXED_COORDINATE_EVALUATOR_OK`; retained v2
+receipt check `A4_S4_FIXED_COORDINATE_V2_RETAINED_RECEIPT_OK`.  The retained
+tree/pedigree/dense NLL deltas at the one declared coordinate are `0`,
+`7.1054273576010019e-15`, and `5.3290705182007514e-15`.  An independent review
+found the initial missing byte binding, then signed the repaired v2 record
+CLEAN.  This remains `private_kernel_cross_evaluation`, `qualified = false`,
+and admission-closed—not a bridge return, independent optimum, interval,
+paired-evidence, public formula, S3b/S4 qualification, 0.7.1 parity, or
+Destination B completion.
+
+# 2026-09-08 — source-attested tree BFGS diagnostic contract
+
+The failed source-attested `nlminb` tree diagnostic remains retained as failed:
+its nonzero convergence code was not relaxed or reclassified. A separate
+R-only BFGS final/probe contract now pins `optim`/`BFGS`, `n_init = 1`, native
+data-derived initialization, `REML = FALSE`, `engine = "tmb"`, `se = FALSE`,
+`reltol = 1e-12`, and distinct five-iteration/final budgets. It records the
+legacy JSON only as response/trait fixture lineage and verifies the executing
+current frozen build/DLL independently.
+
+Focused R unit checks pass (`A4_S4_TREE_R_OWN_OPTIMUM_UNIT_OK`). Fresh
+independent review found and the repair closed three malformed-receipt holes:
+inconsistent direct objectives, stale gradient norms, and stale curvature
+summaries now fail for both receipt schemas. The current-attested five-step
+probe passes its supervisor and persisted-RDS checks (process
+`37971f0564c8a5ce319cba3414b1ac3af27b6478ddbff8de2ac4e628386f063a`, RDS
+`5cf21032faca8dfeb50ca5e9184d5fe64acaaed5f0018009f15b4318c245b262`) and
+intentionally remains nonconverged. The separate final process also passes
+with source unchanged (process
+`b02e63bb14449ac8f509188ebe2d3f8e13567787c8f43e8fecacde653ca65f75`, RDS
+`227ea7852f7a6aa602f2678ccdc4e883af2da14daf506895a65e8c3074eb912c`):
+convergence 0, direct marginal NLL `12.7509239715045`, maximum gradient
+`6.5851062902577e-7`, positive Hessian, and 68/25 function/gradient
+evaluations. This earns only a private, source-attested R-only own-optimum
+record. There is no parity, interval, recovery, coverage, public admission,
+S3b/S4 qualification, 0.7.1 parity, or Destination B completion claim.
+
+# 2026-09-08 — grouped five-family interval-feasibility interior matrix
+
+The new deterministic Julia public-API matrix uses two traits, 96 observations,
+four nonzero shared grouping sources (`unit`, nested `unit_obs`, crossed
+`cluster`, and diagonal `cluster2`), and independent seeded fixtures for
+Gaussian, Poisson, Binomial, Beta, and NB2. It requires—not merely permits—
+convergence, finite fit diagnostics, positive-definite curvature, a valid
+non-Gaussian inner solve, an available interval object, and finite available
+variance intervals for both traits at every source. It also binds the four
+incidence covariance bases with pairwise Gram separation and rank four,
+fixed-coordinate sensitivity for every source, and the public unused-label
+diagnostic.
+
+Focused direct execution passes `189/189` in 20.2 seconds; the established
+shard entry passes `190/190`. Two independent reviews rejected the earlier
+one-trait boundary fixture because its unavailable intervals were not evidence
+of feasibility; the retained two-trait interior fixture addresses that exact
+failure without treating difficult boundary cases as successes. This is one
+deterministic Julia interval-feasibility cell only—not frozen-R pairing,
+recovery, coverage, public R bridge admission, all-design robustness, 0.7.1
+parity, or Destination B completion.
+
+# 2026-09-08 — U3 phylogenetic-uncertainty CLI rejection seal
+
+Added a standalone Pkg-test-environment CLI regression for the existing
+tree/pedigree uncertainty comparator. It copies a sealed tree R JSON, makes a
+valid-JSON one-byte hash mutation, invokes the real Julia CLI with a fresh
+receipt path, and requires a nonzero exit plus status = error, qualified =
+false, and the unsealed-input diagnostic. It then repeats against the existing
+receipt path and requires a second nonzero exit with byte-identical retained
+evidence. The old in-memory source-integrity test stays unchanged: it is
+currently blocked by a foreign dirty source hash, so U3 is isolated rather
+than weakening that guard.
+
+The CI-shaped shard 164/292 passes 9/9. A dedicated valid Unlazy leaf ledger
+records the exact command and reruns it cleanly: GATES:U3 passes once at 8.3 s,
+again at 6.8 s, and after the ledger audit at 7.3 s. This is only a negative
+regression seal for a private
+checker. It does not establish a successful paired comparison, interval
+feasibility, recovery, dense-vcv support, S3b/S4 admission, B1 grouping
+parity, 0.7.1 parity, FRK, or Destination B completion.
+
+# 2026-09-08 — B1 Gaussian `unit` source-alignment checkpoint
+
+The existing public Gaussian rank-one `unit` route now has a fixed-coordinate
+regression against an independently assembled dense covariance/NLL, with a
+one-observation changed-membership control.  The fixture uses two traits and
+eight observation columns in four repeated unit groups; it checks the packed
+trait intercepts, rank-one `Lambda * Lambda'`, scalar residual SD, Julia
+trait-within-observation ordering, and the sparse objective without fitting.
+
+The frozen-R 0.7.0 receipt is built from the exact Git archive at
+`b4d5fee64def88bc768dda1f1f77c29b295edd86` with `R CMD INSTALL --preclean`
+into an explicit library.  It binds archive and installed shared-library
+SHA-256 values, uses the matching repeated `site` / distinct `site_species`
+long-data partition, and records the Gaussian ML formula
+`latent(0 + trait | site, d = 1, unique = FALSE)`.  Direct receipt assertions
+pass (`B1_R_RECEIPT_ASSERTIONS_OK`).
+
+The three B1 Unlazy gates reverify as `ALL MET`: two isolated Julia Pkg-test
+shards pass 18/18 in 11.0 s and 10.9 s, and the frozen-R receipt runner exits
+0.  This is source-attested fixed-coordinate alignment only, not a fitted
+same-dataset R--Julia comparison, optimizer agreement, interval evidence,
+recovery, non-Gaussian grouping, `unit_obs`/`cluster`/`cluster2`, public bridge
+admission, S3b/S4, dense `vcv`, FRK, 0.7.1 parity, B1 qualification, or
+Destination B completion.
+
+The 2026-09-07 handover's G0 remains explicitly unresolved.  These source
+alignment gates are not a named B1 disposition and do not authorise a next
+grouping, S3b/S4, dense-`vcv`, or FRK leaf.
+
+# 2026-09-08 — Destination B G0 decision packet (non-binding)
+
+Prepared a source-linked owner decision packet covering the five G0 labels:
+grouping B1, R `phylo_rr` S3b, S4, dense `vcv`, and FRK. It records current
+bridge/gate evidence and recommended defaults, but remains explicitly
+non-binding until a direct owner response is recorded. No source, R bridge,
+model, public capability, Unlazy gate, compute campaign, push, merge, or
+release changed.
+
+# 2026-09-08 — Destination B G0 authorisation receipt
+
+The maintainer directly authorised the bounded B1 grouping programme, scoped
+R `phylo_rr` S3b adapter/test work, conditional Gaussian S4, and the canonical
+R-ridged-once dense-`vcv` transport contract. FRK remains parked at
+`gllvmTMB#1275`. The receipt preserves the frozen `gllvmTMB` 0.7.0 reference,
+no R/C++ engine work, no independent Julia inversion, no 0.7 parity claim, and
+all existing evidence gates. It changes execution authority only; no capability
+row or parent gate is qualified by this record.

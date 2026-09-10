@@ -1,0 +1,445 @@
+{
+  "schema_version": "destination-b-pedigree-gaussian-marginal-1",
+  "status": "recorded",
+  "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "package_version": "0.7.0",
+  "package_path": "/private/tmp/destination-b-r070-build-l9Y1ri/library/gllvmTMB",
+  "dll_path": "/private/tmp/destination-b-r070-build-l9Y1ri/library/gllvmTMB/libs/gllvmTMB.so",
+  "dll_sha256": "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb",
+  "precision_reference_sha256": "c428e369e6fb554cc4b9bb03f250418d0d51474ba86e01d1be9c7c7301e615ee",
+  "precision": {
+    "schema_version": "destination-b-pedigree-precision-1",
+    "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "package_version": "0.7.0",
+    "package_path": "/private/tmp/destination-b-r070-build-l9Y1ri/library/gllvmTMB",
+    "dll_path": "/private/tmp/destination-b-r070-build-l9Y1ri/library/gllvmTMB/libs/gllvmTMB.so",
+    "dll_sha256": "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb",
+    "session_info": "R version 4.6.0 (2026-04-24)\nPlatform: aarch64-apple-darwin23\nRunning under: macOS Tahoe 26.6.1\n\nMatrix products: default\nBLAS:   /Library/Frameworks/R.framework/Versions/4.6/Resources/lib/libRblas.0.dylib \nLAPACK: /Library/Frameworks/R.framework/Versions/4.6/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1\n\nlocale:\n[1] C.UTF-8/C.UTF-8/C.UTF-8/C/C.UTF-8/C.UTF-8\n\ntime zone: America/Edmonton\ntzcode source: internal\n\nattached base packages:\n[1] stats     graphics  grDevices utils     datasets  methods   base     \n\nother attached packages:\n[1] gllvmTMB_0.7.0\n\nloaded via a namespace (and not attached):\n[1] compiler_4.6.0   Matrix_1.7-5     assertthat_0.2.1 generics_0.1.4  \n[5] cli_3.6.6        tools_4.6.0      grid_4.6.0       rlang_1.2.0     \n[9] lattice_0.22-9  ",
+    "pedigree": {
+      "node_labels": ["i1", "i2", "i3", "i4", "i5", "i6", "i7", "i8", "i9", "i10", "i11", "i12"],
+      "sire_one_based_zero_unknown": [0, 0, 0, 0, 1, 1, 2, 2, 5, 7, 9, 9],
+      "dam_one_based_zero_unknown": [0, 0, 0, 0, 3, 3, 4, 4, 6, 8, 10, 6]
+    },
+    "observed_node_one_based": [12, 5, 9, 7, 10, 6, 11, 8],
+    "observed_labels": ["i12", "i5", "i9", "i7", "i10", "i6", "i11", "i8"],
+    "matrix_species_id_zero_based": [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7],
+    "matrix_augmented_id_zero_based": [11, 11, 4, 4, 8, 8, 6, 6, 9, 9, 5, 5, 10, 10, 7, 7],
+    "Q_canonical": [
+      [2, 0, 1, 0, -1, -1, 0, 0, 0, 0, 0, 0],
+      [0, 2, 0, 1, 0, 0, -1, -1, 0, 0, 0, 0],
+      [1, 0, 2, 0, -1, -1, 0, 0, 0, 0, 0, 0],
+      [0, 1, 0, 2, 0, 0, -1, -1, 0, 0, 0, 0],
+      [-1, 0, -1, 0, 2.5, 0.5, 0, 0, -1, 0, 0, 0],
+      [-1, 0, -1, 0, 0.5, 3.0714285714285712, 0, 0, -0.4285714285714286, 0, 0, -1.1428571428571428],
+      [0, -1, 0, -1, 0, 0, 2.5, 0.5, 0, -1, 0, 0],
+      [0, -1, 0, -1, 0, 0, 0.5, 2.5, 0, -1, 0, 0],
+      [0, 0, 0, 0, -1, -0.4285714285714286, 0, 0, 3.2380952380952381, 0.66666666666666663, -1.3333333333333333, -1.1428571428571428],
+      [0, 0, 0, 0, 0, 0, -1, -1, 0.66666666666666663, 2.6666666666666665, -1.3333333333333333, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, -1.3333333333333333, -1.3333333333333333, 2.6666666666666665, 0],
+      [0, 0, 0, 0, 0, -1.1428571428571428, 0, 0, -1.1428571428571428, 0, 0, 2.2857142857142856]
+    ],
+    "n_aug": 12,
+    "n_observed": 8,
+    "log_det_Q": 5.966390909555864,
+    "scale": 1,
+    "ridge_applied": false,
+    "fit_performed": false,
+    "claim": "precision transport only; no fit, interval, recovery or admission"
+  },
+  "seed": 20260907,
+  "trait_names": ["a", "b", "c"],
+  "reps": 2,
+  "Y_traits_by_observations": [
+    [-0.46835667861092795, -0.35100613249058038, -1.7467728532318834, -1.9089982222339852, 0.44095114649472555, 0.15866603566297102, -1.2258840783085942, -1.3401761070050626, -1.9051204006955165, -1.5412786300253183, -0.83450310418826845, -0.49370577676508925, -1.2172570782244034, -1.2909202835937292, -0.7699053328572536, -0.064567424219935887],
+    [-1.4015149490408803, -0.87667157360731007, -1.0566515734979531, -0.99182367209874622, -0.072696806362781807, -0.10804675167382627, -0.73835858668635146, -0.8225531828349617, -0.92970690185650362, -1.000628736251421, -0.78819017511046119, -0.50770672831243435, -1.6098949057004552, -1.004263796105666, -0.60270400764430443, -0.52599361413691814],
+    [0.9788964192299584, 1.0286092806082785, 1.3379460575118132, 1.7529220900899041, 0.42717008744738183, 0.70397590013385236, 1.4364503792522694, 1.630059798532417, 1.9442244082985933, 1.2999591532977692, 1.2464765876541355, 1.0590567719822075, 1.1681997413732066, 1.0646015368538233, 1.062519939297851, 1.001811707000785]
+  ],
+  "data_sha256": "025d9ca79375962ef4110c3ce62f84b30cdeea2939957e03f7235e2352e5142b",
+  "data_hash_encoding": "Float64 little-endian column-major",
+  "original_long": [
+    {
+      "species_id": 1,
+      "trait_id": 1,
+      "replicate": 1,
+      "value": -0.46835667861092795
+    },
+    {
+      "species_id": 1,
+      "trait_id": 1,
+      "replicate": 2,
+      "value": -0.35100613249058038
+    },
+    {
+      "species_id": 1,
+      "trait_id": 2,
+      "replicate": 1,
+      "value": -1.4015149490408803
+    },
+    {
+      "species_id": 1,
+      "trait_id": 2,
+      "replicate": 2,
+      "value": -0.87667157360731007
+    },
+    {
+      "species_id": 1,
+      "trait_id": 3,
+      "replicate": 1,
+      "value": 0.9788964192299584
+    },
+    {
+      "species_id": 1,
+      "trait_id": 3,
+      "replicate": 2,
+      "value": 1.0286092806082785
+    },
+    {
+      "species_id": 2,
+      "trait_id": 1,
+      "replicate": 1,
+      "value": -1.7467728532318834
+    },
+    {
+      "species_id": 2,
+      "trait_id": 1,
+      "replicate": 2,
+      "value": -1.9089982222339852
+    },
+    {
+      "species_id": 2,
+      "trait_id": 2,
+      "replicate": 1,
+      "value": -1.0566515734979531
+    },
+    {
+      "species_id": 2,
+      "trait_id": 2,
+      "replicate": 2,
+      "value": -0.99182367209874622
+    },
+    {
+      "species_id": 2,
+      "trait_id": 3,
+      "replicate": 1,
+      "value": 1.3379460575118132
+    },
+    {
+      "species_id": 2,
+      "trait_id": 3,
+      "replicate": 2,
+      "value": 1.7529220900899041
+    },
+    {
+      "species_id": 3,
+      "trait_id": 1,
+      "replicate": 1,
+      "value": 0.44095114649472555
+    },
+    {
+      "species_id": 3,
+      "trait_id": 1,
+      "replicate": 2,
+      "value": 0.15866603566297102
+    },
+    {
+      "species_id": 3,
+      "trait_id": 2,
+      "replicate": 1,
+      "value": -0.072696806362781807
+    },
+    {
+      "species_id": 3,
+      "trait_id": 2,
+      "replicate": 2,
+      "value": -0.10804675167382627
+    },
+    {
+      "species_id": 3,
+      "trait_id": 3,
+      "replicate": 1,
+      "value": 0.42717008744738183
+    },
+    {
+      "species_id": 3,
+      "trait_id": 3,
+      "replicate": 2,
+      "value": 0.70397590013385236
+    },
+    {
+      "species_id": 4,
+      "trait_id": 1,
+      "replicate": 1,
+      "value": -1.2258840783085942
+    },
+    {
+      "species_id": 4,
+      "trait_id": 1,
+      "replicate": 2,
+      "value": -1.3401761070050626
+    },
+    {
+      "species_id": 4,
+      "trait_id": 2,
+      "replicate": 1,
+      "value": -0.73835858668635146
+    },
+    {
+      "species_id": 4,
+      "trait_id": 2,
+      "replicate": 2,
+      "value": -0.8225531828349617
+    },
+    {
+      "species_id": 4,
+      "trait_id": 3,
+      "replicate": 1,
+      "value": 1.4364503792522694
+    },
+    {
+      "species_id": 4,
+      "trait_id": 3,
+      "replicate": 2,
+      "value": 1.630059798532417
+    },
+    {
+      "species_id": 5,
+      "trait_id": 1,
+      "replicate": 1,
+      "value": -1.9051204006955165
+    },
+    {
+      "species_id": 5,
+      "trait_id": 1,
+      "replicate": 2,
+      "value": -1.5412786300253183
+    },
+    {
+      "species_id": 5,
+      "trait_id": 2,
+      "replicate": 1,
+      "value": -0.92970690185650362
+    },
+    {
+      "species_id": 5,
+      "trait_id": 2,
+      "replicate": 2,
+      "value": -1.000628736251421
+    },
+    {
+      "species_id": 5,
+      "trait_id": 3,
+      "replicate": 1,
+      "value": 1.9442244082985933
+    },
+    {
+      "species_id": 5,
+      "trait_id": 3,
+      "replicate": 2,
+      "value": 1.2999591532977692
+    },
+    {
+      "species_id": 6,
+      "trait_id": 1,
+      "replicate": 1,
+      "value": -0.83450310418826845
+    },
+    {
+      "species_id": 6,
+      "trait_id": 1,
+      "replicate": 2,
+      "value": -0.49370577676508925
+    },
+    {
+      "species_id": 6,
+      "trait_id": 2,
+      "replicate": 1,
+      "value": -0.78819017511046119
+    },
+    {
+      "species_id": 6,
+      "trait_id": 2,
+      "replicate": 2,
+      "value": -0.50770672831243435
+    },
+    {
+      "species_id": 6,
+      "trait_id": 3,
+      "replicate": 1,
+      "value": 1.2464765876541355
+    },
+    {
+      "species_id": 6,
+      "trait_id": 3,
+      "replicate": 2,
+      "value": 1.0590567719822075
+    },
+    {
+      "species_id": 7,
+      "trait_id": 1,
+      "replicate": 1,
+      "value": -1.2172570782244034
+    },
+    {
+      "species_id": 7,
+      "trait_id": 1,
+      "replicate": 2,
+      "value": -1.2909202835937292
+    },
+    {
+      "species_id": 7,
+      "trait_id": 2,
+      "replicate": 1,
+      "value": -1.6098949057004552
+    },
+    {
+      "species_id": 7,
+      "trait_id": 2,
+      "replicate": 2,
+      "value": -1.004263796105666
+    },
+    {
+      "species_id": 7,
+      "trait_id": 3,
+      "replicate": 1,
+      "value": 1.1681997413732066
+    },
+    {
+      "species_id": 7,
+      "trait_id": 3,
+      "replicate": 2,
+      "value": 1.0646015368538233
+    },
+    {
+      "species_id": 8,
+      "trait_id": 1,
+      "replicate": 1,
+      "value": -0.7699053328572536
+    },
+    {
+      "species_id": 8,
+      "trait_id": 1,
+      "replicate": 2,
+      "value": -0.064567424219935887
+    },
+    {
+      "species_id": 8,
+      "trait_id": 2,
+      "replicate": 1,
+      "value": -0.60270400764430443
+    },
+    {
+      "species_id": 8,
+      "trait_id": 2,
+      "replicate": 2,
+      "value": -0.52599361413691814
+    },
+    {
+      "species_id": 8,
+      "trait_id": 3,
+      "replicate": 1,
+      "value": 1.062519939297851
+    },
+    {
+      "species_id": 8,
+      "trait_id": 3,
+      "replicate": 2,
+      "value": 1.001811707000785
+    }
+  ],
+  "formula": "value ~ 0 + trait + animal_latent(species, d=1, pedigree=ped, unique=FALSE)",
+  "input_route": "pedigree",
+  "residual_mode": "shared",
+  "rank": 1,
+  "unique": false,
+  "optimizer_policy": "bfgs",
+  "warnings": [],
+  "session_info": "R version 4.6.0 (2026-04-24)\nPlatform: aarch64-apple-darwin23\nRunning under: macOS Tahoe 26.6.1\n\nMatrix products: default\nBLAS:   /Library/Frameworks/R.framework/Versions/4.6/Resources/lib/libRblas.0.dylib \nLAPACK: /Library/Frameworks/R.framework/Versions/4.6/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1\n\nlocale:\n[1] C.UTF-8/C.UTF-8/C.UTF-8/C/C.UTF-8/C.UTF-8\n\ntime zone: America/Edmonton\ntzcode source: internal\n\nattached base packages:\n[1] stats     graphics  grDevices utils     datasets  methods   base     \n\nother attached packages:\n[1] gllvmTMB_0.7.0\n\nloaded via a namespace (and not attached):\n [1] compiler_4.6.0   Matrix_1.7-5     assertthat_0.2.1 generics_0.1.4  \n [5] cli_3.6.6        tools_4.6.0      grid_4.6.0       digest_0.6.39   \n [9] jsonlite_2.0.0   rlang_1.2.0      lattice_0.22-9  ",
+  "claim": "R-only functional pilot; no Julia fit, intervals, recovery or admission",
+  "elapsed_seconds": 0.10999999999999999,
+  "engine_to_original_long_row_one_based": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48],
+  "engine_species_id_zero_based": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7],
+  "engine_trait_id_zero_based": [0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2, 0, 0, 1, 1, 2, 2],
+  "engine_augmented_id_zero_based": [11, 11, 11, 11, 11, 11, 4, 4, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8, 6, 6, 6, 6, 6, 6, 9, 9, 9, 9, 9, 9, 5, 5, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 7, 7, 7, 7, 7, 7],
+  "engine_fixed_design": [
+    [1, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 1],
+    [1, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 1],
+    [1, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 1],
+    [1, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 1],
+    [1, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 1],
+    [1, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 1],
+    [1, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 1],
+    [1, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 1]
+  ],
+  "engine_Q_matches_reference": true,
+  "active_parameter_names": ["b_fix", "b_fix", "b_fix", "log_sigma_eps", "theta_rr_phy", "theta_rr_phy", "theta_rr_phy"],
+  "matched": {
+    "values": [0.40000000000000002, -0.20000000000000001, 0.29999999999999999, -1.2039728043259361, 0.90000000000000002, 0.5, -0.59999999999999998],
+    "marginal_nll": 21.948928545782771,
+    "gradient": [7.3386660063785518, -15.993976852228561, -9.007146726871019, 7.4455291696590091, -20.394853528058839, 29.045595423798574, 4.1083180741558589],
+    "gradient_norm": 29.045595423798574
+  },
+  "fitted": {
+    "values": [-1.0304512415436433, -0.8609082330397807, 1.2517376567740093, -1.4045933303854918, 1.0772738071775225, 0.41178826760039516, -0.49435357482938425],
+    "marginal_nll": 14.802810611422183,
+    "gradient": [-5.2900141649304374e-08, 1.8572321931484726e-07, 4.1454891008530004e-08, 2.6016045592889907e-08, -1.155132398530774e-08, 3.9690316180902092e-08, 1.3077094401043894e-08],
+    "gradient_norm": 1.8572321931484726e-07,
+    "convergence": 0,
+    "message": "",
+    "evaluations": 25,
+    "marginal_hessian_diagnostic": {
+      "method": "optimHess on full marginal objective/gradient; default ndeps",
+      "matrix": [
+        [71.048503577329669, -74.345442892858102, 89.252021871649589, -0.014309083548163858, 7.8353032502450954, -8.4885568705411352, 9.9745568719742383],
+        [-74.345442892858102, 237.12405737802112, 34.116614756138958, -0.0054700637862256669, -8.3610689980803485, 26.463819148954201, 3.8127776494949623],
+        [89.252021871649589, 34.116614756138958, 224.58548561458989, 0.006566306111927496, 10.037499059119071, 3.8953406331213483, 25.131317745653767],
+        [-0.014309083548163858, -0.0054700637862256669, 0.006566306111927496, 79.372127196641515, 0.48741216442586821, 1.9627717699024152, 0.064334373272937534],
+        [7.8353032502450954, -8.3610689980803485, 10.037499059119071, 0.48741216442586821, 34.051380192952408, -26.018608723212509, 32.303309215195284],
+        [-8.4885568705411352, 26.463819148954201, 3.8953406331213483, 1.9627717699024152, -26.018608723212509, 85.164327977798123, 10.103601068398831],
+        [9.9745568719742383, 3.8127776494949623, 25.131317745653767, 0.064334373272937534, 32.303309215195284, 10.103601068398831, 88.674671275266093]
+      ],
+      "eigenvalues": [270.83276459892068, 270.57001032041171, 98.704219936774066, 90.249106620368565, 79.12347807082223, 8.8685003047518887, 1.672473360550023],
+      "positive_definite": true,
+      "condition_number": 161.93547292726529
+    }
+  }
+}

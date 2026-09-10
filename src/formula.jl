@@ -166,12 +166,22 @@ mean design: trait-specific intercept columns (when present) and shared
 site-level coefficients, using StatsModels' contrast, interaction, and rank
 rules. This does not parse formula source terms, trees, pedigrees, meshes, or
 random slopes.
+With `grouping=[GroupingTerm(...), ...]`, the formula defines the complete mean.
+Grouping identifiers may be vectors or symbols naming data columns, for example
+`unit=:plot`. Grouped support covers Gaussian, Poisson-log, Binomial-logit,
+Beta-logit and NB2-log responses; do not also supply `K`, `sources`, `X`, or
+`pervar`. Unsupported links and covariance combinations fail explicitly.
+With `phylo=precision`, the same complete-design route supports Gaussian
+precision-only or precision-plus-grouping fits; `species_id=:tip_column`
+resolves the observation-to-tip map from `data`. Use `phylo_rank` for the
+phylogenetic rank, not `K`; ordinary joint terms currently require independent,
+non-common trait variances. This does not open public R bridge admission.
 `ZIB` through `@formula` is **no-X only** for now (bridge still OWED; ZIB+X formula
 is fenced).
 """
 function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
                family = Normal(), K::Union{Integer, _FormulaKUnset} = _FORMULA_K_UNSET,
-               sources = nothing,
+               sources = nothing, grouping=nothing,
                pervar::Bool = false,
                contrasts::AbstractDict = Dict{Symbol, Any}(), kwargs...)
     p, n = size(Y)
@@ -179,6 +189,25 @@ function gllvm(formula::FormulaTerm, Y::AbstractMatrix, data;
     for (name, column) in pairs(cols)
         length(column) == n || throw(DimensionMismatch(
             "`data` column `$name` has $(length(column)) rows but Y has $n sites (columns)"))
+    end
+    if grouping !== nothing || get(kwargs, :phylo, nothing) !== nothing
+        sources === nothing || throw(ArgumentError("do not combine grouping with explicit sources"))
+        K === _FORMULA_K_UNSET || throw(ArgumentError("grouping terms own their ranks; do not supply K"))
+        pervar && throw(ArgumentError("pervar=true is incompatible with explicit grouping"))
+        haskey(kwargs, :X) && throw(ArgumentError("the grouping formula supplies the complete mean; do not supply X"))
+        haskey(kwargs, :coefficient_names) && throw(ArgumentError("the formula supplies coefficient names"))
+        X, coefficient_names = _pervar_formula_design(
+            formula.rhs, cols, p, n; contrasts=contrasts, names=true)
+        resolved = map(collect(pairs(kwargs))) do (key, value)
+            if key in (:unit, :unit_obs, :cluster, :cluster2, :species_id) && value isa Symbol
+                haskey(cols, value) || throw(ArgumentError("group column `$value` is absent from data"))
+                key => getproperty(cols, value)
+            else
+                key => value
+            end
+        end
+        return fit_gllvm(Y; family=family, grouping=grouping, X=X,
+            coefficient_names=coefficient_names, resolved...)
     end
     if sources !== nothing
         family isa Normal || throw(ArgumentError("formula source models require family=Normal()"))

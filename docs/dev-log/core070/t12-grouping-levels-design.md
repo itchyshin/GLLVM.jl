@@ -1,5 +1,17 @@
 # T12 — grouping levels `unit` / `unit_obs` / `cluster` / `cluster2`: R semantics vs Julia surfaces
 
+> **Historical Julia-surface snapshot — superseded 2026-09-08.** Section 1
+> remains the frozen-R semantic record. Its statements in Sections 2–5 that
+> describe missing Julia routes or a proposed build are not current capability
+> status. The live development route is explicit
+> `GroupingTerm` selection plus `fit_gllvm(...; unit=..., unit_obs=...,
+> cluster=..., cluster2=...)`, for Gaussian, Poisson, Binomial, Beta, and NB2.
+> See [the current grouped-fit contract](../decisions/destination-b-grouped-fit.md),
+> [the public grouped-model guide](../../src/grouped-models.md), and
+> `test/test_destination_b_grouping_interval_matrix.jl`. That deterministic
+> interior test does **not** establish frozen-R parity, recovery, coverage, or
+> qualified Destination B capability.
+
 Owner requirement (relayed, `true-parity-decision-map.md:46`): *"make sure both Julia
 and R have unit_obs, unit, cluster and cluster2 — it is important."* Frozen oracle:
 gllvmTMB 0.7.0 `b4d5fee6`; taxonomy docs read via `git show origin/main:docs/design/...`

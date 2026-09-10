@@ -1,0 +1,7 @@
+# Destination B scope reconciliation — 2026-09-07
+
+The approved execution instruction permits recovering the authoritative named set, not inventing missing capabilities. Proposal commit `1b38906c` and sign-off commit `ede4e2d7b53b28229d95276f9e6835787247da70` enumerate exactly the same rows: A1–A15, B1–B4, C1–C5, D1–D8. Their total is 32. Sign-off changes status and writes a signed count of 42 but adds no row. Thus execution tracks the 32 named requirements and the explicitly approved grouping/phylogenetic/interval obligations; ten hypothetical capabilities are not added. The historical signed document remains unaltered, retaining the discrepancy as provenance.
+
+Checker: `node tools/destination_b_scope_check.mjs`. It compares current names and oracle against the exact sign-off and proposal, rejects omissions/additions/duplicates/wrong oracle, and prints the inventory. Its PASS verifies scope identity only, never model implementation or parity. Existing row descriptions mentioning blocked theta research are historical; completed later evidence is assessed separately rather than restarting that research.
+
+The 2026-09-07 approved plan supersedes T12's old proposal for no-op argument aliases and sequential cluster work: full shared grouped effects and parallel phylogenetic development are now required. It also preserves existing fit types rather than silently deprecating/renaming them. The frozen oracle remains gllvmTMB 0.7.0 `b4d5fee64def88bc768dda1f1f77c29b295edd86`; live 0.7.1 output is not interchangeable evidence.

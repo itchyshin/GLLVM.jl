@@ -1,0 +1,39 @@
+{
+  "schema_version": "destination-b-pedigree-precision-1",
+  "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "package_version": "0.7.0",
+  "package_path": "/private/tmp/destination-b-r070-build-l9Y1ri/library/gllvmTMB",
+  "dll_path": "/private/tmp/destination-b-r070-build-l9Y1ri/library/gllvmTMB/libs/gllvmTMB.so",
+  "dll_sha256": "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb",
+  "session_info": "R version 4.6.0 (2026-04-24)\nPlatform: aarch64-apple-darwin23\nRunning under: macOS Tahoe 26.6.1\n\nMatrix products: default\nBLAS:   /Library/Frameworks/R.framework/Versions/4.6/Resources/lib/libRblas.0.dylib \nLAPACK: /Library/Frameworks/R.framework/Versions/4.6/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1\n\nlocale:\n[1] C.UTF-8/C.UTF-8/C.UTF-8/C/C.UTF-8/C.UTF-8\n\ntime zone: America/Edmonton\ntzcode source: internal\n\nattached base packages:\n[1] stats     graphics  grDevices utils     datasets  methods   base     \n\nother attached packages:\n[1] gllvmTMB_0.7.0\n\nloaded via a namespace (and not attached):\n[1] compiler_4.6.0   Matrix_1.7-5     assertthat_0.2.1 generics_0.1.4  \n[5] cli_3.6.6        tools_4.6.0      grid_4.6.0       rlang_1.2.0     \n[9] lattice_0.22-9  ",
+  "pedigree": {
+    "node_labels": ["i1", "i2", "i3", "i4", "i5", "i6", "i7", "i8", "i9", "i10", "i11", "i12"],
+    "sire_one_based_zero_unknown": [0, 0, 0, 0, 1, 1, 2, 2, 5, 7, 9, 9],
+    "dam_one_based_zero_unknown": [0, 0, 0, 0, 3, 3, 4, 4, 6, 8, 10, 6]
+  },
+  "observed_node_one_based": [12, 5, 9, 7, 10, 6, 11, 8],
+  "observed_labels": ["i12", "i5", "i9", "i7", "i10", "i6", "i11", "i8"],
+  "matrix_species_id_zero_based": [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7],
+  "matrix_augmented_id_zero_based": [11, 11, 4, 4, 8, 8, 6, 6, 9, 9, 5, 5, 10, 10, 7, 7],
+  "Q_canonical": [
+    [2, 0, 1, 0, -1, -1, 0, 0, 0, 0, 0, 0],
+    [0, 2, 0, 1, 0, 0, -1, -1, 0, 0, 0, 0],
+    [1, 0, 2, 0, -1, -1, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 2, 0, 0, -1, -1, 0, 0, 0, 0],
+    [-1, 0, -1, 0, 2.5, 0.5, 0, 0, -1, 0, 0, 0],
+    [-1, 0, -1, 0, 0.5, 3.0714285714285712, 0, 0, -0.4285714285714286, 0, 0, -1.1428571428571428],
+    [0, -1, 0, -1, 0, 0, 2.5, 0.5, 0, -1, 0, 0],
+    [0, -1, 0, -1, 0, 0, 0.5, 2.5, 0, -1, 0, 0],
+    [0, 0, 0, 0, -1, -0.4285714285714286, 0, 0, 3.2380952380952381, 0.66666666666666663, -1.3333333333333333, -1.1428571428571428],
+    [0, 0, 0, 0, 0, 0, -1, -1, 0.66666666666666663, 2.6666666666666665, -1.3333333333333333, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, -1.3333333333333333, -1.3333333333333333, 2.6666666666666665, 0],
+    [0, 0, 0, 0, 0, -1.1428571428571428, 0, 0, -1.1428571428571428, 0, 0, 2.2857142857142856]
+  ],
+  "n_aug": 12,
+  "n_observed": 8,
+  "log_det_Q": 5.966390909555864,
+  "scale": 1,
+  "ridge_applied": false,
+  "fit_performed": false,
+  "claim": "precision transport only; no fit, interval, recovery or admission"
+}

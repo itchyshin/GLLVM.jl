@@ -1,0 +1,233 @@
+{
+  "schema_version": "destination-b-a4-s4-fixed-coordinate-summary-1",
+  "status": "raw summary exported unqualified",
+  "source": {
+    "raw_r_schema_version": "destination-b-a4-s4-frozen-r-raw-4",
+    "input_rds_path": "/private/tmp/destination-b-20260907-main/docs/dev-log/core070/destination-b-a4-s4/raw-frozen-r-02.rds",
+    "input_rds_sha256": "63c087dad7c4d3cdcaffa349d732fbee721c25e69abd2ca2f1db5d0a349fe599",
+    "summary_adapter_status": "runner_recorded_unverified",
+    "claim_boundary": "R-only raw source summarized; no pairing result was computed"
+  },
+  "r_provenance": {
+    "package_version": "0.7.0",
+    "package_path": "/private/tmp/destination-b-r070-marker-te6g9V/oracle-build/library/gllvmTMB",
+    "dll_path": "/private/tmp/destination-b-r070-marker-te6g9V/oracle-build/library/gllvmTMB/libs/gllvmTMB.so",
+    "dll_sha256": "5d8a9c43b725911452716d4462e655a974c06274925bdee0f1b0c9abec399fe1",
+    "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc",
+    "namespace_sha256": "9094613610789faab69c43195d3cfdafb2c7dfef284e6646b10dababa4fa132c",
+    "source_tree_sha256": "f83545faa6543dbb1f64d64bbf5a9498adcdf036cc3da5851f269912698b1cc7",
+    "installed_tree_sha256": "12c91ba3c8753bfccba2a1cda966a02e33a776892f52600377c9561a6ddd2b67",
+    "marker_path": "/private/tmp/destination-b-r070-marker-te6g9V/oracle-build/library/gllvmTMB/CORE070_SOURCE_PIN.toml",
+    "marker_sha256": "06d44520a7dbd35e52edb0b709f0cf7f9069ef45a45c52a144f260872a2b48a2",
+    "oracle_build_root": "/private/tmp/destination-b-r070-marker-te6g9V/oracle-build",
+    "oracle_build_receipt_path": "/private/tmp/destination-b-r070-marker-te6g9V/oracle-build/build.json",
+    "oracle_build_receipt_sha256": "ecb2bf37e4bc5ec4cbe60be777f9e46c4b7812387ee381e71077609872254b8a",
+    "oracle_source_path": "/private/tmp/destination-b-r070-marker-te6g9V/oracle-build/source",
+    "oracle_install_log_sha256": "f384affeb31926be6514ee8301c014fcde7e265a074e35da17132615692ce429",
+    "runtime": {
+      "r_version": "R version 4.6.0 (2026-04-24)",
+      "packages": {
+        "TMB": {
+          "version": "1.9.21",
+          "path": "/Users/z3437171/Library/R/arm64/4.6/library/TMB",
+          "description_sha256": "937932be51fc4e954ac25430756885f68a135260e263c5403e768315de73e49b"
+        },
+        "Matrix": {
+          "version": "1.7.5",
+          "path": "/Library/Frameworks/R.framework/Versions/4.6/Resources/library/Matrix",
+          "description_sha256": "24fc205067619b8247191d4c447743c6d02a01d079e61695e6c918623a67c910"
+        },
+        "ape": {
+          "version": "5.8.1",
+          "path": "/Users/z3437171/Library/R/arm64/4.6/library/ape",
+          "description_sha256": "f4338f6c5b2ce6672b27db3d5c6fd5464afd7d068fda651d9ffd7c87f247cc6a"
+        }
+      },
+      "runner_sha256": "9aceb9267e5f9d6e0bcbbb7817a42939a6c5d85fe910585dc4df8fa3a60b8db9",
+      "json_matrix_helper_sha256": "50dcf72d6185b373565c841850729b5ee8c98e031cfde61abe35d27d23209234",
+      "frozen_evaluator_helper_sha256": "10ca9b099a5c45be4a2275cce2b9b4216cb8f2e0ff34b2007eb957350d646e34"
+    },
+    "source_provenance": "verified_installed_marker"
+  },
+  "coordinate_labels": ["b1", "b2", "b3", "log_sigma", "lambda1", "lambda2", "lambda3"],
+  "rows": [
+    {
+      "row_id": "tree_height4_nonunit_ultrametric",
+      "kind": "tree",
+      "theta_r": {
+        "names": ["b_fix", "b_fix", "b_fix", "log_sigma_eps", "theta_rr_phy", "theta_rr_phy", "theta_rr_phy"],
+        "values": [0.40000000000000002, -0.20000000000000001, 0.29999999999999999, -1.2039728043259359, 0.90000000000000002, 0.5, -0.59999999999999998]
+      },
+      "r_nll": 18.562779828405443,
+      "raw_r_repeated_marginal_nll": 18.562779828405443,
+      "raw_artifact": {
+        "path": "/private/tmp/destination-b-20260907-main/docs/dev-log/core070/destination-b-a4-s4/raw-frozen-r-02.rds",
+        "sha256": "63c087dad7c4d3cdcaffa349d732fbee721c25e69abd2ca2f1db5d0a349fe599",
+        "attestation_status": "verified_installed_marker"
+      },
+      "provenance": {
+        "source": "source-attested frozen R raw receipt",
+        "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+      },
+      "source_response_sha256": "a096e8a4f4408923ea0e906defef936f133b92b65202a9baac9fff0d197373c2",
+      "precision_scale": 4,
+      "dense_original_vcv_only": false,
+      "construction": {
+        "route": "gllvmTMB(..., engine = 'tmb')",
+        "fit_performed": true,
+        "optimization_performed": true,
+        "optimizer_policy": "n_init=1; optimizer=nlminb",
+        "sdreport_requested": false,
+        "optimizer_result_retained": false,
+        "optimizer_result_compared": false
+      },
+      "canonical_input": {
+        "provenance": {
+          "package_version": "0.7.0",
+          "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+          "fixture_file_sha256": "089f87d0dcf3c1014fc99646953d8696a0d5aa747287561dd815b5b8bf097549",
+          "reference_file_sha256": "08c2c0f8dca3bb601e716da30d64dae2cd0ce3834766fa557dabb0444ddf4bd7",
+          "precision_source_sha256": "ab01ee47206565eb1af7da391af313953b8a97c6bb11d9b6160655aaa0429170",
+          "data_sha256": "a096e8a4f4408923ea0e906defef936f133b92b65202a9baac9fff0d197373c2"
+        },
+        "map": {
+          "species_id_one_based": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+          "species_aug_id_zero_based": [13, 6, 11, 8, 12, 7, 10, 9],
+          "observation_to_augmented_zero_based": [13, 13, 6, 6, 11, 11, 8, 8, 12, 12, 7, 7, 10, 10, 9, 9],
+          "n_augmented": 14,
+          "n_species_observed": 8,
+          "n_observations": 16
+        },
+        "precision": {
+          "log_det_Q": 15.706819081565977,
+          "scale": 4,
+          "ridge": 0,
+          "ridge_applied_once": false,
+          "ridge_operation": null
+        }
+      },
+      "qualified": false,
+      "public_formula_admission": "closed"
+    },
+    {
+      "row_id": "pedigree_12_nodes_8_observed_4_unobserved",
+      "kind": "pedigree",
+      "theta_r": {
+        "names": ["b_fix", "b_fix", "b_fix", "log_sigma_eps", "theta_rr_phy", "theta_rr_phy", "theta_rr_phy"],
+        "values": [0.40000000000000002, -0.20000000000000001, 0.29999999999999999, -1.2039728043259359, 0.90000000000000002, 0.5, -0.59999999999999998]
+      },
+      "r_nll": 21.948928545782763,
+      "raw_r_repeated_marginal_nll": 21.948928545782763,
+      "raw_artifact": {
+        "path": "/private/tmp/destination-b-20260907-main/docs/dev-log/core070/destination-b-a4-s4/raw-frozen-r-02.rds",
+        "sha256": "63c087dad7c4d3cdcaffa349d732fbee721c25e69abd2ca2f1db5d0a349fe599",
+        "attestation_status": "verified_installed_marker"
+      },
+      "provenance": {
+        "source": "source-attested frozen R raw receipt",
+        "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+      },
+      "source_response_sha256": "025d9ca79375962ef4110c3ce62f84b30cdeea2939957e03f7235e2352e5142b",
+      "precision_scale": 1,
+      "dense_original_vcv_only": false,
+      "construction": {
+        "route": "gllvmTMB(..., engine = 'tmb')",
+        "fit_performed": true,
+        "optimization_performed": true,
+        "optimizer_policy": "n_init=1; optimizer=nlminb",
+        "sdreport_requested": false,
+        "optimizer_result_retained": false,
+        "optimizer_result_compared": false
+      },
+      "canonical_input": {
+        "provenance": {
+          "package_version": "0.7.0",
+          "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+          "fixture_file_sha256": "089f87d0dcf3c1014fc99646953d8696a0d5aa747287561dd815b5b8bf097549",
+          "reference_file_sha256": "55ebb6e89461dcb6693d2b70d8c845d6ec1c1c3447fbaf20c6c58caaf9f221d3",
+          "precision_source_sha256": "c428e369e6fb554cc4b9bb03f250418d0d51474ba86e01d1be9c7c7301e615ee",
+          "data_sha256": "025d9ca79375962ef4110c3ce62f84b30cdeea2939957e03f7235e2352e5142b"
+        },
+        "map": {
+          "species_id_one_based": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+          "species_aug_id_zero_based": [11, 4, 8, 6, 9, 5, 10, 7],
+          "observation_to_augmented_zero_based": [11, 11, 4, 4, 8, 8, 6, 6, 9, 9, 5, 5, 10, 10, 7, 7],
+          "n_augmented": 12,
+          "n_species_observed": 8,
+          "n_observations": 16
+        },
+        "precision": {
+          "log_det_Q": 5.966390909555864,
+          "scale": 1,
+          "ridge": 0,
+          "ridge_applied_once": false,
+          "ridge_operation": null
+        }
+      },
+      "qualified": false,
+      "public_formula_admission": "closed"
+    },
+    {
+      "row_id": "dense_vcv_ridged_once",
+      "kind": "dense",
+      "theta_r": {
+        "names": ["b_fix", "b_fix", "b_fix", "log_sigma_eps", "theta_rr_phy", "theta_rr_phy", "theta_rr_phy"],
+        "values": [0.40000000000000002, -0.20000000000000001, 0.29999999999999999, -1.2039728043259359, 0.90000000000000002, 0.5, -0.59999999999999998]
+      },
+      "r_nll": 7.627081699167352,
+      "raw_r_repeated_marginal_nll": 7.627081699167352,
+      "raw_artifact": {
+        "path": "/private/tmp/destination-b-20260907-main/docs/dev-log/core070/destination-b-a4-s4/raw-frozen-r-02.rds",
+        "sha256": "63c087dad7c4d3cdcaffa349d732fbee721c25e69abd2ca2f1db5d0a349fe599",
+        "attestation_status": "verified_installed_marker"
+      },
+      "provenance": {
+        "source": "source-attested frozen R raw receipt",
+        "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+      },
+      "source_response_sha256": "e33fcb6d2b391e70b1a8a19d8285c6d0205bdf80d97f35c65d82395d9eef3243",
+      "precision_scale": 1,
+      "dense_original_vcv_only": true,
+      "construction": {
+        "route": "gllvmTMB(..., engine = 'tmb')",
+        "fit_performed": true,
+        "optimization_performed": true,
+        "optimizer_policy": "n_init=1; optimizer=nlminb",
+        "sdreport_requested": false,
+        "optimizer_result_retained": false,
+        "optimizer_result_compared": false
+      },
+      "canonical_input": {
+        "provenance": {
+          "package_version": "0.7.0",
+          "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+          "fixture_file_sha256": "089f87d0dcf3c1014fc99646953d8696a0d5aa747287561dd815b5b8bf097549",
+          "reference_file_sha256": "5166bd887d8e85a962d551fd8670bc6f095d7b7cfff22d927b04cba34f3b981f",
+          "precision_source_sha256": "5166bd887d8e85a962d551fd8670bc6f095d7b7cfff22d927b04cba34f3b981f",
+          "data_sha256": "e33fcb6d2b391e70b1a8a19d8285c6d0205bdf80d97f35c65d82395d9eef3243"
+        },
+        "map": {
+          "species_id_one_based": [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8],
+          "species_aug_id_zero_based": [0, 1, 2, 3, 4, 5, 6, 7],
+          "observation_to_augmented_zero_based": [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7],
+          "n_augmented": 8,
+          "n_species_observed": 8,
+          "n_observations": 16
+        },
+        "precision": {
+          "log_det_Q": 7.8611543987162609,
+          "scale": 1,
+          "ridge": 1e-08,
+          "ridge_applied_once": true,
+          "ridge_operation": "A_ridged = A_original + 1e-8 * I; Q_canonical = solve(A_ridged)"
+        }
+      },
+      "qualified": false,
+      "public_formula_admission": "closed"
+    }
+  ],
+  "qualified": false,
+  "public_formula_admission": "closed",
+  "claim_boundary": "raw summary exported unqualified"
+}

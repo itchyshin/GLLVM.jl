@@ -15,10 +15,27 @@ GLLVM.ordinal_loglik_site
 GLLVM.quadratic_loglik_site
 GLLVM.default_link(::GLLVM.Distributions.Normal)
 Base.summary(::GLLVM.GllvmFit)
+GLLVM.vcov(::Union{GLLVM.GroupedGaussianFit,GLLVM.GroupedNonGaussianFit,GLLVM.PrecisionMultivariateFit})
+GLLVM.stderror(::Union{GLLVM.GroupedGaussianFit,GLLVM.GroupedNonGaussianFit,GLLVM.PrecisionMultivariateFit})
+Base.summary(::Union{GLLVM.GroupedGaussianFit,GLLVM.GroupedNonGaussianFit,GLLVM.PrecisionMultivariateFit}, ::AbstractMatrix)
+Base.summary(::GLLVM.JointPhyloGroupedGaussianFit, ::AbstractMatrix)
 GLLVM.ldiv!(::AbstractVector, ::GLLVM.LowRankPlusDiagChol, ::AbstractVector)
 ```
 
 ## Internal implementation notes
+
+```@docs
+GLLVM._grouped_indep_variance_basis_gram
+GLLVM._grouped_indep_variance_profile_objective
+GLLVM._grouped_profile_refitter
+GLLVM._profile_invert_callback
+GLLVM._grouped_gaussian_variance_profile
+GLLVM.joint_phylo_grouped_gaussian_loglik
+GLLVM.fit_joint_phylo_grouped_gaussian
+GLLVM._joint_covariance_identification
+GLLVM._validate_precision_fit_input
+GLLVM.joint_phylo_grouped_population_predict
+```
 
 Names beginning with an underscore are internal. They can change without the
 stability guarantees of the public fitting API. In particular, quadrature helpers
@@ -138,3 +155,33 @@ product of the two orthonormal bases. Used by
 [`diagnose_kernel_separability`](diagnostics.md)
 (`src/diagnostics.jl`) rather than the naive (and geometrically wrong)
 `svd(A'B).S` on non-orthonormal bases.
+
+## Destination B development internals
+
+These implementation details support the developing grouping and precision
+routes. Their presence here is not public R admission, frozen-reference parity,
+recovery qualification, or an assurance of valid intervals at a boundary.
+Use the documented unified Gaussian route in [Joint named grouping models](grouped-models.md)
+for the currently exposed workflow. Unexported functions remain internal.
+
+```@docs
+GLLVM._precision_multivariate_nll
+GLLVM.joint_grouped_laplace_loglik
+GLLVM._pmv_phylogenetic_signal
+GLLVM.fit_grouped_gaussian
+GLLVM._grouped_gaussian_nll
+GLLVM.fit_precision_multivariate
+GLLVM._grouped_gaussian_factor_nll
+GLLVM._precision_multivariate_unpack
+GLLVM.multivariate_phylo_precision_loglik
+GLLVM._marginal_target_intervals
+GLLVM.fit_grouped_nongaussian
+GLLVM.grouped_nongaussian_zero_effect_predict
+GLLVM.destination_b_population_predict
+GLLVM.grouped_trait_design
+GLLVM._grouped_laplace_design
+GLLVM._grouped_gaussian_objective
+GLLVM.JointGroupedLaplaceResult
+GLLVM._joint_grouped_state
+GLLVM._bridge_fit_precision_multivariate
+```

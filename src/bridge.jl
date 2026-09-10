@@ -455,6 +455,14 @@ or a flat precision payload. When set, `y` is a length-`p` trait vector and the
 return is the univariate [`fit_phylo_gaussian`](@ref) result (`diagnostic_only =
 true`). This does not lift the R `phylo_rr` gate.
 
+Set `options["phylo_model"]="multivariate"` explicitly to select the Gaussian
+multivariate precision candidate instead. Supply a traits-by-observations `y`,
+rank `d`, and required one-based observation-to-tip `options["species_id"]`.
+`options["mode"]` is `"barelowrank"` or `"explicitunique"`; intervals support
+`"none"` or `"wald"`. It returns a distinct flat candidate contract, not the
+legacy univariate diagnostic result. R `phylo_rr` admission remains separately
+gated. Missing responses, `N`, `X_lv`, and named-label overrides are unsupported.
+
 `family = "zib"` reads `N` differently: the zero-inflated binomial carries ONE
 shared scalar trials count, so `N` is **required** (there is no safe default —
 `N = 1` is the zero-inflated Bernoulli, whose two intercepts are aliased) and a
@@ -487,9 +495,20 @@ function bridge_fit(; y,
                     sources = nothing,
                     phylo = nothing,
                     options = Dict{String,Any}())
+    phylo_model = String(_bridge_get(options, "phylo_model", "diagnostic"))
+    phylo_model in ("diagnostic", "multivariate") || throw(ArgumentError(
+        "bridge_fit: phylo_model must be diagnostic or multivariate"))
+    phylo === nothing && phylo_model != "diagnostic" && throw(ArgumentError(
+        "bridge_fit: multivariate phylo_model requires an explicit precision payload"))
     if phylo !== nothing
         sources === nothing || throw(ArgumentError(
             "bridge_fit: phylo precision consume hook cannot combine with sources"))
+        if phylo_model == "multivariate"
+            all(isnothing, (N, X_lv, mask, trait_names, unit_names)) || throw(ArgumentError(
+                "bridge_fit: multivariate precision does not support N, X_lv, mask or label overrides"))
+            return _bridge_fit_precision_multivariate(y, phylo;
+                family=family, d=d, X=X, options=options)
+        end
         return _bridge_fit_phylo_precision(y, phylo; family = family, options = options)
     end
     family === nothing && throw(ArgumentError("bridge_fit: family is required"))
@@ -2109,8 +2128,11 @@ const PHYLO_PRECISION_LOGDET_TOL = 1e-8
 Pack a `PrecisionPhy` into a JuliaCall-flat NamedTuple for the phylo
 transport wire. Field meanings match frozen gllvmTMB 0.7.0:
 `Ainv_phy_rr` triplets (`i`, `j`, `x`), `n_aug_phy`, tip count,
-0-indexed `species_aug_id`, node labels, applied `scale`, and shipped
-`log_det_A_phy_rr`.
+0-indexed unique tip-to-node `species_aug_id`, node labels, applied `scale`,
+and `log_det = logdet(Q)`. The R adapter must negate R's covariance
+`log_det_A_phy_rr` to obtain this precision checksum. R's observation-level
+`species_aug_id` may repeat; this payload instead carries one entry per tip,
+with observation-to-tip indexing transported separately by the model adapter.
 """
 function phylo_precision_payload(pp::PrecisionPhy)
     I, J, V = findnz(pp.Q)
@@ -2248,4 +2270,3 @@ function _bridge_fit_phylo_precision(y, phylo; family = nothing, options = nothi
         diagnostic_only = true,
     )
 end
-
