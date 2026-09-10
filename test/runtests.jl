@@ -249,6 +249,7 @@ println(_SHARD === nothing ?
     _shard_include("test_destination_b_b1_cluster_paired_fit.jl")
     _shard_include("test_destination_b_b1_cluster2_paired_fit.jl")
     _shard_include("test_destination_b_b1_joint_gaussian_paired_fit.jl")
+    _shard_include("test_destination_b_b1_balanced_complete_crossed_design.jl")
     _shard_include("test_precision_multivariate_fit.jl")
     _shard_include("test_precision_fit_admission.jl")
     _shard_include("test_precision_shared_residual.jl")

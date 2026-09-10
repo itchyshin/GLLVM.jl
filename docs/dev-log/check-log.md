@@ -18962,3 +18962,9 @@ receipt to verify the response-data MD5, and uses tampered byte/response
 controls. It verifies the recorded negative receipt, not a stationary or
 paired-fit claim. No full suite, JET, Aqua, allocation check, R-engine edit,
 push, merge, or qualification claim was made.
+
+## 2026-09-10 — B1 balanced complete-crossed pre-run construction
+
+- **TDD red:** the focused construction gate initially printed `RED: fixture construction missing` and exited nonzero.
+- **Static green:** the dependency-free Julia fixture test verifies 3,600 wide / 7,200 long rows, the fixed DGP response digest, tensor-kernel rank 10, and minimum eigenvalue `0.3408784387221166 >= 0.30`.
+- No frozen-R or Julia fit/optimizer, receipt, recovery, coverage, paired result, or B1 qualification was run or claimed.
