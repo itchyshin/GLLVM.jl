@@ -22,7 +22,7 @@
   right: clamp(3rem, 9vw, 11rem);
   width: clamp(10rem, 16vw, 16rem);
   aspect-ratio: 1;
-  background: url("/gllvmjl-mark-logo-image25.png") center / contain no-repeat;
+  background: url("/assets/gllvmjl-mark-logo-image25.png") center / contain no-repeat;
   pointer-events: none;
 }
 

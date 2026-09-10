@@ -18164,3 +18164,17 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   route and the 960 px breakpoint; the PNG returns HTTP 200. A fresh desktop
   screenshot remains pending while the local screen is locked. No model,
   bridge, parity, interval, release, or registry claim changed.
+
+## 2026-09-10 — Image 2.5 deployed-asset route correction
+
+- The GitHub Pages tree contains the stylesheet from the earlier deployment,
+  but not the selected PNG at the stylesheet's site-root route. The earlier
+  HTTP-200 assertion is therefore withdrawn rather than treated as a cache.
+- Root cause: Documenter stages source images under `assets/`, while the hero
+  CSS used `/gllvmjl-mark-logo-image25.png`. The route now uses
+  `/assets/gllvmjl-mark-logo-image25.png`.
+- Targeted staged-artifact check PASS: the Documenter public tree contains the
+  PNG and the copied VitePress CSS names the same `/assets/` route. The full
+  local VitePress bundle again stalled, so CI is the authoritative build and
+  deployment gate. No model, bridge, parity, interval, release, or registry
+  claim changed.
