@@ -76,3 +76,23 @@ does not invoke preflight, load `gllvmTMB`, construct data, or fit a model.
 
 The two failed pre-fit logs remain immutable. The repaired predicate is ready
 for independent review only; no third control invocation is authorized yet.
+
+## One authorized frozen-R control — negative result
+
+After a fresh authorization, the repaired runner's no-fit preflight passed and
+one (and only one) fixed B1 frozen-R ML control wrote
+`frozen-r070-b1-balanced-complete-crossed-single-control-20260910-02.json`.
+The receipt and its hard-linked no-clobber marker have SHA-256
+`ab090669922d2868469e4aef1b245ed492e9db6ac3c30b578334034af7931d73`; the
+preflight and control raw-log SHA-256 values are respectively
+`8058692230a6bb73297562172a7c789f0b3982498803bfc9910c6b8618b20612` and
+`29748552d10906d68027a95df94834063c5c6be3253c3e8da0322166e3bfafb7`.
+
+The fit returned `status = "success"` but is **not qualified**:
+`convergence = 1` (`singular convergence (7)`) and
+`max(abs(gr)) = 0.00092870391764413951`, exceeding the immutable gate
+`convergence == 0 && max(abs(gr)) <= 1e-6`. It completed in
+`0.94606304168701172` seconds, within the 60-minute hard stop. This negative
+receipt records neither a paired result nor B1 qualification. It ends this
+protocol: no retry, reseed, restart, start/mapping/optimizer/data/tolerance
+change, or Julia paired fit is authorized.

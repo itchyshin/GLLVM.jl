@@ -59,3 +59,32 @@ independent review; no model result or B1 qualification exists.
 ## Rose Verdict
 
 Rose verdict: PASS WITH NOTES — construction-only scope verified; inferential and paired claims withheld.
+
+## One Authorized Control — Negative Receipt
+
+The repaired guard then underwent independent review and a fresh authorization
+allowed exactly one frozen-R control. Its no-fit provenance preflight passed.
+The control receipt, hard-linked no-clobber marker, and separate raw preflight
+and control logs were retained under `docs/dev-log/core070/destination-b-b1/`.
+The no-fit receipt-I/O test verifies the marker/receipt hash identity, pinned
+source/version/runner/specification, preflight raw log, and the recorded
+nonqualification without loading `gllvmTMB`.
+
+Final no-fit checks passed: `Rscript --vanilla
+test/test_destination_b_b1_balanced_complete_crossed_control_receipt.R`,
+`Rscript --vanilla test/test_destination_b_b1_balanced_complete_crossed_control_io.R`,
+and `/Users/z3437171/.juliaup/bin/julia --startup-file=no --history-file=no
+--project=. test/test_destination_b_b1_balanced_complete_crossed_design.jl`
+(43/43), plus `git diff --check`.
+
+The control completed in `0.94606304168701172` seconds but failed the immutable
+gate: `convergence = 1` (`singular convergence (7)`) and
+`max(abs(gr)) = 0.00092870391764413951 > 1e-6`. The stop rule was followed:
+no retry, reseed, restart, start/mapping/optimizer/data/tolerance change, or
+Julia paired fit. This is a retained negative single-control receipt, not a
+paired result or B1 qualification.
+
+## Rose Verdict
+
+Rose verdict: FAIL for B1 qualification; PASS for the one-control execution
+protocol and fail-closed stop boundary.

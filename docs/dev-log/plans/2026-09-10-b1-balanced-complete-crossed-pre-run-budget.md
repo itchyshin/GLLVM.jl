@@ -17,6 +17,12 @@ The external preflight later passed. The two no-fit output-guard failures
 consumed no model time and left no result JSON; a hard-stop timer was present
 for each proposed control. They do not authorize a replacement invocation.
 
-The output-guard repair has been static/pure-tested only. The revised runner is
-awaiting independent predicate review; no execution estimate is consumed and
-no control may launch without a new direction.
+The output-guard repair was then independently reviewed, and one freshly
+authorized control ran under this unchanged estimate and a 60-minute hard
+stop. It completed in `0.94606304168701172` seconds, but failed the acceptance
+gate: `convergence = 1` (`singular convergence (7)`) and
+`max(abs(gr)) = 0.00092870391764413951`, rather than `convergence == 0` and
+`max(abs(gr)) <= 1e-6`. The observed duration is recorded, not used to authorize
+another run or weaken the estimate/gate. The protocol stopped immediately:
+no reseed, restart, start/mapping/optimizer/data/tolerance change, or Julia
+paired fit.

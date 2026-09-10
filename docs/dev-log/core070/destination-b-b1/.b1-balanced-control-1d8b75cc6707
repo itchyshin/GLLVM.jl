@@ -1,0 +1,47 @@
+{
+  "receipt_kind": "frozen_R_B1_balanced_complete_crossed_single_control",
+  "source": {
+    "path": "/private/tmp/destination-b-b1-r070-rebuild",
+    "git_sha": "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+  },
+  "installed": {
+    "library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910",
+    "loaded_version": "0.7.0"
+  },
+  "r_runner": {
+    "path": "tools/destination_b/b1_balanced_complete_crossed_control.R",
+    "sha256": "6579993fe30894e23c252368465df86ace4ce359602cfa55c58552e828df1309"
+  },
+  "specification": {
+    "formula": "value ~ 0 + trait + latent(0 + trait | unit, d = 1, unique = FALSE) + indep(0 + trait | obs) + indep(0 + trait | cluster_id) + indep(0 + trait | cluster2_id)",
+    "family": "gaussian()",
+    "REML": false,
+    "seed": 20260915,
+    "n_wide": 3600,
+    "n_long": 7200,
+    "data_md5": "fc98745c31ec15fdf63f95f9ce663813",
+    "control": {
+      "n_init": 1,
+      "se": false,
+      "optimizer": "nlminb",
+      "eval_max": 100000,
+      "iter_max": 100000,
+      "rel_tol": 9.9999999999999998e-13,
+      "x_tol": 9.9999999999999998e-13,
+      "xf_tol": 9.9999999999999998e-13
+    }
+  },
+  "preflight": "PASS",
+  "elapsed_seconds": 0.94606304168701172,
+  "status": "success",
+  "fit": {
+    "logLik": 2188.6079316573005,
+    "convergence": 1,
+    "optimizer_message": "singular convergence (7)",
+    "gradient_max_abs": 0.00092870391764413951
+  },
+  "acceptance": {
+    "qualified": false,
+    "rule": "convergence == 0 && max(abs(gr)) <= 1e-6"
+  }
+}

@@ -19006,6 +19006,31 @@ push, merge, or qualification claim was made.
 - No frozen-R preflight, package load, `gllvmTMB()` call, optimizer, Julia fit,
   receipt, retry, or B1 qualification occurred during this repair.
 
+### One authorized B1 control — retained negative receipt
+
+- The repaired no-clobber guard was independently checked, then a fresh
+  authorization ran exactly one fixed frozen-R B1 ML control with one-thread
+  caps, its no-fit provenance preflight, and a 60-minute hard stop. The
+  preflight passed; the control finished in `0.94606304168701172` seconds.
+- The JSON receipt (`SHA-256
+  ab090669922d2868469e4aef1b245ed492e9db6ac3c30b578334034af7931d73`) and its
+  hard-linked no-clobber marker have identical contents. Separate raw
+  preflight/control logs are retained with SHA-256 respectively
+  `8058692230a6bb73297562172a7c789f0b3982498803bfc9910c6b8618b20612` and
+  `29748552d10906d68027a95df94834063c5c6be3253c3e8da0322166e3bfafb7`.
+- The fit is nonqualifying: `convergence = 1` (`singular convergence (7)`) and
+  `max(abs(gr)) = 0.00092870391764413951 > 1e-6`. The immutable stop rule was
+  followed: no retry/reseed/restart/start/mapping/optimizer/data/tolerance
+  change, and no Julia paired fit. This is neither paired evidence nor B1
+  qualification.
+- No-fit verification passed: `Rscript --vanilla
+  test/test_destination_b_b1_balanced_complete_crossed_control_receipt.R`,
+  `Rscript --vanilla
+  test/test_destination_b_b1_balanced_complete_crossed_control_io.R`, and
+  `/Users/z3437171/.juliaup/bin/julia --startup-file=no --history-file=no
+  --project=. test/test_destination_b_b1_balanced_complete_crossed_design.jl`
+  (43/43). `git diff --check` passed.
+
 ## 2026-09-10 — B1 mixed public formula/extractor route
 
 - **Focused public test:** `/Users/z3437171/.juliaup/bin/julia --startup-file=no --history-file=no --project=. test/test_destination_b_public.jl` passed **39/39** in **10.0 s**: 9 existing public grouping checks, 22 mixed-B1 formula/extraction/interval-status checks, and 8 fixed-coordinate unit-oracle checks.
