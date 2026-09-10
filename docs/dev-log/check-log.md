@@ -18763,3 +18763,28 @@ This is one paired Gaussian `unit` fit. It is not B1 qualification, an
 interval/recovery/coverage result, a test of `unit_obs`, `cluster`, or
 `cluster2`, generic `engine = "julia"` admission, S3b/S4 evidence, dense
 `vcv` qualification, 0.7 parity, or Destination B completion.
+
+# 2026-09-10 — B1 paired Gaussian nested `unit_obs` fit
+
+The second B1 pair uses frozen `gllvmTMB` 0.7.0 at
+`b4d5fee64def88bc768dda1f1f77c29b295edd86`, archive SHA-256
+`0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc`, and the
+isolated shared-library SHA-256
+`3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30`.
+The distinct runner locks those identities before fitting a deterministic
+2-trait × 48-observation response: 12 units, two globally nested `unit_obs`
+groups per unit, and two repeated measurements per group--trait cell.
+
+The retained receipt records the long response, mapping, source/build/data/
+runner locks, fixed coordinates, and the canonical diagonal W covariance.
+Frozen R converged at marginal log likelihood `-50.296108604526843`.
+The Julia test matches fixed R coordinates and an independent public refit,
+then moves one measurement to the other `unit_obs` group within its parent
+unit to prove the incidence partition matters.
+
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=155/296 Pkg.test()` passes `23/23` in
+6.1 s after the independent-review provenance locks were added. This is one
+nested diagonal Gaussian `unit_obs` pair—not crossed or
+latent W support, interval/recovery/coverage evidence, full B1, S3b/S4, dense
+`vcv`, FRK, generic Julia-engine admission, 0.7 parity, or Destination B
+completion.

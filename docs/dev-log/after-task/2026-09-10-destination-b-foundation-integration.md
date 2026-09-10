@@ -190,3 +190,23 @@ julia --project=. -e 'using Pkg; Pkg.test()'
 Rose verdict: FAIL — local integration is coherent, but full quality receipt,
 live S3b/S4 pairing, and recovery evidence are still absent; no completion or
 parity claim is permitted.
+
+## Addendum — B1 nested `unit_obs` paired receipt
+
+The candidate now retains a second, distinct B1 Gaussian pair at
+`docs/dev-log/core070/destination-b-b1/frozen-r070-unit-obs-gaussian-paired-receipt-20260910.json`.
+It is frozen-R 0.7.0 source/build attested and uses a deterministic nested,
+replicated diagonal W-tier design: two traits, 12 units, two `unit_obs` groups
+per unit, and two measurements per group--trait cell. The R fit converged at
+`-50.296108604526843`; the normal Julia package test locks source, archive,
+shared-library, data, runner, formula and convergence provenance, matches its
+fixed coordinates and independent Julia refit, and detects a changed valid
+within-unit incidence. `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=155/296
+Pkg.test()` passes 23/23 in 6.1 s.
+
+Independent numerical review found no P0/P2 issue. Its two P1 evidence
+findings (missing provenance locks and stale future-tense alignment wording)
+were repaired and rerun. Rose's programme verdict remains **FAIL**: this is
+only one nested diagonal Gaussian `unit_obs` fit, with no crossed/latent W,
+interval, recovery, coverage, cluster, cluster2, S3b/S4, dense-`vcv`, generic
+Julia-engine, broad 0.7 parity, or Destination B completion claim.
