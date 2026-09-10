@@ -18814,3 +18814,33 @@ qualification, a joint grouping result, latent/full cluster covariance,
 interval/recovery/coverage evidence, `cluster2`, S3b/S4, dense `vcv`, FRK,
 `engine = "julia"` admission, 0.7.1 or broad 0.7 parity, or Destination B
 completion.
+
+# 2026-09-10 — B1 paired Gaussian crossed `cluster2` fit
+
+The fourth B1 pair uses frozen `gllvmTMB` 0.7.0 at
+`b4d5fee64def88bc768dda1f1f77c29b295edd86`, archive SHA-256
+`0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc`, and the
+isolated shared-library SHA-256
+`3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30`.
+The deterministic design has two traits, six `cluster2` groups, the same four
+unit labels recurring in every cluster2 group, and two repeats per
+unit--cluster2 cell. No unit or first-cluster covariance term is selected.
+
+Frozen R converged at marginal log likelihood `-2.9311750821141498`. The
+runner records R's named parameter reconstruction and trait ordering because
+its raw active outer order is `[b_fix; log_sigma_eps; theta_diag_cluster2]`,
+whereas the Julia public start is deliberately reordered as
+`[b_fix; theta_diag_cluster2; log_sigma_eps]`. The registered Julia regression
+locks the frozen source/build/data/runner identities and trait-order metadata,
+matches retained coordinates and an independent public refit, matches beta,
+diagonal cluster2 Sigma, and residual SD, and changes a cluster2 membership as
+a negative control. It also binds R's raw active coordinate names and values
+before proving the named reorder, and verifies the full four-unit by six-group
+crossing. `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=157/298 Pkg.test()` passes
+`32/32` in 6.1 s.
+
+This is one crossed, diagonal Gaussian `cluster2` pair. It is not B1
+qualification, a joint grouping result, latent/full cluster2 covariance,
+interval/recovery/coverage evidence, S3b/S4, dense `vcv`, FRK,
+`engine = "julia"` admission, 0.7.1 or broad 0.7 parity, or Destination B
+completion.

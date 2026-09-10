@@ -175,8 +175,8 @@ new isolated temporary library, never from the dirty 0.7.1 working checkout.
 
 ## Remaining Risks and Next Command
 
-This candidate is not a Destination B qualification. Required next work is a
-paired Gaussian `cluster2` B1 fit and joint-grouping evidence; a reviewed
+This candidate is not a Destination B qualification. Required next work is
+joint-grouping B1 evidence; a reviewed
 structured `phylo_dep()` Julia transport/interval route; independent recovery;
 and a retained full-suite quality receipt. If a fresh controlled full run
 reproduces its earlier EM message, it must be investigated as a
@@ -209,7 +209,7 @@ findings (missing provenance locks and stale future-tense alignment wording)
 were repaired and rerun. Rose's programme verdict remains **FAIL**: this
 addendum records the nested diagonal Gaussian `unit_obs` fit. The subsequent
 crossed diagonal `cluster` pair is recorded below; latent W, intervals,
-recovery, coverage, `cluster2`, S3b/S4, dense-`vcv`, generic Julia-engine,
+recovery, coverage, S3b/S4, dense-`vcv`, generic Julia-engine,
 broad 0.7 parity, and Destination B completion remain absent.
 
 ## Addendum — B1 crossed `cluster` paired receipt
@@ -229,5 +229,24 @@ incidence. `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=156/297 Pkg.test()` passes
 Independent re-review found no P0/P1/P2 issue after the fixture was corrected
 from an accidentally nested first draft. Rose's programme verdict remains
 **FAIL**: these are three individual B1 Gaussian source-alignment pairs, not
-joint grouping, `cluster2`, interval/recovery/coverage, S3b/S4, dense-`vcv`,
+joint grouping, interval/recovery/coverage, S3b/S4, dense-`vcv`,
 generic Julia-engine, broad 0.7 parity, or Destination B completion evidence.
+
+## Addendum — B1 crossed `cluster2` paired receipt
+
+The candidate now retains a fourth distinct B1 Gaussian pair at
+`docs/dev-log/core070/destination-b-b1/frozen-r070-cluster2-gaussian-paired-receipt-20260910.json`.
+It is frozen-R 0.7.0 source/build attested and uses a deterministic crossed,
+replicated diagonal cluster2-tier design: two traits, six cluster2 labels, the
+same four unit labels recurring in every group, and two measurements per
+unit--cluster2 cell. No unit or first-cluster covariance is selected. The R
+fit converged at `-2.9311750821141498`; the normal Julia package test locks
+source, archive, shared-library, data, runner, formula, trait ordering, and
+convergence provenance, matches fixed coordinates and an independent Julia
+refit, and detects changed cluster2 incidence. `OPENBLAS_NUM_THREADS=1
+GLLVM_TEST_SHARD=157/298 Pkg.test()` passes 32/32 in 6.1 s.
+
+Rose's programme verdict remains **FAIL**: these are four individual B1
+Gaussian source-alignment pairs, not joint grouping, interval/recovery/
+coverage, S3b/S4, dense-`vcv`, generic Julia-engine, broad 0.7 parity, or
+Destination B completion evidence.
