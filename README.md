@@ -9,6 +9,7 @@ qualification remains in progress. The explicit Gaussian `phylo=PrecisionPhy`
 route supports precision-only fits and a bounded joint independent-grouping
 model; source-specific covariance and full-marginal interval diagnostics remain
 separate from frozen-R admission and recovery evidence.
+GLLVM.jl remains an experimental partial R-to-Julia bridge, not 0.7 parity.
 Precision-only fitting offers `residual_mode=:shared` alongside the unchanged
 trait-specific default; the joint grouping route remains trait-specific.
 Eligible independent Gaussian grouping models also have an explicit

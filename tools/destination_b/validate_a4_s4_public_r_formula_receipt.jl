@@ -111,7 +111,7 @@ function _s4_retained_invalid_cbind_diagnostic(receipt)
 end
 
 """
-    validate_a4_s4_public_r_formula_receipt(receipt)
+    validate_a4_s4_public_r_formula_receipt(receipt; allow_synthetic = false)
 
 Fail closed unless `receipt` records the directly evaluated public
 `traits()` plus `phylo_dep()` two-trait Gaussian formula on a non-unit
@@ -121,9 +121,20 @@ implemented structured Julia transport within `1e-4`.
 
 The returned value only says that the receipt has this structure.  It never
 authorizes a public parity claim, release, or change to gllvmTMB.
+
+`allow_synthetic` exists solely for the in-memory validator fixture in the
+Julia test suite. A fixture tagged `synthetic_validator_fixture` is rejected
+by default, so its invented attestations can never be read as paired evidence.
 """
-function validate_a4_s4_public_r_formula_receipt(receipt)
+function validate_a4_s4_public_r_formula_receipt(receipt; allow_synthetic::Bool = false)
     receipt = _s4_receipt_dict(receipt, "receipt")
+    fixture_kind = get(receipt, "fixture_kind", "recorded_receipt")
+    fixture_kind isa AbstractString || _s4_receipt_fail("receipt.fixture_kind is not a string")
+    fixture_kind in ("recorded_receipt", "synthetic_validator_fixture") ||
+        _s4_receipt_fail("receipt.fixture_kind is unknown")
+    synthetic = fixture_kind == "synthetic_validator_fixture"
+    synthetic && !allow_synthetic &&
+        _s4_receipt_fail("synthetic validator fixtures are not evidence receipts")
     _s4_receipt_string(receipt, "schema_version", "receipt") == _S4_PUBLIC_R_FORMULA_SCHEMA ||
         _s4_receipt_fail("unexpected schema version")
     _s4_receipt_string(receipt, "status", "receipt") == "r_formula_paired_endpoints_recorded" ||
@@ -217,7 +228,8 @@ function validate_a4_s4_public_r_formula_receipt(receipt)
     end
 
     return Dict(
-        "status" => "valid_fresh_r_formula_receipt",
+        "status" => synthetic ? "valid_synthetic_r_formula_receipt_fixture" :
+            "valid_fresh_r_formula_receipt",
         "claim_status" => "receipt_valid_not_publicly_promoted",
         "endpoint_atol" => _S4_PUBLIC_R_FORMULA_ATOL,
         "n_targets" => length(_S4_PUBLIC_R_FORMULA_TARGETS),

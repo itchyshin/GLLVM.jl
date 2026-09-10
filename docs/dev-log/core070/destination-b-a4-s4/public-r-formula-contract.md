@@ -71,6 +71,8 @@ The structural check is intentionally available without R:
 /Users/z3437171/.juliaup/bin/julia --project=. test/test_destination_b_a4_s4_public_r_formula_receipt.jl
 ```
 
-It validates the exact formula, target mapping, retained invalid diagnostic,
-and explicit Julia gate in an in-memory fixture. It does not run R, load
-`gllvmTMB`, or fit either implementation.
+It validates the exact schema and mutation failures with an explicitly tagged
+synthetic in-memory fixture. The validator rejects that fixture by default;
+the test must opt in with `allow_synthetic = true`, and its result is labelled
+synthetic rather than a fresh receipt. It does not run R, load `gllvmTMB`, or
+fit either implementation.

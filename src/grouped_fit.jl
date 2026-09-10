@@ -126,7 +126,7 @@ function _grouped_term_unpack(theta::AbstractVector, p::Integer,
         terms::Vector{GroupingTerm})
     T = eltype(theta)
     loads = Matrix{T}[]
-    uniques = Any[]
+    uniques = Union{Nothing,Vector{T}}[]
     covariances = Matrix{T}[]
     offset = 0
     for term in terms

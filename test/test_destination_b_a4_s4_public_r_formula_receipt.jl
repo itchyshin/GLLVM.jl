@@ -1,8 +1,9 @@
 using Test
 
-# This test is deliberately independent of R and gllvmTMB.  It validates the
-# receipt contract that a separately run, source/DLL-attested public R formula
-# execution must satisfy before any parity result can be reviewed.
+# This test is deliberately independent of R and gllvmTMB. It supplies an
+# explicitly synthetic validator fixture; it is neither an R execution nor
+# paired evidence. A real receipt must be validated without the synthetic
+# opt-in after its source/DLL and Julia-transport evidence exists.
 include(joinpath(@__DIR__, "..", "tools", "destination_b",
     "validate_a4_s4_public_r_formula_receipt.jl"))
 
@@ -18,11 +19,12 @@ function _s4_endpoint(target, offset = 0.0)
         "lower" => -0.2 + offset, "upper" => 0.3 + offset)
 end
 
-function _s4_public_r_formula_receipt()
+function _s4_synthetic_public_r_formula_receipt()
     r_endpoints = [_s4_endpoint(target) for target in _S4_R_FORMULA_TARGETS]
     julia_endpoints = [_s4_endpoint(target, 5e-5) for target in _S4_R_FORMULA_TARGETS]
     Dict(
         "schema_version" => "destination-b-a4-s4-public-r-formula-receipt-2",
+        "fixture_kind" => "synthetic_validator_fixture",
         "status" => "r_formula_paired_endpoints_recorded",
         "claim_status" => "receipt_valid_not_publicly_promoted",
         "public_r_formula" => Dict(
@@ -77,9 +79,10 @@ function _s4_public_r_formula_receipt()
 end
 
 @testset "S4 public R-formula paired-receipt contract" begin
-    receipt = _s4_public_r_formula_receipt()
-    checked = validate_a4_s4_public_r_formula_receipt(receipt)
-    @test checked["status"] == "valid_fresh_r_formula_receipt"
+    receipt = _s4_synthetic_public_r_formula_receipt()
+    @test_throws ArgumentError validate_a4_s4_public_r_formula_receipt(receipt)
+    checked = validate_a4_s4_public_r_formula_receipt(receipt; allow_synthetic = true)
+    @test checked["status"] == "valid_synthetic_r_formula_receipt_fixture"
     @test checked["claim_status"] == "receipt_valid_not_publicly_promoted"
     @test checked["endpoint_atol"] == 1e-4
     @test checked["n_targets"] == 7

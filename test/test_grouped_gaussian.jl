@@ -59,6 +59,17 @@ using Test, GLLVM, LinearAlgebra, SparseArrays
     end
 end
 
+@testset "grouped term unpack keeps unique variances concrete" begin
+    terms = GLLVM.GroupingTerm[
+        GLLVM.GroupingTerm(:unit; mode = :latent, rank = 1, unique = true),
+        GLLVM.GroupingTerm(:cluster; mode = :dep),
+    ]
+    theta = zeros(7)
+    _, uniques, _, used = GLLVM._grouped_term_unpack(theta, 2, terms)
+    @test used == length(theta)
+    @test eltype(uniques) === Union{Nothing,Vector{Float64}}
+end
+
 @testset "low-rank grouped Gaussian factor kernel" begin
     @test isdefined(GLLVM, :_grouped_gaussian_factor_nll)
     if isdefined(GLLVM, :_grouped_gaussian_factor_nll)

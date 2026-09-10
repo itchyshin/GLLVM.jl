@@ -18637,3 +18637,36 @@ R-ridged-once dense-`vcv` transport contract. FRK remains parked at
 no R/C++ engine work, no independent Julia inversion, no 0.7 parity claim, and
 all existing evidence gates. It changes execution authority only; no capability
 row or parent gate is qualified by this record.
+
+# 2026-09-10 — Destination B local foundation integration and S4 receipt boundary
+
+The approved Destination B foundation was replayed onto a clean local candidate
+from current `origin/main`, preserving the published Image 2.5 PNG landing
+mark and removing the foundation's obsolete SVG hero declaration. The merge
+contained only the expected landing-CSS and check-log conflicts; both were
+resolved without touching the published site's asset contract. The S4 public
+formula correction is now registered in `test/runtests.jl`.
+
+Independent review caught a false-evidence hazard before this candidate was
+considered ready: the S4 validator accepted an invented in-memory receipt as a
+fresh R/Julia record. The test fixture is now tagged synthetic, rejected by
+default, and accepted only with an explicit test-only `allow_synthetic = true`
+opt-in; it reports a synthetic status. A second review found an `Any[]` unique
+variance container on the grouped objective path. It is now
+`Union{Nothing,Vector{T}}[]`, with a regression assertion that failed before
+the repair.
+
+Focused checks: S4 validator boundary `27/27` in 0.8 s; grouped Gaussian
+kernel plus concrete-unique container `26/26` in 3.3 s. Before the two-line
+repair, the integrated grouping/precision focused cohort recorded 292 passing
+assertions across grouped Gaussian/fitter/public-route/fixed-coordinate,
+four-level interval, and multivariate-precision tests. The unsharded
+`test/runtests.jl` driver started all 294 listed files and returned cleanly.
+`Pkg.test()` was launched for the full quality environment; its temporary
+environment was cleaned after the child ended, but this session did not retain
+its final terminal receipt, so it is not counted as a passing full-suite
+verdict.
+
+This is a local implementation and evidence-boundary integration only. It
+does not qualify B1--B5, S3b, S4, dense-`vcv`, `engine = "julia"`, FRK,
+coverage, 0.7 parity, 0.7.1 parity, or Destination B completion.
