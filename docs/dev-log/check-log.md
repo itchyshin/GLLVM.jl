@@ -19054,3 +19054,9 @@ push, merge, or qualification claim was made.
 - **Static green:** `test/test_b1_fixed_coordinate_curvature_protocol.jl` passes **4/4**: the pinned receipt verifies, while temporary source-hash, raw-coordinate-order, and `n_observation` drift each fail closed. The standalone verifier also passes, and `git diff --check` is clean.
 - The protocol pins the retained 180-wide-row / 360-long-row negative stationary-candidate receipt, formula, fixed source/archive/DLL/runner/module identities, every raw coordinate, four grouping blocks, and a one-objective/one-gradient/one-Hessian, zero-optimizer future contract. It estimates 10 seconds with a 60-second hard stop and requires fresh authorization.
 - No R/TMB objective, gradient, Hessian, `gllvmTMB` call, optimizer, Julia fit, source-engine edit, recovery, interval inference, paired result, push, merge, or B1 qualification occurred or is claimed.
+
+## 2026-09-10 — B1 fixed-point marginal-curvature protocol (PRE_RUN_ONLY)
+
+- **Static green:** `julia --startup-file=no --history-file=no --project=. test/test_b1_fixed_point_marginal_curvature_protocol.jl` passed **22/22**; `julia --startup-file=no --history-file=no --project=. tools/verify_b1_fixed_point_marginal_curvature_protocol.jl` reported PASS; `git diff --check` was clean.
+- The protocol/evaluator is deliberately fail-closed: the canonical capture RDS/data/map pins are unresolved and `execution_ready = false`, so an attempted run retains a failure before `readRDS`, `obj$fn`, or `TMB::sdreport`. The static reviewer verdict is PASS for this pre-run contract only.
+- The earlier direct-Hessian diagnostic remains a HOLD: TMB rejected the observed-Hessian interface for random effects. No retry, fit, optimizer, TMB/R/Julia evaluation, package action, or B1 qualification occurred in this closure slice.

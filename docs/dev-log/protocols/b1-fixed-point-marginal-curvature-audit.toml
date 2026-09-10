@@ -1,0 +1,95 @@
+[protocol]
+kind = "B1_fixed_point_marginal_laplace_curvature_pre_run"
+status = "PRE_RUN_ONLY"
+authorization = "fresh_authorization_required"
+
+[inputs]
+receipt_path = "docs/dev-log/core070/destination-b-b1/frozen-r070-joint-gaussian-stationary-paired-receipt-20260910.json"
+receipt_sha256 = "b14de9d4b3aa62fd7c9b9957e853b5607499998b1ba23fd5ad812d668131820a"
+receipt_kind = "frozen_R_to_Julia_joint_gaussian_stationary_reference"
+source_git_sha = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+source_archive_sha256 = "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+shared_library_sha256 = "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+reference_runner_path = "tools/destination_b/b1_joint_gaussian_stationary_reference.R"
+reference_runner_sha256 = "9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585"
+fixture_module_path = "tools/destination_b/b1_joint_gaussian_common.R"
+fixture_module_sha256 = "61009033b613bd1eb8f97b42c073e180ad71418d758d9da97aa8f8cd5a793924"
+formula = "value ~ 0 + trait + latent(0 + trait | unit, d = 1, unique = FALSE) + indep(0 + trait | obs) + indep(0 + trait | cluster_id) + indep(0 + trait | cluster2_id)"
+data_md5 = "8d61143f2ce6102bb8460fb1575cc249"
+
+[dimensions]
+n_trait = 2
+n_unit = 12
+n_unit_obs_per_unit = 3
+n_replicate = 5
+n_cluster = 8
+n_cluster2 = 7
+n_observation = 180
+
+[raw_coordinates]
+dimension = 11
+names = ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"]
+values = [0.62141307619579789, 0.083900519938897522, -1.7545929563229237, 0.6648612242448747, -0.60905211277924087, -0.9144254396401722, -1.3939197924478266, -0.95732062289543995, -0.86810533006648949, -1.2894084122197988, -0.95668356821980305]
+
+[blocks]
+fixed = [1, 2]
+residual = [3]
+unit_latent = [4, 5]
+unit_obs_independent = [6, 7]
+cluster_independent = [8, 9]
+cluster2_independent = [10, 11]
+
+[tmb_package]
+package = "TMB"
+version = "1.9.21"
+library_path = "/Users/z3437171/Library/R/arm64/4.6/library/TMB"
+description_path = "/Users/z3437171/Library/R/arm64/4.6/library/TMB/DESCRIPTION"
+description_sha256 = "937932be51fc4e954ac25430756885f68a135260e263c5403e768315de73e49b"
+namespace_path = "/Users/z3437171/Library/R/arm64/4.6/library/TMB/NAMESPACE"
+namespace_sha256 = "cc4d87a8f49ac9520630bb080ec36977ee17608ab4ffd71fb73be18b18f92a56"
+shared_library_path = "/Users/z3437171/Library/R/arm64/4.6/library/TMB/libs/TMB.so"
+shared_library_sha256 = "8b387ebacb98a81c2d02b3aab701690ed4ed83b5fc46f6d0cd53d87577dd35d0"
+
+[evaluator]
+path = "tools/destination_b/b1_fixed_point_marginal_curvature_evaluator.R"
+sha256 = "58d7eeb16f69108a8974053b319ce1381e63179ab2a1adb97867cbc6dc58afb8"
+object_construction = "direct_TMB_MakeADFun_from_frozen_capture"
+capture_requirement = "A frozen capture must contain data, parameters, DLL, random, map, provenance, and raw_opt_par."
+
+[capture_rds]
+canonical_path = "/private/tmp/destination-b-b1-integration-20260910/docs/dev-log/core070/destination-b-b1/b1-fixed-point-marginal-capture.rds"
+capture_sha256 = "UNRESOLVED_PENDING_CAPTURE_MATERIALIZATION"
+data_sha256 = "UNRESOLVED_PENDING_CAPTURE_MATERIALIZATION"
+map_sha256 = "UNRESOLVED_PENDING_CAPTURE_MATERIALIZATION"
+resolved_dll_path = "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB/libs/gllvmTMB.so"
+resolved_dll_sha256 = "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+execution_ready = false
+materialization_status = "UNRESOLVED_NO_CAPTURE_MATERIALIZATION_AUTHORIZED"
+
+[sdreport]
+function = "TMB::sdreport"
+calls = 1
+getJointPrecision = false
+getReportCovariance = false
+"skip.delta.method" = true
+expected_fn_gr_evaluations = "multiple_internal_to_sdreport"
+retained_fields = ["cov.fixed", "pdHess", "gradient.fixed"]
+forbidden_fields = ["jointPrecision", "cov.report", "report.sd"]
+
+[execution]
+outer_optimizer_calls = 0
+restart_calls = 0
+data_changes = 0
+tolerance_changes = 0
+source_changes = 0
+coordinate_changes = 0
+runtime_estimate_seconds = 30
+runtime_estimate_basis = "Twenty times the recorded 1.1-second direct fixed-point diagnostic wall time, rounded up from 22 seconds to 30 seconds because sdreport may make multiple internal fn/gr evaluations."
+hard_stop_seconds = 60
+authorization_requirement = "Fresh authorization is required before this one sdreport evaluation."
+
+[semantics]
+target = "Marginal outer Laplace curvature for fixed effects at the retained raw_opt_par fixed point."
+not_target = "Conditional joint precision for fixed and random effects."
+joint_precision_statement = "getJointPrecision=false prohibits forming or retaining conditional joint precision."
+retention_statement = "Retain cov.fixed, pdHess, and gradient.fixed only; discard all other sdreport output."
