@@ -3,6 +3,9 @@ using GLLVM
 using JSON3
 using SHA
 
+b1_stationary_regeneration_available(rscript, source_path, library_path) =
+    !isempty(rscript) && isdir(source_path) && isdir(library_path)
+
 @testset "Destination B B1 frozen-R joint Gaussian grouping optimizer diagnostic" begin
     receipt_path = joinpath(@__DIR__, "..", "docs", "dev-log", "core070", "destination-b-b1", "frozen-r070-joint-gaussian-paired-receipt-20260910-03.json")
     probe_receipt_path = joinpath(@__DIR__, "..", "docs", "dev-log", "core070", "destination-b-b1", "frozen-r070-joint-gaussian-optimizer-probes-20260910-03.json")
@@ -186,6 +189,8 @@ end
     runner_path = joinpath(@__DIR__, "..", String(receipt.r_runner.path))
     common_path = joinpath(@__DIR__, "..", String(receipt.r_runner.fixture_attestation_module))
     rscript = Sys.which("Rscript")
+    source_path = String(receipt.source.path)
+    library_path = String(receipt.installed.library)
 
     @test String(receipt.receipt_kind) == "frozen_R_to_Julia_joint_gaussian_stationary_reference"
     @test String(receipt.source.git_sha) == "b4d5fee64def88bc768dda1f1f77c29b295edd86"
@@ -236,12 +241,16 @@ end
         "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species",
         "theta_diag_cluster2", "theta_diag_cluster2"]
 
-    if isempty(rscript)
-        @test_skip "Rscript unavailable: stationary-candidate response digest recomputation skipped"
+    @test !b1_stationary_regeneration_available("", source_path, library_path)
+    @test !b1_stationary_regeneration_available(rscript, joinpath(tempdir(), "missing-frozen-source"), library_path)
+    @test !b1_stationary_regeneration_available(rscript, source_path, joinpath(tempdir(), "missing-frozen-library"))
+    if !b1_stationary_regeneration_available(rscript, source_path, library_path)
+        @test_skip "Local evidence only: Rscript and the retained frozen source/library are required for stationary-candidate response digest regeneration"
     else
+        @test b1_stationary_regeneration_available(rscript, source_path, library_path)
         mktempdir() do temporary_dir
             fresh_path = joinpath(temporary_dir, "fresh-stationary-receipt.json")
-            @test success(run(`$rscript --vanilla $runner_path --source $(String(receipt.source.path)) --library $(String(receipt.installed.library)) --output $fresh_path`))
+            @test success(run(`$rscript --vanilla $runner_path --source $source_path --library $library_path --output $fresh_path`))
             fresh = JSON3.read(read(fresh_path, String))
             @test String(fresh.specification.data_md5) == String(receipt.specification.data_md5)
             @test Float64.(fresh.response_long.value) == Float64.(receipt.response_long.value)
