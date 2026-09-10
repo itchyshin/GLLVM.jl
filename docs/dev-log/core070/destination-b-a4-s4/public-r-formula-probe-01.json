@@ -1,0 +1,22 @@
+{
+  "schema_version": "destination-b-a4-s4-public-r-formula-probe-1",
+  "status": "formula_evaluated_native_only",
+  "claim_status": "feasibility_probe_not_a_paired_receipt",
+  "source_pin": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+  "frozen_identity_sha256": "9ee5dd9b6d606fcaefd758b6719ff95e4741de445f35c0aa7ca552533f975f69",
+  "dll_sha256": "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30",
+  "formula": "traits(trait_1, trait_2) ~ 1 + phylo_dep(1 | species, tree = tree)",
+  "resolved_long_formula": "value ~ 0 + trait + phylo_dep(0 + trait | species, tree = tree)",
+  "data_layout": "wide_traits",
+  "n_tips": 3,
+  "ultrametric": true,
+  "root_to_tip_height": 2,
+  "elapsed_seconds": 0.6991,
+  "native_only": true,
+  "julia_called": false,
+  "intervals_extracted": false,
+  "native_convergence": 0,
+  "native_loglik": -9.0428,
+  "use_phylo_rr": true,
+  "use_phylo_dep": true
+}

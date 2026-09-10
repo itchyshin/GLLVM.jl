@@ -7,6 +7,14 @@ yet.  The retained private `bridge_fit` transport uses its own raw schema; the
 verifier recognizes it as raw, candidate-only evidence and never opens public
 formula admission.
 
+`public-r-formula-probe-02.json` is the separate 2026-09-10 frozen-R public
+formula feasibility observation. It successfully evaluates the one approved
+wide `traits()` plus `phylo_dep()` Gaussian workflow on a non-unit ultrametric
+tree, but explicitly records `julia_called = false` and
+`intervals_extracted = false`. It is neither paired evidence nor an admission
+result. The earlier `public-r-formula-probe-01.json` is retained but lacks the
+self-contained execution provenance now required of the cited record.
+
 `raw-frozen-r-02.rds` is the current separate R-only declared-coordinate
 material from a fresh, marker-attested 0.7.0 build.  Its point-only
 construction explicitly requests `se = FALSE` and rejects any retained

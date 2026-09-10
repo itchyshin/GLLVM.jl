@@ -18734,6 +18734,30 @@ counterfactual was added. This is fixed-coordinate public Julia transport
 coverage only: it does not execute R, fit an optimizer, return S3b/S4
 user-workflow evidence, validate intervals, or qualify dense `vcv`.
 
+# 2026-09-10 — S4 public R formula native feasibility probe
+
+The one allowed public native-R formula probe was added as a no-overwrite
+runner and recorded against the frozen 0.7.0 source pin
+`b4d5fee64def88bc768dda1f1f77c29b295edd86`. The actual public wide call
+`traits(trait_1, trait_2) ~ 1 + phylo_dep(1 | species, tree = tree)` used a
+three-tip ultrametric tree of height two, converged with `phylo_dep` and
+`phylo_rr` both active, and took 0.5924 s. The receipt binds the adjacent
+frozen-source identity JSON and installed shared-library SHA-256; a rerun to
+the same path was refused without overwrite.
+
+Independent review required a self-contained execution identity, so the cited
+immutable record is `public-r-formula-probe-02.json`, not the retained
+development attempt `-01`. It records the source archive, identity and DLL
+hashes, runner hash, command and output path, fixture hash, R/package runtime,
+loaded package path, and UTC capture time. The runner loads gllvmTMB with an
+explicit frozen `lib.loc` and fails closed if the loaded path or version differs.
+
+The record is explicitly `feasibility_probe_not_a_paired_receipt`, with
+`julia_called = false` and `intervals_extracted = false`. It does not provide
+R--Julia endpoint agreement, a structured `engine = "julia"` route, S3b/S4
+admission, interval feasibility, recovery, 0.7 parity, or Destination B
+completion.
+
 # 2026-09-10 — B1 paired Gaussian `unit` fit
 
 The retained source-alignment record's temporary R library had been purged, so

@@ -65,6 +65,25 @@ of the public formula above. It may verify formula evaluation and report a
 runtime estimate, but must not create a paired receipt, claim endpoint parity,
 or evade the Julia gate.
 
+## Retained feasibility observation (2026-09-10)
+
+`public-r-formula-probe-02.json` records that exact public call against the
+isolated frozen 0.7.0 build. It converged in 0.5924 seconds with the intended
+`phylo_dep` and underlying `phylo_rr` flags, on the three-tip non-unit
+ultrametric tree. Its source pin is
+`b4d5fee64def88bc768dda1f1f77c29b295edd86`; the retained record and runner
+SHA-256 values are respectively
+`17b7fd42b4b55f900d62730a71c57019876555b1c7413369acd7487525726f5b` and
+`4b42b40caa22a6705dff3962e8bd46da8b7a9fde8250707ec9d6ca38bbc84eae`.
+It self-records the archive, source-identity, DLL, runner, command, fixture,
+R runtime, package version, loaded package path, and UTC capture time. The
+earlier `public-r-formula-probe-01.json` remains a retained failed-provenance
+development attempt and is not the cited feasibility record.
+
+This is **native-only feasibility evidence**. The record explicitly has
+`julia_called = false` and `intervals_extracted = false`; it is not a paired
+receipt, endpoint comparison, S3b/S4 admission, or public parity claim.
+
 The structural check is intentionally available without R:
 
 ```sh
