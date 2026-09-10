@@ -1,0 +1,53 @@
+#!/usr/bin/env Rscript
+# Exactly one frozen-R B1 ML control.  It invokes the no-fit provenance
+# preflight before loading gllvmTMB, accepts no optimizer alternatives, and
+# writes a no-clobber receipt whether the one control succeeds or fails.
+
+args <- commandArgs(trailingOnly = TRUE)
+length(args) == 8L || stop("Use --source PATH --library PATH --data PATH --output PATH.")
+values <- setNames(args[c(FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE)], sub("^--", "", args[c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)]))
+identical(sort(names(values)), c("data", "library", "output", "source")) || stop("Expected --source, --library, --data, and --output.")
+output <- normalizePath(values[["output"]], mustWork = FALSE)
+runner_arg <- commandArgs()[grepl("^--file=", commandArgs())]
+length(runner_arg) == 1L || stop("Could not identify runner path.")
+runner_path <- normalizePath(sub("^--file=", "", runner_arg), mustWork = TRUE)
+runner_dir <- dirname(runner_path)
+source(file.path(runner_dir, "b1_balanced_complete_crossed_control_common.R"))
+b1_balanced_control_output_occupied(output) && stop("Refusing to overwrite an existing B1 receipt.")
+preflight <- file.path(runner_dir, "b1_balanced_complete_crossed_preflight.R")
+reference_runner <- file.path(runner_dir, "b1_joint_gaussian_stationary_reference.R")
+preflight_status <- system2("Rscript", c("--vanilla", preflight, "--source", values[["source"]], "--library", values[["library"]], "--reference-runner", reference_runner))
+identical(preflight_status, 0L) || stop("Frozen-R provenance preflight failed; control not started.")
+
+requireNamespace("jsonlite", quietly = TRUE) || stop("jsonlite is required to retain the one-control receipt.")
+source_dir <- normalizePath(values[["source"]], mustWork = TRUE)
+library_dir <- normalizePath(values[["library"]], mustWork = TRUE)
+data_path <- normalizePath(values[["data"]], mustWork = TRUE)
+.libPaths(c(library_dir, .libPaths()))
+library("gllvmTMB", lib.loc = library_dir, character.only = TRUE)
+data <- read.csv(data_path, stringsAsFactors = FALSE)
+required_columns <- c("value", "trait", "unit", "obs", "cluster_id", "cluster2_id")
+identical(names(data), required_columns) || stop("Balanced B1 input columns do not match the fixed formula.")
+data$trait <- factor(data$trait, levels = c("trait_1", "trait_2"))
+data$unit <- factor(data$unit); data$obs <- factor(data$obs)
+data$cluster_id <- factor(data$cluster_id, levels = paste0("c_", sprintf("%02d", 1:10)))
+data$cluster2_id <- factor(data$cluster2_id, levels = paste0("d_", sprintf("%02d", 1:10)))
+formula_text <- "value ~ 0 + trait + latent(0 + trait | unit, d = 1, unique = FALSE) + indep(0 + trait | obs) + indep(0 + trait | cluster_id) + indep(0 + trait | cluster2_id)"
+fit_formula <- value ~ 0 + trait + latent(0 + trait | unit, d = 1, unique = FALSE) + indep(0 + trait | obs) + indep(0 + trait | cluster_id) + indep(0 + trait | cluster2_id)
+control <- gllvmTMB::gllvmTMBcontrol(n_init = 1L, se = FALSE, optimizer = "nlminb", optArgs = list(control = list(eval.max = 100000L, iter.max = 100000L, rel.tol = 1e-12, x.tol = 1e-12, xf.tol = 1e-12)))
+started <- Sys.time()
+fit <- tryCatch(gllvmTMB::gllvmTMB(fit_formula, data = data, family = gaussian(), trait = "trait", unit = "unit", unit_obs = "obs", cluster = "cluster_id", cluster2 = "cluster2_id", REML = FALSE, control = control), error = function(error) error)
+elapsed <- as.numeric(difftime(Sys.time(), started, units = "secs"))
+sha256 <- function(path) strsplit(trimws(system2("shasum", c("-a", "256", path), stdout = TRUE)), "[[:space:]]+")[[1L]][1L]
+receipt <- list(receipt_kind = "frozen_R_B1_balanced_complete_crossed_single_control", source = list(path = source_dir, git_sha = trimws(system2("git", c("-C", source_dir, "rev-parse", "HEAD"), stdout = TRUE))), installed = list(library = library_dir, loaded_version = as.character(packageVersion("gllvmTMB"))), r_runner = list(path = "tools/destination_b/b1_balanced_complete_crossed_control.R", sha256 = sha256(runner_path)), specification = list(formula = formula_text, family = "gaussian()", REML = FALSE, seed = 20260915L, n_wide = 3600L, n_long = 7200L, data_md5 = unname(tools::md5sum(data_path)), control = list(n_init = 1L, se = FALSE, optimizer = "nlminb", eval_max = 100000L, iter_max = 100000L, rel_tol = 1e-12, x_tol = 1e-12, xf_tol = 1e-12)), preflight = "PASS", elapsed_seconds = elapsed)
+if (inherits(fit, "error")) {
+  receipt$status <- "failure"; receipt$failure <- list(message = conditionMessage(fit)); receipt$acceptance <- list(qualified = FALSE, rule = "convergence == 0 && max(abs(gr)) <= 1e-6")
+} else {
+  gradient <- fit$tmb_obj$gr(fit$opt$par)
+  receipt$status <- "success"; receipt$fit <- list(logLik = as.numeric(logLik(fit)), convergence = unname(fit$opt$convergence), optimizer_message = unname(fit$opt$message), gradient_max_abs = max(abs(gradient)))
+  receipt$acceptance <- list(qualified = identical(unname(fit$opt$convergence), 0L) && max(abs(gradient)) <= 1e-6, rule = "convergence == 0 && max(abs(gr)) <= 1e-6")
+}
+tmp <- tempfile(".b1-balanced-control-", tmpdir = dirname(output)); on.exit(unlink(tmp), add = TRUE)
+writeLines(jsonlite::toJSON(receipt, auto_unbox = TRUE, pretty = TRUE, digits = 16), tmp)
+file.link(tmp, output) || stop("Atomic no-clobber B1 receipt publication failed.")
+cat("B1 balanced complete-crossed single control retained: ", receipt$status, "\n", sep = "")

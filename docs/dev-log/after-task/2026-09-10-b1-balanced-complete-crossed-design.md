@@ -30,6 +30,32 @@ mapping using values retrieved from the retained stationary receipt.
 - The future frozen-R run is unapproved and unrun.
 - The preflight helper is static-tested only; it was not executed against a frozen source/library.
 
+## Authorized Execution Outcome
+
+The external frozen-R provenance preflight subsequently passed. The exact input
+CSV, exporter failure/pass logs, static runner check, preflight log, and both
+separate control raw logs are retained under
+`docs/dev-log/core070/destination-b-b1/`. Each requested JSON target remains
+absent because the runner stopped at its no-clobber guard before package load
+or fit. No optimizer ran; no retry is authorized.
+
+## Rose Verdict
+
+Rose verdict: FAIL — no B1 control result exists; the runner guard must be
+repaired only under a fresh authorization and protocol.
+
+## Guard Repair
+
+The no-clobber guard is now factored into a pure R helper and tested on an
+absent path, existing regular file, and symlink. The focused test and runner
+parse pass, while the two failed pre-fit logs and absent JSON targets remain
+checked. No fit was launched during repair.
+
+## Rose Verdict
+
+Rose verdict: PASS WITH NOTES — the guard repair is mechanically ready for
+independent review; no model result or B1 qualification exists.
+
 ## Rose Verdict
 
 Rose verdict: PASS WITH NOTES — construction-only scope verified; inferential and paired claims withheld.

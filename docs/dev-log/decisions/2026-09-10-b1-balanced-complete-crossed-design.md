@@ -48,3 +48,31 @@ SHA. Those values are retrieved from the retained B1 stationary receipt:
 `3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30`, and
 runner `9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585`.
 The helper imports no `gllvmTMB` namespace and calls no fit.
+
+## Authorized execution outcome — stopped before fit
+
+The external provenance preflight passed with every documented thread cap set
+to one. The export had one retained mechanical failure (`open(..., "x")` is
+unsupported by Julia 1.10), then exported the exact 7,200-row input and passed
+static runner/control checks. Two explicitly absent JSON targets were then
+passed to the unchanged single-control runner. Both stopped at its no-clobber
+guard before the embedded preflight, package load, `gllvmTMB()`, or optimizer;
+both raw logs say `Refusing to overwrite an existing B1 receipt.` No result
+JSON exists. This is a runner-guard execution failure, not a failed fit.
+
+The authorized control is not eligible for further invocation under this
+protocol. No seed, data, start, mapping, optimizer, tolerance, or Julia action
+was changed after either pre-fit failure.
+
+## Runner-guard repair (no fit)
+
+The defect was the predicate `!file.exists(output) && !nzchar(Sys.readlink(output))`:
+for an absent ordinary path `Sys.readlink(output)` is `NA`, so the expression
+does not admit a new receipt target. The pure helper
+`b1_balanced_control_output_occupied()` now returns false for an absent plain
+path, true for an existing regular file, and true for a symlink (including a
+dangling symlink). Its focused R test and static runner parse pass. This repair
+does not invoke preflight, load `gllvmTMB`, construct data, or fit a model.
+
+The two failed pre-fit logs remain immutable. The repaired predicate is ready
+for independent review only; no third control invocation is authorized yet.

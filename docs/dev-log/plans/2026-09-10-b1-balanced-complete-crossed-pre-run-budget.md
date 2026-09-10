@@ -10,3 +10,13 @@ not run here. At 60 minutes, or on either failure of `convergence == 0` and
 The estimate remains unapproved. Before any future run, the frozen provenance
 preflight must pass against the pinned source/library/reference-runner mapping;
 that preflight itself is not a fit and was not run in this repair.
+
+## Authorized execution outcome
+
+The external preflight later passed. The two no-fit output-guard failures
+consumed no model time and left no result JSON; a hard-stop timer was present
+for each proposed control. They do not authorize a replacement invocation.
+
+The output-guard repair has been static/pure-tested only. The revised runner is
+awaiting independent predicate review; no execution estimate is consumed and
+no control may launch without a new direction.

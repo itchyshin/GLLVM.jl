@@ -18981,6 +18981,31 @@ push, merge, or qualification claim was made.
 - The helper was not run against frozen inputs. No R/Julia optimizer or fit,
   pre-run, receipt, or B1 result was executed or claimed.
 
+### Authorized B1 execution — stopped before fit
+
+- External frozen-R provenance preflight passed with `OPENBLAS_NUM_THREADS=1`,
+  `OMP_NUM_THREADS=1`, `MKL_NUM_THREADS=1`, and `VECLIB_MAXIMUM_THREADS=1`.
+- The first fixture export failed because Julia 1.10 rejects `open(..., "x")`;
+  the raw failure was retained, the export was corrected before any fit, and
+  the 7,200-row input plus static parse/control/no-retry check were retained.
+- The unchanged one-control runner rejected two explicitly absent JSON targets
+  at its own no-clobber guard before package load, `gllvmTMB()`, or optimizer.
+  Both raw logs are retained; both result JSON paths remain absent. No seed,
+  data, start, mapping, optimizer, tolerance, retry, Julia fit, paired result,
+  or B1 qualification followed.
+
+### No-clobber predicate repair — no fit
+
+- Root cause: `Sys.readlink(absent_plain_path)` is `NA`, and the old boolean
+  predicate therefore rejected a new output target before preflight/package
+  load. The new pure helper treats `NA` safely.
+- `Rscript --vanilla test/test_destination_b_b1_balanced_complete_crossed_control_io.R`
+  passes the absent/plain, existing-file, and symlink cases; static runner parse
+  passes; both failed pre-fit logs remain, and both intended JSON targets are
+  still absent.
+- No frozen-R preflight, package load, `gllvmTMB()` call, optimizer, Julia fit,
+  receipt, retry, or B1 qualification occurred during this repair.
+
 ## 2026-09-10 — B1 mixed public formula/extractor route
 
 - **Focused public test:** `/Users/z3437171/.juliaup/bin/julia --startup-file=no --history-file=no --project=. test/test_destination_b_public.jl` passed **39/39** in **10.0 s**: 9 existing public grouping checks, 22 mixed-B1 formula/extraction/interval-status checks, and 8 fixed-coordinate unit-oracle checks.
