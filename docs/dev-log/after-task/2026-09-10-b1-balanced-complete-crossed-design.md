@@ -102,3 +102,11 @@ as did the existing no-clobber I/O test and `git diff --check`.
 
 No preflight or model was run for this repair. The B1 negative receipt remains
 nonqualifying; no paired result or B1 qualification is claimed.
+
+## Direct Archive Audit
+
+The verifier additionally checks the frozen source HEAD, recomputes the pinned
+Git tar archive SHA-256 into a cleaned-up temporary file, and requires it to
+match the sidecar archive SHA. Its temporary one-byte tamper control must not
+match. This is read-only source auditing plus temporary test I/O only: no
+package load, preflight, or model occurred.

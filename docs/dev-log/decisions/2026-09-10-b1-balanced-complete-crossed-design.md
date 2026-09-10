@@ -111,3 +111,9 @@ had link count 2. The sidecar itself has SHA-256
 This is an auditability repair only: it runs no preflight or model, changes no
 receipt bytes or scientific claim, and preserves the negative/no-paired/no-B1
 qualification boundary.
+
+The no-fit verifier now first checks frozen source `HEAD`, writes `git archive
+--format=tar b4d5fee64def88bc768dda1f1f77c29b295edd86` to a cleaned-up
+temporary file, and compares its SHA-256 directly to the sidecar's archive
+SHA. A one-byte temporary tamper copy must fail that comparison. This closes
+the archive identity independently of the preflight PASS text.

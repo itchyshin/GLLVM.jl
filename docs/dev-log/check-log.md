@@ -19036,6 +19036,11 @@ push, merge, or qualification claim was made.
   identities, and the observed same-device/same-inode hardlink relationship
   (link count 2). The expanded no-fit receipt-I/O verifier passed, as did the
   no-clobber I/O test and `git diff --check`; no preflight or model ran.
+- **Direct archive audit (no execution):** after checking the frozen source
+  HEAD, the no-fit verifier writes `git archive --format=tar` for the pinned
+  commit to a cleaned-up temporary file and compares its SHA-256 directly with
+  the sidecar archive SHA. A one-byte temporary tamper copy mismatches as
+  required. No package load, preflight, or model ran.
 
 ## 2026-09-10 — B1 mixed public formula/extractor route
 
