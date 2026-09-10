@@ -231,12 +231,6 @@ end
     @test Float64(receipt.specification.control.xf_tol) ≈ 1e-12 atol = 1e-25 rtol = 0
     @test String(receipt.source.description_version) == String(receipt.installed.loaded_version)
     @test String(receipt.installed.loaded_path) == joinpath(String(receipt.installed.library), "gllvmTMB")
-    @test isfile(String(receipt.installed.marker_path))
-    marker = JSON3.read(read(String(receipt.installed.marker_path), String))
-    @test String(marker.source_sha) == String(receipt.source.git_sha)
-    @test String(marker.source_version) == String(receipt.source.description_version)
-    @test String(marker.source_archive_sha256) == String(receipt.source.archive_sha256)
-    @test String(marker.installed_shared_library_sha256) == String(receipt.installed.shared_library_sha256)
     @test raw_names == ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B",
         "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species",
         "theta_diag_cluster2", "theta_diag_cluster2"]
@@ -248,6 +242,12 @@ end
         @test_skip "Local evidence only: Rscript and the retained frozen source/library are required for stationary-candidate response digest regeneration"
     else
         @test b1_stationary_regeneration_available(rscript, source_path, library_path)
+        @test isfile(String(receipt.installed.marker_path))
+        marker = JSON3.read(read(String(receipt.installed.marker_path), String))
+        @test String(marker.source_sha) == String(receipt.source.git_sha)
+        @test String(marker.source_version) == String(receipt.source.description_version)
+        @test String(marker.source_archive_sha256) == String(receipt.source.archive_sha256)
+        @test String(marker.installed_shared_library_sha256) == String(receipt.installed.shared_library_sha256)
         mktempdir() do temporary_dir
             fresh_path = joinpath(temporary_dir, "fresh-stationary-receipt.json")
             @test success(run(`$rscript --vanilla $runner_path --source $source_path --library $library_path --output $fresh_path`))
