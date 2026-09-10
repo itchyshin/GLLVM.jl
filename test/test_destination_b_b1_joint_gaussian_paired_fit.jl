@@ -1,6 +1,7 @@
 using Test
 using GLLVM
 using JSON3
+using SHA
 
 @testset "Destination B B1 frozen-R joint Gaussian grouping optimizer diagnostic" begin
     receipt_path = joinpath(@__DIR__, "..", "docs", "dev-log", "core070", "destination-b-b1", "frozen-r070-joint-gaussian-paired-receipt-20260910-03.json")
@@ -182,6 +183,9 @@ end
 
     receipt = JSON3.read(read(receipt_path, String))
     raw_names = String.(receipt.fit.raw_opt_par.names)
+    runner_path = joinpath(@__DIR__, "..", String(receipt.r_runner.path))
+    common_path = joinpath(@__DIR__, "..", String(receipt.r_runner.fixture_attestation_module))
+    rscript = Sys.which("Rscript")
 
     @test String(receipt.receipt_kind) == "frozen_R_to_Julia_joint_gaussian_stationary_reference"
     @test String(receipt.source.git_sha) == "b4d5fee64def88bc768dda1f1f77c29b295edd86"
@@ -190,6 +194,10 @@ end
     @test String(receipt.r_runner.path) == "tools/destination_b/b1_joint_gaussian_stationary_reference.R"
     @test String(receipt.r_runner.sha256) == "9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585"
     @test String(receipt.r_runner.fixture_attestation_module_sha256) == "61009033b613bd1eb8f97b42c073e180ad71418d758d9da97aa8f8cd5a793924"
+    @test bytes2hex(sha256(read(runner_path))) == String(receipt.r_runner.sha256)
+    @test bytes2hex(sha256(read(common_path))) == String(receipt.r_runner.fixture_attestation_module_sha256)
+    @test bytes2hex(sha256([read(runner_path); UInt8[0x00]])) != String(receipt.r_runner.sha256)
+    @test bytes2hex(sha256([read(common_path); UInt8[0x00]])) != String(receipt.r_runner.fixture_attestation_module_sha256)
     @test receipt.failure.present === false
     @test receipt.acceptance.matched_parameter === false
     @test Float64(receipt.acceptance.source_gradient_threshold) == 1e-6
@@ -206,7 +214,45 @@ end
     @test Int(receipt.specification.n_observation) == 180
     @test Int(receipt.specification.seed) == 20260914
     @test String(receipt.specification.data_md5) == "8d61143f2ce6102bb8460fb1575cc249"
+    @test receipt.specification.REML === false
+    @test String(receipt.specification.family) == "gaussian()"
+    @test Int(receipt.specification.control.n_init) == 1
+    @test receipt.specification.control.se === false
+    @test String(receipt.specification.control.optimizer) == "nlminb"
+    @test Int(receipt.specification.control.eval_max) == 100000
+    @test Int(receipt.specification.control.iter_max) == 100000
+    @test Float64(receipt.specification.control.rel_tol) ≈ 1e-12 atol = 1e-25 rtol = 0
+    @test Float64(receipt.specification.control.x_tol) ≈ 1e-12 atol = 1e-25 rtol = 0
+    @test Float64(receipt.specification.control.xf_tol) ≈ 1e-12 atol = 1e-25 rtol = 0
+    @test String(receipt.source.description_version) == String(receipt.installed.loaded_version)
+    @test String(receipt.installed.loaded_path) == joinpath(String(receipt.installed.library), "gllvmTMB")
+    @test isfile(String(receipt.installed.marker_path))
+    marker = JSON3.read(read(String(receipt.installed.marker_path), String))
+    @test String(marker.source_sha) == String(receipt.source.git_sha)
+    @test String(marker.source_version) == String(receipt.source.description_version)
+    @test String(marker.source_archive_sha256) == String(receipt.source.archive_sha256)
+    @test String(marker.installed_shared_library_sha256) == String(receipt.installed.shared_library_sha256)
     @test raw_names == ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B",
         "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species",
         "theta_diag_cluster2", "theta_diag_cluster2"]
+
+    if isempty(rscript)
+        @test_skip "Rscript unavailable: stationary-candidate response digest recomputation skipped"
+    else
+        mktempdir() do temporary_dir
+            fresh_path = joinpath(temporary_dir, "fresh-stationary-receipt.json")
+            @test success(run(`$rscript --vanilla $runner_path --source $(String(receipt.source.path)) --library $(String(receipt.installed.library)) --output $fresh_path`))
+            fresh = JSON3.read(read(fresh_path, String))
+            @test String(fresh.specification.data_md5) == String(receipt.specification.data_md5)
+            @test Float64.(fresh.response_long.value) == Float64.(receipt.response_long.value)
+            @test String.(fresh.response_long.trait) == String.(receipt.response_long.trait)
+            @test String.(fresh.response_long.unit) == String.(receipt.response_long.unit)
+            @test String.(fresh.response_long.obs) == String.(receipt.response_long.obs)
+            @test String.(fresh.response_long.cluster_id) == String.(receipt.response_long.cluster_id)
+            @test String.(fresh.response_long.cluster2_id) == String.(receipt.response_long.cluster2_id)
+            tampered_response = copy(Float64.(fresh.response_long.value))
+            tampered_response[1] += 1e-8
+            @test tampered_response != Float64.(receipt.response_long.value)
+        end
+    end
 end

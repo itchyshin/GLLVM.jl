@@ -2,16 +2,18 @@
 
 ## Goal
 
-Pre-register and run one identifiable stationary-candidate four-source Gaussian
-frozen-R reference, retaining an honest negative receipt if it failed the
-fixed source-gradient gate.
+Run and retain one fixed-design exploratory stationary-candidate four-source
+Gaussian frozen-R reference, without claiming temporal pre-registration that
+the evidence cannot establish.
 
 ## Implemented
 
-Added a separate no-clobber frozen-R runner and a pre-execution symbolic record
-for the fixed 2-trait, 12-unit, 180-wide-observation design. The one run is
-retained as a negative candidate: its source optimizer did not establish a
-stationary R reference. The existing p=2, n=36 diagnostic was not changed.
+Added a separate no-clobber frozen-R runner and a fixed symbolic record for the
+2-trait, 12-unit, 180-wide-observation design. No immutable pre-run anchor was
+retained, so the result is labelled exploratory rather than pre-registered.
+The one run is retained as a negative candidate: its source optimizer did not
+establish a stationary R reference. The existing p=2, n=36 diagnostic was not
+changed.
 
 ## Mathematical Contract
 
@@ -34,7 +36,10 @@ contract is source convergence code zero and
 ## Tests Added
 
 One Julia receipt testset records the exact source/build pin, fixed design,
-named coordinate layout, and failure state. Its test-of-the-test evidence is
+named coordinate layout, and failure state. It recomputes the current runner
+and common-module hashes, validates frozen-library marker relationships,
+regenerates a temporary receipt to verify the response-data MD5, and exercises
+tampered-byte and tampered-response controls. Its test-of-the-test evidence is
 the observed red receipt invariant before the runner existed; the focused
 registered Julia shard then passed against the retained negative receipt.
 
@@ -61,7 +66,7 @@ comparison is admissible.
 - Static JSON receipt predicate — exit 0; `B1_STATIONARY_NEGATIVE_RECEIPT_ASSERTIONS_OK`.
 - Retained-diagnostic diff predicate — exit 0; `B1_RETAINED_DIAGNOSTIC_UNCHANGED`.
 - `git diff --check` — exit 0; `B1_DIFF_CHECK_OK`.
-- `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 /Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'` — exit 0; `154/154` in `7.7s`.
+- `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 /Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'` — exit 0; `184/184` in `9.0s`.
 
 ## Consistency Audit
 
@@ -87,14 +92,16 @@ used and passed.
 
 ## Team Learning
 
-Pre-registering the fixture and accepting a no-clobber negative receipt kept a
-failed source optimization from becoming seed or tolerance shopping.
+Retaining a no-clobber negative receipt kept a failed source optimization from
+becoming seed or tolerance shopping; the missing historic anchor shows that a
+future pre-registration must be immutably committed before the run.
 
 ## Remaining Risks
 
 - B1 four-source matched-parameter R-to-Julia parity remains unestablished.
-- The next candidate needs a separately pre-registered identification remedy;
-  it must retain this fixture, receipt, seed, and `1e-6` threshold unchanged.
+- The next candidate needs a separately pre-registered identification remedy
+  with an immutable pre-run protocol hash, timestamp, or commit; it must retain
+  this fixture, receipt, seed, and `1e-6` threshold unchanged.
 
 ## Known Limitations
 
@@ -103,12 +110,13 @@ S4, dense `vcv`, FRK, `engine = "julia"`, or broad version parity.
 
 ## Next Command
 
-`julia --project=test -e 'include("test/test_destination_b_b1_joint_gaussian_paired_fit.jl")'`
-in an environment where Julia is installed, followed by a separately approved
-pre-registered remedy only if a new stationary R source design is justified.
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 /Users/z3437171/.juliaup/bin/julia --project=. -e 'using Pkg; Pkg.test()'`
+
+Then, only if a new stationary R source design is justified, write and commit
+its immutable pre-run protocol before execution.
 
 ## Rose Verdict
 
 Rose verdict: FAIL — the evidence-repair leaf correctly retained a negative R
-receipt, but source stationarity and the registered Julia test gate are both
-unmet; B1 remains unqualified.
+receipt and its Julia evidence test, but source stationarity and a historic
+pre-run anchor are absent; B1 remains unqualified.

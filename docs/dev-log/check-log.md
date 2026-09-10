@@ -18920,12 +18920,14 @@ coverage evidence, S3b/S4, dense `vcv`, FRK, `engine = "julia"` admission,
 
 ## 2026-09-10 — B1 joint Gaussian stationary-candidate reference (negative)
 
-Before execution, `2026-09-10-destination-b-b1-joint-gaussian-stationary-symbolic-alignment.md`
-fixed a new two-trait, four-source Gaussian ML design: 12 units, three nested
+The fixed two-trait, four-source Gaussian ML design has 12 units, three nested
 observations per unit, five replicates, eight `cluster` levels, seven
 `cluster2` levels, seed `20260914L`, and a strict source-gradient gate of
 `1e-6`. The retained p=2, n=36 diagnostic and its shared fixture module are
-unchanged.
+unchanged. The initial wording called this pre-registered, but no immutable
+pre-run timestamp, protocol hash, or commit was retained: `fcd67a2f` anchors
+the record only after execution. The label is therefore corrected to
+**exploratory fixed-design candidate**, not credible temporal pre-registration.
 
 One `Rscript --vanilla tools/destination_b/b1_joint_gaussian_stationary_reference.R`
 run against frozen gllvmTMB 0.7.0 source
@@ -18934,7 +18936,8 @@ no-clobber receipt. It is a negative result: `nlminb` returned `singular
 convergence (7)` and maximum source gradient `9.9329370235209566e-5`, about
 99 times the registered threshold. No tolerance, seed, data, restart, or
 post-hoc start change was made; the conditional Julia paired covariance and
-incidence checks were not run.
+incidence checks were not run. These retained facts do not repair the missing
+pre-run timing anchor.
 
 The receipt input data MD5 is `8d61143f2ce6102bb8460fb1575cc249` and runner
 SHA-256 is `9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585`.
@@ -18953,6 +18956,9 @@ does not license changing either fixture or threshold.
 static receipt assertions and the unchanged-diagnostic check passed; and
 `git diff --check` passed. The absolute Julia 1.10.0 runtime then ran the
 registered `OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 Pkg.test()` shard:
-**154/154** in **7.7 s**. It verifies the recorded negative receipt, not a
-stationary or paired-fit claim. No full suite, JET, Aqua, allocation check,
-R-engine edit, push, merge, or qualification claim was made.
+**184/184** in **9.0 s**. It recomputes current runner/common hashes, reads the
+frozen-library marker provenance, regenerates the response into a temporary
+receipt to verify the response-data MD5, and uses tampered byte/response
+controls. It verifies the recorded negative receipt, not a stationary or
+paired-fit claim. No full suite, JET, Aqua, allocation check, R-engine edit,
+push, merge, or qualification claim was made.
