@@ -18890,8 +18890,30 @@ independent fit is logged only as a separate convergence diagnostic.
 The frozen-R-recommended same-data `n_init = 5` attempt improves the score only
 to `1.8152100309904722e-5`, still above the retained `1e-6` threshold.
 
-`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/299 Pkg.test()` passes `47/47`
+`OPENBLAS_NUM_THREADS=1 GLLVM_TEST_SHARD=158/294 Pkg.test()` passes `47/47`
 in 6.8 s. This is a retained optimizer barrier for the joint model, not
 matched-parameter R-to-Julia parity, B1 qualification, interval/recovery/
 coverage evidence, S3b/S4, dense `vcv`, FRK, `engine = "julia"` admission,
 0.7.1 or broad 0.7 parity, or Destination B completion.
+## 2026-09-10 — B1 joint Gaussian frozen-R optimizer probes (unqualified)
+
+- New shared fixture/attestation module
+  `tools/destination_b/b1_joint_gaussian_common.R` is shared by the thin
+  reference and optimizer-probe runners.  Each rejects an occupied output,
+  writes a same-directory temporary JSON file, then creates its final name with
+  an atomic no-clobber hard link.  The pure I/O test also rejects a dangling
+  symlink; existing receipts are never replaced.
+- The retained receipt
+  `core070/destination-b-b1/frozen-r070-joint-gaussian-optimizer-probes-20260910-03.json`
+  has no stationary attempt at the signed `1e-6` gate.  Ten-start nlminb gives
+  `1.1624432576e-5`; five-start BFGS gives `1.8505189364e-6`; both requested
+  `start_method = "indep"` probes warn that the preliminary fit cannot carry
+  `cluster2` and fall back (`warm_start_applied = false`).  The B1 joint row
+  remains unqualified; no near-threshold result is promoted.
+- `Rscript --vanilla test/test_destination_b_b1_joint_receipt_io.R` passes;
+  each refreshed frozen-R receipt run completed in under 10 seconds.
+  `GLLVM_TEST_SHARD=158/294 julia --project=. -e 'using Pkg; Pkg.test()'`
+  passes **129/129** in **7.3 s** after a test-first red receipt-contract run.
+  `git diff --check` is clean.  No full suite, JET, Aqua,
+  allocation check, coverage campaign, release, push, merge, registry action,
+  or gllvmTMB engine edit was performed.

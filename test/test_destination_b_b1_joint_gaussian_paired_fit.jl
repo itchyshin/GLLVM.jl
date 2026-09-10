@@ -3,8 +3,17 @@ using GLLVM
 using JSON3
 
 @testset "Destination B B1 frozen-R joint Gaussian grouping optimizer diagnostic" begin
-    receipt_path = joinpath(@__DIR__, "..", "docs", "dev-log", "core070", "destination-b-b1", "frozen-r070-joint-gaussian-paired-receipt-20260910.json")
+    receipt_path = joinpath(@__DIR__, "..", "docs", "dev-log", "core070", "destination-b-b1", "frozen-r070-joint-gaussian-paired-receipt-20260910-03.json")
+    probe_receipt_path = joinpath(@__DIR__, "..", "docs", "dev-log", "core070", "destination-b-b1", "frozen-r070-joint-gaussian-optimizer-probes-20260910-03.json")
     @test isfile(receipt_path)
+    @test isfile(probe_receipt_path)
+    rscript = Sys.which("Rscript")
+    if isempty(rscript)
+        @test_skip "Rscript unavailable: B1 receipt I/O gate skipped"
+    else
+        io_test = joinpath(@__DIR__, "test_destination_b_b1_joint_receipt_io.R")
+        @test success(run(ignorestatus(`$rscript --vanilla $io_test`)))
+    end
     receipt = JSON3.read(read(receipt_path, String))
     r_beta = Float64.(receipt.fit.b_fix)
     r_loglik = Float64(receipt.fit.logLik)
@@ -42,7 +51,9 @@ using JSON3
     @test String(receipt.source.archive_sha256) == "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
     @test String(receipt.installed.shared_library_sha256) == "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
     @test String(receipt.specification.data_md5) == "cb7cb72ff26acbe6782f8731b40ce680"
-    @test String(receipt.r_runner.sha256) == "84046a365c31898defaa59e55346b21d6a3843be0dc97029775685fbc112a0e8"
+    @test String(receipt.r_runner.sha256) == "34b5a3b18a3475f260958883b5e52b25961b840bf810e3e8a3b8b2fc9c620aea"
+    @test String(receipt.r_runner.fixture_attestation_module) == "tools/destination_b/b1_joint_gaussian_common.R"
+    @test String(receipt.r_runner.fixture_attestation_module_sha256) == "61009033b613bd1eb8f97b42c073e180ad71418d758d9da97aa8f8cd5a793924"
     @test receipt.specification.REML === false
     @test receipt.acceptance.matched_parameter === false
     @test Float64(receipt.acceptance.source_gradient_threshold) == 1e-6
@@ -98,4 +109,68 @@ using JSON3
     @test isfinite(refit.loglik)
     @test !isapprox(changed_cluster2_fit.loglik, at_r_coordinates.loglik; atol = 1e-4, rtol = 0)
     @test !isapprox(changed_unit_obs_fit.loglik, at_r_coordinates.loglik; atol = 1e-4, rtol = 0)
+
+    if isfile(probe_receipt_path)
+        probe_receipt = JSON3.read(read(probe_receipt_path, String))
+        @test String(probe_receipt.receipt_kind) == "frozen_R_joint_gaussian_optimizer_probe"
+        @test String(probe_receipt.source.git_sha) == "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+        @test String(probe_receipt.source.archive_sha256) == "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+        @test String(probe_receipt.installed.shared_library_sha256) == "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+        @test String(probe_receipt.r_runner.path) == "tools/destination_b/b1_joint_gaussian_optimizer_probes.R"
+        @test String(probe_receipt.r_runner.sha256) == "192a9846b319a6d033c3dfbe4da8c7a2344676755191dac18d0d1daca995c9c7"
+        @test String(probe_receipt.r_runner.fixture_attestation_module) == "tools/destination_b/b1_joint_gaussian_common.R"
+        @test String(probe_receipt.r_runner.fixture_attestation_module_sha256) == "61009033b613bd1eb8f97b42c073e180ad71418d758d9da97aa8f8cd5a793924"
+        @test Float64(probe_receipt.acceptance.source_gradient_threshold) == 1e-6
+        @test probe_receipt.acceptance.matched_parameter === false
+        @test isempty(probe_receipt.acceptance.eligible_stationary_attempts)
+        expected_attempts = (
+            "nlminb_multistart_10",
+            "optim_bfgs_multistart_5",
+            "nlminb_indep_multistart_5",
+            "optim_bfgs_indep_multistart_5",
+        )
+        expected_results = Dict(
+            "nlminb_multistart_10" => (-32.847374868293784, 1.1624432576135015e-5, 10, 7, "default"),
+            "optim_bfgs_multistart_5" => (-32.847374868279616, 1.8505189364190403e-6, 5, 5, "default"),
+            "nlminb_indep_multistart_5" => (-32.847374868303177, 1.8152100309904722e-5, 5, 4, "indep"),
+            "optim_bfgs_indep_multistart_5" => (-32.847374868279616, 1.8505189364190403e-6, 5, 5, "indep"),
+        )
+        @test Tuple(String.(keys(probe_receipt.attempts))) == expected_attempts
+        for name in expected_attempts
+            attempt = probe_receipt.attempts[Symbol(name)]
+            @test !isnothing(attempt)
+            @test haskey(attempt, :status)
+            @test haskey(attempt, :control)
+            @test haskey(attempt, :warnings)
+            @test haskey(attempt, :warm_start_applied)
+            if String(attempt.status) == "success"
+                expected_loglik, expected_gradient, expected_restarts, expected_selected, expected_start = expected_results[name]
+                @test Float64(attempt.logLik) ≈ expected_loglik atol = 1e-12 rtol = 0
+                @test Float64(attempt.gradient_max_abs) ≈ expected_gradient atol = 1e-14 rtol = 0
+                @test Float64(attempt.gradient_max_abs) > Float64(probe_receipt.acceptance.source_gradient_threshold)
+                @test haskey(attempt, :raw_opt_par)
+                @test haskey(attempt, :restart_history)
+                @test haskey(attempt, :start_provenance)
+                @test length(attempt.restart_history) == expected_restarts
+                @test Int(attempt.start_provenance.selected_restart) == expected_selected
+                @test String(attempt.start_provenance.start_method) == expected_start
+            else
+                @test String(attempt.status) == "failure"
+                @test haskey(attempt, :failure)
+                @test !isempty(String(attempt.failure.message))
+            end
+        end
+        for name in ("nlminb_indep_multistart_5", "optim_bfgs_indep_multistart_5")
+            attempt = probe_receipt.attempts[Symbol(name)]
+            if haskey(attempt, :warm_start_applied)
+                @test !Bool(attempt.warm_start_applied)
+            end
+            if haskey(attempt, :warnings)
+                @test occursin("Unsupported grouping \"cluster2_id\"", String(attempt.warnings))
+            end
+            @test String(attempt.control.start_method) == "indep"
+            @test String(attempt.start_provenance.start_method) == "indep"
+            @test attempt.start_provenance.auto_indep_fit === false
+        end
+    end
 end

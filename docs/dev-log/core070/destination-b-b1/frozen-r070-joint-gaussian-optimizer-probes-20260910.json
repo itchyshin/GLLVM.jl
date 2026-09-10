@@ -1,0 +1,648 @@
+{
+  "receipt_kind": "frozen_R_joint_gaussian_optimizer_probe",
+  "source": {
+    "path": "/private/tmp/destination-b-b1-r070-rebuild",
+    "git_sha": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "description_version": "0.7.0",
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+  },
+  "installed": {
+    "library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910",
+    "loaded_path": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB",
+    "loaded_version": "0.7.0",
+    "marker_path": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB-frozen-source-identity.json",
+    "shared_library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB/libs/gllvmTMB.so",
+    "shared_library_sha256": "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+  },
+  "r_runner": {
+    "path": "tools/destination_b/b1_joint_gaussian_optimizer_probes.R",
+    "sha256": "9500e65ae0fa537ad0db9f13471fcc6f90432bb9895863847fa100e15276da88",
+    "base_diagnostic_runner": "tools/destination_b/b1_joint_gaussian_reference.R",
+    "base_diagnostic_runner_sha256": "84046a365c31898defaa59e55346b21d6a3843be0dc97029775685fbc112a0e8",
+    "R_version": "4.6.0"
+  },
+  "specification": {
+    "formula": "value ~ 0 + trait + latent(0 + trait | unit, d = 1, unique = FALSE) + indep(0 + trait | obs) + indep(0 + trait | cluster_id) + indep(0 + trait | cluster2_id)",
+    "family": "gaussian()",
+    "trait": "trait",
+    "unit": "unit",
+    "unit_obs": "obs",
+    "cluster": "cluster_id",
+    "cluster2": "cluster2_id",
+    "REML": false,
+    "seed": 20260913,
+    "data_md5": "cb7cb72ff26acbe6782f8731b40ce680",
+    "invariant": "Only optimizer and initialization controls vary across attempts."
+  },
+  "acceptance": {
+    "source_gradient_threshold": 9.9999999999999995e-07,
+    "eligible_stationary_attempts": [],
+    "matched_parameter": false,
+    "reason": "A stationary frozen-R point requires a fresh Julia paired comparison before B1 acceptance."
+  },
+  "attempts": {
+    "nlminb_multistart_10": {
+      "fit_seconds": 0.15183806419372559,
+      "logLik": -32.847374868293784,
+      "convergence": 0,
+      "optimizer_message": "relative convergence (4)",
+      "gradient": [-3.1218443652441473e-06, 2.9154505008873613e-06, 1.1624432576135015e-05, 2.2429706226787232e-06, 8.5376102167779727e-06, 2.1786916205190102e-06, -4.8207637505676024e-06, 5.2361289996839575e-06, 2.151338335260482e-06, -7.4598062622367097e-08, -7.6077444405738355e-07],
+      "gradient_max_abs": 1.1624432576135015e-05,
+      "raw_opt_par": {
+        "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+        "values": [-0.80138388484777479, 0.34897644128962252, -1.443482653313154, 0.85776642584219831, -0.6181049437708408, -1.673398434937881, -1.3927383079939921, -1.8370358437659189, -1.8045972213758739, -1.0984438521375497, -1.8711395538798206]
+      },
+      "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "sd_W", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "sd_q", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+      "b_fix": [-0.80138388484777479, 0.34897644128962252],
+      "log_sigma_eps": -1.443482653313154,
+      "theta_rr_B": [0.85776642584219831, -0.6181049437708408],
+      "theta_diag_W": [-1.673398434937881, -1.3927383079939921],
+      "theta_diag_species": [-1.8370358437659189, -1.8045972213758739],
+      "theta_diag_cluster2": [-1.0984438521375497, -1.8711395538798206],
+      "Sigma_unit": [
+        [0.73576324130209947, -0.53018966841370707],
+        [-0.53018966841370707, 0.38205372151395428]
+      ],
+      "Sigma_unit_obs": [
+        [0.035196914028162739, 0],
+        [0, 0.061699674970365527]
+      ],
+      "Sigma_cluster": [
+        [0.025372948617915867, 0],
+        [0, 0.027073647457305332]
+      ],
+      "Sigma_cluster2": [
+        [0.11114854775658019, 0],
+        [0, 0.023700026617044376]
+      ],
+      "sigma_eps": 0.23610405660530084,
+      "restart_history": [
+        {
+          "restart": 1,
+          "start_label": "initial",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0,
+          "objective": 32.847374868499401,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.014000000000000234,
+          "iterations": 29,
+          "evaluations": 72,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 2,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868396599,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.012000000000000011,
+          "iterations": 26,
+          "evaluations": 63,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 3,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868696008,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.01399999999999979,
+          "iterations": 28,
+          "evaluations": 71,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 4,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868303177,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.012000000000000011,
+          "iterations": 25,
+          "evaluations": 66,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 5,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868624186,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.01399999999999979,
+          "iterations": 27,
+          "evaluations": 66,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 6,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868547149,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.015000000000000124,
+          "iterations": 23,
+          "evaluations": 58,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 7,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868293784,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.012999999999999901,
+          "iterations": 28,
+          "evaluations": 63,
+          "success": true,
+          "selected": true
+        },
+        {
+          "restart": 8,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868757711,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.012999999999999901,
+          "iterations": 29,
+          "evaluations": 67,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 9,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868610615,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.012000000000000011,
+          "iterations": 28,
+          "evaluations": 66,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 10,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868445968,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.012000000000000011,
+          "iterations": 27,
+          "evaluations": 65,
+          "success": true,
+          "selected": false
+        }
+      ],
+      "start_provenance": {
+        "init_strategy": "default",
+        "start_method": "default",
+        "start_method_jitter_sd": 0,
+        "start_from": false,
+        "start_from_source": {},
+        "start_from_copied": [],
+        "auto_indep_fit": false,
+        "selected_restart": 7
+      },
+      "control": {
+        "optimizer": "nlminb",
+        "n_init": 10,
+        "init_jitter": 0.29999999999999999,
+        "start_method": "default"
+      },
+      "warnings": [],
+      "warm_start_applied": false
+    },
+    "optim_bfgs_multistart_5": {
+      "fit_seconds": 0.15253281593322754,
+      "logLik": -32.847374868279616,
+      "convergence": 0,
+      "optimizer_message": "",
+      "gradient": [1.1281653964571111e-07, 1.7643380909390162e-07, -1.8505189364190403e-06, -6.3023344390596738e-07, -9.9765752111612267e-07, -1.0749683338532477e-07, 3.361982073741747e-07, 1.3494178103548805e-07, -1.4037587263347926e-07, 3.0339103007011468e-07, 1.3573308347972042e-07],
+      "gradient_max_abs": 1.8505189364190403e-06,
+      "raw_opt_par": {
+        "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+        "values": [-0.80138302639815262, 0.34897590868311551, -1.443482791278166, 0.85776666310060889, -0.61810517593355274, -1.673398609708308, -1.392737794077286, -1.8370389363149184, -1.804598076816504, -1.0984433613443345, -1.8711387793127272]
+      },
+      "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "sd_W", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "sd_q", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+      "b_fix": [-0.80138302639815262, 0.34897590868311551],
+      "log_sigma_eps": -1.443482791278166,
+      "theta_rr_B": [0.85776666310060889, -0.61810517593355274],
+      "theta_diag_W": [-1.673398609708308, -1.392737794077286],
+      "theta_diag_species": [-1.8370389363149184, -1.804598076816504],
+      "theta_diag_cluster2": [-1.0984433613443345, -1.8711387793127272],
+      "Sigma_unit": [
+        [0.73576364832675345, -0.5301900142057383],
+        [-0.5301900142057383, 0.3820540085158482]
+      ],
+      "Sigma_unit_obs": [
+        [0.035196901725405509, 0],
+        [0, 0.061699738387385572]
+      ],
+      "Sigma_cluster": [
+        [0.025372791684227465, 0],
+        [0, 0.027073601137548874]
+      ],
+      "Sigma_cluster2": [
+        [0.11114865685853997, 0],
+        [0, 0.023700063331594266]
+      ],
+      "sigma_eps": 0.23610402403120406,
+      "restart_history": [
+        {
+          "restart": 1,
+          "start_label": "initial",
+          "start_method": "default",
+          "optimizer": "optim",
+          "jitter_sd": 0,
+          "objective": 32.847374868281719,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.024999999999999911,
+          "iterations": 45,
+          "evaluations": 22,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 2,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "optim",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868383355,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.017000000000000348,
+          "iterations": 45,
+          "evaluations": 24,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 3,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "optim",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.84737486828044,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.050999999999999712,
+          "iterations": 120,
+          "evaluations": 52,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 4,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "optim",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868280724,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.023999999999999577,
+          "iterations": 45,
+          "evaluations": 23,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 5,
+          "start_label": "jitter",
+          "start_method": "default",
+          "optimizer": "optim",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868279616,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.016000000000000014,
+          "iterations": 43,
+          "evaluations": 23,
+          "success": true,
+          "selected": true
+        }
+      ],
+      "start_provenance": {
+        "init_strategy": "default",
+        "start_method": "default",
+        "start_method_jitter_sd": 0,
+        "start_from": false,
+        "start_from_source": {},
+        "start_from_copied": [],
+        "auto_indep_fit": false,
+        "selected_restart": 5
+      },
+      "control": {
+        "optimizer": "optim(BFGS)",
+        "n_init": 5,
+        "init_jitter": 0.29999999999999999,
+        "maxit": 10000,
+        "reltol": 9.9999999999999998e-13,
+        "start_method": "default"
+      },
+      "warnings": [],
+      "warm_start_applied": false
+    },
+    "nlminb_indep_multistart_5": {
+      "fit_seconds": 0.12152099609375,
+      "logLik": -32.847374868303177,
+      "convergence": 0,
+      "optimizer_message": "relative convergence (4)",
+      "gradient": [2.8379426402252083e-06, 8.6079071443007586e-07, -8.7670246289574641e-06, 1.7127268829357342e-05, 1.8152100309904722e-05, 4.7054368085777929e-06, -1.5596722174268798e-06, 4.4652493611328061e-06, -1.6802582794733817e-06, 1.2045925626463607e-06, -7.2638542210936326e-06],
+      "gradient_max_abs": 1.8152100309904722e-05,
+      "raw_opt_par": {
+        "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+        "values": [-0.80138266483668774, 0.34897575318444729, -1.4434828887481126, 0.85776696997934621, -0.61810521058006462, -1.6733978370247642, -1.3927380218573462, -1.8370365055707183, -1.8045979826940897, -1.098443433907027, -1.8711424114171351]
+      },
+      "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "sd_W", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "sd_q", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+      "b_fix": [-0.80138266483668774, 0.34897575318444729],
+      "log_sigma_eps": -1.4434828887481126,
+      "theta_rr_B": [0.85776696997934621, -0.61810521058006462],
+      "theta_diag_W": [-1.6733978370247642, -1.3927380218573462],
+      "theta_diag_species": [-1.8370365055707183, -1.8045979826940897],
+      "theta_diag_cluster2": [-1.098443433907027, -1.8711424114171351],
+      "Sigma_unit": [
+        [0.73576417478754863, -0.53019023360770778],
+        [-0.53019023360770778, 0.38205405134622605]
+      ],
+      "Sigma_unit_obs": [
+        [0.035196956117581044, 0],
+        [0, 0.061699710279451744]
+      ],
+      "Sigma_cluster": [
+        [0.025372915034059761, 0],
+        [0, 0.027073606234014762]
+      ],
+      "Sigma_cluster2": [
+        [0.11114864072804953, 0],
+        [0, 0.02369989117001059]
+      ],
+      "sigma_eps": 0.23610400101815857,
+      "restart_history": [
+        {
+          "restart": 1,
+          "start_label": "initial",
+          "start_method": "indep",
+          "optimizer": "nlminb",
+          "jitter_sd": 0,
+          "objective": 32.847374868499401,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.01399999999999979,
+          "iterations": 29,
+          "evaluations": 72,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 2,
+          "start_label": "jitter",
+          "start_method": "indep",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868396599,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.012000000000000011,
+          "iterations": 26,
+          "evaluations": 63,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 3,
+          "start_label": "jitter",
+          "start_method": "indep",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868696008,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.01399999999999979,
+          "iterations": 28,
+          "evaluations": 71,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 4,
+          "start_label": "jitter",
+          "start_method": "indep",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868303177,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.016000000000000014,
+          "iterations": 25,
+          "evaluations": 66,
+          "success": true,
+          "selected": true
+        },
+        {
+          "restart": 5,
+          "start_label": "jitter",
+          "start_method": "indep",
+          "optimizer": "nlminb",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868624186,
+          "convergence": 0,
+          "message": "relative convergence (4)",
+          "elapsed_s": 0.012999999999999901,
+          "iterations": 27,
+          "evaluations": 66,
+          "success": true,
+          "selected": false
+        }
+      ],
+      "start_provenance": {
+        "init_strategy": "default",
+        "start_method": "indep",
+        "start_method_jitter_sd": 0,
+        "start_from": false,
+        "start_from_source": {},
+        "start_from_copied": [],
+        "auto_indep_fit": false,
+        "selected_restart": 4
+      },
+      "control": {
+        "optimizer": "nlminb",
+        "n_init": 5,
+        "init_jitter": 0.29999999999999999,
+        "start_method": "indep"
+      },
+      "warnings": "`start_method = list(method = \"indep\")` failed while fitting the simpler\nindependent model; continuing with the default starts.\nℹ Unsupported grouping \"cluster2_id\" for `rr()`/`diag()`. ℹ Supported\n  groupings: \"unit\", \"obs\", \"cluster_id\" (slots: unit, unit_obs, cluster). → If\n  you meant the within-unit grouping, pass `unit_obs = \"cluster2_id\"` to\n  `gllvmTMB()` (the engine maps it to the internal \"site_species\" factor).",
+      "warm_start_applied": false
+    },
+    "optim_bfgs_indep_multistart_5": {
+      "fit_seconds": 0.17729496955871582,
+      "logLik": -32.847374868279616,
+      "convergence": 0,
+      "optimizer_message": "",
+      "gradient": [1.1281653964571111e-07, 1.7643380909390162e-07, -1.8505189364190403e-06, -6.3023344390596738e-07, -9.9765752111612267e-07, -1.0749683338532477e-07, 3.361982073741747e-07, 1.3494178103548805e-07, -1.4037587263347926e-07, 3.0339103007011468e-07, 1.3573308347972042e-07],
+      "gradient_max_abs": 1.8505189364190403e-06,
+      "raw_opt_par": {
+        "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+        "values": [-0.80138302639815262, 0.34897590868311551, -1.443482791278166, 0.85776666310060889, -0.61810517593355274, -1.673398609708308, -1.392737794077286, -1.8370389363149184, -1.804598076816504, -1.0984433613443345, -1.8711387793127272]
+      },
+      "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "sd_W", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "sd_q", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+      "b_fix": [-0.80138302639815262, 0.34897590868311551],
+      "log_sigma_eps": -1.443482791278166,
+      "theta_rr_B": [0.85776666310060889, -0.61810517593355274],
+      "theta_diag_W": [-1.673398609708308, -1.392737794077286],
+      "theta_diag_species": [-1.8370389363149184, -1.804598076816504],
+      "theta_diag_cluster2": [-1.0984433613443345, -1.8711387793127272],
+      "Sigma_unit": [
+        [0.73576364832675345, -0.5301900142057383],
+        [-0.5301900142057383, 0.3820540085158482]
+      ],
+      "Sigma_unit_obs": [
+        [0.035196901725405509, 0],
+        [0, 0.061699738387385572]
+      ],
+      "Sigma_cluster": [
+        [0.025372791684227465, 0],
+        [0, 0.027073601137548874]
+      ],
+      "Sigma_cluster2": [
+        [0.11114865685853997, 0],
+        [0, 0.023700063331594266]
+      ],
+      "sigma_eps": 0.23610402403120406,
+      "restart_history": [
+        {
+          "restart": 1,
+          "start_label": "initial",
+          "start_method": "indep",
+          "optimizer": "optim",
+          "jitter_sd": 0,
+          "objective": 32.847374868281719,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.026000000000000245,
+          "iterations": 45,
+          "evaluations": 22,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 2,
+          "start_label": "jitter",
+          "start_method": "indep",
+          "optimizer": "optim",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868383355,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.016999999999999904,
+          "iterations": 45,
+          "evaluations": 24,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 3,
+          "start_label": "jitter",
+          "start_method": "indep",
+          "optimizer": "optim",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.84737486828044,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.052000000000000046,
+          "iterations": 120,
+          "evaluations": 52,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 4,
+          "start_label": "jitter",
+          "start_method": "indep",
+          "optimizer": "optim",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868280724,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.024000000000000021,
+          "iterations": 45,
+          "evaluations": 23,
+          "success": true,
+          "selected": false
+        },
+        {
+          "restart": 5,
+          "start_label": "jitter",
+          "start_method": "indep",
+          "optimizer": "optim",
+          "jitter_sd": 0.29999999999999999,
+          "objective": 32.847374868279616,
+          "convergence": 0,
+          "message": "",
+          "elapsed_s": 0.016000000000000014,
+          "iterations": 43,
+          "evaluations": 23,
+          "success": true,
+          "selected": true
+        }
+      ],
+      "start_provenance": {
+        "init_strategy": "default",
+        "start_method": "indep",
+        "start_method_jitter_sd": 0,
+        "start_from": false,
+        "start_from_source": {},
+        "start_from_copied": [],
+        "auto_indep_fit": false,
+        "selected_restart": 5
+      },
+      "control": {
+        "optimizer": "optim(BFGS)",
+        "n_init": 5,
+        "init_jitter": 0.29999999999999999,
+        "maxit": 10000,
+        "reltol": 9.9999999999999998e-13,
+        "start_method": "indep"
+      },
+      "warnings": "`start_method = list(method = \"indep\")` failed while fitting the simpler\nindependent model; continuing with the default starts.\nℹ Unsupported grouping \"cluster2_id\" for `rr()`/`diag()`. ℹ Supported\n  groupings: \"unit\", \"obs\", \"cluster_id\" (slots: unit, unit_obs, cluster). → If\n  you meant the within-unit grouping, pass `unit_obs = \"cluster2_id\"` to\n  `gllvmTMB()` (the engine maps it to the internal \"site_species\" factor).",
+      "warm_start_applied": false
+    }
+  }
+}
