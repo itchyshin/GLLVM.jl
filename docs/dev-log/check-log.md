@@ -18164,3 +18164,23 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   route and the 960 px breakpoint; the PNG returns HTTP 200. A fresh desktop
   screenshot remains pending while the local screen is locked. No model,
   bridge, parity, interval, release, or registry claim changed.
+
+## 2026-09-12 — Exact full/compact logo rollout
+
+- Replaced the Image 2.5 assets with the maintainer-supplied exact SVG masters:
+  the full, internal-text badge is the desktop landing-hero mark; the compact
+  no-text badge is the navigation, route-panel, and favicon mark.
+- `julia --project=docs docs/make.jl` completed with exit status 0 after the
+  local preview manifest was made writable. The generated site was then
+  inspected in a browser at desktop light and dark themes, and at a 390 px
+  phone viewport. The full mark is intentionally hidden below 960 px; the
+  compact mark remains visible in the mobile navigation.
+- `git diff --check` exited 0. Asset checks confirmed the exact SVG masters,
+  a 512 × 512 RGBA navigation PNG, and a 64 × 64 favicon. Searches for
+  `gllvmjl-mark`, `gllvmjl-favicon`, and `gllvmjl-mark-logo-image25` returned
+  no stale source references.
+- The display assets are alpha-masked renditions of those exact masters. The
+  full badge additionally uses a centred, constant-width regular navy hexagon
+  to remove the masters' uneven opaque raster edge; the compact badge retains
+  its native 277 × 304 aspect ratio.
+- No model, bridge, parity, interval, release, or registry claim changed.
