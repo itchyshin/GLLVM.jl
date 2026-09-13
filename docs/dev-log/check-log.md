@@ -19258,3 +19258,56 @@ an R DLL — separate from S3b's own scope), `test_destination_b_phylo_independe
 recovery campaigns, second B1 attempt, `AGENTS.md` snapshot edit.
 
 After-task: `docs/dev-log/after-task/2026-09-13-destination-b-g2-b1-s3b.md`.
+
+## 2026-09-13 — Destination B G2 closeout: B1 close-as-limit, S3b evidence landed, S4 held, draft PR
+
+**Authority:** Shinichi's explicit "run DestB all the way to finish, make
+the decisions autonomously" instruction, recommended path: (1) B1 →
+close-as-limit, not redesign, no retry; (2) S4 → HOLD, no probe; (3) open
+draft PR to `main`, no merge; (4) S3b ledger update reflecting 97/97
+adapter-consumer evidence, fenced.
+
+**B1 — closed as interface limit.** Wrote
+`docs/dev-log/decisions/2026-09-13-destination-b-b1-close-as-limit.md`
+documenting both HOLD receipts — `fixed_coordinate`'s `obj$he(theta_star)`
+error (2026-09-10) and `fixed_point_marginal`'s `"A map factor length must
+equal parameter length"` error inside `reconstruct_frozen_object()`
+(2026-09-13) — as two independently-materialized confirmations of the same
+class of interface limit: a frozen 0.7.0 R TMB capture does not
+reconstruct correctly through a bare, out-of-pipeline `MakeADFun()` call.
+Neither is a curvature or singularity verdict about GLLVM.jl. No third
+attempt was made; no reconstruction redesign was implemented. Ledger
+`.unlazy/destination-b-programme/GATES.md` updated: `B1-JOINT-STATIONARY`
+and `B1-JOINT-PAIR` moved from `NOT AUTHORIZED` to `CLOSED — INTERFACE
+LIMIT (2026-09-13)` (checkbox left unqualified — this is a closure, not a
+pass); `B1-RECOVERY` unchanged (was always downstream, never reached).
+
+**S4 — held, re-confirmed absent.** No probe run or authorised. Re-ran
+`git cat-file -t 97214679c` for this closeout: `fatal: Not a valid object
+name 97214679c`, exit 128 — identical to the 2026-09-13 G1 matrix's own
+check, confirming the S4 recorder is still physically absent from this
+worktree's object database independent of any authority question.
+`S4-PUBLIC-FORMULA` stays `NOT AUTHORIZED` in the ledger.
+
+**S3b — adapter-consumer evidence landed in the ledger, fenced.** The
+`S3B-CONSUMER` gate's own criterion (tree/pedigree-with-ancestors/dense-vcv
+bridge receipts binding the frozen R identity and canonical convention,
+without unlocking generic engine routing) is satisfied by the prior
+session's 97/97 `test/test_destination_b_adapter_consumer.jl` run
+(recorded in `ce46bebf` / the 2026-09-13 G2 after-task) — no new test ran
+in this closeout session. Ledger checkbox flipped to `[x]`, `STATUS:
+QUALIFIED (adapter/test-only scope)`, with explicit inline fencing: NOT B1
+Wald, NOT full Destination B done, NOT S4.
+
+**Draft PR.** Opened `codex/destination-b-b1-integration-20260910` →
+`main` as `--draft` (not merged, no force-push). See the after-task report
+for the URL.
+
+**Not attempted (per explicit fence):** any third B1 attempt, any capture-
+reconstruction redesign, the S4 probe, twin (R) test-lane files, any merge
+or force-push, any `AGENTS.md` snapshot edit, staging either HOLD JSON as
+"fixed".
+
+Decision: `docs/dev-log/decisions/2026-09-13-destination-b-b1-close-as-limit.md`.
+Closeout note: `docs/dev-log/2026-09-13-destination-b-g2-closeout.md`.
+After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`.

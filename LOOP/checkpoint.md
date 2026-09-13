@@ -1,76 +1,68 @@
-# Checkpoint — Destination B frozen-0.7.0 G2 lines 1+2 (B1 curvature + S3b)
+# Checkpoint — Destination B frozen-0.7.0 G2 closeout (B1 close-as-limit, S3b evidence, S4 held)
 
-GOAL: see `LOOP/GOAL.md` (that file is the G1-scoped goal, now closed; this
-checkpoint documents the follow-on G2 session Shinichi separately
-authorised — "G2 lines 1+2" = B1 curvature + S3b consumer; push authorised;
-S4/line 3 explicitly NOT authorised).
+GOAL: see `LOOP/GOAL.md` (G1-scoped goal, closed). Then G2 lines 1+2
+(B1 curvature + S3b consumer), closed at `ce46bebf`. This checkpoint
+documents the follow-on **G2 closeout** session: Shinichi's "run DestB all
+the way to finish, make the decisions autonomously" instruction, applying
+his four named decision points to the state left by `ce46bebf`.
 
-STATE (2026-09-13, G2 session): pushed the branch (new `origin/codex/destination-b-b1-integration-20260910`,
-carrying the 88 pre-existing local commits). Materialized the B1
-`fixed_point_marginal` capture for real (trace-intercept `MakeADFun`, zero
-optimizer calls, hashes computed not invented) and ran the ONE authorised
-`TMB::sdreport` evaluation attempt — **result: FAILED**
-(`"A map factor length must equal parameter length"`, thrown one step before
-`obj$fn`/`sdreport` inside the bare `MakeADFun` reconstruction). Retained
-honestly at
-`docs/dev-log/core070/destination-b-b1/fixed-point-marginal-curvature-diagnostic-20260913.json`
-— now **PROTECTED**, same as the earlier `fixed_coordinate` HOLD; **no
-retry occurred and none should without a fresh maintainer decision**. Ran
-the S3b end-to-end adapter consumer
-(`test/test_destination_b_adapter_consumer.jl`) for the first time this
-worktree — **97/97 PASS** (Julia 1.10.0, macOS 26.6.2 arm64) — in an
-isolated ephemeral env so `Project.toml`/`Manifest.toml` were not touched.
+STATE (2026-09-13, closeout session): no new numerical work ran. Applied
+four maintainer-directed dispositions:
 
-PRIOR STATE (G1, closed 2026-09-13 at `46ec66d8`): G1 matrix written and
-integrated (16 DONE / 7 OWED / 4 RETRACTED / 1 PROTECTED across B1/S3b/S4);
-Unlazy ledger has a G1 progress note with no gate checked off.
+1. **B1 → CLOSED — INTERFACE LIMIT.** Both HOLD receipts
+   (`fixed_coordinate`'s `obj$he()` error, `fixed_point_marginal`'s
+   `MakeADFun` map-length error) documented together as two confirmations
+   of the same class of limit — a frozen 0.7.0 R TMB capture does not
+   reconstruct through a bare, out-of-pipeline `MakeADFun()` call. Decision:
+   `docs/dev-log/decisions/2026-09-13-destination-b-b1-close-as-limit.md`.
+   No retry, no redesign implemented this session. Ledger
+   `B1-JOINT-STATIONARY`/`B1-JOINT-PAIR` moved `NOT AUTHORIZED` →
+   `CLOSED — INTERFACE LIMIT (2026-09-13)` (checkbox stays `[ ]` — closure,
+   not a pass). `B1-RECOVERY` unchanged (downstream, never reached).
+2. **S4 → HELD.** No probe run or authorised. Re-confirmed
+   `git cat-file -t 97214679c` → exit 128 (recorder absent). Ledger
+   `S4-PUBLIC-FORMULA` unchanged (`NOT AUTHORIZED`).
+3. **S3b ledger update, fenced.** `S3B-CONSUMER` flipped `[x]` /
+   `QUALIFIED (adapter/test-only scope)` on the strength of the prior
+   session's 97/97 `test_destination_b_adapter_consumer.jl` run (`ce46bebf`
+   — no new test ran this session). Explicit inline fence: NOT B1 Wald, NOT
+   full Destination B done, NOT S4.
+4. **Draft PR** opened `codex/destination-b-b1-integration-20260910` →
+   `main`, `--draft`, not merged, no force-push.
 
 ARCS DONE (verified):
-- LOOP/ scaffold written (this commit-to-be).
-- B1/S3b/S4 graft-first orientation — verified by reading the cited
-  `graft ask --source` output and the source lines it pointed at.
-- Three named static verifiers re-run and their console output read (not
-  just exit code): `test_b1_fixed_point_marginal_curvature_protocol.jl`
-  22/22, `verify_b1_fixed_point_marginal_curvature_protocol.jl` PASS,
-  `test_destination_b_a4_s4_receipts.jl` 60/60,
-  `test_destination_b_a4_s4_public_r_formula_receipt.jl` 29/29,
-  `destination_b_scope_check.mjs` → `SCOPE_HISTORY_AND_NEGATIVE_CONTROLS_PASS`.
-- One test, `test_destination_b_a4_s4_fixed_coordinate_evaluator.jl`,
-  self-corrected and flagged in the matrix §4 (ran to completion, 45/45,
-  before its numerical nature was recognised from its own `include`d
-  source; no new artifact, HOLD untouched).
-- Three fit/DLL-risk test files positively identified from source peek only
-  and NOT executed: `test_destination_b_adapter_consumer.jl`,
-  `test_destination_b_dense_uncertainty.jl`,
-  `test_destination_b_phylo_independent_receipt.jl`.
-- `git cat-file -t 97214679c` → exit 128, confirming the S4 recorder is
-  absent from this object database.
-- HOLD JSON confirmed as the only untracked file in `git status --short`
-  throughout the session.
+- Lane preflight + 4h lease claimed on
+  `docs/dev-log/`, `LOOP/`, `.unlazy/destination-b-programme/`,
+  `ENGINE-GATES.md` (last unused/unrelated topic, read-only).
+- `git cat-file -t 97214679c` re-run → exit 128, matches G1 matrix citation.
+- `git status --short` checked before this session's commit: only the
+  pre-existing protected HOLD JSON (untracked by design) and a local
+  `graft/` build-cache dir (untracked, not staged, not a deliverable).
+- Decision doc, closeout note, after-task, check-log entry all written.
+- `.unlazy/destination-b-programme/GATES.md` updated (gitignored, not
+  committed to git, but the disk file itself now reflects all four
+  dispositions above).
 
-ARC IN PROGRESS: closing check-log.md + after-task report, then committing
-LOOP/ + the matrix + those two by explicit path.
+ARC IN PROGRESS: committing the tracked deliverables by explicit path,
+pushing, opening the draft PR.
 
-NEXT: none within this goal — after the commit, STOP and ask Shinichi for
-G2 authorisation (a separate, named decision covering: capture
-materialization, B1 curvature evaluation, and/or the S4 probe).
+NEXT: none within this closeout goal. STOP after PR is open. Any further
+Destination B work (B1 redesign, S4 rehydration+probe, PR merge) needs a
+fresh, separate, named maintainer decision.
 
-OPEN GATES (need human): **G2** — every numerical B1/S4 gate
-(`B1-JOINT-STATIONARY`, `B1-JOINT-PAIR`, `B1-RECOVERY`, `S3B-CONSUMER`
-end-to-end run, `S4-PUBLIC-FORMULA`) stays NOT AUTHORIZED until Shinichi
-gives a fresh, separate decision. The S4 probe is additionally blocked by
-the physically-absent recorder `97214679c` regardless of authority.
+OPEN GATES (need human): B1 redesign strategy (if any); S4 recorder
+rehydration + fresh authorisation; PR #<see chat> review/merge decision.
 
 TRUTH LIVES IN:
-- `docs/dev-log/2026-09-13-destination-b-g1-audit-matrix.md` (the matrix).
-- `.unlazy/destination-b-programme/GATES.md` (gitignored; G1 progress note).
-- `docs/dev-log/check-log.md` (this session's entry).
-- `docs/dev-log/after-task/2026-09-13-destination-b-g1-static-audit.md`.
+- `docs/dev-log/decisions/2026-09-13-destination-b-b1-close-as-limit.md`.
+- `docs/dev-log/2026-09-13-destination-b-g2-closeout.md`.
+- `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`.
+- `.unlazy/destination-b-programme/GATES.md` (gitignored).
+- `docs/dev-log/check-log.md` (this session's entry, dated 2026-09-13).
 - Branch `codex/destination-b-b1-integration-20260910` @ tip after this
-  session's commit (see that commit's hash once landed).
+  session's commit (see the after-task's commit hash once landed).
 
-RESUME: read `LOOP/GOAL.md` → this file → the matrix doc → the check-log
-entry dated 2026-09-13 (G1 audit). Do not re-run G1; it is closed. Do not
-start any numerical work without a fresh, explicit G2 message from
-Shinichi naming exactly which of {B1 curvature, S3b end-to-end consumer
-run, S4 probe} is authorised.
+RESUME: read `LOOP/GOAL.md` → this file → the G2 closeout note → the
+check-log entry dated 2026-09-13 (closeout). Do not re-open B1 or S4
+without Shinichi naming exactly which reopens (redesign strategy for B1;
+recorder rehydration + fresh probe authorisation for S4).
