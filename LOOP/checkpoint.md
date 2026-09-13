@@ -1,10 +1,29 @@
-# Checkpoint — Destination B frozen-0.7.0 G1 static audit
+# Checkpoint — Destination B frozen-0.7.0 G2 lines 1+2 (B1 curvature + S3b)
 
-GOAL: see `LOOP/GOAL.md`.
-STATE: G1 matrix written and integrated (16 DONE / 7 OWED / 4 RETRACTED / 1
-PROTECTED across B1/S3b/S4); Unlazy ledger has a G1 progress note with no
-gate checked off; closing check-log + after-task now; about to commit by
-name and STOP for G2.
+GOAL: see `LOOP/GOAL.md` (that file is the G1-scoped goal, now closed; this
+checkpoint documents the follow-on G2 session Shinichi separately
+authorised — "G2 lines 1+2" = B1 curvature + S3b consumer; push authorised;
+S4/line 3 explicitly NOT authorised).
+
+STATE (2026-09-13, G2 session): pushed the branch (new `origin/codex/destination-b-b1-integration-20260910`,
+carrying the 88 pre-existing local commits). Materialized the B1
+`fixed_point_marginal` capture for real (trace-intercept `MakeADFun`, zero
+optimizer calls, hashes computed not invented) and ran the ONE authorised
+`TMB::sdreport` evaluation attempt — **result: FAILED**
+(`"A map factor length must equal parameter length"`, thrown one step before
+`obj$fn`/`sdreport` inside the bare `MakeADFun` reconstruction). Retained
+honestly at
+`docs/dev-log/core070/destination-b-b1/fixed-point-marginal-curvature-diagnostic-20260913.json`
+— now **PROTECTED**, same as the earlier `fixed_coordinate` HOLD; **no
+retry occurred and none should without a fresh maintainer decision**. Ran
+the S3b end-to-end adapter consumer
+(`test/test_destination_b_adapter_consumer.jl`) for the first time this
+worktree — **97/97 PASS** (Julia 1.10.0, macOS 26.6.2 arm64) — in an
+isolated ephemeral env so `Project.toml`/`Manifest.toml` were not touched.
+
+PRIOR STATE (G1, closed 2026-09-13 at `46ec66d8`): G1 matrix written and
+integrated (16 DONE / 7 OWED / 4 RETRACTED / 1 PROTECTED across B1/S3b/S4);
+Unlazy ledger has a G1 progress note with no gate checked off.
 
 ARCS DONE (verified):
 - LOOP/ scaffold written (this commit-to-be).

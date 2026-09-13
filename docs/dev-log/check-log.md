@@ -19138,3 +19138,123 @@ push, merge, or qualification claim was made.
   (capture materialization / B1 curvature evaluation / and-or the S4 probe —
   each remains its own fresh decision per the 2026-09-08 authorisation and
   the 2026-09-12 handover).
+
+## 2026-09-13 — Destination B G2 lines 1+2: B1 curvature (FAILED, retained) + S3b consumer (97/97 PASS)
+
+Shinichi authorised **G2 lines 1+2** (B1 curvature; S3b end-to-end consumer)
+and **push**. S4/line 3 explicitly NOT authorised. This entry is the numerical
+follow-on to the 2026-09-13 G1 static audit above.
+
+**Push (Step A):** `git push -u origin HEAD` — new branch created at
+`origin/codex/destination-b-b1-integration-20260910` (was not behind, not
+rejected; carried the 88 pre-existing local commits up to `46ec66d8`). No
+`--force`, no merge to `main`, no PR opened. The protected HOLD JSON stayed
+untracked and was not pushed.
+
+**Step B — B1 fixed-point-marginal curvature (line 1): ONE attempt, FAILED,
+retained honestly, no retry.**
+
+The `fixed_point_marginal` protocol (`docs/dev-log/protocols/b1-fixed-point-marginal-curvature-audit.toml`)
+required capture materialization first (`execution_ready = false`,
+`materialization_status = "UNRESOLVED_NO_CAPTURE_MATERIALIZATION_AUTHORIZED"`
+at session start). Per Shinichi's explicit "materialize capture only if
+protocol requires and path is real — do not invent RDS/hash":
+
+1. Verified the frozen toolchain bit-for-bit against the protocol pins before
+   touching anything: `TMB` 1.9.21 DESCRIPTION SHA-256
+   `937932be5…`, `TMB.so` SHA-256 `8b387eba…`, frozen `gllvmTMB.so` SHA-256
+   `3b6e7b63…` — all three matched the pinned values exactly, and matched the
+   already-installed toolchain at
+   `/Users/z3437171/Library/R/arm64/4.6/library/TMB` and
+   `/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910`.
+2. Materialized the capture via the SAME `trace("MakeADFun", ..., exit = ...)`
+   interception pattern already used (and reviewed) for the earlier
+   `fixed_coordinate` HOLD: a fresh live-execution script outside the repo
+   (`/private/tmp/b1-fixed-point-marginal-capture-materialize-20260913.R`,
+   SHA-256 `ea6bcd9a…`) reconstructs the exact fixture (seed `20260914L`,
+   same generative code as `b1_joint_gaussian_stationary_reference.R`,
+   `data_md5` re-verified `8d61143f2ce6102bb8460fb1575cc249`), builds the
+   formula, then intercepts `TMB::MakeADFun` on its own `exit` hook and
+   throws before `gllvmTMB::gllvmTMB()` ever dispatches to an optimizer —
+   **zero optimizer calls occurred during materialization**, confirmed by
+   `identical(names(obj$par), FIXED_RAW_NAMES)` and the DLL-identity checks
+   passing. Captured `data`, `parameters`, `DLL`, `dll_path`, `random`, `map`
+   from `obj$env`, embedded the pre-registered `provenance` and `raw_opt_par`
+   (the *known* frozen fixed point, not derived from this run), and
+   reserve-wrote the RDS once (no clobber) at the protocol's
+   `canonical_path`:
+   `docs/dev-log/core070/destination-b-b1/b1-fixed-point-marginal-capture.rds`.
+   Real (not invented) hashes computed with the evaluator's own hash
+   functions: `capture_sha256 = f8cf69e1…`, `data_sha256 = cd8b6a2a…`,
+   `map_sha256 = 80c96432…`.
+3. The git-tracked evaluator
+   (`tools/destination_b/b1_fixed_point_marginal_curvature_evaluator.R`,
+   confirmed still hashing to the protocol-pinned `58d7eeb1…`) was **not
+   edited** — its three `UNRESOLVED_PENDING_CAPTURE_MATERIALIZATION`
+   constants are a fail-closed pre-run contract and must stay that way in the
+   committed tree. A live-execution copy with exactly those three lines
+   substituted for the just-computed real hashes (`diff` confirmed *only*
+   those three lines differ) was written outside the repo at
+   `/private/tmp/b1-fixed-point-marginal-curvature-evaluate-20260913.R`
+   (SHA-256 `0062993e…`) — mirroring the same repo-external-copy precedent
+   already established by the `fixed_coordinate` HOLD's own evaluator path.
+4. Ran that copy **exactly once**: `Rscript --vanilla
+   b1-fixed-point-marginal-curvature-evaluate-20260913.R --capture
+   b1-fixed-point-marginal-capture.rds --output
+   fixed-point-marginal-curvature-diagnostic-20260913.json`. Exit 0,
+   wall time ≈1.4 s (well inside the 60 s hard stop baked into the
+   evaluator's own `HARD_STOP_SECONDS`).
+5. **Result: `status = "FAILED"`**, retained by the evaluator's own
+   write-once/no-clobber logic at
+   `docs/dev-log/core070/destination-b-b1/fixed-point-marginal-curvature-diagnostic-20260913.json`.
+   `failure.class = "simpleError"`, `failure.message = "A map factor length
+   must equal parameter length"` — thrown inside `reconstruct_frozen_object()`
+   (a bare `TMB::MakeADFun(data=, parameters=, DLL=, random=, map=)` call
+   using the captured objects). **This is a genuine reconstruction/interface
+   finding, not a bug to patch and rerun:** the captured `map` (a list of
+   TMB `factor()` objects) does not survive an independent, out-of-context
+   `MakeADFun` re-construction outside of `gllvmTMB::gllvmTMB()`'s own
+   fitting pipeline. No `obj$fn`/`TMB::sdreport` call was ever reached —
+   the failure occurs one step earlier than the direct-Hessian HOLD's
+   `obj$he()` limitation. Per "NEVER retry", this receipt is now equally
+   **PROTECTED** going forward: never staged over, edited, deleted, or
+   retried without a fresh, separate maintainer decision. The pre-existing
+   `fixed-coordinate-curvature-diagnostic-20260910.json` HOLD was not
+   touched (confirmed still untracked and byte-identical throughout).
+6. Committed by name: the new receipt JSON, the capture RDS (8 KB; kept for
+   independent hash re-verification), this check-log entry, and the
+   after-task report. The two live-execution `.R` scripts stay outside the
+   repo in `/private/tmp/`, matching the existing precedent for the
+   `fixed_coordinate` pair's own evaluator.
+
+**Step C — S3b end-to-end adapter consumer (line 2): PASS, 97/97.**
+
+`test/test_destination_b_adapter_consumer.jl` calls `GLLVM.bridge_fit(...)`
+end-to-end (real Julia optimizer, `iterations=400`, no R/TMB involved) for
+the tree, pedigree-with-ancestors, and dense-`vcv` fixtures, comparing point
+estimates, log-likelihoods, and 12 named Wald interval endpoints per fixture
+against frozen R-derived fixture JSON. `JSON3`/`SHA` are test-only deps not in
+the main `Project.toml`; ran in an isolated ephemeral environment
+(`/tmp/s3b-consumer-env`, `Pkg.develop(path=...)` + `Pkg.add(["JSON3","SHA"])`)
+so the repo's own `Project.toml`/`Manifest.toml` were not touched.
+
+```
+Test Summary:                                 | Pass  Total  Time
+Actual R adapter multivariate bridge consumer |   97     97  7.4s
+```
+
+Julia 1.10.0, macOS 26.6.2 (Darwin 25.6.0, arm64). No new artifact was
+written (`GLLVM_DESTINATION_B_BRIDGE_RECEIPT` env var left unset, so the
+optional receipt-dump branch in the test did not fire). This establishes —
+for the first time this session — that "the S3b consumer works" for these
+three fixtures; it does **not** establish full S3b qualification (per the G1
+matrix, `S3B-CONSUMER` ledger gate still needs a maintainer sign-off pass on
+top of this passing run), and it is adapter/test-only per the 2026-09-08
+authorisation (no `gllvmTMB` C++ or likelihood-engine change).
+
+**Not attempted (per explicit fence):** S4 probe, twin (R) testing beyond the
+frozen oracle, `test_destination_b_dense_uncertainty.jl` (conditionally loads
+an R DLL — separate from S3b's own scope), `test_destination_b_phylo_independent_receipt.jl`,
+recovery campaigns, second B1 attempt, `AGENTS.md` snapshot edit.
+
+After-task: `docs/dev-log/after-task/2026-09-13-destination-b-g2-b1-s3b.md`.
