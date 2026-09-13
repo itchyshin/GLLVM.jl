@@ -18184,3 +18184,46 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   to remove the masters' uneven opaque raster edge; the compact badge retains
   its native 277 × 304 aspect ratio.
 - No model, bridge, parity, interval, release, or registry claim changed.
+
+## 2026-09-13 — PR #318 merge attempt STOP; S4 recorder object located
+
+- `gh pr view 318` showed `isDraft: true`, `mergeStateStatus: DIRTY`,
+  `mergeable: CONFLICTING`. `gh api repos/itchyshin/GLLVM.jl/pulls/318` (fresh
+  fetch, not the cached UI field) confirmed `mergeable: false`,
+  `mergeable_state: dirty`. A single non-`--auto` `gh pr merge 318 --squash`
+  attempt was rejected: *"the merge commit cannot be cleanly created."* Zero
+  CI runs exist for `codex/destination-b-b1-integration-20260910`
+  (`gh run list --branch … ` empty) — greenness was never established either
+  way. A local sanity check (`git checkout origin/main; git merge --no-commit
+  --no-ff origin/codex/destination-b-b1-integration-20260910` against the
+  exact SHAs GitHub reported, `77fcbb52` × `21f33926`) completed with **zero**
+  textual conflicts, so the two mergeability answers disagree; the
+  discrepancy was not chased further (case-collision on a 385-file diff and a
+  GitHub large-PR mergeability artifact are both plausible, per the
+  `diff too_large` 300-file API ceiling already hit on this same PR). Per
+  `merge-when-green`, this is a STOP, not a fix-it: no conflict resolution,
+  no `--auto`, no `gh pr ready`. PR #318 remains open/draft, unmerged.
+- Per the "go beyond" S4-recorder ask: object `97214679c94cc4a6b9e02d3c2b03ccce516027d8`
+  is **not** in GLLVM.jl's object database (confirmed: `git cat-file -t
+  97214679c` → exit 128 in every GLLVM.jl worktree checked). It **is** a
+  commit in the sibling **gllvmTMB** repo (`Retain S4 Julia probe failures`,
+  2026-09-10, `/Users/z3437171/Dropbox/Github Local/gllvmTMB/.git`), reachable
+  today from three co-located worktrees
+  (`.worktrees/gllvmtmb-b5-frozen-20260909`,
+  `.worktrees/gllvmtmb-s3b-frozen-pair-20260909`,
+  `.worktrees/gllvmtmb-s3b-r-adapter-20260909`, all sharing gllvmTMB's
+  git-common-dir) and from gllvmTMB's own local branch
+  `codex/destination-b-s4-phylo-dep-formula-20260910`. It touches only
+  gllvmTMB files (`docs/dev-log/decisions/...s4-preflight-failure-retention.md`,
+  `run-destination-b-s4-public-phylo-dep-isolated.R`,
+  `test-destination-b-s4-public-phylo-dep-runner.R`) and is **not pushed to
+  any gllvmTMB remote** (`git branch -r --contains` empty after a fresh
+  fetch) — it exists only in that local object store today. No rehydration
+  into GLLVM.jl is applicable (disjoint repo histories); documented instead,
+  per the task's own fallback instruction. The S4 probe itself was **not**
+  run.
+- No model, bridge, parity, interval, release, or registry claim changed.
+  `docs/design/capability-status.md` / the "API-BOUNDARY" ledger row referenced
+  by the go-beyond ask do not exist on `main` yet (only on the unmerged #318
+  branch), so that static-advance item was skipped rather than built on an
+  unreviewed foundation.
