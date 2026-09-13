@@ -56,3 +56,93 @@ PR #318 needs a human decision, not another automated pass:
 - Either **rebase/resolve** the branch against current `origin/main` and re-push (letting GitHub actually recompute mergeability on a smaller, current diff), or
 - **split it**: the PR's stated intent (5 small doc files) vs. what it actually carries (90 commits / 385 files of accumulated DestB lane history) suggests the honest fix is a fresh, small PR carrying just the closeout docs, rebased cleanly on current `main`, rather than trying to force this specific 90-commit branch through.
 - Either path needs at least one real CI run before it can be called green — none has ever fired.
+
+---
+
+## Continuation (2026-09-13, same day, goal literally re-asked: "merge #318 when green")
+
+Everything above described the state as of the first pass. The active goal explicitly required
+attempting the merge for real (rebase-or-merge path, autonomous), so this continuation did that —
+and it produced a materially different, more advanced finding than Part 1 above.
+
+### The git-dirty blocker was real but small, and is now fixed
+
+`git rebase origin/main` was tried first (goal's stated preference). It hit conflicts in
+`docs/dev-log/check-log.md` (an append-only file) after only 19 of 89 commits and would have needed
+manual resolution on every one of the ~89 remaining — aborted as "too painful," per the goal's own
+fallback clause. `git merge origin/main` (only 6 commits behind, all logo/asset changes) then
+resolved with **exactly one** conflict, the same file, fixed by concatenating both sides — no
+content dropped, no HOLD JSON touched, no invented hashes. Merge commit `a4ba13ea`, pushed
+non-force to `codex/destination-b-b1-integration-20260910`. GitHub immediately recomputed
+`mergeable: MERGEABLE` (was `CONFLICTING`/`DIRTY`). The PR was marked ready-for-review, and its
+body was corrected (it had undersold the diff as "5 docs files, no src/test changes" — the real
+diff vs `main` is 362 files / 91 commits, carrying the whole lane).
+
+**This resolves the exact discrepancy Part 1 flagged and declined to chase** ("a local git merge of
+the identical two SHAs says clean, GitHub says conflict") — it was neither a case-collision nor a
+GitHub diff-size artifact; the PR genuinely was mergeable, GitHub's cached mergeability state was
+just stale/never recomputed on an old base, and pushing an up-to-date merge commit forced the
+recompute.
+
+### That fix exposed the real problem: this 91-commit branch has never had CI, and CI is red
+
+Pushing the merge triggered **the first-ever CI run** on this branch. It settled genuinely red: 7 of
+10 checks failed —
+
+| Check | Result |
+|---|---|
+| Julia 1 shard 1/4 | FAIL — 2725 pass, 7 fail, **2 error**, 1 broken |
+| Julia 1 shard 2/4 | FAIL — 4056 pass, 16 fail, **7 error**, 2 broken |
+| Julia 1 shard 3/4 | FAIL — 3768 pass, 21 fail, 0 error, 3 broken |
+| Julia 1 shard 4/4 | pass |
+| Julia 1.10 shard 1/4 | FAIL — 2729 pass, 3 fail, **2 error**, 1 broken |
+| Julia 1.10 shard 2/4 | FAIL — 4075 pass, 2 fail, **4 error**, 2 broken |
+| Julia 1.10 shard 3/4 | FAIL — 3788 pass, 1 fail, 0 error, 3 broken |
+| Julia 1.10 shard 4/4 | pass |
+| Documenter | pass |
+| Frozen R 0.7.0 smoke (advisory, continue-on-error) | FAIL — 277 pass, 9 fail |
+
+Distinct erroring/failing test files, both Julia versions: `test_b1_fixed_point_marginal_curvature_protocol.jl`,
+`test_destination_b_phylo_uncertainty.jl`, `test_grouped_nongaussian_fit.jl`,
+`test_destination_b_a4_s4_tree_julia_own_optimum.jl`, `test_destination_b_b1_joint_gaussian_paired_fit.jl`,
+`test_precision_multivariate_fit.jl`, `test_destination_b_grouping_interval_matrix.jl`,
+`test_destination_b_joint_other_families.jl` (concretely: an NB2-log joint fit whose
+`fit.hessian_positive_definite` comes back `false`, cascading into `invalid_curvature` interval
+statuses where the test expects `:partial`/`:target_unavailable`/`:available`).
+
+One exception, checked separately and confirmed unrelated: `test_cv.jl:145` (Gamma/Beta CV boundary,
+`all(0.0 .< predictions .< 1.0)`) is a **pre-existing flake already failing on `main`'s own tip
+`77fcbb52` today**, in a completely separate CI run that never touched this branch — verified via
+`gh run list --branch main` + `gh api .../logs` on that run's own failing job, same assertion, same
+line number.
+
+Everything else is new and real: these test files ship only on this branch, were never exercised by
+CI before today (Part 1's own finding — zero CI ever ran), and now that CI runs, genuine defects
+surface. The shard-3 divergence between Julia versions for the identical test set (21 fails on
+Julia 1 vs. 1 fail on Julia 1.10) indicates some of these are numerically borderline — Hessian
+PD-ness right at a knife-edge — rather than a single deterministic one-line bug across ~8 files.
+
+### Merge gate ran to completion and correctly refused
+
+`~/shinichi-brain/tools/pr_merge_when_green.sh itchyshin/GLLVM.jl 318` polled every ~45s until all
+checks settled (`status == COMPLETED`, never keyed on `conclusion` being null), printed the full
+table, and exited: `NOT MERGED: #318 has 7 check(s) that settled non-green`. No `--admin`, no
+`--auto` on trust, no retry-with-different-seed, no tolerance widening in any test file. Full
+evidence posted as a PR #318 comment
+(`https://github.com/itchyshin/GLLVM.jl/pull/318#issuecomment-5656559385`).
+
+### Final state: #318 remains OPEN, NOT MERGED
+
+The blocker changed category — from "git-mechanics, unverifiable" (Part 1) to "engine-correctness,
+verified and named" (this continuation). That is real progress (a much narrower, better-evidenced
+problem than "zero CI, unknown state"), but it does not change the merge outcome: #318 cannot merge
+green today. Fixing the curvature/Hessian-PD issues across ~8 new test files spanning several
+non-Gaussian joint/grouped/precision paths is engine-correctness work, not a merge-task action, and
+is explicitly out of scope here (no B1 retry, no engine surgery without a scoped arc).
+
+**Needs Shinichi (updated):** the choice named in Part 1 (rebase-and-fix vs. split-the-docs) is now
+better-informed — rebase/merge is already done and is not the remaining obstacle; the remaining
+obstacle is real engine bugs. Either (a) open a dedicated fix arc against the curvature/Hessian-PD
+paths named above and re-run CI on this same branch, or (b) split the 5 already-reviewed closeout
+docs into a fresh small PR off current `main` (which would be genuinely green immediately) and park
+the other ~86 commits of engine work behind whichever arc fixes (a).

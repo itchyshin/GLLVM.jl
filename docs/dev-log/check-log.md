@@ -18227,3 +18227,53 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   by the go-beyond ask do not exist on `main` yet (only on the unmerged #318
   branch), so that static-advance item was skipped rather than built on an
   unreviewed foundation.
+
+## 2026-09-13 — PR #318 merge re-attempt: dirty resolved, CI genuinely red (goal continuation)
+
+- Re-verified the state above live: `mergeable: CONFLICTING`/`DIRTY`, still
+  zero CI ever run. `git rebase origin/main` on the branch was tried first
+  and hit per-commit conflicts on `docs/dev-log/check-log.md` (an
+  append-only file, ~89 commits deep) after 19 commits — too painful for a
+  91-commit branch. Aborted per the "merge if rebase too painful" fallback.
+- `git merge origin/main` (6 commits, all logo/asset changes) resolved
+  cleanly with exactly **one** conflict, the same append-log file, fixed by
+  concatenating both sides (no protected content dropped, no HOLD JSON
+  touched). Merge commit `a4ba13ea`, pushed non-force to
+  `codex/destination-b-b1-integration-20260910`. GitHub immediately flipped
+  to `mergeable: MERGEABLE`. PR marked ready-for-review; PR body corrected
+  (it undersold the diff as "5 docs files" when the real diff vs `main` is
+  362 files / 91 commits — the whole lane, not just this session's delta).
+- **This triggered the branch's first-ever CI run — and it is genuinely
+  red**, not a merge artifact: 7 of 10 checks failed (Julia 1 shards 1-3,
+  Julia 1.10 shards 1-3, the advisory Frozen-R smoke; only shard 4/4 on
+  each Julia version and Documenter passed). Real errors (Julia
+  exceptions, not just failed assertions) surfaced in
+  `test_b1_fixed_point_marginal_curvature_protocol.jl`,
+  `test_destination_b_phylo_uncertainty.jl`,
+  `test_grouped_nongaussian_fit.jl`,
+  `test_destination_b_a4_s4_tree_julia_own_optimum.jl`,
+  `test_destination_b_b1_joint_gaussian_paired_fit.jl`,
+  `test_precision_multivariate_fit.jl`,
+  `test_destination_b_grouping_interval_matrix.jl`, and
+  `test_destination_b_joint_other_families.jl` (an NB2-log joint fit whose
+  `hessian_positive_definite` comes back `false`, cascading to
+  `invalid_curvature` interval statuses the tests don't expect). Verified
+  separately: `test_cv.jl:145` (Gamma/Beta CV boundary) is a **pre-existing
+  flake already failing on `main`'s own tip `77fcbb52` today** in a wholly
+  separate CI run — not attributable to this branch. Everything else is a
+  first-time-exposed defect in the 91-commit branch's own new engine paths
+  (joint/precision/grouped-nongaussian curvature), some borderline enough
+  that Julia 1 vs 1.10 disagree on pass/fail for the identical shard
+  (21 fails vs 1 fail on shard 3) — numerical fragility, not one clean bug.
+- Ran `pr_merge_when_green.sh` to completion (no `--admin`, no force,
+  no tolerance widening): it correctly printed `NOT MERGED: #318 has 7
+  check(s) that settled non-green` and did not touch the merge button.
+  Posted the full evidence table as a PR #318 comment. **#318 remains
+  OPEN, NOT MERGED.** This is now an engine-correctness blocker across
+  ~8 new test files, not a git-mechanics or CI-plumbing problem — out of
+  scope to fix as part of a merge task. Needs either a dedicated fix arc
+  on the curvature/Hessian-PD paths, or a maintainer call to split the 5
+  safe closeout docs into a fresh clean PR off current `main` and park
+  the other 86 commits behind the fix.
+- No src/test code changed by this update; docs/ledger only. No `--admin`,
+  no force-push to `main`, no tolerance widening, no S4 probe, no B1 retry.
