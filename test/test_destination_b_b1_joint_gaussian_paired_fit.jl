@@ -11,7 +11,7 @@ b1_stationary_regeneration_available(rscript, source_path, library_path) =
     probe_receipt_path = joinpath(@__DIR__, "..", "docs", "dev-log", "core070", "destination-b-b1", "frozen-r070-joint-gaussian-optimizer-probes-20260910-03.json")
     @test isfile(receipt_path)
     @test isfile(probe_receipt_path)
-    rscript = Sys.which("Rscript")
+    rscript = something(Sys.which("Rscript"), "")
     if isempty(rscript)
         @test_skip "Rscript unavailable: B1 receipt I/O gate skipped"
     else
@@ -188,7 +188,7 @@ end
     raw_names = String.(receipt.fit.raw_opt_par.names)
     runner_path = joinpath(@__DIR__, "..", String(receipt.r_runner.path))
     common_path = joinpath(@__DIR__, "..", String(receipt.r_runner.fixture_attestation_module))
-    rscript = Sys.which("Rscript")
+    rscript = something(Sys.which("Rscript"), "")
     source_path = String(receipt.source.path)
     library_path = String(receipt.installed.library)
 
