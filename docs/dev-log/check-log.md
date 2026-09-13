@@ -19069,3 +19069,72 @@ push, merge, or qualification claim was made.
 - No capture materialization, `obj$fn`/`sdreport` call, optimizer, fit, R/TMB invocation, or `Pkg.test()` full-suite run occurred. The protected HOLD JSON (`docs/dev-log/core070/destination-b-b1/fixed-coordinate-curvature-diagnostic-20260910.json`) was not staged, edited, deleted, or retried. No hash, RDS path, or numerical result was invented.
 - Decision record: `docs/dev-log/decisions/2026-09-13-destination-b-ledger-reconcile.md` (written, intentionally left uncommitted pending Shinichi's word). This check-log entry is also uncommitted for the same reason.
 - **STOP. Awaiting Shinichi's G1 approval** (or next named gate) before any B1/S3b/S4 audit work starts.
+
+## 2026-09-13 — Destination B frozen-0.7.0 G1 static audit (B1/S3b/S4)
+
+- Ran G1 exactly as scoped by Shinichi's "G1 yes" `/goal`: static interface /
+  symbolic-alignment / artifact inventory for B1 (grouping), S3b (R
+  `phylo_rr` adapter), S4 (Gaussian paired public-formula probe). Graft-first
+  orientation per the standing `/graft-bridge` rule (`graft ask "..."
+  --source` located `_bridge_fit_onepart` in `src/bridge.jl:L827-L1503`,
+  `_GROUPING_TERM_NAMES` in `src/grouped_fit.jl:L4`, `_bridge_pmv_options` in
+  `src/bridge_precision_multivariate.jl:L41-L78`, `_bridge_rr_df`/`rr_theta_len`
+  in `src/bridge.jl:L225`/`src/packing.jl:L24-L26`, and
+  `validate_a4_s4_public_r_formula_receipt` in
+  `tools/destination_b/validate_a4_s4_public_r_formula_receipt.jl:L139-L247`);
+  no repo-local `graft init`/cache build was needed — `graft ask` auto-copied
+  the graph from the main Dropbox checkout and answered directly.
+- Re-ran five named static verifiers and read their console output (not just
+  exit code): `test/test_b1_fixed_point_marginal_curvature_protocol.jl`
+  22/22; `tools/verify_b1_fixed_point_marginal_curvature_protocol.jl` PASS;
+  `node tools/destination_b_scope_check.mjs` →
+  `SCOPE_HISTORY_AND_NEGATIVE_CONTROLS_PASS` (32 rows unchanged);
+  `test/test_destination_b_a4_s4_receipts.jl` 60/60;
+  `test/test_destination_b_a4_s4_public_r_formula_receipt.jl` 29/29.
+- **Self-correction, recorded rather than hidden:** launched
+  `test/test_destination_b_a4_s4_fixed_coordinate_evaluator.jl` under the
+  same "static-sounding filename" assumption; recognised mid-run from its
+  `include`d source that it loads `GLLVM` and evaluates its own marginal
+  objective at fixed hardcoded coordinates against canned R-side values
+  (32.2 s; 45/45 pass by the time this was seen — a `kill` attempt found no
+  such process, it had already finished). No new artifact was written and
+  the HOLD JSON was untouched, but this PASS is explicitly **not** treated
+  as new numerical authorisation evidence; flagged in matrix §4. Three
+  further candidate files were positively identified as fit/DLL-risk from
+  reading their source only, and were **not executed**:
+  `test/test_destination_b_adapter_consumer.jl` (calls `bridge_fit` on real
+  tree/pedigree/dense fixtures), `test/test_destination_b_dense_uncertainty.jl`
+  (conditionally loads an R DLL), `test/test_destination_b_phylo_independent_receipt.jl`
+  (includes a `fit_phylo_gaussian_reference.jl` builder).
+- Confirmed the S4 recorder `97214679c` remains absent from this worktree's
+  object database: `git cat-file -t 97214679c` → `fatal: Not a valid object
+  name 97214679c` (exit 128) — a physical, not authority, blocker.
+- Confirmed the B1 HOLD JSON
+  (`docs/dev-log/core070/destination-b-b1/fixed-coordinate-curvature-diagnostic-20260910.json`)
+  remained the only untracked file in `git status --short` throughout the
+  session; never staged, edited, deleted, or retried.
+- Wrote the row-by-row matrix at
+  `docs/dev-log/2026-09-13-destination-b-g1-audit-matrix.md`: 16 DONE / 7
+  OWED / 4 RETRACTED / 1 PROTECTED across the three domains, plus a naming
+  disambiguation section (authorisation-line "S3b"/"S4" labels are not
+  formal 32-row scope IDs; the phylogenetic capability those labels track
+  lands closest to formal rows A14/A15, stated as a finding not a closed
+  identity) and a re-confirmation of the `fixed_point_marginal` (22/22) vs
+  `fixed_coordinate` (4/4, separate ledger) protocol-pair split.
+- Added a G1 progress note to `.unlazy/destination-b-programme/GATES.md`
+  (gitignored) summarising the matrix and explicitly stating no gate moved:
+  `B1-JOINT-STATIONARY`, `B1-JOINT-PAIR`, `B1-RECOVERY`, `S3B-CONSUMER`,
+  `S4-PUBLIC-FORMULA` remain exactly pending / NOT AUTHORIZED.
+- Scaffolded `LOOP/GOAL.md`, `LOOP/arcs.md`, `LOOP/checkpoint.md`, and copied
+  the approved plan to `LOOP/ultra-plan.md` (the pre-existing `LOOP/` kit in
+  this worktree carried unrelated content from an earlier, different lane;
+  overwritten for this run's binding goal, not merged with it).
+- No capture materialization, `obj$fn`/`sdreport` call, optimizer, live fit,
+  R/TMB invocation (beyond the flagged self-correction above), or
+  `Pkg.test()` full-suite run occurred. No push, merge, or `AGENTS.md`
+  snapshot edit. No file under PR #314's lane was touched.
+- After-task report: `docs/dev-log/after-task/2026-09-13-destination-b-g1-static-audit.md`.
+- **STOP. G1 is done. Awaiting Shinichi's separate, named G2 authorisation**
+  (capture materialization / B1 curvature evaluation / and-or the S4 probe —
+  each remains its own fresh decision per the 2026-09-08 authorisation and
+  the 2026-09-12 handover).
