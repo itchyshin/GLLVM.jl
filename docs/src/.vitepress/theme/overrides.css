@@ -20,9 +20,13 @@
   position: absolute;
   top: 3rem;
   right: clamp(3rem, 9vw, 11rem);
-  width: clamp(10rem, 16vw, 16rem);
-  aspect-ratio: 1;
-  background: url("/gllvmjl-mark-logo-image25.png") center / contain no-repeat;
+  /* Match the exact master's 412 × 468 canvas.  A square box subtly shifts
+     the clipping vertices away from the actual badge outline. */
+  width: clamp(8.8rem, 14.1vw, 14.1rem);
+  aspect-ratio: 412 / 468;
+  /* An alpha-masked rendition of the supplied master with a regular navy
+     exterior rim: no white export canvas survives at badge edges. */
+  background: url("/gllvmjl-full-logo-transparent.png") center / contain no-repeat;
   pointer-events: none;
 }
 
@@ -83,9 +87,10 @@
 
 .gllvm-route::before {
   display: block;
-  width: 4.25rem;
   height: 4.25rem;
-  background: url("/assets/gllvmjl-mark.svg") center / contain no-repeat;
+  width: calc(4.25rem * 277 / 304);
+  /* Preserve the compact master's native 277 × 304 aspect ratio. */
+  background: url("/assets/gllvmjl-icon-transparent.png") center / contain no-repeat;
   content: "";
 }
 
@@ -128,7 +133,7 @@
   }
 
   .gllvm-route::before {
-    width: 3.25rem;
     height: 3.25rem;
+    width: calc(3.25rem * 277 / 304);
   }
 }

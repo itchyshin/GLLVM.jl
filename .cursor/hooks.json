@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "matcher": "Read|Grep|Glob|Search|Shell",
+        "command": "node \"/private/tmp/claude-503/-Users-z3437171-Dropbox-Github-Local-Shinichi/f19ee079-ac50-4fdb-8501-ca8cbfcea00a/scratchpad/wt-GLLVM.jl/.cursor/hooks/graft-hooks.cjs\" cursor-post-tool"
+      }
+    ],
+    "afterMCPExecution": [
+      {
+        "command": "node \"/private/tmp/claude-503/-Users-z3437171-Dropbox-Github-Local-Shinichi/f19ee079-ac50-4fdb-8501-ca8cbfcea00a/scratchpad/wt-GLLVM.jl/.cursor/hooks/graft-hooks.cjs\" cursor-mcp"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "node \"/private/tmp/claude-503/-Users-z3437171-Dropbox-Github-Local-Shinichi/f19ee079-ac50-4fdb-8501-ca8cbfcea00a/scratchpad/wt-GLLVM.jl/.cursor/hooks/graft-hooks.cjs\" cursor-session-end"
+      }
+    ]
+  }
+}

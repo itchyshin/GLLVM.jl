@@ -19311,3 +19311,23 @@ or force-push, any `AGENTS.md` snapshot edit, staging either HOLD JSON as
 Decision: `docs/dev-log/decisions/2026-09-13-destination-b-b1-close-as-limit.md`.
 Closeout note: `docs/dev-log/2026-09-13-destination-b-g2-closeout.md`.
 After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`.
+
+## 2026-09-12 — Exact full/compact logo rollout
+
+- Replaced the Image 2.5 assets with the maintainer-supplied exact SVG masters:
+  the full, internal-text badge is the desktop landing-hero mark; the compact
+  no-text badge is the navigation, route-panel, and favicon mark.
+- `julia --project=docs docs/make.jl` completed with exit status 0 after the
+  local preview manifest was made writable. The generated site was then
+  inspected in a browser at desktop light and dark themes, and at a 390 px
+  phone viewport. The full mark is intentionally hidden below 960 px; the
+  compact mark remains visible in the mobile navigation.
+- `git diff --check` exited 0. Asset checks confirmed the exact SVG masters,
+  a 512 × 512 RGBA navigation PNG, and a 64 × 64 favicon. Searches for
+  `gllvmjl-mark`, `gllvmjl-favicon`, and `gllvmjl-mark-logo-image25` returned
+  no stale source references.
+- The display assets are alpha-masked renditions of those exact masters. The
+  full badge additionally uses a centred, constant-width regular navy hexagon
+  to remove the masters' uneven opaque raster edge; the compact badge retains
+  its native 277 × 304 aspect ratio.
+- No model, bridge, parity, interval, release, or registry claim changed.
