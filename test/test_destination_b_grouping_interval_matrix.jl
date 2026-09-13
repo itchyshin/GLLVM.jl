@@ -2,6 +2,7 @@ using Test
 using GLLVM
 using LinearAlgebra
 using Random
+using StableRNGs
 
 const _DBIM_SOURCES = (:unit, :unit_obs, :cluster, :cluster2)
 const _DBIM_SEEDS = Dict(
@@ -26,7 +27,7 @@ end
 
 function _dbim_fixture(kind::Symbol)
     geometry = _dbim_geometry()
-    rng = MersenneTwister(_DBIM_SEEDS[kind])
+    rng = StableRNG(_DBIM_SEEDS[kind])
     unit_effect = 0.55 .* randn(rng, geometry.p, 12)
     unit_obs_effect = 0.40 .* randn(rng, geometry.p, 48)
     cluster_effect = 0.35 .* randn(rng, geometry.p, 8)
