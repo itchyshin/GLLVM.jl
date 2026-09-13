@@ -20,7 +20,7 @@ include("fixtures/destination_b_b1_balanced_complete_crossed_design.jl")
     @test fixture.nlong == 7_200
     @test size(fixture.response_wide) == (2, 3_600)
     @test all(isfinite, fixture.response_wide)
-    @test bytes2hex(sha256(reinterpret(UInt8, vec(fixture.response_wide)))) == "0fa63f69d7256b3c4e900cc91db1bf67c1ba41c56d0e0fde64de2c6a11ad738a"
+    @test bytes2hex(sha256(reinterpret(UInt8, vec(fixture.response_wide)))) == "14061fdbe261df1a779ddaf0ded4cd6027efe0350a1fc531a52a7e3facc8c7ec"
     @test destination_b_b1_balanced_complete_crossed_design().response_wide == fixture.response_wide
     @test length(unique(fixture.unit)) == 12
     @test length(unique(fixture.obs)) == 36

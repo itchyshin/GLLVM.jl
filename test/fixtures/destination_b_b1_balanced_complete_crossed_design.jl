@@ -3,6 +3,7 @@
 
 using LinearAlgebra
 using Random
+using StableRNGs
 
 const _B1_BALANCED_COMPLETE_CROSSED = (
     seed = 20_260_915,
@@ -99,7 +100,7 @@ function destination_b_b1_balanced_complete_crossed_design()
         wide_formula[index] = (unit = "u_$(lpad(u, 2, '0'))", obs = "u_$(lpad(u, 2, '0'))_w_$(lpad(w, 2, '0'))", cluster_id = "c_$(lpad(c, 2, '0'))", cluster2_id = "d_$(lpad(d, 2, '0'))")
     end
 
-    rng = MersenneTwister(spec.seed)
+    rng = StableRNG(spec.seed)
     z_unit = randn(rng, spec.n_unit)
     obs_effect = randn(rng, spec.n_trait, spec.n_unit * spec.n_obs_per_unit) .* reshape(spec.sd_obs, :, 1)
     cluster_effect = randn(rng, spec.n_trait, spec.n_cluster) .* reshape(spec.sd_cluster, :, 1)
