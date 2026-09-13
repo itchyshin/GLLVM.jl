@@ -18184,3 +18184,96 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   to remove the masters' uneven opaque raster edge; the compact badge retains
   its native 277 × 304 aspect ratio.
 - No model, bridge, parity, interval, release, or registry claim changed.
+
+## 2026-09-13 — PR #318 merge attempt STOP; S4 recorder object located
+
+- `gh pr view 318` showed `isDraft: true`, `mergeStateStatus: DIRTY`,
+  `mergeable: CONFLICTING`. `gh api repos/itchyshin/GLLVM.jl/pulls/318` (fresh
+  fetch, not the cached UI field) confirmed `mergeable: false`,
+  `mergeable_state: dirty`. A single non-`--auto` `gh pr merge 318 --squash`
+  attempt was rejected: *"the merge commit cannot be cleanly created."* Zero
+  CI runs exist for `codex/destination-b-b1-integration-20260910`
+  (`gh run list --branch … ` empty) — greenness was never established either
+  way. A local sanity check (`git checkout origin/main; git merge --no-commit
+  --no-ff origin/codex/destination-b-b1-integration-20260910` against the
+  exact SHAs GitHub reported, `77fcbb52` × `21f33926`) completed with **zero**
+  textual conflicts, so the two mergeability answers disagree; the
+  discrepancy was not chased further (case-collision on a 385-file diff and a
+  GitHub large-PR mergeability artifact are both plausible, per the
+  `diff too_large` 300-file API ceiling already hit on this same PR). Per
+  `merge-when-green`, this is a STOP, not a fix-it: no conflict resolution,
+  no `--auto`, no `gh pr ready`. PR #318 remains open/draft, unmerged.
+- Per the "go beyond" S4-recorder ask: object `97214679c94cc4a6b9e02d3c2b03ccce516027d8`
+  is **not** in GLLVM.jl's object database (confirmed: `git cat-file -t
+  97214679c` → exit 128 in every GLLVM.jl worktree checked). It **is** a
+  commit in the sibling **gllvmTMB** repo (`Retain S4 Julia probe failures`,
+  2026-09-10, `/Users/z3437171/Dropbox/Github Local/gllvmTMB/.git`), reachable
+  today from three co-located worktrees
+  (`.worktrees/gllvmtmb-b5-frozen-20260909`,
+  `.worktrees/gllvmtmb-s3b-frozen-pair-20260909`,
+  `.worktrees/gllvmtmb-s3b-r-adapter-20260909`, all sharing gllvmTMB's
+  git-common-dir) and from gllvmTMB's own local branch
+  `codex/destination-b-s4-phylo-dep-formula-20260910`. It touches only
+  gllvmTMB files (`docs/dev-log/decisions/...s4-preflight-failure-retention.md`,
+  `run-destination-b-s4-public-phylo-dep-isolated.R`,
+  `test-destination-b-s4-public-phylo-dep-runner.R`) and is **not pushed to
+  any gllvmTMB remote** (`git branch -r --contains` empty after a fresh
+  fetch) — it exists only in that local object store today. No rehydration
+  into GLLVM.jl is applicable (disjoint repo histories); documented instead,
+  per the task's own fallback instruction. The S4 probe itself was **not**
+  run.
+- No model, bridge, parity, interval, release, or registry claim changed.
+  `docs/design/capability-status.md` / the "API-BOUNDARY" ledger row referenced
+  by the go-beyond ask do not exist on `main` yet (only on the unmerged #318
+  branch), so that static-advance item was skipped rather than built on an
+  unreviewed foundation.
+
+## 2026-09-13 — PR #318 merge re-attempt: dirty resolved, CI genuinely red (goal continuation)
+
+- Re-verified the state above live: `mergeable: CONFLICTING`/`DIRTY`, still
+  zero CI ever run. `git rebase origin/main` on the branch was tried first
+  and hit per-commit conflicts on `docs/dev-log/check-log.md` (an
+  append-only file, ~89 commits deep) after 19 commits — too painful for a
+  91-commit branch. Aborted per the "merge if rebase too painful" fallback.
+- `git merge origin/main` (6 commits, all logo/asset changes) resolved
+  cleanly with exactly **one** conflict, the same append-log file, fixed by
+  concatenating both sides (no protected content dropped, no HOLD JSON
+  touched). Merge commit `a4ba13ea`, pushed non-force to
+  `codex/destination-b-b1-integration-20260910`. GitHub immediately flipped
+  to `mergeable: MERGEABLE`. PR marked ready-for-review; PR body corrected
+  (it undersold the diff as "5 docs files" when the real diff vs `main` is
+  362 files / 91 commits — the whole lane, not just this session's delta).
+- **This triggered the branch's first-ever CI run — and it is genuinely
+  red**, not a merge artifact: 7 of 10 checks failed (Julia 1 shards 1-3,
+  Julia 1.10 shards 1-3, the advisory Frozen-R smoke; only shard 4/4 on
+  each Julia version and Documenter passed). Real errors (Julia
+  exceptions, not just failed assertions) surfaced in
+  `test_b1_fixed_point_marginal_curvature_protocol.jl`,
+  `test_destination_b_phylo_uncertainty.jl`,
+  `test_grouped_nongaussian_fit.jl`,
+  `test_destination_b_a4_s4_tree_julia_own_optimum.jl`,
+  `test_destination_b_b1_joint_gaussian_paired_fit.jl`,
+  `test_precision_multivariate_fit.jl`,
+  `test_destination_b_grouping_interval_matrix.jl`, and
+  `test_destination_b_joint_other_families.jl` (an NB2-log joint fit whose
+  `hessian_positive_definite` comes back `false`, cascading to
+  `invalid_curvature` interval statuses the tests don't expect). Verified
+  separately: `test_cv.jl:145` (Gamma/Beta CV boundary) is a **pre-existing
+  flake already failing on `main`'s own tip `77fcbb52` today** in a wholly
+  separate CI run — not attributable to this branch. Everything else is a
+  first-time-exposed defect in the 91-commit branch's own new engine paths
+  (joint/precision/grouped-nongaussian curvature), some borderline enough
+  that Julia 1 vs 1.10 disagree on pass/fail for the identical shard
+  (21 fails vs 1 fail on shard 3) — numerical fragility, not one clean bug.
+- Ran `pr_merge_when_green.sh` to completion (no `--admin`, no force,
+  no tolerance widening): it correctly printed `NOT MERGED: #318 has 7
+  check(s) that settled non-green` and did not touch the merge button.
+  Posted the full evidence table as a PR #318 comment. **#318 remains
+  OPEN, NOT MERGED.** This is now an engine-correctness blocker across
+  ~8 new test files, not a git-mechanics or CI-plumbing problem — out of
+  scope to fix as part of a merge task. Needs either a dedicated fix arc
+  on the curvature/Hessian-PD paths, or a maintainer call to split the 5
+  safe closeout docs into a fresh clean PR off current `main` and park
+  the other 86 commits behind the fix.
+- No src/test code changed by this update; docs/ledger only. No `--admin`,
+  no force-push to `main`, no tolerance widening, no S4 probe, no B1 retry.
