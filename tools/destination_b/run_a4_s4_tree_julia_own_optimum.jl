@@ -256,7 +256,7 @@ function a4_s4_tree_julia_own_optimum_output_fence(path::AbstractString)
 end
 
 function _a4s4_tree_own_fsync(io)
-    result = ccall(:fsync, Cint, (Cint,), Cint(Base.fd(io)))
+    result = ccall(:fsync, Cint, (Cint,), Base.fd(io))
     result == 0 || throw(SystemError("fsync own-optimum receipt temporary file", result))
     return nothing
 end
