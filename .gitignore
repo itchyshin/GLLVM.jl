@@ -21,3 +21,6 @@ campaigns/curvature_adjudication/prerun_out/
 
 # Local Python tool bytecode (not source evidence)
 /tools/__pycache__/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
