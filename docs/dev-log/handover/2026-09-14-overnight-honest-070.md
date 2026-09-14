@@ -9,7 +9,7 @@
 git fetch origin main && git rev-parse --short origin/main
 ```
 
-As of this write: **`c1849a82`** — `docs(LOOP): mark kernel_indep arc #13 merged (#331) (#332)` on top of **`5e9bfcd4`** (kernel × indep engine #331).
+As of handoff close: **`c6f8233b`** — **#333** kernel × dep Arc 0 merged (squash; post-rebase CI 8/8 Julia + Documenter green; advisory Frozen R red). Prior **`c1849a82`** = LOOP post–#331 (#332).
 
 **`Project.toml` version:** still **`0.3.0`** (no bump this programme).
 
@@ -34,10 +34,10 @@ As of this write: **`c1849a82`** — `docs(LOOP): mark kernel_indep arc #13 merg
 
 | PR | Arc | Status |
 |---|---|---|
-| [#333](https://github.com/itchyshin/GLLVM.jl/pull/333) | **#14** `kernel_dep()` | **Rebased** onto `c1849a82` @ `880ee80d`; **CI re-running** after conflict on `check-log.md`. **Merge when 8/8 Julia + Documenter green** (squash). Advisory Frozen R may stay red. |
+| [#333](https://github.com/itchyshin/GLLVM.jl/pull/333) | **#14** `kernel_dep()` | **MERGED** @ `c6f8233b` (squash; 8/8 Julia + Documenter; advisory R red). |
 | [#334](https://github.com/itchyshin/GLLVM.jl/pull/334) | **#15** `kernel_latent()` | **Draft** Arc 0 scaffold (`fit_kernel_latent_gllvm`); local **12/12**; rebase onto `main` after #333 lands. |
 
-**LOOP tick #14 → #15:** docs-only PR (mirror #332) **OWED** immediately after #333 merge — update `LOOP/arcs.md` + `LOOP/checkpoint.md`.
+**LOOP tick #14 → #15:** partial pointers in [#335](https://github.com/itchyshin/GLLVM.jl/pull/335); post-merge “#14 done” tick (mirror #332) **OWED** on top of `c6f8233b`.
 
 ## OWED — advisory Frozen R
 

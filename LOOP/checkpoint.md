@@ -1,7 +1,7 @@
 # Checkpoint — honest-0.7 parity programme (2026-09-14)
 
-- **origin/main HEAD:** `c1849a82` (LOOP post–#331 **#332**; engine **#331** @ `5e9bfcd4`)
-- **PR #318:** **MERGED** · **PR #321:** **MERGED** · **PR #324–#332:** **MERGED** (grid arcs #9–#13 + LOOP ticks)
+- **origin/main HEAD:** `c6f8233b` (arc **#14** kernel × dep **#333**; prior **#332** @ `c1849a82`)
+- **PR #318:** **MERGED** · **PR #321:** **MERGED** · **PR #324–#333:** **MERGED** (grid arcs #9–#14 + LOOP ticks through #332)
 - **Post-#327 CI (Julia):** [`34818578019`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34818578019) on `5e4f38b` — **8/8 PASS** (advisory Frozen R red, non-blocking)
 - **Post-#329 CI:** [`34823285459`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34823285459) on `f110bf3e` — **8/8 Julia + Documenter PASS** (2026-09-14)
 - **Post-#331 CI:** [`34828508282`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34828508282) on `5e9bfcd4` — **8/8 Julia + Documenter PASS** (advisory Frozen R red, non-blocking)
