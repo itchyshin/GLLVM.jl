@@ -1,8 +1,8 @@
 # Checkpoint — honest-0.7 Destination B (`/goal` scaffold)
 
-GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **G1–G11 stub + FINAL-REVIEW PASS-WITH-CORRECTIONS** on `cursor/honest-070-destb` @ `45363995`; draft PR **#336** (Documenter-green on tip; docs-only — no Julia shard re-run).
+GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **G1–G11 stub + FINAL-REVIEW PASS-WITH-CORRECTIONS** on `cursor/honest-070-destb` @ `7eee6fc2`; PR **#336** **ready** (Documenter + deploy green @ tip; docs-only — no Julia shard re-run).
 
-**Goal NOT complete** until **all** of: **(a)** #336 **merged** **or** maintainer **accepts draft receipts** without merge; **(b)** **#323** Frozen R smoke **executed** (Codex/Totoro + receipt) **or** maintainer **waives** to keep-advisory-non-gating; **(c)** `Project.toml` stays **`0.3.0`**. Parent **`UpdateGoal` complete: NO** until then + #323 dispositioned — audit: [`docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md`](../docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md).
+**Goal NOT complete** until **all** of: **(a)** #336 **merged** **or** maintainer **accepts receipts** without merge; **(b)** **#323** Frozen R smoke **executed** (Codex/Totoro + receipt) **or** maintainer **waives** to keep-advisory-non-gating — local Track B **BLOCKED→Totoro** ([`2026-09-14-destb-g7b-frozen-r-track-b-local.md`](../docs/dev-log/after-task/2026-09-14-destb-g7b-frozen-r-track-b-local.md)); **(c)** `Project.toml` stays **`0.3.0`**. Parent **`UpdateGoal` complete: NO** — audit: [`docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md`](../docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md).
 
 **G0 (2026-09-14):** Q1 B1 limit **permanent** (B1-RECOVERY off) · Q2 S4 **push only** (probe deferred) · Q3 **Totoro first**, DRAC if campaign sized.
 
@@ -12,7 +12,7 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **G1–G11 stub + FIN
 
 **ARC IN PROGRESS:** none.
 
-**NEXT:** Maintainer — merge **draft PR #336** when ready; **Codex #323** (D-139 ack first); **S4 probe** (second G0 yes only). Optional: promote G11 stub → formal decision doc. **NOT:** version bump, S4 probe without yes, Totoro in Cursor lane.
+**NEXT:** Maintainer — **merge PR #336** when ready (merge awaits maintainer; CI docs-only green); **Codex #323** Track A/B on Totoro (D-139 ack first; local Track B blocked); **S4 probe** (second G0 yes only). Optional: promote G11 stub → formal decision doc. **NOT:** version bump, S4 probe without yes, invent #323 pass without receipt.
 
 **OPEN GATES (need human):** #336 merge or receipt acceptance; **#323** execute vs waive; **S4 probe** (second yes); **arc #24** version bump (forbidden in-programme); foreign-lane file overlap (D-87).
 
