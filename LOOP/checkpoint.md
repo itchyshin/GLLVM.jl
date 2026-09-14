@@ -1,10 +1,10 @@
 # Checkpoint — honest 0.7 R↔Julia true parity (`/goal` armed in Cursor)
 
-GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** **DestB receipts DONE** on **`origin/main`** (**PR #336** @ `8f9e4828`). **Active programme:** true parity vs frozen **0.7.0** oracle (`b4d5fee…`); **`Project.toml` = `0.3.0`** (D-183).
+GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** **DestB receipts DONE** on **`origin/main`** (**PR #336** @ `8f9e4828`); **T5 inventory synced** (**PR #337** @ `57a4f4a6`). **Active programme:** true parity vs frozen **0.7.0** oracle (`b4d5fee…`); **`Project.toml` = `0.3.0`** (D-183).
 
 **CreateGoal:** armed in parent chat (2026-09-14) — **fresh `/goal` paste optional**; re-read `LOOP/GOAL.md` each arc.
 
-**Rehydrate from:** `origin/main` (prefer `@ 8f9e4828` or later); local branch may be `docs/destb-checkpoint-post-336`.
+**Rehydrate from:** `origin/main` (prefer `@ 57a4f4a6` or later); true-parity docs lane: `docs/t5-loop-sync-post-337` or successor.
 
 **DestB (closed):** arcs #1–#8, grid #9–#15, G1–G11 + FINAL-REVIEW — see `docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md`.
 
@@ -13,7 +13,7 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** **DestB receipts DONE** on **`or
 **NEXT (ranked):**
 
 1. **#323** — Totoro Frozen R smoke (D-139 ack) **or** maintainer **`waive #323`**
-2. **T5** — 8× `PARTIAL_PARITY_DEFECT` re-bind (`LOOP/arcs.md` #16)
+2. **T5** — **7/8 bound**; **`loading_profile` blocked (D3 needs-surface)** — not full arc closed (`LOOP/arcs.md` #16; inventory `2026-09-14-t5-partial-defect-inventory.md`)
 3. Second-order / matched-θ programme (contract §7)
 4. **S4 probe** — second G0 yes only
 5. Optional: G11 stub → formal joint decision doc
@@ -43,9 +43,9 @@ Rehydrate origin/main (#336 DestB receipts merged). Shannon preflight + lane_lea
 
 G0 (need if unset): Q323 = run #323 on Totoro (D-139 first) vs waive #323 · QS4 = S4 probe second yes?
 
-HEADLINE: Close #323 (receipt or waive) → T5 partial-defect re-binds → second-order T3 receipts — not Arc-0-only wrappers.
+HEADLINE: Close #323 (receipt or waive) → T5 **7/8** (row 8 D3 surface) → second-order T3 receipts — not Arc-0-only wrappers.
 
-CONTINUE FROM: DestB done on main; OWED #323 (OPEN), S4 probe (held). Project.toml 0.3.0 unchanged.
+CONTINUE FROM: DestB done on main; T5 inventory **7/8 bound** (not arc closed); OWED #323 (OPEN), S4 probe (held). Project.toml 0.3.0 unchanged.
 
 STOP: Project.toml bump; S4 probe without QS4; gllvmTMB engine surgery; Totoro without D-139; two-directional parity claim; invent #323 pass without log+artifact; merge/push without maintainer.
 ```

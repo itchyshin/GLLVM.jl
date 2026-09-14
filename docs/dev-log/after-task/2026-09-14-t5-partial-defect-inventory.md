@@ -9,7 +9,7 @@
 
 | Item | Path |
 |------|------|
-| LOOP arc | `LOOP/arcs.md` #16 — T5 — 8 `PARTIAL_PARITY_DEFECT` rows re-bind (**next** in arcs table; ledger ahead of LOOP on 7/8) |
+| LOOP arc | `LOOP/arcs.md` #16 — T5 — **partial (7/8)** after LOOP sync PR (follow-on to #337 inventory) |
 | Goal gate | `LOOP/GOAL.md` — **#323** executed (Totoro receipt) **or** maintainer **waive** before downstream true-parity claims |
 | Canonical audit (8 rows) | `docs/dev-log/core070/parity-defect-rebind-2026-09-02.md` |
 | T5 execution record | `docs/dev-log/core070/t5-rebind-2026-09-03.md` |
@@ -52,7 +52,7 @@ Original defects were measured on the shared **`gaussian_small`** paired fixture
 
 ## Rose fence
 
-- This inventory **≠** T5 arc **closed** in LOOP until #16 status and GOAL checkboxes are updated honestly.
+- T5 arc **≠ closed** — LOOP #16 is **partial (7/8)**; row 8 remains D3 needs-surface.
 - **≠** #323 executed or waived.
 - **≠** full true parity or frozen-R smoke green.
 - Seven bound rows **=** paired receipt evidence on 2026-09-03 programme refs, not a substitute for #323.
@@ -74,8 +74,7 @@ Original defects were measured on the shared **`gaussian_small`** paired fixture
 - Row field extraction script over the eight `source_id`s (local, read-only)
 - `graft ask "PARTIAL_PARITY_DEFECT T5 loading_profile nobs extract" --source` (symbol cruxes only)
 
-## Follow-up (out of scope here)
+## Follow-up
 
-- Sync `LOOP/arcs.md` #16 + `LOOP/GOAL.md` T5 checkbox with this inventory (same docs PR lane or follow-on commit).
-- Append `docs/dev-log/check-log.md` entry when LOOP sync lands.
+- **Done (follow-on PR):** `LOOP/arcs.md` #16 + `LOOP/GOAL.md` + `LOOP/checkpoint.md` synced to **7/8 bound**, D3 row 8 **not** arc-closed.
 - No push from this slice unless disjoint from PR #337 (this commit stays local on shared docs branch).

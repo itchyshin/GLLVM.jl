@@ -10,7 +10,7 @@ This programme **does not** ship `0.7.0`, **does not** edit `Project.toml` versi
 
 ## Headline
 
-**Close #323 (run or waive) → T5 partial-defect re-binds → second-order receipts (T3 contract) →** optional S4 probe / G11 formal decision — toward an honest **0.7.0 version proposal**, not a bump.
+**Close #323 (run or waive) → T5 at 7/8 (D3 `loading_profile` needs-surface) → second-order receipts (T3 contract) →** optional S4 probe / G11 formal decision — toward an honest **0.7.0 version proposal**, not a bump.
 
 ## Prior programme (Destination B — receipts on `main`)
 
@@ -37,7 +37,7 @@ This programme **does not** ship `0.7.0`, **does not** edit `Project.toml` versi
 - **Destination map:** `docs/dev-log/core070/true-parity-decision-map.md`
 - **Harness vs true:** `docs/src/gllvmtmb-parity.md` · second-order: `docs/dev-log/core070/second-order-parity-contract.md`
 - **Version semantics:** D-183 — `docs/dev-log/decisions/2026-09-13-honest-070-parity-aim.md`
-- **Execution tracker:** `LOOP/arcs.md` (DestB arcs done; **#16 T5 next**, #25 #323 execution owed)
+- **Execution tracker:** `LOOP/arcs.md` (DestB arcs done; **#16 T5 partial 7/8** — inventory PR **#337**; #25 #323 execution owed)
 - **Resume:** `LOOP/checkpoint.md`
 
 ## Definition of done (this programme — high level)
@@ -45,7 +45,7 @@ This programme **does not** ship `0.7.0`, **does not** edit `Project.toml` versi
 True parity is a **multi-arc programme**; this `/goal` completes tranches, not the entire decision-map destination in one chat. **Slice-complete** when:
 
 - [ ] **#323** dispositioned (receipt **or** documented waive).
-- [ ] **T5** — eight `PARTIAL_PARITY_DEFECT` rows re-bound or dispositioned (`LOOP/arcs.md` #16).
+- [ ] **T5** — eight `PARTIAL_PARITY_DEFECT` rows re-bound or dispositioned (`LOOP/arcs.md` #16): **7/8 bound** (2026-09-03 receipts); **`loading_profile` → `BLOCKED_NEEDS_JULIA_SURFACE` (D3)** — arc **not closed** (`docs/dev-log/after-task/2026-09-14-t5-partial-defect-inventory.md`).
 - [ ] **Second-order** — progress on contract §7 (SE + fixed-effect `vcov` + Wald endpoints); no promotion without Fisher/Rose receipts.
 - [ ] **Matched-θ** blockers (e.g. beta_logit, nb2_log) dispositioned per `second-order-matched-coordinates-2026-09-04.md`.
 - [ ] **S4 probe** — receipt **or** remains **HELD** with maintainer no.
