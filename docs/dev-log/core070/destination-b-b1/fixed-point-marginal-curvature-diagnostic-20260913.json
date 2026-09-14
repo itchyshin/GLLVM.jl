@@ -1,0 +1,25 @@
+{
+  "status": "FAILED",
+  "stage": "fixed_point_marginal_curvature",
+  "provenance": {
+    "source_git_sha": "b4d5fee64def88bc768dda1f1f77c29b295edd86"
+  },
+  "data": {
+    "md5": "8d61143f2ce6102bb8460fb1575cc249"
+  },
+  "formula": "value ~ 0 + trait + latent(0 + trait | unit, d = 1, unique = FALSE) + indep(0 + trait | obs) + indep(0 + trait | cluster_id) + indep(0 + trait | cluster2_id)",
+  "raw_opt_par": {
+    "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+    "values": [0.621413076195798, 0.0839005199388975, -1.75459295632292, 0.664861224244875, -0.609052112779241, -0.914425439640172, -1.39391979244783, -0.95732062289544, -0.868105330066489, -1.2894084122198, -0.956683568219803]
+  },
+  "sdreport": {
+    "getJointPrecision": false,
+    "getReportCovariance": false,
+    "skip.delta.method": true
+  },
+  "outputs": [],
+  "failure": {
+    "class": "simpleError",
+    "message": "A map factor length must equal parameter length"
+  }
+}

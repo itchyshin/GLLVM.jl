@@ -46,8 +46,8 @@ Fields
   phylogenetic precision is `Q / σ²_phy`, matching `AugmentedPhy`'s
   `Q_topology` convention. Already includes any unit-height ("correlation")
   scaling.
-* `log_det::Float64`            – log-determinant of `Q` (R's
-  `log_det_A_phy_rr`, as shipped/recorded — recompute-and-compare with
+* `log_det::Float64`            – log-determinant of `Q` (the negative of R's
+  covariance `log_det_A_phy_rr`; recompute-and-compare with
   [`precision_logdet_check`](@ref)).
 * `scale::Float64`              – the height actually applied to `Q`
   (1.0 when `correlation = false`, matching R's un-scaled convention).

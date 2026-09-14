@@ -1,0 +1,63 @@
+{
+  "receipt_kind": "frozen_R_to_Julia_paired_gaussian_unit_fit",
+  "claim_status": "one_paired_fit_not_qualified",
+  "r_runner": {
+    "path": "tools/destination_b/b1_unit_gaussian_reference.R",
+    "sha256": "ba9d9d12d43223ca99900443ffea880be3d3c92323221c713dccddd31954e304",
+    "R_version": "4.6.0"
+  },
+  "source": {
+    "git_sha": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "description_version": "0.7.0",
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+  },
+  "installed": {
+    "loaded_version": "0.7.0",
+    "shared_library_sha256": "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+  },
+  "specification": {
+    "formula": "value ~ 0 + trait + latent(0 + trait | site, d = 1, unique = FALSE)",
+    "family": "gaussian()",
+    "trait": "trait",
+    "unit": "site",
+    "REML": false,
+    "n_site": 4,
+    "n_replicate": 2,
+    "n_trait": 2,
+    "n_observation": 8,
+    "row_order": "site, site_species replicate, trait",
+    "seed": 20260908,
+    "data_md5": "06f33d506aa317ba2a8002d2232f0a94"
+  },
+  "response_long": {
+    "value": [-1.2563085875178923, 0.59191738787636272, -1.3074091932150089, 0.67665881997131505, 0.01441623339186654, -0.06740787356308317, 0.29915304181062324, 0.35723466207936105, 0.79119265649827963, -0.14419878940174255, 0.31853761475160997, -0.69827919694464202, -0.041984863172960851, -0.32817093137363029, -0.47577175893635704, 0.13586852750902717],
+    "trait": ["trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2"],
+    "site": ["site_a", "site_a", "site_a", "site_a", "site_b", "site_b", "site_b", "site_b", "site_c", "site_c", "site_c", "site_c", "site_d", "site_d", "site_d", "site_d"],
+    "site_species": ["site_a__observation_1", "site_a__observation_1", "site_a__observation_2", "site_a__observation_2", "site_b__observation_1", "site_b__observation_1", "site_b__observation_2", "site_b__observation_2", "site_c__observation_1", "site_c__observation_1", "site_c__observation_2", "site_c__observation_2", "site_d__observation_1", "site_d__observation_1", "site_d__observation_2", "site_d__observation_2"]
+  },
+  "mapping": {
+    "trait_id": [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    "site_id": [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+    "site_species_id": [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7],
+    "n_sites": 4,
+    "n_site_species": 8
+  },
+  "fit": {
+    "fit_seconds": 0.46427702903747559,
+    "logLik": -6.6816691133163673,
+    "convergence": 0,
+    "optimizer_message": "relative convergence (4)",
+    "b_fix": [-0.20727187256980914, 0.065452796536596733],
+    "log_sigma_eps": -1.3635786661837321,
+    "theta_rr_B": [0.6611976271896558, -0.35107255162340023],
+    "Lambda_B": [[0.6611976271896558], [-0.35107255162340023]],
+    "Sigma_B": [[0.43718230220123105, -0.23212833810481018], [-0.23212833810481018, 0.12325193650336502]],
+    "sigma_eps": 0.25574391525986007
+  },
+  "limitations": [
+    "One tiny Gaussian unit fit only.",
+    "No interval, recovery, or coverage evidence.",
+    "No unit_obs, cluster, cluster2, non-Gaussian, S3b, S4, or dense-vcv result.",
+    "No 0.7 parity or Destination B qualification claim."
+  ]
+}

@@ -4,6 +4,7 @@ using Random
 using LinearAlgebra
 using Statistics
 using Distributions
+using StableRNGs
 
 @testset "Cross-Validation Engine (cv_gllvm & CVResult)" begin
 
@@ -125,24 +126,27 @@ using Distributions
     end
 
     @testset "Gamma & Beta Families CV" begin
-        Random.seed!(505)
         p, n = 3, 25
 
-        # Gamma
-        Y_gamma = rand(p, n) .* 2.0 .+ 0.2
+        # Gamma — StableRNG keeps the synthetic Y identical across Julia versions
+        # and platforms; MersenneTwister(seed) is not portable for pinned draws.
+        gamma_rng = StableRNG(505)
+        Y_gamma = rand(gamma_rng, p, n) .* 2.0 .+ 0.2
         cv_gam = cv_gllvm(Y_gamma; k_folds = 3, split = :random, family = Gamma(), K = 1,
-                          rng = Random.MersenneTwister(11))
+                          rng = StableRNG(11))
         @test isfinite(cv_gam.loglik)
         @test isfinite(cv_gam.mse)
         @test all(cv_gam.predictions .> 0.0)
 
-        # Beta
-        Y_beta = clamp.(rand(p, n) .* 0.8 .+ 0.1, 0.01, 0.99)
+        # Beta — same StableRNG discipline; fold splits use StableRNG(22) so Linux
+        # OpenBLAS does not land on a different Laplace optimum with boundary μ.
+        beta_data_rng = StableRNG(505)
+        Y_beta = clamp.(rand(beta_data_rng, p, n) .* 0.8 .+ 0.1, 0.01, 0.99)
         cv_beta = cv_gllvm(Y_beta; k_folds = 3, split = :random, family = Beta(), K = 1,
-                           rng = Random.MersenneTwister(22))
+                           rng = StableRNG(22))
         @test isfinite(cv_beta.loglik)
         @test isfinite(cv_beta.mse)
-        @test all(0.0 .< cv_beta.predictions .< 1.0)
+        @test all((0.0 .< cv_beta.predictions) .& (cv_beta.predictions .< 1.0))
     end
 
     # -------------------------------------------------------------------------

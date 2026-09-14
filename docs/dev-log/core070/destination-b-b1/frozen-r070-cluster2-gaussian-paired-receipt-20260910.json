@@ -1,0 +1,82 @@
+{
+  "receipt_kind": "frozen_R_to_Julia_paired_gaussian_cluster2_fit",
+  "limitations": ["Not Julia parity until independently checked by Julia.", "Not recovery evidence.", "Not interval validation.", "Not B1 qualification.", "Crossed diagonal cluster2 only; latent and full forms are excluded."],
+  "source": {
+    "path": "/private/tmp/destination-b-b1-r070-rebuild",
+    "git_sha": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "description_version": "0.7.0",
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+  },
+  "installed": {
+    "library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910",
+    "loaded_path": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB",
+    "loaded_version": "0.7.0",
+    "marker_path": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB-frozen-source-identity.json",
+    "shared_library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB/libs/gllvmTMB.so",
+    "shared_library_sha256": "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+  },
+  "r_runner": {
+    "path": "tools/destination_b/b1_cluster2_gaussian_reference.R",
+    "sha256": "9ba69dd9016336b9ada9798824b232011f18368d9c58f99fabf9051d64687138",
+    "R_version": "4.6.0"
+  },
+  "specification": {
+    "formula": "value ~ 0 + trait + indep(0 + trait | cluster2_id)",
+    "family": "gaussian()",
+    "trait": "trait",
+    "unit": "unit",
+    "cluster2": "cluster2_id",
+    "REML": false,
+    "control": {
+      "n_init": 1,
+      "se": false
+    },
+    "n_trait": 2,
+    "n_cluster2": 6,
+    "n_unit_per_cluster2": 4,
+    "n_replicate": 2,
+    "n_observation": 48,
+    "row_order": "cluster2, unit, replicate, trait",
+    "seed": 20260912,
+    "data_md5": "aca6428101f182510e885645a3ddd761"
+  },
+  "response_long": {
+    "value": [0.63878479380683995, -0.086379283451693545, 0.35813431509729676, 0.18425460399069324, 0.48485778329071788, 0.23489640426632594, 0.43665823520121727, 0.43167994216778288, -0.066462659473959351, 0.43846979130532177, 0.20410979762947123, 0.077468203311244599, 0.38609608835978487, 0.62959678272500164, 0.4025439206457409, 0.30861558220089869, -1.0557100461532269, 0.13181309162844507, -0.80400037279561376, 0.2955227009620881, -1.1605985495481768, 0.39257201261436925, -1.3170531275400617, 0.25843760738531274, -1.2398856681312311, 0.045115577610870206, -1.0459901036051114, 0.29467745116675836, -1.010156034182657, 0.46381488047962161, -1.1499126835425881, 0.37894575159435484, 0.04602830071218722, 0.20793779669300214, 0.058750713374600708, -0.32054233058733916, -0.0011584440438758559, 0.26836573318952339, -0.036414189129962374, 0.29692468359635482, 0.036025865069648652, 0.029916716849942127, 0.10905153652422422, -0.16039959233632098, -0.26442738490067441, 0.50908374959011427, 0.076779734128113397, 0.52838893096624273, -0.19983729279867607, 0.55285106737493739, -0.34696007608456736, 0.77797270261143647, -0.18470465392435936, 0.8319615803560988, 0.11634976385017412, 0.56617538444355386, 0.16786244360664623, 0.43346881629531847, 0.10480100498905356, 0.89555540886463203, -0.32940961082662135, 1.1311318341006382, -0.1916236795016204, 0.74190361771133928, 0.68137661288964435, 0.33345240680399901, 0.14380569197601911, 0.026145545517129054, 0.23496325999093581, 0.27529292500863722, 0.77627585056788395, 0.23062532395733534, 0.41357506679039058, 0.33417469449694875, 0.58507179012766064, 0.46346095182601499, 0.46820400599664652, 0.25951243056122963, 0.50574975231558761, 0.27632478895333623, -1.1981986681550787, 0.0074031285752483855, -1.1124046930835503, -0.18064915405020038, -1.0485868296440553, 0.24856789366361565, -0.67766276130943504, -0.2321879549470055, -1.2050884764468446, -0.229402674192448, -0.6607614778979547, -0.14587505624573754, -0.84781932685609007, -0.1958284125865922, -0.66501787905155985, -0.32720944108241495],
+    "trait": ["trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2"],
+    "unit": ["unit_1", "unit_1", "unit_1", "unit_1", "unit_2", "unit_2", "unit_2", "unit_2", "unit_3", "unit_3", "unit_3", "unit_3", "unit_4", "unit_4", "unit_4", "unit_4", "unit_1", "unit_1", "unit_1", "unit_1", "unit_2", "unit_2", "unit_2", "unit_2", "unit_3", "unit_3", "unit_3", "unit_3", "unit_4", "unit_4", "unit_4", "unit_4", "unit_1", "unit_1", "unit_1", "unit_1", "unit_2", "unit_2", "unit_2", "unit_2", "unit_3", "unit_3", "unit_3", "unit_3", "unit_4", "unit_4", "unit_4", "unit_4", "unit_1", "unit_1", "unit_1", "unit_1", "unit_2", "unit_2", "unit_2", "unit_2", "unit_3", "unit_3", "unit_3", "unit_3", "unit_4", "unit_4", "unit_4", "unit_4", "unit_1", "unit_1", "unit_1", "unit_1", "unit_2", "unit_2", "unit_2", "unit_2", "unit_3", "unit_3", "unit_3", "unit_3", "unit_4", "unit_4", "unit_4", "unit_4", "unit_1", "unit_1", "unit_1", "unit_1", "unit_2", "unit_2", "unit_2", "unit_2", "unit_3", "unit_3", "unit_3", "unit_3", "unit_4", "unit_4", "unit_4", "unit_4"],
+    "cluster2_id": ["cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_4", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_5", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6", "cluster2_6"],
+    "replicate": [1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 2]
+  },
+  "mapping": {
+    "trait_levels": ["trait_1", "trait_2"],
+    "x_fix_names": ["traittrait_1", "traittrait_2"],
+    "trait_id": [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    "unit_id": [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+    "cluster2_id": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+    "n_units": 4,
+    "n_cluster2": 6
+  },
+  "fit": {
+    "fit_seconds": 0.45349907875061035,
+    "logLik": -2.9311750821141498,
+    "convergence": 0,
+    "optimizer_message": "relative convergence (4)",
+    "raw_opt_par": {
+      "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_diag_cluster2", "theta_diag_cluster2"],
+      "values": [-0.21633309087084474, 0.2690418195080162, -1.6013451738809927, -0.52060801612704966, -1.4019123383445959]
+    },
+    "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+    "b_fix": [-0.21633309087084474, 0.2690418195080162],
+    "log_sigma_eps": -1.6013451738809927,
+    "theta_diag_cluster2": [-0.52060801612704966, -1.4019123383445959],
+    "log_sd_cluster2": [-0.52060801612704966, -1.4019123383445959],
+    "Sigma_cluster2": [
+      [0.3530251308920645, 0],
+      [0, 0.060577927999148511]
+    ],
+    "sigma_eps": 0.20162511465525251
+  },
+  "failure": {
+    "present": false
+  }
+}

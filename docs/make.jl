@@ -45,6 +45,8 @@ makedocs(;
             "Working with a Fit"       => "working-with-a-fit.md",
             "Covariance & Correlation" => "covariance-correlation.md",
             "Structured Dependence"    => "structured-dependence.md",
+            "Joint Named Grouping"     => "grouped-models.md",
+            "Precision Bridge (Development)" => "precision-bridge-development.md",
             "Structured-Term Fitting"  => "structured-term-fitting.md",
             "Confidence Intervals"     => "confidence-intervals.md",
             "Derived Confidence Intervals" => "derived-confidence-intervals.md",

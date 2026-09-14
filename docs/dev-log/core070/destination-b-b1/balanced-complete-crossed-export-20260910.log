@@ -1,0 +1,13 @@
+ERROR: LoadError: ArgumentError: invalid open mode: x
+Stacktrace:
+ [1] open(fname::String, mode::String; lock::Bool)
+   @ Base ./iostream.jl:356
+ [2] open(fname::String, mode::String)
+   @ Base ./iostream.jl:355
+ [3] open(::var"#5#6", ::String, ::Vararg{String}; kwargs::@Kwargs{})
+   @ Base ./io.jl:394
+ [4] open(::Function, ::String, ::String)
+   @ Base ./io.jl:393
+ [5] top-level scope
+   @ /private/tmp/destination-b-b1-integration-20260910/tools/destination_b/b1_balanced_complete_crossed_export.jl:9
+in expression starting at /private/tmp/destination-b-b1-integration-20260910/tools/destination_b/b1_balanced_complete_crossed_export.jl:9

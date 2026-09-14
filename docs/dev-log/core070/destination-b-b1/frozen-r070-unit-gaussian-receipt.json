@@ -1,0 +1,73 @@
+{
+  "receipt_kind": "frozen_R_source_alignment_only",
+  "limitations": ["Not Julia parity.", "Not parameter-recovery evidence.", "Not interval validation.", "Not B1 qualification.", "Not public bridge admission.", "One tiny deterministic Gaussian unit-latent fit only."],
+  "source": {
+    "path": "/private/tmp/destination-b-20260907-r-frozen",
+    "git_sha": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "description_version": "0.7.0",
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+  },
+  "installed": {
+    "library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260908-archive",
+    "loaded_path": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260908-archive/gllvmTMB",
+    "loaded_version": "0.7.0",
+    "marker_path": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260908-archive/gllvmTMB-frozen-source-identity.json",
+    "shared_library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260908-archive/gllvmTMB/libs/gllvmTMB.so",
+    "shared_library_sha256": "fdd1ec882c2a53b4b69b9ee8f246fa11055703f47f0e04db549538f9d18f77c1",
+    "marker": {
+      "source_dir": "/private/tmp/destination-b-20260907-r-frozen",
+      "source_sha": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+      "source_version": "0.7.0",
+      "source_archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc",
+      "installed_package_description_md5": "d726fa5b9cdc8139f0bc3df3d6f54db0",
+      "installed_shared_library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260908-archive/gllvmTMB/libs/gllvmTMB.so",
+      "installed_shared_library_sha256": "fdd1ec882c2a53b4b69b9ee8f246fa11055703f47f0e04db549538f9d18f77c1",
+      "built_at_utc": "2026-09-08 10:58:09 UTC"
+    }
+  },
+  "specification": {
+    "formula": "value ~ 0 + trait + latent(0 + trait | site, d = 1, unique = FALSE)",
+    "family": "gaussian()",
+    "trait": "trait",
+    "unit": "site",
+    "REML": false,
+    "control": {
+      "n_init": 1,
+      "se": false
+    },
+    "n_site": 4,
+    "n_replicate": 2,
+    "n_trait": 2,
+    "n_observation": 8,
+    "row_order": "site, site_species replicate, trait",
+    "seed": 20260908,
+    "data_md5": "06f33d506aa317ba2a8002d2232f0a94"
+  },
+  "mapping": {
+    "trait_id": [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    "site_id": [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3],
+    "site_species_id": [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7],
+    "n_sites": 4,
+    "n_site_species": 8
+  },
+  "fit": {
+    "fit_seconds": 0.53620505332946777,
+    "logLik": -6.6816691133163673,
+    "convergence": 0,
+    "optimizer_message": "relative convergence (4)",
+    "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "mspl_c_n"],
+    "fit_fields": ["tmb_obj", "tmb_data", "tmb_params", "tmb_map", "REML", "estimator", "estimator_provenance", "opt", "sd_report", "report", "mspl", "formula", "covstructs", "family", "family_input", "likelihood_weights", "data", "missing_data", "data_original", "random", "aghq", "trait_col", "unit_col", "unit_obs_col", "species_col", "cluster_col", "cluster2_col", "n_traits", "n_sites", "n_species", "n_site_species", "d_B", "d_W", "use", "kernel_levels", "kernel_matrices", "kernel_diagnostics", "re_int", "lv", "d_phy", "d_B_slope", "d_spde_lv", "mesh", "phylo_vcv", "phylo_tree", "X_fix", "X_fix_names", "offset_expr", "Xcoef_fixed", "lambda_constraint", "needs_rotation_advice", "restart_history", "start_provenance", "sdreport_error", "package_version", "stage", "fit_health", "warm_restart_provenance", "objective_components"],
+    "Lambda_B": [
+      [0.6611976271896558],
+      [-0.35107255162340023]
+    ],
+    "Sigma_B": [
+      [0.43718230220123105, -0.23212833810481018],
+      [-0.23212833810481018, 0.12325193650336502]
+    ],
+    "sigma_eps": 0.25574391525986007
+  },
+  "failure": {
+    "present": false
+  }
+}

@@ -18,7 +18,7 @@ using GLLVM, Test, Random, LinearAlgebra, SparseArrays
 #                        `DATA_IVECTOR` in `src/gllvmTMB.cpp:852`)
 #   node_labels        — length-n_aug labels aligned with Q
 #   scale              — height actually applied to Q
-#   log_det            — shipped `log_det_A_phy_rr`
+#   log_det            — logdet(Q), NEGATIVE of R `log_det_A_phy_rr`
 
 const _S3A_NEWICK = "(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,((E:0.1,F:0.1):0.1,(G:0.1,H:0.1):0.1):0.1);"
 const _S3A_PAYLOAD_KEYS = (
@@ -72,6 +72,12 @@ end
         @test length(payload.node_labels) == payload.n_aug
         @test payload.scale == pp.scale
         @test payload.log_det == pp.log_det
+        # R ships logdet(A), whereas this native payload checks logdet(Q).
+        # A direct unnegated R determinant must fail even for a valid matrix.
+        r_log_det_A = -logdet(Symmetric(Matrix(pp.Q)))
+        @test payload.log_det ≈ -r_log_det_A atol=1e-8
+        @test_throws ArgumentError GLLVM.admit_phylo_precision_payload(
+            merge(payload, (; log_det=r_log_det_A)))
         @test payload.node_labels == pp.node_labels
     end
 

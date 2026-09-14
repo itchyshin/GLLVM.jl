@@ -1,0 +1,45 @@
+{
+  "status": "pass",
+  "qualified": false,
+  "admission_status": "closed",
+  "scope": "Destination B phylogenetic precision public formula candidate",
+  "kind": "pedigree",
+  "input_hashes": {
+    "runner": "7b99a3d020d509889eddc67441ff3647e042a9833e8cb623250bb7e1fd2f041f",
+    "frozen_reference": "b8d5f2e884720ad86f3a0d0d562ec5b25248113d0e641825803e4d5cee8e5a06",
+    "retained_candidate": "25de6a573740dc3a568a41106685771f0d3822412fbd45bccc5f47b77afeafb5",
+    "requested_julia_bin": "fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30",
+    "loaded_dll": "91bfa6d90fbf3e4f42e1f4160583f2607f51a7839bb54a02a209da6e31a59beb",
+    "installed_package": {
+      "r_loader": "570ca456b280cdeb201ef5ebdf22dc8f80092e2c0c68e33c7f73340e420f3759",
+      "r_database": "acaa9194dbeed5b326ab31931ba053536c9a34b1772a964bddd219fd8e1b0dd9",
+      "r_index": "703370e9af01714b2736650d1144fe14f574a00e37148e8280a9c81e09432ece",
+      "description": "7fc53a7b945931a26b4d4c22969916a77b9cb88d5348d3275d5cef58e903efc2"
+    }
+  },
+  "julia_project": "/private/tmp/destination-b-juliacall-env-IVmUVo",
+  "julia_bin": "/Users/z3437171/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/bin/julia",
+  "gllvmTMB_version": "0.7.0",
+  "elapsed_seconds": 11.127000000000001,
+  "loglik": -14.80281061142237,
+  "loglik_absolute_error": 0,
+  "conditional_fitted_max_abs_error": 0,
+  "n_interval_targets": 12,
+  "ci_status": "available",
+  "ordinary_formula_gate": "rejected_before_julia_startup",
+  "ordinary_formula_gate_message": "[GJL-GATE-PRECISION-ADMISSION] the phylogenetic precision Julia candidate remains closed pending S3b/S4 evidence and review; use engine = 'tmb' for an admitted model.",
+  "candidate_opt_in": true,
+  "actual_julia_bin": "/Users/z3437171/.julia/juliaup/julia-1.10.0+0.aarch64.apple.darwin14/bin/julia",
+  "actual_julia_bin_sha256": "fd739b38b3a1ac367a5dff676834db5ff873e75e4e8220c8793e41be1b4ead30",
+  "julia_version": "1.10.0",
+  "public_methods": {
+    "confint_rows": 12,
+    "formula_coefficient_names": ["traita", "traitb", "traitc"],
+    "displayed_beta_targets": ["beta[traita]", "beta[traitb]", "beta[traitc]"],
+    "fitted_shape": [3, 16],
+    "predict_rows": 48,
+    "response_residuals": 48,
+    "pearson_residuals": 48,
+    "simulation_shape": [48, 1]
+  }
+}

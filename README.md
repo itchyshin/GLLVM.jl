@@ -1,5 +1,24 @@
 # GLLVM.jl
 
+Development grouping route: `fit_gllvm(Y; grouping=[GroupingTerm(:unit;
+mode=:indep)], unit=labels)` jointly fits shared effects for Gaussian and the
+four named non-Gaussian families. Formula
+routing, interval diagnostics, full fixed-effect `vcov` and structured summaries are described in
+[Joint named grouping models](docs/src/grouped-models.md). Full Destination B
+qualification remains in progress. The explicit Gaussian `phylo=PrecisionPhy`
+route supports precision-only fits and a bounded joint independent-grouping
+model; source-specific covariance and full-marginal interval diagnostics remain
+separate from frozen-R admission and recovery evidence.
+GLLVM.jl remains an experimental partial R-to-Julia bridge, not 0.7 parity.
+Precision-only fitting offers `residual_mode=:shared` alongside the unchanged
+trait-specific default; the joint grouping route remains trait-specific.
+Eligible independent Gaussian grouping models also have an explicit
+`grouped_gaussian_variance_profile(Y, fit; term=:unit, trait=1)` route;
+inspect its status and limitations in the grouping guide before using endpoints.
+The explicit Julia multivariate precision route is documented in the
+[development bridge guide](docs/src/precision-bridge-development.md);
+public R `phylo_rr` admission is still closed.
+
 [![Build Status](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml)
 [![Coverage](https://codecov.io/gh/itchyshin/GLLVM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/itchyshin/GLLVM.jl)
 

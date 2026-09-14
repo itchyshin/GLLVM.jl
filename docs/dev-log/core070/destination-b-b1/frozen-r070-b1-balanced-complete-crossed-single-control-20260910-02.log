@@ -1,0 +1,23 @@
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] FALSE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+[1] TRUE
+B1 balanced complete-crossed frozen-R provenance preflight PASS\n[1] TRUE
+[1] TRUE
+gllvmTMB is EXPERIMENTAL (lifecycle: experimental). Use at your own risk: the package is not complete, is not fully human-verified, and needs extensive further validation. Point estimates are the primary inferential output, but evidence is route- and regime-specific. Broad interval coverage is not certified. One narrow two-sided Gaussian total-variance profile regime has a documented 0.94 floor. See the Current limitations and boundaries page for scope.
+[1] TRUE
+[1] TRUE
+B1 balanced complete-crossed single control retained: success

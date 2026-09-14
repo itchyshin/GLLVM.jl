@@ -1,0 +1,62 @@
+{
+  "audit_kind": "frozen_R_B1_balanced_complete_crossed_negative_receipt_sidecar",
+  "audit_date": "2026-09-10",
+  "original_receipt_preserved": true,
+  "execution": {
+    "model_or_preflight_rerun": false,
+    "receipt_kind": "frozen_R_B1_balanced_complete_crossed_single_control",
+    "status": "success",
+    "qualified": false,
+    "convergence": 1,
+    "gradient_max_abs": 0.00092870391764413951,
+    "acceptance_rule": "convergence == 0 && max(abs(gr)) <= 1e-6"
+  },
+  "frozen_provenance": {
+    "source": {
+      "path": "/private/tmp/destination-b-b1-r070-rebuild",
+      "git_sha": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+      "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+    },
+    "installed": {
+      "library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910",
+      "package_version": "0.7.0",
+      "shared_library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB/libs/gllvmTMB.so",
+      "shared_library_sha256": "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+    },
+    "stationary_reference_runner": {
+      "path": "tools/destination_b/b1_joint_gaussian_stationary_reference.R",
+      "sha256": "9d1f1fa95655bd8887d7e04d2c2d10c0311fac094205a4d47dd7ee6ebb9ca585"
+    },
+    "preflight_helper": {
+      "path": "tools/destination_b/b1_balanced_complete_crossed_preflight.R",
+      "sha256": "2a5f92138dedb8034a4c658dbbdcd04c77ca4ae6266e4580f8c5bd42cb8e249a"
+    },
+    "control_runner": {
+      "path": "tools/destination_b/b1_balanced_complete_crossed_control.R",
+      "sha256": "6579993fe30894e23c252368465df86ace4ce359602cfa55c58552e828df1309"
+    }
+  },
+  "artifacts": {
+    "receipt": {
+      "path": "frozen-r070-b1-balanced-complete-crossed-single-control-20260910-02.json",
+      "sha256": "ab090669922d2868469e4aef1b245ed492e9db6ac3c30b578334034af7931d73"
+    },
+    "no_clobber_marker": {
+      "path": ".b1-balanced-control-1d8b75cc6707",
+      "sha256": "ab090669922d2868469e4aef1b245ed492e9db6ac3c30b578334034af7931d73",
+      "hardlink_to": "frozen-r070-b1-balanced-complete-crossed-single-control-20260910-02.json",
+      "device_at_audit": "16777230",
+      "inode_at_audit": "763451879",
+      "link_count_at_audit": 2
+    },
+    "preflight_log": {
+      "path": "balanced-complete-crossed-preflight-20260910-02.log",
+      "sha256": "8058692230a6bb73297562172a7c789f0b3982498803bfc9910c6b8618b20612"
+    },
+    "control_log": {
+      "path": "frozen-r070-b1-balanced-complete-crossed-single-control-20260910-02.log",
+      "sha256": "29748552d10906d68027a95df94834063c5c6be3253c3e8da0322166e3bfafb7"
+    }
+  },
+  "provenance_basis": "Retained stationary frozen-R receipt and immutable no-fit preflight helper; this sidecar does not alter the original control receipt."
+}

@@ -1,0 +1,232 @@
+{
+  "receipt_kind": "frozen_R_to_Julia_joint_gaussian_optimizer_diagnostic",
+  "limitations": ["The frozen R reference point is not stationary enough for matched-parameter acceptance on this fixture.", "Direct-coordinate likelihood identity is not independently-refitted parameter parity.", "Not interval validation.", "Not recovery evidence.", "Not B1 qualification."],
+  "source": {
+    "path": "/private/tmp/destination-b-b1-r070-rebuild",
+    "git_sha": "b4d5fee64def88bc768dda1f1f77c29b295edd86",
+    "description_version": "0.7.0",
+    "archive_sha256": "0c2f4323eb9fb19acccf039b8d57b4dd6bda82e2aa8b4a7bb712f36a64b022bc"
+  },
+  "installed": {
+    "library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910",
+    "loaded_path": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB",
+    "loaded_version": "0.7.0",
+    "marker_path": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB-frozen-source-identity.json",
+    "shared_library": "/private/tmp/gllvmTMB-frozen-r070-b1-library-20260910/gllvmTMB/libs/gllvmTMB.so",
+    "shared_library_sha256": "3b6e7b63e072506d78ca5e468c1478758fa9aae333757b74c1f651cfab81da30"
+  },
+  "r_runner": {
+    "path": "tools/destination_b/b1_joint_gaussian_reference.R",
+    "sha256": "84046a365c31898defaa59e55346b21d6a3843be0dc97029775685fbc112a0e8",
+    "R_version": "4.6.0"
+  },
+  "specification": {
+    "formula": "value ~ 0 + trait + latent(0 + trait | unit, d = 1, unique = FALSE) + indep(0 + trait | obs) + indep(0 + trait | cluster_id) + indep(0 + trait | cluster2_id)",
+    "family": "gaussian()",
+    "trait": "trait",
+    "unit": "unit",
+    "unit_obs": "obs",
+    "cluster": "cluster_id",
+    "cluster2": "cluster2_id",
+    "REML": false,
+    "control": {
+      "n_init": 1,
+      "se": false
+    },
+    "optimizer_attempts": {
+      "default": "nlminb",
+      "nlminb_tight_same_start": {
+        "eval_max": 10000,
+        "iter_max": 10000,
+        "rel_tol": 9.9999999999999998e-13,
+        "x_tol": 9.9999999999999998e-13,
+        "xf_tol": 9.9999999999999998e-13
+      },
+      "optim_bfgs_same_start": "BFGS",
+      "nlminb_multistart_5": {
+        "n_init": 5,
+        "init_jitter": 0.29999999999999999
+      }
+    },
+    "n_trait": 2,
+    "n_unit": 6,
+    "n_unit_obs_per_unit": 2,
+    "n_replicate": 3,
+    "n_cluster": 4,
+    "n_cluster2": 3,
+    "n_observation": 36,
+    "row_order": "unit, unit_obs, replicate, trait",
+    "seed": 20260913,
+    "data_md5": "cb7cb72ff26acbe6782f8731b40ce680"
+  },
+  "response_long": {
+    "value": [-1.7590340947803891, 0.74512021552660124, -1.7859541086685371, 0.8577723598614414, -2.7904743296902375, 1.7080640521974031, -2.473144843939596, 1.6792751491585332, -2.2889753182960155, 2.3495422530405965, -2.3129518845663886, 1.6382217619027015, -0.45693107442711062, 0.32452891476249868, -0.5636667808312612, 0.43607727237051841, -1.2567625475438278, 1.1410872103290701, -0.93877525331377154, 0.16959713617488517, -1.3745396134620043, 0.67082413889723935, -1.1160385155111918, 0.5216650087308079, -0.3520972964292694, -0.053510455732873122, -0.053239808255041168, -0.016212251416367535, -1.1251495097317823, 0.68167859814443488, -0.98065179935112545, 0.63927562939589355, -0.3377709535891058, 0.33384637968786524, -0.52759583599687443, 0.10515833179559568, -1.2717450265372032, 0.93257175109878077, -0.93698397223366769, 0.58645272645296553, -2.1266492133017061, 0.76618844411389508, -1.0417088443742841, -0.013655103688949427, -1.1620529733190723, 0.27047178510046188, -0.86907353380440788, 0.35553467323479637, 1.4755883094967284, -0.36746979926973633, 0.79658237378380659, -0.71818825925271657, 0.32570717939944527, -0.14997909978882057, 0.28302088496596489, -0.68150644976219643, 0.13864615008978526, -0.22238723396272853, 0.48989617799178653, -0.5420753682204642, 0.20952647265162366, -0.34899537481651799, 0.20655454662088854, -0.46376349709557912, -0.9379730304220566, -0.51398939955761647, -0.24809298812293173, -0.46207883742874273, -0.4947733303716465, 0.16620527420772829, -0.82774670734819378, -0.21310651094430427],
+    "trait": ["trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2", "trait_1", "trait_2"],
+    "unit": ["unit_1", "unit_1", "unit_1", "unit_1", "unit_1", "unit_1", "unit_1", "unit_1", "unit_1", "unit_1", "unit_1", "unit_1", "unit_2", "unit_2", "unit_2", "unit_2", "unit_2", "unit_2", "unit_2", "unit_2", "unit_2", "unit_2", "unit_2", "unit_2", "unit_3", "unit_3", "unit_3", "unit_3", "unit_3", "unit_3", "unit_3", "unit_3", "unit_3", "unit_3", "unit_3", "unit_3", "unit_4", "unit_4", "unit_4", "unit_4", "unit_4", "unit_4", "unit_4", "unit_4", "unit_4", "unit_4", "unit_4", "unit_4", "unit_5", "unit_5", "unit_5", "unit_5", "unit_5", "unit_5", "unit_5", "unit_5", "unit_5", "unit_5", "unit_5", "unit_5", "unit_6", "unit_6", "unit_6", "unit_6", "unit_6", "unit_6", "unit_6", "unit_6", "unit_6", "unit_6", "unit_6", "unit_6"],
+    "obs": ["unit_1_obs_1", "unit_1_obs_1", "unit_1_obs_1", "unit_1_obs_1", "unit_1_obs_1", "unit_1_obs_1", "unit_1_obs_2", "unit_1_obs_2", "unit_1_obs_2", "unit_1_obs_2", "unit_1_obs_2", "unit_1_obs_2", "unit_2_obs_1", "unit_2_obs_1", "unit_2_obs_1", "unit_2_obs_1", "unit_2_obs_1", "unit_2_obs_1", "unit_2_obs_2", "unit_2_obs_2", "unit_2_obs_2", "unit_2_obs_2", "unit_2_obs_2", "unit_2_obs_2", "unit_3_obs_1", "unit_3_obs_1", "unit_3_obs_1", "unit_3_obs_1", "unit_3_obs_1", "unit_3_obs_1", "unit_3_obs_2", "unit_3_obs_2", "unit_3_obs_2", "unit_3_obs_2", "unit_3_obs_2", "unit_3_obs_2", "unit_4_obs_1", "unit_4_obs_1", "unit_4_obs_1", "unit_4_obs_1", "unit_4_obs_1", "unit_4_obs_1", "unit_4_obs_2", "unit_4_obs_2", "unit_4_obs_2", "unit_4_obs_2", "unit_4_obs_2", "unit_4_obs_2", "unit_5_obs_1", "unit_5_obs_1", "unit_5_obs_1", "unit_5_obs_1", "unit_5_obs_1", "unit_5_obs_1", "unit_5_obs_2", "unit_5_obs_2", "unit_5_obs_2", "unit_5_obs_2", "unit_5_obs_2", "unit_5_obs_2", "unit_6_obs_1", "unit_6_obs_1", "unit_6_obs_1", "unit_6_obs_1", "unit_6_obs_1", "unit_6_obs_1", "unit_6_obs_2", "unit_6_obs_2", "unit_6_obs_2", "unit_6_obs_2", "unit_6_obs_2", "unit_6_obs_2"],
+    "cluster_id": ["cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_3", "cluster_3", "cluster_4", "cluster_4", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_3", "cluster_3", "cluster_4", "cluster_4", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_3", "cluster_3", "cluster_4", "cluster_4", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_3", "cluster_3", "cluster_4", "cluster_4", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_3", "cluster_3", "cluster_4", "cluster_4", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_1", "cluster_1", "cluster_2", "cluster_2", "cluster_3", "cluster_3", "cluster_4", "cluster_4", "cluster_1", "cluster_1", "cluster_2", "cluster_2"],
+    "cluster2_id": ["cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_1", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_2", "cluster2_3", "cluster2_3", "cluster2_3", "cluster2_3"],
+    "replicate": [1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3, 1, 1, 2, 2, 3, 3]
+  },
+  "mapping": {
+    "trait_levels": ["trait_1", "trait_2"],
+    "x_fix_names": ["traittrait_1", "traittrait_2"],
+    "trait_id": [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    "unit_id": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5],
+    "unit_obs_id": [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11],
+    "cluster_id": [0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 3, 3, 0, 0, 1, 1],
+    "cluster2_id": [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2]
+  },
+  "fit": {
+    "fit_seconds": 0.46334695816040039,
+    "logLik": -32.847374868499401,
+    "convergence": 0,
+    "optimizer_message": "relative convergence (4)",
+    "gradient": [-1.7035524573690278e-05, -1.0079797981129181e-05, 1.377745087457006e-06, 2.1410189650930688e-05, -7.0110017555386757e-06, -2.2409338533704252e-06, 1.332497800622564e-05, -9.3493772561650159e-06, -8.7843624159270579e-06, 4.2720580437490562e-07, 2.1221987665711005e-05],
+    "gradient_max_abs": 2.1410189650930688e-05,
+    "raw_opt_par": {
+      "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+      "values": [-0.80138494134531368, 0.34897642153153807, -1.443482779165481, 0.85776841691168626, -0.61810638872591905, -1.6733988252449723, -1.3927363759389666, -1.8370444886425661, -1.8046030359567835, -1.0984424805259916, -1.8711270696382214]
+    },
+    "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "sd_W", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "sd_q", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+    "b_fix": [-0.80138494134531368, 0.34897642153153807],
+    "log_sigma_eps": -1.443482779165481,
+    "theta_rr_B": [0.85776841691168626, -0.61810638872591905],
+    "theta_diag_W": [-1.6733988252449723, -1.3927363759389666],
+    "theta_diag_species": [-1.8370444886425661, -1.8046030359567835],
+    "theta_diag_cluster2": [-1.0984424805259916, -1.8711270696382214],
+    "Sigma_unit": [
+      [0.73576665705118038, -0.5301921385404309],
+      [-0.5301921385404309, 0.38205550778379693]
+    ],
+    "Sigma_unit_obs": [
+      [0.035196886552963193, 0],
+      [0, 0.061699913385160364]
+    ],
+    "Sigma_cluster": [
+      [0.025372509929686336, 0],
+      [0, 0.027073332615308688]
+    ],
+    "Sigma_cluster2": [
+      [0.11114885266226394, 0],
+      [0, 0.023700618378148415]
+    ],
+    "sigma_eps": 0.23610402689105778,
+    "nlminb_tight_same_start": {
+      "fit_seconds": 0.026983022689819336,
+      "logLik": -32.847374868499401,
+      "convergence": 1,
+      "optimizer_message": "singular convergence (7)",
+      "gradient": [-1.7035524573690278e-05, -1.0079797981129181e-05, 1.377745087457006e-06, 2.1410189650930688e-05, -7.0110017555386757e-06, -2.2409338533704252e-06, 1.332497800622564e-05, -9.3493772561650159e-06, -8.7843624159270579e-06, 4.2720580437490562e-07, 2.1221987665711005e-05],
+      "gradient_max_abs": 2.1410189650930688e-05,
+      "raw_opt_par": {
+        "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+        "values": [-0.80138494134531368, 0.34897642153153807, -1.443482779165481, 0.85776841691168626, -0.61810638872591905, -1.6733988252449723, -1.3927363759389666, -1.8370444886425661, -1.8046030359567835, -1.0984424805259916, -1.8711270696382214]
+      },
+      "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "sd_W", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "sd_q", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+      "b_fix": [-0.80138494134531368, 0.34897642153153807],
+      "log_sigma_eps": -1.443482779165481,
+      "theta_rr_B": [0.85776841691168626, -0.61810638872591905],
+      "theta_diag_W": [-1.6733988252449723, -1.3927363759389666],
+      "theta_diag_species": [-1.8370444886425661, -1.8046030359567835],
+      "theta_diag_cluster2": [-1.0984424805259916, -1.8711270696382214],
+      "Sigma_unit": [
+        [0.73576665705118038, -0.5301921385404309],
+        [-0.5301921385404309, 0.38205550778379693]
+      ],
+      "Sigma_unit_obs": [
+        [0.035196886552963193, 0],
+        [0, 0.061699913385160364]
+      ],
+      "Sigma_cluster": [
+        [0.025372509929686336, 0],
+        [0, 0.027073332615308688]
+      ],
+      "Sigma_cluster2": [
+        [0.11114885266226394, 0],
+        [0, 0.023700618378148415]
+      ],
+      "sigma_eps": 0.23610402689105778
+    },
+    "optim_bfgs_same_start": {
+      "fit_seconds": 0.038676977157592773,
+      "logLik": -32.847374877478018,
+      "convergence": 0,
+      "optimizer_message": "",
+      "gradient": [-0.00018249766334114433, 4.6933647125134884e-05, -0.00017008913737650975, -0.00038395707251252678, -0.00018462280264158954, -5.5091905062750627e-05, -9.1312010863045851e-05, -6.7268165468544188e-05, -4.7289613155342798e-05, -2.159910548357086e-05, -6.2718490925068722e-05],
+      "gradient_max_abs": 0.00038395707251252678,
+      "raw_opt_par": {
+        "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+        "values": [-0.80141782456727284, 0.34899614900008868, -1.4434833454454246, 0.8577492908267027, -0.6180953064679835, -1.6734046616748517, -1.3927472886359202, -1.8370751152517988, -1.8046104732173212, -1.098446854370255, -1.8711685540523266]
+      },
+      "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "sd_W", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "sd_q", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+      "b_fix": [-0.80141782456727284, 0.34899614900008868],
+      "log_sigma_eps": -1.4434833454454246,
+      "theta_rr_B": [0.8577492908267027, -0.6180953064679835],
+      "theta_diag_W": [-1.6734046616748517, -1.3927472886359202],
+      "theta_diag_species": [-1.8370751152517988, -1.8046104732173212],
+      "theta_diag_cluster2": [-1.098446854370255, -1.8711685540523266],
+      "Sigma_unit": [
+        [0.73573384591371138, -0.5301708107862263],
+        [-0.5301708107862263, 0.38204180787775044]
+      ],
+      "Sigma_unit_obs": [
+        [0.035196475707040389, 0],
+        [0, 0.061698566774941885]
+      ],
+      "Sigma_cluster": [
+        [0.025370955829389898, 0],
+        [0, 0.027072929915447113]
+      ],
+      "Sigma_cluster2": [
+        [0.11114788037097341, 0],
+        [0, 0.023698652047186936]
+      ],
+      "sigma_eps": 0.2361038931901206
+    },
+    "nlminb_multistart_5": {
+      "fit_seconds": 0.082230091094970703,
+      "logLik": -32.847374868303177,
+      "convergence": 0,
+      "optimizer_message": "relative convergence (4)",
+      "gradient": [2.8379426402252083e-06, 8.6079071443007586e-07, -8.7670246289574641e-06, 1.7127268829357342e-05, 1.8152100309904722e-05, 4.7054368085777929e-06, -1.5596722174268798e-06, 4.4652493611328061e-06, -1.6802582794733817e-06, 1.2045925626463607e-06, -7.2638542210936326e-06],
+      "gradient_max_abs": 1.8152100309904722e-05,
+      "raw_opt_par": {
+        "names": ["b_fix", "b_fix", "log_sigma_eps", "theta_rr_B", "theta_rr_B", "theta_diag_W", "theta_diag_W", "theta_diag_species", "theta_diag_species", "theta_diag_cluster2", "theta_diag_cluster2"],
+        "values": [-0.80138266483668774, 0.34897575318444729, -1.4434828887481126, 0.85776696997934621, -0.61810521058006462, -1.6733978370247642, -1.3927380218573462, -1.8370365055707183, -1.8045979826940897, -1.098443433907027, -1.8711424114171351]
+      },
+      "report_fields": ["phi_gamma_delta", "mspl_V_covariance", "phi_nbinom1", "mspl_cloglog_tail_extension_count", "mspl_loading_nll", "mspl_family_mode_rep", "phi_nbinom2", "phi_truncnb2", "sigma_student", "sd_W", "phi_beta", "mspl_V_hirose", "mspl_log_sigma_spde_reference", "sigma_lognormal_delta", "mspl_cloglog_likelihood_tail_extension_count", "p_tweedie", "mspl_atom_status", "mspl_hirose_nll", "mspl_logdet_information", "joint_nll_penalized", "Lambda_B", "phi_betabinom", "mspl_covariance_nll", "df_student", "phi_tweedie", "mspl_structure_id", "ordinal_cutpoints", "mspl_cloglog_weight_tail_extension_count", "mspl_Lambda_spde_reference", "mspl_V_loading", "mspl_V_dispersion", "mspl_log_range_ratio", "Sigma_B", "mspl_private_ridge_nll", "phi_gamma", "mspl_jeffreys_nll", "eta", "sd_q", "mspl_status", "mspl_dispersion_nll", "joint_nll_unpenalized", "sigma_eps", "sd_c2", "mspl_c_n"],
+      "b_fix": [-0.80138266483668774, 0.34897575318444729],
+      "log_sigma_eps": -1.4434828887481126,
+      "theta_rr_B": [0.85776696997934621, -0.61810521058006462],
+      "theta_diag_W": [-1.6733978370247642, -1.3927380218573462],
+      "theta_diag_species": [-1.8370365055707183, -1.8045979826940897],
+      "theta_diag_cluster2": [-1.098443433907027, -1.8711424114171351],
+      "Sigma_unit": [
+        [0.73576417478754863, -0.53019023360770778],
+        [-0.53019023360770778, 0.38205405134622605]
+      ],
+      "Sigma_unit_obs": [
+        [0.035196956117581044, 0],
+        [0, 0.061699710279451744]
+      ],
+      "Sigma_cluster": [
+        [0.025372915034059761, 0],
+        [0, 0.027073606234014762]
+      ],
+      "Sigma_cluster2": [
+        [0.11114864072804953, 0],
+        [0, 0.02369989117001059]
+      ],
+      "sigma_eps": 0.23610400101815857
+    }
+  },
+  "acceptance": {
+    "matched_parameter": false,
+    "source_gradient_threshold": 9.9999999999999995e-07,
+    "reason": "Default, tight-control, BFGS, and documented five-start frozen-R attempts do not establish a stationary reference."
+  },
+  "failure": {
+    "present": false
+  }
+}
