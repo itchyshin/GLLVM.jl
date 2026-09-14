@@ -19634,3 +19634,17 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Updated `LOOP/checkpoint.md` + `LOOP/arcs.md`: arc **#9 done**; active **#10** `animal_dep()`.
 - Post-merge CI runs `34809178895` / `34809178894` — poll at merge time **in_progress** (not a green receipt yet).
 - Docs-only; no `src/` / `test/`. No push without maintainer instruction (PR only).
+
+## 2026-09-14 — honest-070-destb G1 API-BOUNDARY (`cursor/honest-070-destb`)
+
+- Lane: Shannon **FOREIGN LANE ACTIVE** (16 lanes); lease **GRANTED** on
+  `LOOP/`, `docs/dev-log/`, `docs/design/`, `tools/destination_b_scope_check.mjs`,
+  `tools/destination_b/` (4h).
+- Rehydrate: `origin/main` @ `23fd0496`; scope checker:
+  `node tools/destination_b_scope_check.mjs` → exit 0,
+  `SCOPE_HISTORY_AND_NEGATIVE_CONTROLS_PASS`, 32 rows, oracle `b4d5fee6…`.
+- Deliverable: `docs/dev-log/after-task/2026-09-14-destb-api-boundary.md`;
+  LOOP arc **#6 done**; `LOOP/GOAL.md` API-BOUNDARY checkbox; checkpoint → **G2 next**.
+- Folded prior LOOP commits (`cursor/loop-post-334`: #15 done, G0 GOAL scaffold).
+- Not run: `Pkg.test()`, Totoro, S4 push/probe, capability-status promotion (G2).
+- No push / merge (maintainer gate).
