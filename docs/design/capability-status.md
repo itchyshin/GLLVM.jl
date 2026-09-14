@@ -288,6 +288,10 @@ slice. No twin light Δ.
 | Missing responses (NA / mask) | implemented |
 | Missing predictor `mi()` | implemented |
 | Latent scores on covariates `latent(..., lv = ~ x)` ordinary | implemented |
+| Concurrent / constrained / RRR ordination (`num.lv.c` / `num.RR`) | implemented |
+| Quadratic response | implemented |
+| Mixed-family response vector | planned |
+| `@formula` / long+wide data (fixed effects) | implemented |
 
 **Missing predictor `mi()` (T13 receipt, DestB G4 2026-09-14).** Row was already
 `implemented` on `origin/main`; this pass **pins test evidence** after
@@ -314,10 +318,26 @@ true-parity map T13 drift audit (exports existed; receipt was implicit). Exports
 Destination B `FINAL-REVIEW`; not full gllvmTMB 0.7 parity. `@formula` / public
 R `mi()` keyword parity is a separate surface (change-control / twin lane).
 
-| Concurrent / constrained / RRR ordination (`num.lv.c` / `num.RR`) | implemented |
-| Quadratic response | implemented |
-| Mixed-family response vector | planned |
-| `@formula` / long+wide data (fixed effects) | implemented |
+**NB2 grouped-cov Wald at dispersion boundary (T14, DestB G5 2026-09-14).**
+Maintainer-approved fix set landed **2026-09-02** on `main`
+(`docs/dev-log/check-log.md` §T14; diagnosis
+`docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md`): **F3** bridge CI helper
+(`_bx_ci_max_absdiff`, agreed `Inf` not `NaN` poison); **F2** separate
+well-conditioned NB2 grouped-cov Wald cell + explicit seed-523 degenerate cell;
+**F1** `dispersion_boundary` on grouped NB/NB1/Beta/Gamma fits + per-parameter
+Wald degradation in `_family_wald` (`src/confint_family.jl`). Focused re-run
+this slice:
+
+| Test file | Pass / Total |
+|---|---|
+| `test/test_grouped_dispersion.jl` (incl. F1 boundary flag) | 20 / 20 |
+| `test/test_bridge_x.jl` (incl. F2/F3 NB2 Wald cells) | 192 / 192 |
+
+**Open sub-item (not blocking T14 closure):** no single seed gives the *old*
+3×70 default-shape fixture well-conditioned on **both** Julia 1.10 and 1.12
+(check-log 2026-09-02 F2 note); F2 uses a **different** well-conditioned DGP
+(`n = 200`, `nb_r = 2`, intercept 1.5). ≠ DestB FINAL-REVIEW; ≠ second-order
+parity certificate for all NB2+X cells.
 
 ## R bridge (`engine = "julia"`)
 

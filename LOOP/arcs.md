@@ -42,7 +42,7 @@ maintainer decision, out of scope here).
 | 17 | T8 — AGHQ gate-tier promotion | **paused** | closed as compatibility-tier-only 2026-09-05 unless owner promotes |
 | 18 | T11 — 38 API-alignment collisions, which are R-side defects | **blocked** | handed to the gllvmTMB lane |
 | 19 | T13 — capability-status.md `mi()` row drift (exported+tested but marked `planned`) | **done** | Receipt pinned 2026-09-14; row already `implemented` on main — `2026-09-14-destb-g4-t13-mi.md`, 57/57 tests |
-| 20 | T14 — NB2 second-order health (Wald NaN at degenerate optimum) | **next** | diagnosed 2026-09-02; needs F1/F2/F3 fix decision |
+| 20 | T14 — NB2 second-order health (Wald NaN at degenerate optimum) | **done** | F1+F2+F3 on main since 2026-09-02; DestB G5 receipt 2026-09-14 (`2026-09-14-destb-g5-t14-nb2-wald-nan.md`) |
 | 21 | T15 — single-seed knife-edge fixture audit | **next** | audit first, then decide per file |
 | 22 | Realistic-size grid (p≥20, n≥500) beyond the one pre-run cell | **blocked** | needs Totoro/DRAC compute allocation |
 | 23 | Real-data workflow acceptance (T7: `urbanisation_map` → `avian_trait_scales` → …) | **blocked** | needs gllvmTMB PR #1236 merged first |
