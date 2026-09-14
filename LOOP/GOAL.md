@@ -45,9 +45,10 @@ Programme complete enough for a **joint 0.7.0 decision** (proposal only — **no
 - [x] **Advisory Frozen R smoke** (**#323**) **scoped + Codex/Totoro handoff** (`2026-09-14-destb-g7-frozen-r-smoke-handoff.md`); **live run owed Codex** (D-139 before spend).
 - [x] **S4 recorder push** (G9) — gllvmTMB `97214679c` on origin; draft **#1283** (`2026-09-14-destb-g9-s4-recorder-push.md`).
 - [ ] **S4 probe** — **only** after second maintainer yes; **HELD** for `FINAL-REVIEW`.
-- [x] **G10 FINAL-REVIEW prep** — panel packet (`2026-09-14-destb-g10-final-review-prep.md`); **not** sign-off.
-- [ ] **`FINAL-REVIEW`**: Rose + Fisher sign-off on DestB-admitted rows + honest-0.7 programme fences (harness ≠ true parity).
-- [ ] **Joint decision markdown** (`docs/dev-log/decisions/…-joint-070-version-proposal.md`): evidence table attached; states (a) propose bump or (b) what remains — **`Project.toml` unchanged** in that PR.
+- [x] **G10 FINAL-REVIEW prep** — panel packet (`2026-09-14-destb-g10-final-review-prep.md`).
+- [x] **`FINAL-REVIEW`**: Rose + Fisher **PASS-WITH-CORRECTIONS** — [`2026-09-14-destb-final-review-panel.md`](../docs/dev-log/after-task/2026-09-14-destb-final-review-panel.md) (hygiene fixes on branch).
+- [x] **G11 stub** — joint version **proposal only** (`2026-09-14-destb-g11-joint-version-proposal-stub.md`); formal `docs/dev-log/decisions/…` still owed if promoting.
+- [ ] **Formal joint decision markdown** (optional promote from G11 stub) — **`Project.toml` unchanged** until separate maintainer act.
 
 **Explicitly N/A for this run:** `B1-RECOVERY` (G0 Q1).
 

@@ -1,6 +1,6 @@
 # Checkpoint — honest-0.7 Destination B (`/goal` scaffold)
 
-GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **G1–G7 + G10 prep done** on branch `cursor/honest-070-destb` (FINAL-REVIEW panel open).
+GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **G1–G11 stub + FINAL-REVIEW PASS-WITH-CORRECTIONS** on `cursor/honest-070-destb`; draft PR **#336**.
 
 **G0 (2026-09-14):** Q1 B1 limit **permanent** (B1-RECOVERY off) · Q2 S4 **push only** (probe deferred) · Q3 **Totoro first**, DRAC if campaign sized.
 
@@ -10,7 +10,7 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **G1–G7 + G10 prep 
 
 **ARC IN PROGRESS:** none.
 
-**NEXT:** **FINAL-REVIEW panel** (Rose+Fisher; use [`2026-09-14-destb-g10-final-review-prep.md`](../docs/dev-log/after-task/2026-09-14-destb-g10-final-review-prep.md)). **Then G11:** joint version proposal from prep §5 stub. **Parallel:** Codex #323 (D-139) · G9 S4 push (sibling lane OK) · optional **draft PR** for branch.
+**NEXT:** Maintainer — merge **draft PR #336** when ready (8/8 CI); **Codex #323** (D-139); **S4 probe** (second G0 yes). Optional: promote G11 stub → formal decision doc. **NOT:** version bump, S4 probe without yes, merge without maintainer.
 
 **OPEN GATES (need human):** merge/push (unless pre-auth branch push); **S4 probe** (second yes after fetch); **arc #24** version bump (forbidden in-programme); foreign-lane file overlap (D-87).
 
@@ -30,5 +30,5 @@ Rehydrate origin/main; Shannon preflight + lane_lease before non-LOOP edits.
 
 G0 (locked): B1 limit permanent (B1-RECOVERY off) · S4 push only (probe = second yes after fetch) · Totoro first for smoke/D-139
 
-CONTINUE FROM: FINAL-REVIEW panel → G11 decision note. Prep: docs/dev-log/after-task/2026-09-14-destb-g10-final-review-prep.md. STOP: Project.toml bump, S4 probe without second yes, gllvmTMB engine surgery, Totoro without D-139, merge without maintainer.
+CONTINUE FROM: draft PR #336 + open blockers (#323, S4 probe). Panel: docs/dev-log/after-task/2026-09-14-destb-final-review-panel.md. STOP: Project.toml bump, S4 probe without second yes, gllvmTMB engine surgery, Totoro without D-139, merge without maintainer.
 ```

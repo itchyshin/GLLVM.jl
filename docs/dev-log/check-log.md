@@ -1,3 +1,10 @@
+## 2026-09-14 — honest-070-destb Rose corrections + G11 stub (`cursor/honest-070-destb`)
+
+- Rose **PASS-WITH-CORRECTIONS** applied: T15 summary **8+3+6+1=18**;
+  G10 status banner cleaned; G11 stub
+  `2026-09-14-destb-g11-joint-version-proposal-stub.md` (T14 seed open, S4/#323
+  held). Pushed to draft PR **#336**. No merge; `Project.toml` `0.3.0`.
+
 ## 2026-09-14 — honest-070-destb G10 FINAL-REVIEW prep (`cursor/honest-070-destb`)
 
 - Panel packet (not sign-off):
