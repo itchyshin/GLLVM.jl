@@ -19658,3 +19658,11 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - After-task: `docs/dev-log/after-task/2026-09-14-destb-g2-capability-promotion.md`;
   LOOP GOAL G2 checked; checkpoint → **G4 T13**.
 - Docs-only; no push.
+
+## 2026-09-14 — honest-070-destb G4 T13 mi() receipt (`cursor/honest-070-destb`)
+
+- `Missing predictor mi()` already `implemented` on main; pinned **57/57** pass
+  across seven `test/test_missing_predictor*.jl` + `test/test_mi_fitter.jl`.
+- `docs/design/capability-status.md` T13 prose block; after-task
+  `docs/dev-log/after-task/2026-09-14-destb-g4-t13-mi.md`; LOOP arc #19 done.
+- Checkpoint → G5 T14. No push.
