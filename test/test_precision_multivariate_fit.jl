@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays, ForwardDiff, Random
+using GLLVM, Test, LinearAlgebra, SparseArrays, ForwardDiff, Random, StableRNGs
 
 function _pmvf_fixture()
     q = sparse([4.0 -1.0 -1.0 0.0;
@@ -25,7 +25,7 @@ end
 # one unique variance collapsed) is version-stable; the coarse interval
 # status is not.
 function _pmvf_boundary_unique_fixture()
-    rng = MersenneTwister(20260907)
+    rng = StableRNG(20260900)
     phy = PrecisionPhy(GLLVM.random_balanced_tree(16; branch_length = 0.35))
     d, n_tips, repeats = 3, phy.n_leaves, 6
     beta = [0.4, -0.3, 0.7]
