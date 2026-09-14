@@ -103,8 +103,8 @@ follows. They are single deterministic diagnostics, not a recovery campaign.
 | Binomial interior | `MersenneTwister(202609071)`; 10 groups × 4 observations, 20 trials, p=1 independent common grouping | fixed intercept, group variance/SD | identifiable grouped binomial curvature |
 | NB2 interior | `MersenneTwister(202609072)`; 10 groups × 4 observations, p=1 independent common grouping | fixed intercept, group variance/SD, NB2 size | identifiable grouped NB2 + dispersion curvature |
 | trait-Beta interior | `MersenneTwister(202609073)`; 10 groups × 4 observations, p=2 independent common grouping, true precisions 8/16 | both Beta precisions plus all primary targets | trait-fast vector family and per-trait curvature |
-| trait-NB2 boundary diagnostic | `MersenneTwister(202609074)`; 10 groups × 4 observations, p=2 independent common grouping, true sizes 5/12 | second NB2 size is deliberately unavailable | retained upper-size boundary diagnostic |
-| trait-NB2 interior | separately initialized `MersenneTwister(202609074)`; same 10 groups × 4 observations and grouping, true sizes 5/3 | both NB2 sizes plus all primary targets | trait-fast vector family and per-trait curvature away from the upper-size boundary |
+| trait-NB2 boundary diagnostic | `StableRNG(202609091)`; 10 groups × 4 observations, p=2 independent common grouping, true sizes 5/12 | second NB2 size is deliberately unavailable; fit-level FD Hessian PD sign is a BLAS knife-edge | retained upper-size boundary diagnostic |
+| trait-NB2 interior | separately initialized `StableRNG(202609091)`; same 10 groups × 4 observations and grouping, true sizes 5/3 | both NB2 sizes plus all primary targets | trait-fast vector family and per-trait curvature away from the upper-size boundary |
 | all-four structure | fixed p=2, n=8 labels and factors for unit/unit_obs/cluster/cluster2 | exact sparse `W` equality | all selected sources remain one concatenated global design |
 | objective bridge | fixed p=1 Poisson coordinates | exact equality to a separately constructed `joint_grouped_laplace_loglik` call | outer objective does not alter a successful inner result |
 
@@ -128,8 +128,12 @@ The original p=2 NB2 size-5/12 draw is retained rather than tuned away.  It
 converged with an `:ok` inner mode but its second size ran to
 `log_r[2] = 20.534712052952347` (`r[2] = 8.281559607055352e8`); the observed
 finite-difference Hessian had a near-zero eigenvalue
-`-3.745318692758868e-15`.  Its partial interval is therefore an honest
-boundary diagnostic, not an inner-solver failure.  The separately named
+`-3.745318692758868e-15` on macOS OpenBLAS; the same frozen `Y` can report a
+barely positive least eigenvalue on Linux CI OpenBLAS Julia 1.10, so tests
+assert finiteness of that eigenvalue rather than its sign.  Its marginal
+interval coarse status is another knife-edge (`:partial` vs
+`:invalid_curvature`); the invariant is that `nb2_size[2]` is never reported
+`:available`.  The separately named
 size-5/3 draw changes only the generating geometry, retains the design and
 seed, and is the bounded interior diagnostic. Neither draw is recovery or
 coverage evidence.

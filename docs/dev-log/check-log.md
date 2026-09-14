@@ -1,3 +1,14 @@
+## 2026-09-13 — grouped NB2 boundary fit-level Hessian knife-edge (PR #318)
+
+- CI Julia 1.10/Linux failed `test/test_grouped_nongaussian_fit.jl` at the
+  trait-NB2 boundary fixture: `!hessian_positive_definite` (Linux OpenBLAS PD)
+  and (on an earlier commit) `status == :partial` vs `:invalid_curvature`.
+- Test now asserts `isfinite(hessian_min_eigenvalue)` at that boundary and
+  documents the BLAS sign knife-edge; interval invariant remains
+  `nb2_size[2]` never `:available`. Decision note updated.
+- `julia --project=test -e 'include("test/test_grouped_nongaussian_fit.jl")'`
+  → 63/63 pass (~14 s).
+
 ## 2026-09-07 — A4/S4 source-attested raw frozen-R receipt (unqualified)
 
 - Fresh R-only runner `run_a4_s4_frozen_r_raw.R` validates the exact frozen
