@@ -1,12 +1,12 @@
 # Checkpoint — honest-0.7 parity programme (2026-09-14)
 
-- **origin/main HEAD:** `f110bf3e` (arc **#329** spatial × dep fail-loud; prior **#327** @ `5e4f38b` animal × latent; **#326** LOOP tick @ `b6e6dfcb`)
+- **origin/main HEAD:** `b2956e83` (LOOP tick post–#329/#330; arc **#329** spatial × dep merged)
 - **PR #318:** **MERGED** · **PR #321:** **MERGED** · **PR #324:** **MERGED** · **PR #325:** **MERGED** · **PR #326:** **MERGED** · **PR #327:** **MERGED** · **PR #329:** **MERGED**
 - **Post-#327 CI (Julia):** [`34818578019`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34818578019) on `5e4f38b` — **8/8 PASS** (advisory Frozen R red, non-blocking)
-- **Post-#329 CI:** [`34823285459`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34823285459) on `f110bf3e` — poll for 8/8 Julia + Documenter **PASS**
+- **Post-#329 CI:** [`34823285459`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34823285459) on `f110bf3e` — **8/8 Julia + Documenter PASS** (2026-09-14)
 - **Advisory Frozen R:** non-blocking on #318/#324/#325/#327/#329 pattern; OWED **#323**
-- **Active slice:** arc **#13** `kernel_indep()` — capability row still **`planned`** (kernel row #13–15 all absent)
-- **RESUME:** `kernel_indep()` Arc 0 fail-loud or fitter (#13) or maintainer pick among #13–15
+- **Active slice:** arc **#13** `kernel_indep()` — branch `cursor/kernel-indep-070-20260914` (Gaussian `SourceCovariance` wrapper)
+- **RESUME:** open draft PR for #13 → merge → `#14` `kernel_dep()` or maintainer pick
 
 ---
 
