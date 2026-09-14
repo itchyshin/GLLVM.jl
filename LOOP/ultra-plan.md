@@ -1,184 +1,119 @@
-# 🎯 GOAL — Destination B frozen-0.7.0: get the G0 question right, then stop
+# Ultra-plan — honest-0.7 parity programme
 
-| Field | Value |
+**Written:** 2026-09-13. **Author:** Ada (Cursor lane), while Shinichi is away.
+**Branch:** `cursor/gllvm-07-parity-programme-20260913` (fresh from `origin/main` @ `57ff35c5`).
+
+## 0. Why this programme exists
+
+Shinichi's instruction: **do not bump `GLLVM.jl` to 0.7 yet.** Build the durable programme to
+*earn* honest 0.7.0 parity with frozen `gllvmTMB` 0.7.0 (0.7.1 only later if warranted). Versions
+are independent (vault D-183's convention, which DRM.jl explicitly names as "the GLLVM.jl↔gllvmTMB
+convention": the version number communicates *parity level*, earned by evidence, not a race with
+the twin's release calendar). `GLLVM.jl`'s `Project.toml` reads `0.3.0` today and stays there until
+a separate, later, maintainer-gated arc.
+
+This slice does three things: (1) reads the current Destination B (DestB) numerical-parity
+programme state — most of which lives only on the unmerged PR
+[#318](https://github.com/itchyshin/GLLVM.jl/pull/318) — without touching it; (2) reads the
+covariance-grid and second-order gaps already recorded on `main`; (3) turns both into a ranked,
+durable arc list so the next agent (after #318's fix agent lands green CI) knows exactly what to
+pick up, in what order, and why.
+
+## 1. Evidence gathered (method: graft-first, read-only)
+
+| Source | What it says |
 |---|---|
-| **Solo platform** | Cursor (Ada), read-only planning. One lane: `destination-b-plan-20260913`. |
-| **Deliverable** | This plan, plus one decision from Shinichi. Nothing else is produced today. |
-| **HEADLINE** | The handover's owed step — *"ask for G0 to create the Unlazy acceptance ledger"* — **cannot be asked as written**: a Destination B G0 authorisation already exists (2026-09-08) and a Destination B acceptance ledger already exists (`.unlazy/destination-b-programme/GATES.md`, 8 gates, all pending). The honest ask is narrower: *which* ledger, and does the 2026-09-08 authority carry into the re-scoped frozen-0.7.0 gate numbering. |
-| **IN PARALLEL** | Nothing. This is a single decision, not a campaign. |
-| **DEFER** | All numerical work (B1 marginal curvature, S4 probe, any fit/optimizer/R/TMB call), G1 audit, G2–G7, FRK, 0.7.1, coverage campaigns, releases, registration, pushes, vault writes. |
-| **DISCIPLINE** | Static/read-only until an explicit, fresh maintainer decision. The B1 HOLD JSON is never staged, edited, deleted, or retried. The frozen oracle is `gllvmTMB` 0.7.0 `b4d5fee64def88bc768dda1f1f77c29b295edd86`; the dirty live 0.7.1 checkout is not an oracle. |
+| `docs/design/capability-status.md` (main) | Covariance grid: 7/15 cells `planned` (`phylo_dep`, `animal_dep`, `animal_latent`, `spatial_dep`, `kernel_indep/dep/latent`). Response families: 1 `missing` (multinomial/categorical, deliberately, with a fenced FE-only parity Δ). Model structure: random slopes `(1+x|g)` marked 🔨 in-progress. |
+| `docs/src/gllvmtmb-parity.md` (main) | Parity is explicitly **harness parity, not true parity**. Second-order programme: **NOT DONE** — only a 5-cell toy pre-run (3 pass/2 blocked on θ-map). No realistic-size (p≥20,n≥500) receipts of either order. Qualification claim is **one-directional** (R workflows→Julia); the reverse gap is a tool-produced list (`tools/parity_ledger.py`: FORWARD=77, REVERSE=85 at the frozen oracle), a record not an obligation. |
+| `docs/dev-log/core070/true-parity-decision-map.md` (main) | 7-point destination definition for "true parity". §Not yet specified: T5, T8, T11–T15 open. §Out of scope: two-directional claim, 0.7.1 re-freeze now, fitted/predict/residuals as a gate, formula-grammar R-only surface, spatial/slopes before phylo transport, interval-coverage certification. |
+| PR #318 (`codex/destination-b-b1-integration-20260910`, read via `git fetch` + `git show FETCH_HEAD:…`, **not merged/checked out**) | Carries `docs/dev-log/2026-09-13-destination-b-g1-audit-matrix.md` (16 DONE / 7 OWED / 4 RETRACTED / 1 PROTECTED across B1/S3b/S4) and `-g2-closeout.md` (B1 → `CLOSED — INTERFACE LIMIT`; S3b consumer → qualified, adapter/test-scope only; S4 → `HELD`). CI is **currently red**: 7/10 checks fail, 8 test files with genuine Hessian-PD/curvature defects never exercised by CI before today (`Julia 1`/`Julia 1.10` shards 1–3; only shard 4 + Documenter pass). One unrelated `test_cv.jl:145` flake also fails independently on `main`'s own tip. |
+| `docs/dev-log/decisions/destination-b-scope-reconciliation.md` (on #318) | The formal DestB scope is exactly 32 rows: A1–A15, B1–B4, C1–C5, D1–D8 (`node tools/destination_b_scope_check.mjs` verifies identity, not implementation). |
+| `docs/dev-log/after-task/2026-09-13-destination-b-beyond-slice.md` (main, PR #319) | Confirms none of the DestB ledger/matrix content is on `main` yet; PR #318's merge attempt is the source of the CI-red finding above. |
+| vault `DECISIONS.md` D-183 | DRM.jl versioning entry, which explicitly names and adopts "the GLLVM.jl↔gllvmTMB convention: the version communicates parity level with the R twin" — the citation for "versions independent" in this programme's own decision note. |
 
-**PLATFORM: cursor | ON BRANCH: codex/destination-b-b1-integration-20260910 | LANE: destination-b-plan-20260913 | OTHER LANES: cursor+#314**
+## 2. Gap inventory — ranked DONE / NEXT / BLOCKED
 
-**Scope fence set by Shinichi, 2026-09-13 (binding):** this lane is **Destination B only**. The
-GLLVM twin multi-agent test campaign (Grok Bot / DRM-shape testers) is **his own separate lane** and is
-deliberately absent from this plan — no roles, no Mission Control, no burn compute menu here.
+### DONE (evidence exists; not yet on `main` because it rides on unmerged #318)
 
----
+1. **B1 marginal-curvature** — `CLOSED — INTERFACE LIMIT`. Two independent out-of-pipeline
+   `TMB::MakeADFun` reconstructions against the frozen 0.7.0 binding both failed before
+   `obj$fn()`/`sdreport()` — a rebuild-outside-the-pipeline limitation, not a GLLVM.jl curvature
+   or singularity verdict. Both HOLD JSON receipts retained as honest FAILED artifacts.
+2. **S3b R `phylo_rr` adapter-consumer** — `test/test_destination_b_adapter_consumer.jl` 97/97
+   pass against frozen-R fixtures (tree, pedigree-with-ancestors, dense-`vcv`). Narrowly fenced:
+   this is adapter/test-scope evidence, **not** B1 Wald inference, **not** full DestB, **not** S4.
+3. **G1 static audit matrix** — 16 DONE items across B1/S3b/S4 (grouping-term vocabulary fixed,
+   bridge dispatch entry point verified, rank-reduced df formulas symbolically aligned, S4 target
+   formula locked in a validator, acceptance boundary documented as closed/private/non-public).
 
-## Phase 0 receipts (evidence-first; pasted, not summarised from memory)
+### NEXT (ranked; the 5 handed to whoever picks this up after #318 is green — see §3 below)
 
-| Check | Result |
-|---|---|
-| Worktree / branch / tip | `/private/tmp/destination-b-b1-integration-20260910`, `codex/destination-b-b1-integration-20260910`, tip **`b24ffb09`** — matches the handover. |
-| Drift | `ahead 86, behind 4` of `origin/main`. (Handover said 85; one commit is the handover itself.) |
-| Working tree | Exactly one untracked file: the **protected B1 HOLD JSON**. Nothing else dirty. |
-| Lane pre-flight | `lane_preflight.sh` verdict: **FOREIGN LANE ACTIVE (cursor)** — open PR **#314** `cursor/codex-handover-20260907`. Lane census: 2 lanes live. Lane taken here: `destination-b-plan-20260913`, touching only the plan file below. No bleed into #314. |
-| Platform note | `lane_preflight.sh` printed `ME : claude` from the runtime, while this session is Cursor. Recorded as a **tool/runtime mismatch**, not evidence about who is editing; treat the PLATFORM line above as authoritative for this lane. |
-| Coordination board | `docs/dev-log/coordination-board.md` is committed to `origin/main` (so it does reach other lanes), but its Active-Lane-Split's newest row is **2026-08-17**. **Destination B has no row on the board** (`rg -i "destination b"` → zero hits). See Finding F3. |
-| Design numbers | No duplicate slots; next free = 74. Nothing allocated by this plan. |
-| Lease | Granted paths were `docs/dev-log/handover/`, `docs/dev-log/core070/destination-b-b1/`, `.unlazy/`. This plan writes to `docs/dev-log/plans/` under **Shinichi's explicit instruction this turn**, which extends the lease to that one file. Declared rather than assumed. |
+4. Fix #318's CI-red 8 test files (Hessian-PD/curvature defects) — **owned by the #318 fix agent**,
+   not this lane; ranked #1 for them because nothing else in DestB can land on `main` until this
+   clears.
+5. Promote #318's G1/G2 docs + ledger reconciliation onto `main` once green (either via #318 itself
+   or a clean docs-only split, per the 2026-09-13 after-task's own recommendation).
+6. Covariance-grid gaps — 7 `planned` cells: `phylo_dep()`, `animal_dep()`, `animal_latent()`,
+   `spatial_dep()`, `kernel_indep()`, `kernel_dep()`, `kernel_latent()`. None has a Julia engine
+   yet. Rank by twin-user demand: `phylo_dep` and `animal_latent` are the two most likely to be
+   asked for next (phylogenetic/animal-model users already have `indep`/`latent` on the same
+   source; `dep` completes the row). Kernel row (Design 65) is a clean three-cell unit since
+   `kernel_indep` alone would need the same dense-K plumbing as `kernel_dep`/`kernel_latent`.
+7. `B1-RECOVERY` (Monte-Carlo recovery evidence for the grouping curvature contract) — needs a
+   pre-run + compute estimate (D-139 discipline) + Totoro/DRAC placement before it can start.
+   Downstream of #318 landing.
+8. S4 rehydration — two barriers, either one enough to block: (a) no fresh maintainer
+   authorisation for the probe itself; (b) the recorder object `97214679c94cc4a6b9e02d3c2b03ccce516027d8`
+   is an **unpushed** commit in the sibling `gllvmTMB` checkout (branch
+   `codex/destination-b-s4-phylo-dep-formula-20260910`) — physically unreachable from any
+   GLLVM.jl worktree until that branch is pushed to a gllvmTMB remote. Coordinate with the
+   gllvmTMB lane to push it, *then* seek authorisation — do not seek authorisation for a probe
+   that cannot physically run yet.
+9. `API-BOUNDARY` and `FINAL-REVIEW` rows (32-row DestB scope) — named in the #318 G2 closeout as
+   completely untouched. `FINAL-REVIEW` is, by design, the last gate — do not start it before
+   everything above is closed or dispositioned.
+10. Second-order programme gaps (`true-parity-decision-map.md` T5/T13/T14/T15) — smaller, more
+    mechanical than the DestB numerical gates: T13 (flip `mi()` row to `implemented` with a pasted
+    receipt) and T14 (NB2 Wald-NaN F1/F2/F3 fix decision) are both single-decision, bounded tasks.
+11. Realistic-size grid + real-data workflow acceptance (T4/T7 in the decision map) — both
+    **CLOSED at Ada-default** already (grid: Gaussian/Poisson/NB2 at p∈{20,50}, n∈{500,2000} on
+    Totoro; workflow order: `urbanisation_map` → `avian_trait_scales` → …) but **execution is
+    blocked** on gllvmTMB PR #1236 merging first for the real-data leg, and on Totoro compute
+    allocation for the size grid.
 
-### Prior-work sweep (Phase 0.25 — receipt, not a claim)
+### BLOCKED (named, cannot proceed without an external unblock)
 
-This is where the plan changed shape. Searched the worktree's `docs/dev-log/plans/`,
-`docs/dev-log/decisions/`, and `.unlazy/` before designing anything:
+12. **S4 probe** — blocked as in #8 above; do not attempt.
+13. **0.7.1 re-freeze of the oracle** — blocked by design until the second-order contract lands
+    (T2 decision); the ψ→ψ² fix touches derived CIs only, not the frozen first-order oracle.
+14. **Two invalid realistic-size pairs** carried over from the CLAUDE.md snapshot — need an
+    R-driver re-run with the seed named in the filename; not started.
+15. **T11** (38 API-alignment collisions, which are R-side defects) — handed to the gllvmTMB lane;
+    not this repo's action item.
+16. **`Project.toml` version bump** — forbidden in this programme by explicit instruction; the
+    final gated arc, requiring a maintainer go, sequenced after every item above.
 
-| Artifact found | What it already contains |
-|---|---|
-| `docs/dev-log/plans/2026-09-08-destination-b-g0-decision-packet.md` | A full G0 decision packet, marked **`RESOLVED 2026-09-08`**. |
-| `docs/dev-log/decisions/2026-09-08-destination-b-g0-authorisation.md` | A **maintainer G0 authorisation receipt** binding five lines: B1 grouping (full programme, prior `unit` checkpoint is source-alignment only), S3b as R bridge adapter only, S4 Gaussian paired validation *after* the S3b consumer works, dense `vcv` under the R-ridged-once contract, FRK parked at `gllvmTMB#1275`. |
-| `.unlazy/destination-b-programme/GATES.md` | **An existing Destination B acceptance ledger**: 8 gates — `G0-SCOPE`, `B1-JOINT-STATIONARY`, `B1-JOINT-PAIR`, `B1-RECOVERY`, `S3B-CONSUMER`, `S4-PUBLIC-FORMULA`, `API-BOUNDARY`, `FINAL-REVIEW`. **All 8 unchecked/pending.** |
-| `.unlazy/destination-b-b1-stationary-reference/GATES.md` | A narrower B1 stationary-reference ledger with **passing** `[x]` gates (G1 retained-receipt test under Julia, G2 write-once refusal). |
-| `.unlazy/b1-balanced-complete-crossed-pre-run/GATES.md`, `.unlazy/totoro-t4-p6-grid/GATES.md`, `.unlazy/GATES.md` | Three further ledger scopes, incl. a root-level one for the **fixed-coordinate** curvature protocol. |
-| `docs/dev-log/decisions/destination-b-scope-reconciliation.md` | The row count is **32** enumerated rows (A1–A15, B1–B4, C1–C5, D1–D8). The historical "42" is a sign-off prose artefact that **added no row**. Checker: `node tools/destination_b_scope_check.mjs`. |
-| `test/` + `tools/` | **Two** B1 curvature protocol pairs coexist: `*_fixed_coordinate_curvature_protocol.{jl}` and `*_fixed_point_marginal_curvature_protocol.{jl}`. The handover's safe-check commands name the **fixed_point_marginal** pair; the root `.unlazy/GATES.md` gates the **fixed_coordinate** pair. |
+## 3. Ranked next 5 arcs (for the fix/merge agent, after #318's CI is green)
 
-`.unlazy/` is `.gitignore`d (lines 19–20), so no ledger work churns the tree — that precondition is already satisfied.
+1. **Merge #318** once its 8 test files pass CI, then promote the DestB G1/G2 record onto `main`
+   (arc #4/#5 above) — this is the single highest-leverage unblock; almost everything else in
+   DestB is either downstream of it or currently unreadable from `main`.
+2. **Covariance-grid: build `phylo_dep()`** — the most-requested `planned` cell (completes the
+   phylogenetic row alongside the existing `phylo_indep`/`phylo_latent`); needs a simulation
+   recovery test per the repo's family-addition rule.
+3. **B1-RECOVERY pre-run** — size and cost it (D-139), then run on Totoro/DRAC once #1 lands.
+4. **S4 rehydration coordination** — cross-repo ask to the gllvmTMB lane: push
+   `codex/destination-b-s4-phylo-dep-formula-20260910` to a remote so the recorder object becomes
+   fetchable; only then is a fresh S4 authorisation request meaningful.
+5. **Covariance-grid: build `animal_latent()` + `kernel_{indep,dep,latent}`** — the remaining
+   4 `planned` cells (animal_latent, kernel row); kernel row is a clean 3-cell unit (Design 65
+   dense-K plumbing shared across all three).
 
----
+## 4. What this slice explicitly did NOT do
 
-## Phase 0.6 — Route check (written, mandatory)
-
-1. **Destination in one sentence?** Yes: *the frozen-0.7.0 Destination B programme has exactly one authoritative acceptance ledger whose scope, oracle, protected files and exclusions are locked and reviewed, with G1 not started and no numerical event performed.* That is an end state.
-2. **Do two or more slices say "depends what we decide"?** **Yes.** Whether to create a new ledger or re-scope the existing `destination-b-programme` one; and whether the 2026-09-08 authorisation already *is* the G0 the handover is asking for, or whether the revised G0–G7 numbering created a second, different G0.
-3. **Can every slice name its output as a real file path?** **No.** The ledger's own path is unknown until (2) is answered — a new `.unlazy/<scope>/GATES.md` versus an edit to the existing one.
-
-**Verdict: the decision map fires.** Phase 1 slice decomposition waits. Two of three checks failed, and the failure is not a gap in my reading — it is a genuine unresolved authority question. A slice list written today would be a decision wearing a slice's clothes.
-
----
-
-## A. What we need to do now
-
-- **Resolve one ambiguity, then stop.** The single owed action is a maintainer decision on the shape of G0 (below). Everything else in the programme is downstream of it.
-- **Do not re-ask for authority that already exists.** The 2026-09-08 receipt already authorises the B1/S3b/S4/dense-`vcv`/FRK *lines*. Asking "may I start Destination B?" again would be noise; asking "does that receipt cover the re-scoped frozen-0.7.0 gate ladder?" is the real question.
-- **Do not create a second ledger by reflex.** `.unlazy/destination-b-programme/GATES.md` exists with 8 pending gates. Creating a parallel frozen-0.7.0 ledger without a decision produces two ledgers for one programme — the failure mode the acceptance ledger exists to prevent.
-- **Blocked by authority (unchanged, no fresh approval today):** capture materialization, B1 marginal-curvature evaluation, S4 probe, any fit/optimizer/retry, any R/TMB call, any recovery campaign.
-- **Blocked by object availability:** the S4 recorder `97214679c` is **absent from this object database**. S4 cannot be touched from this worktree at all until its owning lane is rehydrated — that is a physical blocker, not a permission one.
-- **Optional cheap hygiene, not owed:** Destination B is invisible on the coordination board (F3). One board row would fix it. It is a separate concern and a separate commit if he wants it.
-
----
-
-## Findings of record (this plan's actual contribution)
-
-**F1 — "G0" now names two different things.** The 2026-09-08 authorisation answered a *scope-authority* G0 (which programme lines may open). The 2026-09-12 handover proposes a *gate-ladder* G0 (create the acceptance ledger) inside a revised G0–G7 sequence. Both are called G0. Any approval given without separating them will be ambiguous later — which is exactly how a lane ends up believing it has numerical authority it never received.
-
-**F2 — the acceptance ledger is not missing.** The handover's step 3 reads as greenfield work. It is not: an 8-gate Destination B programme ledger exists, plus three narrower scopes, one of which has passing gates. The owed work is therefore **reconcile-or-re-scope**, which is a smaller and differently shaped job than "create".
-
-**F3 — Destination B is absent from the cross-lane entrypoint.** The handover names the coordination board as the entrypoint, and the board is correctly committed to `origin/main`, but it carries no Destination B row and stops at 2026-08-17. A sibling lane rehydrating from the board today would not learn this programme exists.
-
-**F4 — two B1 curvature protocol pairs coexist.** `fixed_coordinate` and `fixed_point_marginal`. The handover's safe checks and the root `.unlazy/GATES.md` point at *different* ones. Before any G1 audit cites "the B1 static contract (22/22)", the audit must say **which pair** it verified. Not a defect; an under-specification that would silently mis-attribute evidence.
-
-None of F1–F4 is a numerical finding, and none of them changes the evidence status of any Destination B row.
-
----
-
-## B. Decision map
-
-### Destination
-
-When this is done: the frozen-0.7.0 Destination B programme has **one** authoritative acceptance ledger; its scope (the 32 reconciled rows), its frozen oracle (`b4d5fee6…`), its protected files (the B1 HOLD JSON, `.unlazy/**`, the `AGENTS.md` snapshot, sibling lanes) and its exclusions (0.7.1, FRK, coverage, release, registration, push) are written down and reviewed; and **G1 has not started**. No fit has run, no capability has been promoted, no claim has moved.
-
-### Decisions so far (settled — do not reopen)
-
-| Decision | Source |
-|---|---|
-| Frozen oracle is `gllvmTMB` 0.7.0 `b4d5fee64def88bc768dda1f1f77c29b295edd86`; live 0.7.1 is dirty and not interchangeable evidence. | handover + scope reconciliation |
-| Scope is **32** enumerated rows (A1–A15, B1–B4, C1–C5, D1–D8); the "42" is prose, not rows. | `destination-b-scope-reconciliation.md` |
-| B1 grouping, S3b (adapter only), S4 (after S3b consumer), dense `vcv` (R-ridged-once, no independent Julia inversion) are **authorised lines**; FRK is **parked**. | `2026-09-08-destination-b-g0-authorisation.md` |
-| Public wording stays "experimental partial R-to-Julia bridge, not 0.7 parity". | same |
-| The B1 HOLD JSON's `obj$he(theta_star)` error is an **interface limitation** — not a singularity verdict, not a curvature result, and not Wald inference. | handover |
-| S4's earlier stop is **diagnostic retention only**, not phylogenetic parity. | handover |
-| No push, merge, release, registry action by default. | D-220 + handover |
-
-### Not yet specified (the fog — what Shinichi must settle)
-
-1. **Which G0 is being asked for?** Does the 2026-09-08 scope authorisation already satisfy the handover's gate-ladder G0, or is a fresh, separately-recorded ledger gate wanted? (**F1**)
-2. **One ledger or two?** Re-scope/annotate the existing `.unlazy/destination-b-programme/GATES.md` to the frozen-0.7.0 framing, or open a new sibling scope and mark the old one superseded? (**F2**)
-3. **Does the ledger get a repo-visible record?** `.unlazy/` is gitignored, so a ledger-only G0 leaves **no committed trace**. Does he want an accompanying committed decision note, or is the ignored ledger sufficient?
-4. **Board row now or later?** (**F3**)
-5. **Which B1 protocol pair is canonical** for evidence citation? (**F4**) — answerable at G1, not needed for G0.
-
-### Out of scope (with reasons)
-
-| Excluded | Reason |
-|---|---|
-| GLLVM twin multi-agent test campaign, Grok Bot roles, testing Mission Control, burn compute menu | Shinichi's own separate lane, binding instruction 2026-09-13. Not this lane's business. |
-| Any numerical B1 / S4 event | Requires its own fresh, explicit decision each time. |
-| G1 audit and G2–G7 | Downstream of the G0 answer. |
-| FRK | Parked at `gllvmTMB#1275`. |
-| 0.7.1, releases, registration, coverage certification, generic bridge admission | Explicitly excluded by the authorisation's retained limits. |
-| Pushes, merges, PR #314 files | No authority; foreign lane. |
-| Vault writes | Not authorised. **FINDINGS-OF-RECORD: none.** |
-| Editing the `AGENTS.md` snapshot pointer | Multi-lane rule: would orphan sibling handovers. |
-
----
-
-## C. Gates — two, named distinctly
-
-### Gate **Plan-G0** (this plan)
-Shinichi answers fog items 1–3. That is all. Approving this plan is **not** approving Destination B numerical work, and **not** the same event as the 2026-09-08 authorisation.
-
-### Gate **DestB-G0(frozen)** (the programme's ledger gate)
-Only if Plan-G0 says yes: do the static ledger work below, then **STOP for review before G1**.
-
-Explicitly *not* granted by either gate: capture materialization, `obj$fn`/`sdreport` evaluation, S4 probe, any fit, optimizer, retry, R/TMB call, `Pkg.test()`, or recovery campaign.
-
----
-
-## D. Conditional slices (do not start — these run only after Plan-G0 **and** DestB-G0)
-
-All three are static, single-session, and together estimated at **under one working day** (consistent with the handover's estimate). Bar column per Cursor two-bar hygiene.
-
-| # | Slice | Output path | Bar / model | Gate |
-|---|---|---|---|---|
-| **S1** | Reconcile the ledger: read the existing 8 gates against the frozen-0.7.0 framing; either annotate in place or open one new scope and mark the old superseded. Lock oracle SHA, the 32-row scope, protected files, exclusions. | `.unlazy/destination-b-programme/GATES.md` (re-scope) **or** `.unlazy/destination-b-frozen070/GATES.md` (new) — **path chosen by fog item 2, not by me** | Cursor Models (Composer) — mechanical, bounded | DestB-G0 |
-| **S2** | If fog item 3 says yes: one committed decision note recording what the ledger locks, so the gitignored ledger has a repo-visible counterpart. | `docs/dev-log/decisions/2026-09-13-destination-b-frozen070-ledger-lock.md` | Cursor Models | DestB-G0 |
-| **S3** | Close the slice: check-log entry + after-task report; declare the untracked HOLD and the ignored ledger in the landing state. | `docs/dev-log/check-log.md`, `docs/dev-log/after-task/2026-09-13-destination-b-frozen070-g0.md` | Cursor Models | DestB-G0 |
-
-**Draft ledger path listing only** (paths named so he can see the shape; **no file created, no gate written, no content authored today**):
-
-```text
-.unlazy/destination-b-programme/GATES.md            # EXISTS — 8 pending gates, candidate for re-scope
-.unlazy/destination-b-frozen070/GATES.md            # CANDIDATE new scope (only if he picks "new")
-.unlazy/destination-b-frozen070/gates/leaf-g0.md    # CANDIDATE leaf, CHECK/EXPECT form
-```
-
-Verification at S1 close would be the portable re-verify, not `--status`:
-
-```sh
-node ~/shinichi-brain/skills/unlazy/scripts/gate-check.mjs --reverify .unlazy/<scope>/gates/leaf-g0.md
-```
-
-Static safe checks available at G0 time (from the handover; **not run by this plan**), with F4's
-which-pair ambiguity resolved first:
-
-```sh
-julia --startup-file=no --history-file=no --project=. test/test_b1_fixed_point_marginal_curvature_protocol.jl
-julia --startup-file=no --history-file=no --project=. tools/verify_b1_fixed_point_marginal_curvature_protocol.jl
-git diff --check
-node tools/destination_b_scope_check.mjs
-```
-
----
-
-## Landing state of this plan
-
-| Artifact | Committed | Pushed | State |
-|---|---:|---:|---|
-| `docs/dev-log/plans/2026-09-13-destination-b-g0-ultraplan.md` | no | no | **UNTRACKED / DECLARED** — written under explicit instruction; not staged, because no commit was requested. |
-| `docs/dev-log/core070/destination-b-b1/fixed-coordinate-curvature-diagnostic-20260910.json` | no | no | **PROTECTED HOLD — untouched by this session.** Never stage, edit, delete, or retry. |
-| Everything else | — | — | Unchanged. No numerical event occurred. No claim moved. |
-
-**STOP. Awaiting Plan-G0.**
+- Did not touch #318's failing test/engine files or any `src/` engine code.
+- Did not run the S4 probe or seek its authorisation.
+- Did not bump `Project.toml`.
+- Did not merge, mark-ready, or push to `main`.
+- Did not build any new covariance-grid engine code — that is arc #2/#5 above, sequenced after
+  this docs/gap-inventory slice, with its own tests.
