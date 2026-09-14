@@ -19648,3 +19648,13 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Folded prior LOOP commits (`cursor/loop-post-334`: #15 done, G0 GOAL scaffold).
 - Not run: `Pkg.test()`, Totoro, S4 push/probe, capability-status promotion (G2).
 - No push / merge (maintainer gate).
+
+## 2026-09-14 — honest-070-destb G2 capability promotion (`cursor/honest-070-destb`)
+
+- Lease: `cursor:honest-070-destb` on `docs/design/capability-status.md`, `LOOP/`, `docs/dev-log/`.
+- Updated `docs/design/capability-status.md`: seven honest-0.7 Arc 0 cells (#324–#334);
+  six → `implemented (Arc 0 Gaussian function API only)`; spatial × dep →
+  `planned (Arc 0 fail-loud entry only)`.
+- After-task: `docs/dev-log/after-task/2026-09-14-destb-g2-capability-promotion.md`;
+  LOOP GOAL G2 checked; checkpoint → **G4 T13**.
+- Docs-only; no push.
