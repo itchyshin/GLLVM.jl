@@ -19674,3 +19674,12 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Tests: `test/test_grouped_dispersion.jl` **20/20**; `test/test_bridge_x.jl` **192/192**.
 - `capability-status.md`: T14 prose + repaired random-capabilities table; LOOP arc #20 done.
 - Next: G6 T15. No push.
+
+## 2026-09-14 — honest-070-destb G6 T15 knife-edge audit (`cursor/honest-070-destb`)
+
+- List-first audit: **18** fixtures in
+  `docs/dev-log/after-task/2026-09-14-destb-g6-t15-knife-edge.md` (11 keep, 4
+  keep+document, 4 document BLAS/boundary class, 1 historical retarget); **0**
+  test/engine edits.
+- `capability-status.md` T15 pointer; LOOP arc #21 done. Next: **G7** #323 smoke.
+- No push.
