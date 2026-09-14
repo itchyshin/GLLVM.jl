@@ -22,15 +22,15 @@ silently dropped.
 
 | # | cell | status | gate? |
 |---|------|--------|-------|
-| 9 | `phylo_dep()` | **done** | `planned` — #324 @ `806b5476`; Arc 0 `fit_phylo_dep_gllvm` on `main`; ledger row unchanged until Rose/promotion |
-| 10 | `animal_dep()` | **done** | `planned` — #325 @ `1ef979f`; Arc 0 `fit_animal_dep_gllvm` on `main`; ledger row unchanged until Rose/promotion |
-| 11 | `animal_latent()` | **done** | `planned` — #327 @ `5e4f38b`; Arc 0 `fit_animal_latent_gllvm` on `main`; ledger row unchanged until Rose/promotion |
-| 12 | `spatial_dep()` | **done** | `planned` — #329 @ `f110bf3`; Arc 0 fail-loud admission on `main`; ledger row unchanged until Rose/promotion |
-| 13 | `kernel_indep()` | **done** | `planned` — #331 @ `5e9bfcd4`; Arc 0 `fit_kernel_indep_gllvm` on `main`; ledger unchanged until Rose/promotion |
-| 14 | `kernel_dep()` | **done** | `planned` — #333 @ `c6f8233b`; Arc 0 `fit_kernel_dep_gllvm` on `main`; ledger unchanged until Rose/promotion |
-| 15 | `kernel_latent()` | **done** | `planned` — #334 @ `9cb279e5`; Arc 0 `fit_kernel_latent_gllvm` on `main`; ledger unchanged until Rose/promotion |
+| 9 | `phylo_dep()` | **done** | Arc 0 Gaussian API — G2 `implemented (Arc 0 …)` in capability-status (#324) |
+| 10 | `animal_dep()` | **done** | Arc 0 Gaussian API — G2 promoted (#325) |
+| 11 | `animal_latent()` | **done** | Arc 0 Gaussian API — G2 promoted (#327) |
+| 12 | `spatial_dep()` | **done** | Arc 0 fail-loud only — G2 `planned (fail-loud entry)` (#329) |
+| 13 | `kernel_indep()` | **done** | Arc 0 Gaussian API — G2 promoted (#331) |
+| 14 | `kernel_dep()` | **done** | Arc 0 Gaussian API — G2 promoted (#333) |
+| 15 | `kernel_latent()` | **done** | Arc 0 Gaussian API — G2 promoted (#334) |
 
-7 of 15 grid cells are `planned` (not `implemented`). None is `blocked`/rejected outright except
+Grid engine arcs complete; public matrix updated 2026-09-14 G2. None is `blocked`/rejected outright except
 `phylo_latent + lv = ~x` (Phylo Model A public intervals — already `rejected` by 2026-08-28
 maintainer decision, out of scope here).
 

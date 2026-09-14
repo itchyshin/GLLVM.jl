@@ -47,17 +47,17 @@ implementation detail only.
 | none × dep (`dep()` / unstructured trait covariance) | implemented (function API) |
 | none × latent (`latent()` / ordinary LV GLLVM) | implemented |
 | phylogenetic × indep (`phylo_indep()`) | implemented |
-| phylogenetic × dep (`phylo_dep()`) | planned |
+| phylogenetic × dep (`phylo_dep()`) | implemented (Arc 0 Gaussian function API only) |
 | phylogenetic × latent (`phylo_latent()`) | implemented |
 | animal × indep (`animal_indep()`) | implemented |
-| animal × dep (`animal_dep()`) | planned |
-| animal × latent (`animal_latent()`) | planned |
+| animal × dep (`animal_dep()`) | implemented (Arc 0 Gaussian function API only) |
+| animal × latent (`animal_latent()`) | implemented (Arc 0 Gaussian function API only) |
 | spatial × indep (`spatial_indep()`) | implemented |
-| spatial × dep (`spatial_dep()`) | planned |
+| spatial × dep (`spatial_dep()`) | planned (Arc 0 fail-loud entry only) |
 | spatial × latent (`spatial_latent()`) | implemented |
-| kernel × indep (`kernel_indep()`) | planned |
-| kernel × dep (`kernel_dep()`) | planned |
-| kernel × latent (`kernel_latent()`) | planned |
+| kernel × indep (`kernel_indep()`) | implemented (Arc 0 Gaussian function API only) |
+| kernel × dep (`kernel_dep()`) | implemented (Arc 0 Gaussian function API only) |
+| kernel × latent (`kernel_latent()`) | implemented (Arc 0 Gaussian function API only) |
 | phylo_latent + `lv = ~ x` (Phylo Model A public intervals) | rejected |
 
 Notes (not status rows): Julia phylo rows share three **equivalent** likelihood
@@ -84,6 +84,26 @@ the likelihood pins only the total `Σ_total = ΛΛᵀ + σ²I`. Verified 2026-0
 alternative parameterisation `(Λ = chol(Σ_total).L, σ_eps = 0)` reproduces
 `Σ_total` to `4.4e-16`. Read `σ_eps` from this path as one point on a flat
 ridge, never as an estimated residual variance.
+
+**Honest-0.7 Arc 0 grid promotion (2026-09-14, DestB G2 / Rose fence).** Seven
+covariance cells landed on `main` (#324–#334). This pass updates the matrix only;
+it is **not** Destination B `FINAL-REVIEW`, not twin Δ parity, and not formula /
+`@formula` / `gllvm()` / bridge admission.
+
+| Cell | PR (main) | Fitter / test | Status after G2 |
+|---|---|---|---|
+| phylo × dep | #324 | `fit_phylo_dep_gllvm`, `test/test_phylo_dep.jl` | Arc 0 Gaussian function API only |
+| animal × dep | #325 | `fit_animal_dep_gllvm`, `test/test_animal_dep.jl` | same |
+| animal × latent | #327 | `fit_animal_latent_gllvm`, `test/test_animal_latent.jl` | same; `unique = true` still refused |
+| spatial × dep | #329 | `fit_spatial_dep_gllvm`, `test/test_spatial_dep.jl` | **fail-loud only** — row stays `planned` |
+| kernel × indep | #331 | `fit_kernel_indep_gllvm`, `test/test_kernel_indep.jl` | Arc 0 Gaussian function API only |
+| kernel × dep | #333 | `fit_kernel_dep_gllvm`, `test/test_kernel_dep.jl` | same; `rho ≠ 1` refused |
+| kernel × latent | #334 | `fit_kernel_latent_gllvm`, `test/test_kernel_latent.jl` | same |
+
+**Shared scope caveats (all Arc 0 Gaussian rows above):** no `@formula` keyword sugar;
+non-Gaussian families fail loud; no R-bridge / light logLik receipt; no realistic-size
+(RSZ) or second-order (2SO) receipt; sparse-phy / mesh transport gaps unchanged.
+**Do not** read these rows as gllvmTMB `covered` or as honest-0.7 programme complete.
 
 ## Response families
 
