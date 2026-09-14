@@ -19596,3 +19596,10 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 
 - Removed shipped `check-log.md` conflict markers; added `fit_phylo_dep_gllvm` to `docs/src/api.md` (Documenter `:missing_docs`).
 - Merged `origin/main` @ `a72e4421` (#322 post-#318 board) into branch.
+
+## 2026-09-14 — LOOP post-#324 merge (`cursor/loop-post-324-20260914`)
+
+- **#324 MERGED** on `main` @ `806b5476` (phylo × dep Arc 0).
+- Updated `LOOP/checkpoint.md` + `LOOP/arcs.md`: arc **#9 done**; active **#10** `animal_dep()`.
+- Post-merge CI runs `34809178895` / `34809178894` — poll at merge time **in_progress** (not a green receipt yet).
+- Docs-only; no `src/` / `test/`. No push without maintainer instruction (PR only).

@@ -22,8 +22,8 @@ silently dropped.
 
 | # | cell | status | gate? |
 |---|------|--------|-------|
-| 9 | `phylo_dep()` | **in progress** | `planned` — Arc 0 `fit_phylo_dep_gllvm` on branch `cursor/phylo-dep-070-20260913`; ledger row unchanged |
-| 10 | `animal_dep()` | **next** | `planned` |
+| 9 | `phylo_dep()` | **done** | `planned` — #324 @ `806b5476`; Arc 0 `fit_phylo_dep_gllvm` on `main`; ledger row unchanged until Rose/promotion |
+| 10 | `animal_dep()` | **next** (active) | `planned` |
 | 11 | `animal_latent()` | **next** | `planned` |
 | 12 | `spatial_dep()` | **next** | `planned` |
 | 13 | `kernel_indep()` | **next** | `planned` — Design 65's dense-kernel row; none of the three kernel cells exist |
