@@ -19702,3 +19702,21 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
   test/engine edits.
 - `capability-status.md` T15 pointer; LOOP arc #21 done. Next: **G7** #323 smoke.
 - No push.
+
+## 2026-09-14 — honest-070-destb FINAL-REVIEW panel (Rose + Fisher)
+
+- Sign-off memo: `docs/dev-log/after-task/2026-09-14-destb-final-review-panel.md`.
+  Verdict: **PASS-WITH-CORRECTIONS**. Live re-verified: `Project.toml` still
+  `0.3.0`; `node tools/destination_b_scope_check.mjs` exit 0 (32 rows); README
+  "not 0.7 parity" line unchanged; 7 Arc 0 test files exist; branch diff vs
+  `origin/main` is docs-only (0 `src/`/`test/` changes); spot re-ran
+  `test/test_mi_fitter.jl` live → **5/5**, matches G4's pinned receipt.
+- Corrections (docs-hygiene only, no capability/version/test change): (1) T15
+  knife-edge after-task's summary-table counts do not sum to its own stated
+  18 fixtures — needs a recount pass; (2) G10 prep doc has a stray `10|`
+  line-number artifact in its status banner.
+- Confirms open items stay open (not closed by this panel): S4 probe (second
+  yes owed), #323 live smoke (Codex/Totoro owed), G11 joint version note (not
+  yet drafted). `Project.toml` **not touched**; `capability-status.md`
+  **not touched** (no promotion beyond G2's existing evidence).
+- No push / merge; sibling opens PR.
