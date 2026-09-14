@@ -1,3 +1,10 @@
+## 2026-09-14 — animal × dep Arc 0 scaffold (branch `cursor/animal-dep-070-20260914`)
+
+- ACCEPTED identity `docs/dev-log/decisions/2026-09-14-animal-dep-identity.md`.
+- Exported `fit_animal_dep_gllvm` → `fit_gaussian_gllvm(Y; K = 1, K_phy = p, Σ_phy = relatedness_cov(A))`.
+- `julia --project=. test/test_animal_dep.jl` → 16/16 pass (~8 s).
+- Ledger row unchanged (`planned`); no formula/bridge/S4/version bump.
+
 ## 2026-09-13 — grouped NB2 boundary fit-level Hessian knife-edge (PR #318)
 
 - CI Julia 1.10/Linux failed `test/test_grouped_nongaussian_fit.jl` at the

@@ -23,8 +23,8 @@ silently dropped.
 | # | cell | status | gate? |
 |---|------|--------|-------|
 | 9 | `phylo_dep()` | **done** | `planned` — #324 @ `806b5476`; Arc 0 `fit_phylo_dep_gllvm` on `main`; ledger row unchanged until Rose/promotion |
-| 10 | `animal_dep()` | **next** (active) | `planned` |
-| 11 | `animal_latent()` | **next** | `planned` |
+| 10 | `animal_dep()` | **done** | `planned` — #325 @ `1ef979f`; Arc 0 `fit_animal_dep_gllvm` on `main`; ledger row unchanged until Rose/promotion |
+| 11 | `animal_latent()` | **next** (active) | `planned` |
 | 12 | `spatial_dep()` | **next** | `planned` |
 | 13 | `kernel_indep()` | **next** | `planned` — Design 65's dense-kernel row; none of the three kernel cells exist |
 | 14 | `kernel_dep()` | **next** | `planned` |
