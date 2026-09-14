@@ -1,3 +1,12 @@
+## 2026-09-14 — honest-070-destb G10 FINAL-REVIEW prep (`cursor/honest-070-destb`)
+
+- Panel packet (not sign-off):
+  `docs/dev-log/after-task/2026-09-14-destb-g10-final-review-prep.md` — G1–G7
+  inventory, unlazy 8-gate table, open items, Rose/Fisher checklists, joint
+  version stub §5 (do not publish yet). `destination_b_scope_check.mjs` PASS;
+  `Project.toml` still `0.3.0`. Next: Rose+Fisher panel; G11; optional draft PR.
+- No push.
+
 ## 2026-09-14 — honest-070-destb G7 Frozen R smoke handoff (#323) (`cursor/honest-070-destb`)
 
 - Scope + Codex/Totoro pack:
