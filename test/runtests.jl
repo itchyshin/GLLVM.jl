@@ -56,6 +56,7 @@ println(_SHARD === nothing ?
     _shard_include("test_none_dep.jl")
     _shard_include("test_phylo_dep.jl")
     _shard_include("test_animal_dep.jl")
+    _shard_include("test_animal_latent.jl")
     _shard_include("test_fit.jl")
     _shard_include("test_fixed_effects.jl")
     _shard_include("test_reml.jl")

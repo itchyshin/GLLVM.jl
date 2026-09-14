@@ -99,6 +99,7 @@ include("families/fit_gllvm.jl")         # unified fit_gllvm(Y; family) dispatch
 include("none_dep.jl")                    # none × dep matrix fitter (K = p; no formula sugar)
 include("phylo_dep.jl")                   # phylo × dep matrix fitter (K_phy = p; no formula sugar)
 include("animal_dep.jl")                  # animal × dep matrix fitter (K_phy = p; no formula sugar)
+include("animal_latent.jl")               # animal × latent matrix fitter (K_phy = d; no formula sugar)
 include("laplace_grad.jl")               # exact (AD + implicit-step) Poisson Laplace gradient (issue #65)
 include("grouped_laplace.jl")            # internal global grouped non-Gaussian objective
 include("missing_predictor_poisson.jl")  # non-Gaussian missing predictor (mi Phase 5a): Poisson augmented-Laplace FIML
@@ -311,6 +312,7 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        fit_dep_gllvm,
        fit_phylo_dep_gllvm,
        fit_animal_dep_gllvm,
+       fit_animal_latent_gllvm,
        fit_gllvm_cov, GllvmCovFit, gllvm, @formula,
        fit_gllvm_speciescov, GllvmSpeciesCovFit,
        fit_fourthcorner_gllvm, FourthCornerFit,
