@@ -1,16 +1,7 @@
-<<<<<<< HEAD
 ## 2026-09-14 — LOOP post–#331 kernel_indep merged (branch `cursor/loop-post-331`)
 
 - Tick `LOOP/checkpoint.md` + `LOOP/arcs.md`: arc **#13 done** @ `5e9bfcd4`; active **#14** `kernel_dep()`.
 - Post-#331 CI [`34828508282`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34828508282): 8/8 Julia + Documenter **PASS**; advisory Frozen R **FAIL** (non-blocking).
-=======
-## 2026-09-14 — kernel × dep Arc 0 scaffold (branch `cursor/kernel-dep-070-20260914`)
-
-- ACCEPTED identity `docs/dev-log/decisions/2026-09-14-kernel-dep-identity.md`.
-- Exported `fit_kernel_dep_gllvm(Y, K, groups)` → `SourceCovariance` `:dep` + `fit_gaussian_sources`.
-- `julia --project=. test/test_kernel_dep.jl` — (pending run).
-- Ledger row unchanged (`planned`); no formula/bridge/S4/version bump.
->>>>>>> 4330650b (feat(kernel-dep): Arc 0 Gaussian SourceCovariance :dep wrapper (honest-0.7 #14))
 
 ## 2026-09-14 — spatial × dep Arc 0 fail-loud admission (branch `cursor/spatial-dep-070-20260914`)
 
