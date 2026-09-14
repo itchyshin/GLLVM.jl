@@ -18277,3 +18277,16 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   the other 86 commits behind the fix.
 - No src/test code changed by this update; docs/ledger only. No `--admin`,
   no force-push to `main`, no tolerance widening, no S4 probe, no B1 retry.
+
+## 2026-09-13 — DestB S4 recorder rehydrate pointer (docs-only)
+
+- Re-verified gllvmTMB object `97214679c94cc4a6b9e02d3c2b03ccce516027d8`
+  (`git cat-file -t` → `commit`; tip of local
+  `codex/destination-b-s4-phylo-dep-formula-20260910`). Still **not on
+  gllvmTMB remote** after `git fetch origin`; gllvmTMB lane preflight showed
+  **foreign lanes active** — **no push** of that branch from this slice.
+- Added canonical rehydrate instructions (inspect at commit, no live probe):
+  `docs/dev-log/core070/destination-b-s4-recorder-rehydrate.md`. Complements
+  PR #319 after-task; does not duplicate engine work on #318.
+- No model, bridge, parity, interval, release, or registry claim changed. S4
+  probe not run.
