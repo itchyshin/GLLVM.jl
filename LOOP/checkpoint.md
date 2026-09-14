@@ -1,16 +1,16 @@
 # Checkpoint — honest-0.7 Destination B (`/goal` scaffold)
 
-GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 recorded in GOAL; execution not started in this slice — goal files updated only.
+GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **R0 + G1 done** on branch `cursor/honest-070-destb`.
 
 **G0 (2026-09-14):** Q1 B1 limit **permanent** (B1-RECOVERY off) · Q2 S4 **push only** (probe deferred) · Q3 **Totoro first**, DRAC if campaign sized.
 
-**Rehydrate from:** `origin/main` (do not trust pre-#318 “unmerged” notes). Sample HEAD at last checkpoint: `23fd0496` (#335 handoff); grid **#334** @ `9cb279e5`.
+**Rehydrate from:** `origin/main` @ `23fd0496` (#335 handoff); grid **#334** @ `9cb279e5`.
 
-**ARCS DONE (verified):** DestB #1–#2, #4, #8; grid #9–#15 (Arc 0 on main, ledger still `planned` until G2 promotion).
+**ARCS DONE (verified):** DestB #1–#2, #4, #6, #8; grid #9–#15 (Arc 0 on main, ledger still `planned` until G2 promotion).
 
-**ARC IN PROGRESS:** none (goal setup slice).
+**ARC IN PROGRESS:** none.
 
-**NEXT:** **R0** rehydrate from `origin/main` → **G1 API-BOUNDARY** (`tools/destination_b_scope_check.mjs` + after-task) per ultra-plan slice table.
+**NEXT:** **G2 Capability promotion pass** (Rose): align `docs/design/capability-status.md` with Arc 0 merges — per-cell scope boundary, no silent `implemented`.
 
 **OPEN GATES (need human):** merge/push (unless pre-auth branch push); **S4 probe** (second yes after fetch); **arc #24** version bump (forbidden in-programme); foreign-lane file overlap (D-87).
 
@@ -30,5 +30,5 @@ Rehydrate origin/main; Shannon preflight + lane_lease before non-LOOP edits.
 
 G0 (locked): B1 limit permanent (B1-RECOVERY off) · S4 push only (probe = second yes after fetch) · Totoro first for smoke/D-139
 
-CONTINUE FROM: G1 API-BOUNDARY. STOP: Project.toml bump, S4 probe without second yes, gllvmTMB engine surgery, merge without maintainer.
+CONTINUE FROM: G2 capability promotion. STOP: Project.toml bump, S4 probe without second yes, gllvmTMB engine surgery, merge without maintainer.
 ```

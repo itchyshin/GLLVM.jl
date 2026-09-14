@@ -14,7 +14,7 @@ silently dropped.
 | 3 | S4 Gaussian paired public-formula probe | **paused** | G0 Q2: **push authorized**; **probe NOT until second yes** after fetch | Recorder `97214679c` still unpushed on gllvmTMB branch `codex/destination-b-s4-phylo-dep-formula-20260910` until G9 push slice |
 | 4 | #318 CI — merge DestB G1/G2 docs onto `main` | **done** | — | Squash-merged `6c46873a` (2026-09-14); pre-merge 8/8 Julia + Documenter green; advisory Frozen R smoke red (OWED #322) |
 | 5 | B1-RECOVERY (Monte-Carlo recovery evidence for the grouping curvature contract) | **paused** | `NOT AUTHORIZED` (G0 Q1 2026-09-14: B1 closed-as-limit **permanent**) | Off for this run unless Shinichi explicitly reopens grouping Wald evidence |
-| 6 | `API-BOUNDARY` row (32-row DestB scope) | **blocked** | untouched | Named in the #318 G2 closeout as one of the rows nothing this programme has reached |
+| 6 | `API-BOUNDARY` row (32-row DestB scope) | **done** | static PASS | `docs/dev-log/after-task/2026-09-14-destb-api-boundary.md`; `node tools/destination_b_scope_check.mjs` exit 0 @ `23fd0496` base |
 | 7 | `FINAL-REVIEW` row (32-row DestB scope) | **blocked** | untouched | Same; sequenced last by design — it is the "are we done" gate itself |
 | 8 | Promote #318's G1/G2 docs onto `origin/main` | **done** | — | G1/G2 markdown on `main` @ `6c46873a`; `.unlazy/destination-b-programme/GATES.md` remains gitignored / local-only |
 

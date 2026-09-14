@@ -37,7 +37,7 @@ Programme complete enough for a **joint 0.7.0 decision** (proposal only — **no
 - [x] DestB G0/G1/G2 on `origin/main` (**PR #318 merged** 2026-09-14; G1 matrix + closeout docs).
 - [x] B1 marginal-curvature **`CLOSED — INTERFACE LIMIT`** (permanent per G0 Q1); S3b adapter-consumer **97/97** (narrow fence).
 - [x] Covariance grid Arc 0 **#9–#15 merged** on `main` (#324–#334); ledger rows may still read `planned` until promotion pass.
-- [ ] **`API-BOUNDARY`**: static 32-row DestB boundary audit vs `tools/destination_b_scope_check.mjs` + after-task receipt.
+- [x] **`API-BOUNDARY`**: static 32-row DestB boundary audit vs `tools/destination_b_scope_check.mjs` + after-task receipt (`2026-09-14-destb-api-boundary.md`).
 - [ ] **Capability promotion pass** (Rose): align `docs/design/capability-status.md` with Arc 0 merges — per-cell scope boundary, no silent `implemented`.
 - [ ] **T13–T15** hygiene (`mi()` row, NB2 Wald NaN subset, knife-edge fixture audit) closed or carried with owner.
 - [ ] **Advisory Frozen R smoke** (**#323**) scoped/run on Totoro/Codex per G0 Q3 (NB2 + Student-t gradient health); non-blocking CI pattern documented.
