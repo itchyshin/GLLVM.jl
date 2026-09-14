@@ -11,7 +11,7 @@ silently dropped.
 |---|-----|--------|-------|-------------------|
 | 1 | B1 marginal-curvature (`B1-JOINT-STATIONARY`, `B1-JOINT-PAIR`) | **done** | `CLOSED — INTERFACE LIMIT` | Two independent out-of-pipeline `MakeADFun` reconstructions both failed before `obj$fn()`/`sdreport()`. `docs/dev-log/decisions/2026-09-13-destination-b-b1-close-as-limit.md` (on #318) |
 | 2 | S3b R `phylo_rr` adapter-consumer | **done** | `S3B-CONSUMER` qualified, narrowly fenced (adapter/test scope only) | `test/test_destination_b_adapter_consumer.jl` 97/97 pass, tree/pedigree/dense-vcv fixtures (on #318) |
-| 3 | S4 Gaussian paired public-formula probe | **paused** | G0 Q2: **push authorized**; **probe NOT until second yes** after fetch | Recorder `97214679c` still unpushed on gllvmTMB branch `codex/destination-b-s4-phylo-dep-formula-20260910` until G9 push slice |
+| 3 | S4 Gaussian paired public-formula probe | **paused (recorder on origin)** | **probe NOT until second yes** | Recorder `97214679c` on origin; gllvmTMB draft **#1283**; G9 receipt `2026-09-14-destb-g9-s4-recorder-push.md` |
 | 4 | #318 CI — merge DestB G1/G2 docs onto `main` | **done** | — | Squash-merged `6c46873a` (2026-09-14); pre-merge 8/8 Julia + Documenter green; advisory Frozen R smoke red (OWED #322) |
 | 5 | B1-RECOVERY (Monte-Carlo recovery evidence for the grouping curvature contract) | **paused** | `NOT AUTHORIZED` (G0 Q1 2026-09-14: B1 closed-as-limit **permanent**) | Off for this run unless Shinichi explicitly reopens grouping Wald evidence |
 | 6 | `API-BOUNDARY` row (32-row DestB scope) | **done** | static PASS | `docs/dev-log/after-task/2026-09-14-destb-api-boundary.md`; `node tools/destination_b_scope_check.mjs` exit 0 @ `23fd0496` base |

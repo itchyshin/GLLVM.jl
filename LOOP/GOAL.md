@@ -43,7 +43,8 @@ Programme complete enough for a **joint 0.7.0 decision** (proposal only — **no
 - [x] **T14** NB2 Wald NaN — F1/F2/F3 disposition receipted (`2026-09-14-destb-g5-t14-nb2-wald-nan.md`).
 - [x] **T15** knife-edge fixture audit — list-first 18 fixtures (`2026-09-14-destb-g6-t15-knife-edge.md`).
 - [x] **Advisory Frozen R smoke** (**#323**) **scoped + Codex/Totoro handoff** (`2026-09-14-destb-g7-frozen-r-smoke-handoff.md`); **live run owed Codex** (D-139 before spend).
-- [ ] **S4**: recorder **pushed** when G9 runs (G0 Q2); probe **only** after second maintainer yes post-fetch; else **HELD** with blocker documented in `FINAL-REVIEW`.
+- [x] **S4 recorder push** (G9) — gllvmTMB `97214679c` on origin; draft **#1283** (`2026-09-14-destb-g9-s4-recorder-push.md`).
+- [ ] **S4 probe** — **only** after second maintainer yes; **HELD** for `FINAL-REVIEW`.
 - [x] **G10 FINAL-REVIEW prep** — panel packet (`2026-09-14-destb-g10-final-review-prep.md`); **not** sign-off.
 - [ ] **`FINAL-REVIEW`**: Rose + Fisher sign-off on DestB-admitted rows + honest-0.7 programme fences (harness ≠ true parity).
 - [ ] **Joint decision markdown** (`docs/dev-log/decisions/…-joint-070-version-proposal.md`): evidence table attached; states (a) propose bump or (b) what remains — **`Project.toml` unchanged** in that PR.

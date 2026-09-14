@@ -49,7 +49,7 @@ Authoritative narrative: G2 closeout + this branch receipts.
 | `B1-JOINT-PAIR` | **CLOSED — INTERFACE LIMIT** | Same |
 | `B1-RECOVERY` | **NOT AUTHORIZED** | G0 Q1; off for DestB run |
 | `S3B-CONSUMER` | **Met (narrow fence)** | 97/97 adapter-consumer on #318 path |
-| `S4-PUBLIC-FORMULA` | **HELD** | Push authorised (G0 Q2); probe needs **second yes**; recorder may be pushed by sibling lane |
+| `S4-PUBLIC-FORMULA` | **Recorder published; probe HELD** | gllvmTMB `97214679c` on origin; draft PR **#1283**; probe needs **second yes** — [`2026-09-14-destb-g9-s4-recorder-push.md`](2026-09-14-destb-g9-s4-recorder-push.md) |
 | `API-BOUNDARY` | **Met (static)** | G1 after-task on branch |
 | `FINAL-REVIEW` | **OPEN — prep only** | This document; panel not held |
 
@@ -73,8 +73,8 @@ Authoritative narrative: G2 closeout + this branch receipts.
 | Item | Owner | Blocker |
 |---|---|---|
 | **#323** Frozen R smoke execution | Codex / Totoro | D-139 ack; handoff ready |
-| **S4** recorder push | G9 / gllvmTMB lane | G0 Q2 push-only; object `97214679c` |
-| **S4** public-formula probe | — | **Second maintainer yes** after fetch |
+| **S4** recorder push | **Done (2026-09-14)** | gllvmTMB branch + `97214679c` on origin; draft **#1283** — G9 receipt on this branch |
+| **S4** public-formula probe | — | **Second maintainer yes**; isolated probe **not** run |
 | **FINAL-REVIEW panel** | Rose + Fisher | This prep → sign-off memo |
 | **G11 joint version note** | Ada + maintainer | Draft stub §5 below → formal `docs/dev-log/decisions/…` |
 | **Arc #24** version bump | Maintainer | **Forbidden** until post-panel decision |
@@ -162,4 +162,4 @@ Static: inventory read + `destination_b_scope_check.mjs` + `Project.toml` grep. 
 
 1. Rose + Fisher panel (Other Models) → short sign-off memo referencing §6–§7.
 2. **G11:** publish joint version proposal decision doc from §5 stub.
-3. Parallel: Codex **#323**; sibling **S4 push** (no probe without second yes).
+3. Parallel: Codex **#323**; S4 **probe** only after second yes (recorder push done — #1283).
