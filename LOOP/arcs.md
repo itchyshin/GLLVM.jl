@@ -12,17 +12,17 @@ silently dropped.
 | 1 | B1 marginal-curvature (`B1-JOINT-STATIONARY`, `B1-JOINT-PAIR`) | **done** | `CLOSED — INTERFACE LIMIT` | Two independent out-of-pipeline `MakeADFun` reconstructions both failed before `obj$fn()`/`sdreport()`. `docs/dev-log/decisions/2026-09-13-destination-b-b1-close-as-limit.md` (on #318) |
 | 2 | S3b R `phylo_rr` adapter-consumer | **done** | `S3B-CONSUMER` qualified, narrowly fenced (adapter/test scope only) | `test/test_destination_b_adapter_consumer.jl` 97/97 pass, tree/pedigree/dense-vcv fixtures (on #318) |
 | 3 | S4 Gaussian paired public-formula probe | **blocked** | `S4-PUBLIC-FORMULA` `NOT AUTHORIZED` / `HELD` | Two barriers: no fresh maintainer authorisation, **and** recorder object `97214679c` physically absent (unpushed commit in sibling gllvmTMB repo, branch `codex/destination-b-s4-phylo-dep-formula-20260910`) |
-| 4 | #318 CI — Hessian-PD/curvature defects across joint/precision/grouped-nongaussian paths | **blocked (owned by #318 fix agent; CI re-run pending)** | blocks merge of arcs 1–2's evidence onto `main` | Fix stack through `89235578` (NB2-log PD knife-edge); prior red run `34790377224`; await green on `34791694556` before merge-when-green |
+| 4 | #318 CI — merge DestB G1/G2 docs onto `main` | **done** | — | Squash-merged `6c46873a` (2026-09-14); pre-merge 8/8 Julia + Documenter green; advisory Frozen R smoke red (OWED #322) |
 | 5 | B1-RECOVERY (Monte-Carlo recovery evidence for the grouping curvature contract) | **blocked** | `NOT AUTHORIZED`; downstream of arc 4 landing | Needs its own pre-run + compute estimate (D-139) + Totoro/DRAC placement before it can even start |
 | 6 | `API-BOUNDARY` row (32-row DestB scope) | **blocked** | untouched | Named in the #318 G2 closeout as one of the rows nothing this programme has reached |
 | 7 | `FINAL-REVIEW` row (32-row DestB scope) | **blocked** | untouched | Same; sequenced last by design — it is the "are we done" gate itself |
-| 8 | Promote #318's G1/G2 docs + `.unlazy/destination-b-programme/GATES.md` reconciliation onto `origin/main` | **next** | unblocks all future DestB work from living only on one branch | Currently `docs/dev-log/2026-09-13-destination-b-g1-audit-matrix.md` / `-g2-closeout.md` exist only on #318; this repo's own gap inventory (`ultra-plan.md`) is built by reading that branch, not `main` |
+| 8 | Promote #318's G1/G2 docs onto `origin/main` | **done** | — | G1/G2 markdown on `main` @ `6c46873a`; `.unlazy/destination-b-programme/GATES.md` remains gitignored / local-only |
 
 ## Covariance structure grid (15 cells; `docs/design/capability-status.md`)
 
 | # | cell | status | gate? |
 |---|------|--------|-------|
-| 9 | `phylo_dep()` | **next** | `planned` — the twin's phylogenetic full-unstructured-trait covariance has no Julia engine yet |
+| 9 | `phylo_dep()` | **in progress** | `planned` — Arc 0 `fit_phylo_dep_gllvm` on branch `cursor/phylo-dep-070-20260913`; ledger row unchanged |
 | 10 | `animal_dep()` | **next** | `planned` |
 | 11 | `animal_latent()` | **next** | `planned` |
 | 12 | `spatial_dep()` | **next** | `planned` |

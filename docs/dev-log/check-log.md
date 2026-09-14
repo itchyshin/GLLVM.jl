@@ -19581,3 +19581,18 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
   (run `34798728654`); advisory Frozen R smoke **in_progress** (expected red
   when settled — same oracle debt as pre-merge head).
 - No `src/` / `test/` edits. No push without maintainer instruction (PR only).
+
+## 2026-09-14 — phylo × dep Arc 0 scaffold (`cursor/phylo-dep-070-20260913`)
+
+- Identity: `docs/dev-log/decisions/2026-09-14-phylo-dep-identity.md` (ACCEPTED).
+- Engine: `src/phylo_dep.jl` — `fit_phylo_dep_gllvm(Y, phy)` → `fit_gaussian_gllvm(K=1, K_phy=p, Σ_phy)`.
+- Tests: `test/test_phylo_dep.jl` (routed to `runtests.jl`).
+- OWED advisory Frozen R smoke: `docs/dev-log/owed/advisory-frozen-r-smoke-2026-09-14.md` + GitHub **#323**.
+- LOOP: `checkpoint.md` + `arcs.md` (#318 done; #9 in progress). Capability row stays **planned**.
+- Commands: (local `Pkg.instantiate` failed — StatsModels manifest drift; CI is canonical).
+- Deliberately not run: full `runtests.jl`, `Pkg.test()`, Documenter, R parity.
+
+## 2026-09-14 — phylo-dep CI fix push (`cursor/phylo-dep-070-20260913`)
+
+- Removed shipped `check-log.md` conflict markers; added `fit_phylo_dep_gllvm` to `docs/src/api.md` (Documenter `:missing_docs`).
+- Merged `origin/main` @ `a72e4421` (#322 post-#318 board) into branch.
