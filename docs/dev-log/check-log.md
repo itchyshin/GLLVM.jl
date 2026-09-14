@@ -19666,3 +19666,11 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - `docs/design/capability-status.md` T13 prose block; after-task
   `docs/dev-log/after-task/2026-09-14-destb-g4-t13-mi.md`; LOOP arc #19 done.
 - Checkpoint → G5 T14. No push.
+
+## 2026-09-14 — honest-070-destb G5 T14 NB2 Wald (`cursor/honest-070-destb`)
+
+- Disposition: **F1+F2+F3 already on main** (2026-09-02 maintainer-approved); G5 =
+  receipt only — `docs/dev-log/after-task/2026-09-14-destb-g5-t14-nb2-wald-nan.md`.
+- Tests: `test/test_grouped_dispersion.jl` **20/20**; `test/test_bridge_x.jl` **192/192**.
+- `capability-status.md`: T14 prose + repaired random-capabilities table; LOOP arc #20 done.
+- Next: G6 T15. No push.
