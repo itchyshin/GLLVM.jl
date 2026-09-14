@@ -35,6 +35,10 @@ Codex/Totoro execution pack (commands, oracle pin, success criteria, D-139 estim
 
 [`docs/dev-log/after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md`](../after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md)
 
+**Launch pack (one-line `ack Totoro D-139`, runnable blocks):**
+
+[`docs/dev-log/after-task/2026-09-14-issue-323-totoro-launch-pack.md`](../after-task/2026-09-14-issue-323-totoro-launch-pack.md)
+
 ## Tracking
 
 - GitHub issue: **#323** (opened 2026-09-14 from this note)
