@@ -35,13 +35,15 @@ version / BLAS). **No test or engine edits** this turn — dispositions only.
 
 ## Summary
 
-| Disposition | Count |
-|---|---:|
-| KEEP (stable or intentionally degenerate) | 11 |
-| KEEP + document (named degenerate / boundary) | 4 |
-| DOCUMENT known-fail / BLAS knife-edge (no edit) | 4 |
-| Retarget already applied (historical) | 1 |
-| Fix this slice | **0** |
+Each fixture maps to **one** bucket (fixture #14 is **retarget**, not double-counted as plain KEEP).
+
+| Disposition | Count | Fixture #s |
+|---|---:|---|
+| KEEP (stable or intentionally degenerate) | 8 | 2, 5, 6, 7, 9, 12, 13, 15 |
+| KEEP + document (named degenerate / boundary) | 3 | 1, 3, 4 |
+| DOCUMENT (BLAS / boundary / open; no edit this slice) | 6 | 8, 10, 11, 16, 17, 18 |
+| Retarget already applied (historical) | 1 | 14 |
+| Fix this slice | **0** | — |
 
 **Audited fixtures:** **18** (focused on T15/T14/true-parity map callouts; not exhaustive over all `test/` seeds).
 

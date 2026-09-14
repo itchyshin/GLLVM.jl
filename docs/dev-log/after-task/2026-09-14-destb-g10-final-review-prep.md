@@ -6,9 +6,11 @@
 
 ## Status banner
 
-This document **prepares** the Rose + Fisher FINAL-REVIEW panel. It is **not**
-FINAL-REVIEW complete, **not** a capability promotion, and **not** authorisation
-to bump `Project.toml` (stays **`0.3.0`**).
+This document **prepares** the Rose + Fisher FINAL-REVIEW panel. It is **not** a
+capability promotion and **not** authorisation to bump `Project.toml` (stays
+**`0.3.0`**). Panel sign-off (separate memo):
+[`2026-09-14-destb-final-review-panel.md`](2026-09-14-destb-final-review-panel.md)
+— **PASS-WITH-CORRECTIONS** (hygiene fixes applied on branch after panel).
 
 ---
 
