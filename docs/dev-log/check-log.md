@@ -1,3 +1,59 @@
+## 2026-09-14 — honest-070-destb Rose Done-when close (`cursor/honest-070-destb`)
+
+- Rose hard verify:
+  `docs/dev-log/after-task/2026-09-14-destb-goal-done-when-close.md` @ **`4765d041`**
+  — Done-when **1–3 PASS** (branch receipts); `destination_b_scope_check.mjs` PASS;
+  `Project.toml` `0.3.0`; G11 stub present. **No** merge, Totoro, S4 probe, bump.
+  OWED: #336 merge, #323 execute/waive, S4 probe (second yes).
+
+## 2026-09-14 — honest-070-destb G7b local Track B + PR #336 ready (`cursor/honest-070-destb`)
+
+- `gh pr ready 336` @ tip **`7eee6fc2`** — Documenter + deploy green (docs-only).
+- Track B local: **BLOCKED→Totoro** —
+  `docs/dev-log/after-task/2026-09-14-destb-g7b-frozen-r-track-b-local.md`
+  (no `.unlazy/r-build`; R 4.6.0 vs contract 4.5.3; no cells run). Merge comment
+  on #336; **no merge**; `Project.toml` `0.3.0`.
+
+## 2026-09-14 — honest-070-destb goal completion audit (`cursor/honest-070-destb`)
+
+- Ada audit:
+  `docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md` — Done-when
+  **3/3 PASS** on branch; goal **HELD** (#336 land, #323 disposition). Live:
+  `destination_b_scope_check.mjs` PASS @ `45363995`; PR **#336** Documenter green;
+  `Project.toml` `0.3.0`; gllvmTMB **#1283** / `97214679c` on origin; no Totoro,
+  no S4 probe. `LOOP/checkpoint.md` goal-not-complete block updated. Push #336.
+
+## 2026-09-14 — honest-070-destb Rose corrections + G11 stub (`cursor/honest-070-destb`)
+
+- Rose **PASS-WITH-CORRECTIONS** applied: T15 summary **8+3+6+1=18**;
+  G10 status banner cleaned; G11 stub
+  `2026-09-14-destb-g11-joint-version-proposal-stub.md` (T14 seed open, S4/#323
+  held). Pushed to draft PR **#336**. No merge; `Project.toml` `0.3.0`.
+
+## 2026-09-14 — honest-070-destb G10 FINAL-REVIEW prep (`cursor/honest-070-destb`)
+
+- Panel packet (not sign-off):
+  `docs/dev-log/after-task/2026-09-14-destb-g10-final-review-prep.md` — G1–G7
+  inventory, unlazy 8-gate table, open items, Rose/Fisher checklists, joint
+  version stub §5 (do not publish yet). `destination_b_scope_check.mjs` PASS;
+  `Project.toml` still `0.3.0`. Next: Rose+Fisher panel; G11; optional draft PR.
+- No push.
+
+## 2026-09-14 — honest-070-destb G7 Frozen R smoke handoff (#323) (`cursor/honest-070-destb`)
+
+- Scope + Codex/Totoro pack:
+  `docs/dev-log/after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md` (oracle
+  `b4d5fee6`, CI job mirror, Track A/B commands, D-139 ~90–150 min / ~60–90 min).
+- Linked from `docs/dev-log/owed/advisory-frozen-r-smoke-2026-09-14.md`; LOOP arc #25
+  handoff done; **no Totoro launch** this slice. Next: G10 FINAL-REVIEW prep; Codex
+  executes smoke after maintainer D-139 ack.
+- No push.
+
+## 2026-09-14 — LOOP post–#334 kernel_latent merged (branch `cursor/loop-post-334`)
+
+- Tick `LOOP/checkpoint.md` + `LOOP/arcs.md`: arc **#15 done** @ `9cb279e5`; grid arcs **#9–#15** on `main` @ `23fd0496`.
+- Post-#334 CI [`34848846828`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34848846828): 8/8 Julia + Documenter **PASS**; advisory Frozen R **FAIL** (non-blocking).
+
 ## 2026-09-14 — LOOP post–#331 kernel_indep merged (branch `cursor/loop-post-331`)
 
 - Tick `LOOP/checkpoint.md` + `LOOP/arcs.md`: arc **#13 done** @ `5e9bfcd4`; active **#14** `kernel_dep()`.
@@ -19629,3 +19685,70 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Updated `LOOP/checkpoint.md` + `LOOP/arcs.md`: arc **#9 done**; active **#10** `animal_dep()`.
 - Post-merge CI runs `34809178895` / `34809178894` — poll at merge time **in_progress** (not a green receipt yet).
 - Docs-only; no `src/` / `test/`. No push without maintainer instruction (PR only).
+
+## 2026-09-14 — honest-070-destb G1 API-BOUNDARY (`cursor/honest-070-destb`)
+
+- Lane: Shannon **FOREIGN LANE ACTIVE** (16 lanes); lease **GRANTED** on
+  `LOOP/`, `docs/dev-log/`, `docs/design/`, `tools/destination_b_scope_check.mjs`,
+  `tools/destination_b/` (4h).
+- Rehydrate: `origin/main` @ `23fd0496`; scope checker:
+  `node tools/destination_b_scope_check.mjs` → exit 0,
+  `SCOPE_HISTORY_AND_NEGATIVE_CONTROLS_PASS`, 32 rows, oracle `b4d5fee6…`.
+- Deliverable: `docs/dev-log/after-task/2026-09-14-destb-api-boundary.md`;
+  LOOP arc **#6 done**; `LOOP/GOAL.md` API-BOUNDARY checkbox; checkpoint → **G2 next**.
+- Folded prior LOOP commits (`cursor/loop-post-334`: #15 done, G0 GOAL scaffold).
+- Not run: `Pkg.test()`, Totoro, S4 push/probe, capability-status promotion (G2).
+- No push / merge (maintainer gate).
+
+## 2026-09-14 — honest-070-destb G2 capability promotion (`cursor/honest-070-destb`)
+
+- Lease: `cursor:honest-070-destb` on `docs/design/capability-status.md`, `LOOP/`, `docs/dev-log/`.
+- Updated `docs/design/capability-status.md`: seven honest-0.7 Arc 0 cells (#324–#334);
+  six → `implemented (Arc 0 Gaussian function API only)`; spatial × dep →
+  `planned (Arc 0 fail-loud entry only)`.
+- After-task: `docs/dev-log/after-task/2026-09-14-destb-g2-capability-promotion.md`;
+  LOOP GOAL G2 checked; checkpoint → **G4 T13**.
+- Docs-only; no push.
+
+## 2026-09-14 — honest-070-destb G4 T13 mi() receipt (`cursor/honest-070-destb`)
+
+- `Missing predictor mi()` already `implemented` on main; pinned **57/57** pass
+  across seven `test/test_missing_predictor*.jl` + `test/test_mi_fitter.jl`.
+- `docs/design/capability-status.md` T13 prose block; after-task
+  `docs/dev-log/after-task/2026-09-14-destb-g4-t13-mi.md`; LOOP arc #19 done.
+- Checkpoint → G5 T14. No push.
+
+## 2026-09-14 — honest-070-destb G5 T14 NB2 Wald (`cursor/honest-070-destb`)
+
+- Disposition: **F1+F2+F3 already on main** (2026-09-02 maintainer-approved); G5 =
+  receipt only — `docs/dev-log/after-task/2026-09-14-destb-g5-t14-nb2-wald-nan.md`.
+- Tests: `test/test_grouped_dispersion.jl` **20/20**; `test/test_bridge_x.jl` **192/192**.
+- `capability-status.md`: T14 prose + repaired random-capabilities table; LOOP arc #20 done.
+- Next: G6 T15. No push.
+
+## 2026-09-14 — honest-070-destb G6 T15 knife-edge audit (`cursor/honest-070-destb`)
+
+- List-first audit: **18** fixtures in
+  `docs/dev-log/after-task/2026-09-14-destb-g6-t15-knife-edge.md` (11 keep, 4
+  keep+document, 4 document BLAS/boundary class, 1 historical retarget); **0**
+  test/engine edits.
+- `capability-status.md` T15 pointer; LOOP arc #21 done. Next: **G7** #323 smoke.
+- No push.
+
+## 2026-09-14 — honest-070-destb FINAL-REVIEW panel (Rose + Fisher)
+
+- Sign-off memo: `docs/dev-log/after-task/2026-09-14-destb-final-review-panel.md`.
+  Verdict: **PASS-WITH-CORRECTIONS**. Live re-verified: `Project.toml` still
+  `0.3.0`; `node tools/destination_b_scope_check.mjs` exit 0 (32 rows); README
+  "not 0.7 parity" line unchanged; 7 Arc 0 test files exist; branch diff vs
+  `origin/main` is docs-only (0 `src/`/`test/` changes); spot re-ran
+  `test/test_mi_fitter.jl` live → **5/5**, matches G4's pinned receipt.
+- Corrections (docs-hygiene only, no capability/version/test change): (1) T15
+  knife-edge after-task's summary-table counts do not sum to its own stated
+  18 fixtures — needs a recount pass; (2) G10 prep doc has a stray `10|`
+  line-number artifact in its status banner.
+- Confirms open items stay open (not closed by this panel): S4 probe (second
+  yes owed), #323 live smoke (Codex/Totoro owed), G11 joint version note (not
+  yet drafted). `Project.toml` **not touched**; `capability-status.md`
+  **not touched** (no promotion beyond G2's existing evidence).
+- No push / merge; sibling opens PR.

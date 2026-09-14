@@ -1,77 +1,90 @@
-# GOAL — earn honest 0.7.0 parity with frozen gllvmTMB 0.7.0 before any version bump
+# GOAL — GLLVM.jl honest-0.7 Destination B (IMMUTABLE — re-read at the top of EVERY arc)
 
-**IMMUTABLE for this run.** Re-read this file at the top of EVERY arc, before anything else.
+**Lane:** `honest-070-destb` · **Platform:** Cursor `/goal` execution after ultra-plan G0 (2026-09-14).
+
+## Mission
+
+Earn **honest true parity** with **frozen gllvmTMB 0.7.0** (`b4d5fee64def88bc768dda1f1f77c29b295edd86`) for **Destination B’s admitted 32-row scope** (plus programme fences in `docs/dev-log/core070/true-parity-decision-map.md`), complete the **honest-0.7 covariance grid** evidence path (Arc 0 merges done; **Rose promotion** or explicit waiver still owed), then produce a **joint maintainer decision note** on whether `Project.toml` may **move toward** `0.7.0`.
+
+This programme **does not** ship `0.7.0`, **does not** edit `Project.toml` version, and **does not** claim “Arc 0 wrappers = done.”
+
+## Headline
+
+Close the **DestB numerical + scope ledger** (every reconciled row receipted or dispositioned; **`FINAL-REVIEW` last**) while finishing the **7-cell covariance grid** beyond thin Arc 0 scaffolds where Rose requires it — only then is a version **proposal** honest.
+
+## G0 answers (Shinichi — Ada defaults, 2026-09-14)
+
+Recorded for this run; do not re-litigate without Shinichi.
+
+| Q | Topic | Answer |
+|---|--------|--------|
+| **Q1** | B1 **closed-as-limit** permanent for DestB? | **Accept permanent.** `B1-RECOVERY` **NOT AUTHORIZED** (off). |
+| **Q2** | gllvmTMB S4 recorder + probe? | **Push only** (recorder branch to origin when executing G9). **Probe deferred** until a **second explicit yes** after fetch verified (`git cat-file -t 97214679c` in this repo). |
+| **Q3** | Compute host (smoke / D-139 / campaigns)? | **Totoro first.** **DRAC later** only if a sized campaign warrants queue wait (D-50; D-139 estimate before spend). |
+
+## Authoritative WHAT
+
+Binding detail: [`docs/dev-log/plans/2026-09-14-honest-070-destination-b-ultraplan.md`](../docs/dev-log/plans/2026-09-14-honest-070-destination-b-ultraplan.md) · durable copy pointer: [`LOOP/ultra-plan.md`](ultra-plan.md).
+
+Execution tracker: [`LOOP/arcs.md`](arcs.md) · resume: [`LOOP/checkpoint.md`](checkpoint.md).
+
+**Do not confuse:** overnight **honest-0.7 Arc 0 grid** (15 cells, thin Gaussian wrappers) ≠ **Destination B gates** (32-row scope, B1/S3b/S4, `API-BOUNDARY`, `FINAL-REVIEW`).
 
 ## Definition of done
 
-The programme is "done enough for a joint 0.7.0 decision" — not "0.7.0 shipped" — when:
+Programme complete enough for a **joint 0.7.0 decision** (proposal only — **not** a version bump) when:
 
-- [ ] PR [#318](https://github.com/itchyshin/GLLVM.jl/pull/318) either reaches CI-green (the
-  8 failing test files' `hessian_positive_definite`/curvature defects fixed by whoever owns
-  that engine work) or is split so its docs/ledger land on `origin/main` without the red
-  engine code, so the Destination B (DestB) G1/G2 record stops living only on an unmerged
-  branch.
-- [ ] Every `planned` row in the covariance structure grid
-  (`docs/design/capability-status.md` §Covariance structure grid — `phylo_dep`, `animal_dep`,
-  `animal_latent`, `spatial_dep`, `kernel_indep`, `kernel_dep`, `kernel_latent`) has a named
-  arc in `arcs.md`: either built-and-tested, or carries a maintainer-signed "not required for
-  the 0.7.0 decision" disposition. No cell is silently dropped.
-- [ ] Every open DestB numerical gate (`B1-RECOVERY`, `S4-PUBLIC-FORMULA`, plus the untouched
-  `API-BOUNDARY` and `FINAL-REVIEW` rows named in the #318 G2 closeout) carries either a
-  receipt or a maintainer-signed disposition — `CLOSED — INTERFACE LIMIT` (like
-  `B1-JOINT-STATIONARY`/`B1-JOINT-PAIR`) counts as a valid disposition; silence does not.
-- [ ] `docs/dev-log/core070/true-parity-decision-map.md`'s open questions (T5, T8, T11–T15)
-  are each either closed or explicitly carried forward with a named owner.
-- [ ] A single joint decision note exists (this arc's own final deliverable, NOT written yet)
-  that either (a) proposes the `0.7.0` version bump with every piece of evidence above
-  attached and named, or (b) states exactly what remains before that proposal can honestly be
-  made. That note itself does not bump the version — it is a proposal for the maintainer.
+- [x] DestB G0/G1/G2 on `origin/main` (**PR #318 merged** 2026-09-14; G1 matrix + closeout docs).
+- [x] B1 marginal-curvature **`CLOSED — INTERFACE LIMIT`** (permanent per G0 Q1); S3b adapter-consumer **97/97** (narrow fence).
+- [x] Covariance grid Arc 0 **#9–#15 merged** on `main` (#324–#334).
+- [x] **`API-BOUNDARY`**: static 32-row DestB boundary audit vs `tools/destination_b_scope_check.mjs` + after-task receipt (`2026-09-14-destb-api-boundary.md`).
+- [x] **Capability promotion pass** (Rose G2): `docs/design/capability-status.md` Arc 0 fences — `2026-09-14-destb-g2-capability-promotion.md`.
+- [x] **T13** `mi()` row — test receipt pinned (`2026-09-14-destb-g4-t13-mi.md`; 57/57 focused tests).
+- [x] **T14** NB2 Wald NaN — F1/F2/F3 disposition receipted (`2026-09-14-destb-g5-t14-nb2-wald-nan.md`).
+- [x] **T15** knife-edge fixture audit — list-first 18 fixtures (`2026-09-14-destb-g6-t15-knife-edge.md`).
+- [x] **Advisory Frozen R smoke** (**#323**) **scoped + Codex/Totoro handoff** (`2026-09-14-destb-g7-frozen-r-smoke-handoff.md`); **live run owed Codex** (D-139 before spend).
+- [x] **S4 recorder push** (G9) — gllvmTMB `97214679c` on origin; draft **#1283** (`2026-09-14-destb-g9-s4-recorder-push.md`).
+- [ ] **S4 probe** — **only** after second maintainer yes; **HELD** for `FINAL-REVIEW`.
+- [x] **G10 FINAL-REVIEW prep** — panel packet (`2026-09-14-destb-g10-final-review-prep.md`).
+- [x] **`FINAL-REVIEW`**: Rose + Fisher **PASS-WITH-CORRECTIONS** — [`2026-09-14-destb-final-review-panel.md`](../docs/dev-log/after-task/2026-09-14-destb-final-review-panel.md) (hygiene fixes on branch).
+- [x] **G11 stub** — joint version **proposal only** (`2026-09-14-destb-g11-joint-version-proposal-stub.md`); formal `docs/dev-log/decisions/…` still owed if promoting.
+- [ ] **Formal joint decision markdown** (optional promote from G11 stub) — **`Project.toml` unchanged** until separate maintainer act.
+
+**Explicitly N/A for this run:** `B1-RECOVERY` (G0 Q1).
 
 ## Invariants (never violate, even to finish faster)
 
-- **Never bump `Project.toml`'s `version` field.** It stays `0.3.0` until the maintainer signs
-  off on the final gated arc. This is a hard fence for this entire programme, not a
-  preference.
-- Never run the S4 public-formula probe. It requires the recorder object `97214679c` (which
-  physically does not exist in this repo's git object store — it is an unpushed commit in the
-  sibling `gllvmTMB` checkout) **and** a fresh maintainer authorisation. Neither exists.
-  Locating/documenting that blocker is in scope; running the probe is not.
-- Never edit `#318`'s (`codex/destination-b-b1-integration-20260910`) failing test or `src/`
-  engine files directly — that branch has its own fix agent working the Hessian-PD/curvature
-  defects. Read it, cite it, do not patch it from this lane.
-- Never edit gllvmTMB's engine (`src/gllvmTMB.cpp`, TMB templates) — read-only reference.
-- Never push, merge, or publish beyond opening a **draft** PR — merges are a maintainer act.
-- Verification means reading the LOG and inspecting the ARTEFACT, never the exit code alone.
-- A narrow or negative search is not proof. "No X exists" usually means the query missed X —
-  confirmed here for the S4 recorder by `git cat-file -t 97214679c` returning exit 128 in
-  *every* GLLVM.jl worktree, cross-checked against the sibling gllvmTMB repo where the commit
-  actually lives (unpushed).
-- Destructive or irreversible ⇒ STOP and surface, even if it feels urgent.
-- Query the second brain first (`search_notes` with `search_all_projects: true`). D-183
-  (vault) records the GLLVM.jl↔gllvmTMB versioning convention this goal enforces: the Julia
-  package's version number communicates *parity level* with the R twin, not a race with the
-  twin's own release cadence — a version bump is earned by evidence, not scheduled by
-  calendar. See `docs/dev-log/decisions/2026-09-13-honest-070-parity-aim.md`.
+- **Never bump `Project.toml` `version`.** Stays **`0.3.0`** until maintainer signs off **after** this programme’s joint proposal — not during it.
+- **Never run the S4 public-formula probe** without **second explicit maintainer authorisation** after recorder fetch works.
+- **Never edit gllvmTMB engine** (`src/gllvmTMB.cpp`, TMB templates) from this lane — read-only reference; **S4 recorder push** is coordination only, not engine surgery.
+- **Never claim two-directional parity** (T1 one-directional); **never** promote Arc 0 to full family parity without Rose fences.
+- **Foreign lanes:** Shannon preflight **FOREIGN LANE ACTIVE** on shared Dropbox checkout — claim via `tools/lane_lease.sh`; do not touch files owned by live `cursor/*-070-*` engine lanes without Shinichi’s ownership call (D-87/D-88).
+- **Never push / merge / release** without explicit maintainer instruction; draft PR optional under pre-auth envelope.
+- **Verification:** read the **log** and inspect the **artifact**, not exit code alone.
+- **Brain / vault:** D-183 — Julia version signals **parity earned**, not R release calendar (`docs/dev-log/decisions/2026-09-13-honest-070-parity-aim.md`).
 
-## Pre-authorisation (copied from approved ultra-plan)
+## STOP fences (open gates — pause arc-loop)
 
-- Routine scoped edits (docs, ledger, gap-inventory, decision notes, LOOP files), local
-  commands, local commits, and named checks (`graft ask`, `git log`, `gh pr view`,
-  `gh api`): CONTINUE.
-- Optional remote authority: push named branch `cursor/gllvm-07-parity-programme-20260913`;
-  create a **draft** PR against `main`. Never mark ready-for-review, never merge.
-- Must stop: any `Project.toml` version edit; running the S4 probe; editing #318's failing
-  test/engine files; any `src/` engine change; merge/release/public capability-wording change;
-  credentials/security changes; destructive work outside this branch; new compute/cost beyond
-  a documented estimate.
+| Gate | Rule |
+|------|------|
+| Version | No `Project.toml` bump, tag, General registration, public “0.7 shipped” wording. |
+| S4 probe | No probe until push verified **and** second yes (G0 Q2). |
+| gllvmTMB engine | No engine surgery from GLLVM.jl lane. |
+| Merge / publish | No merge to `main`, ready-for-review, release, or public capability promotion without maintainer + green CI. |
+| Compute | No Totoro/DRAC campaign without D-139 estimate + compute-routing skill. |
+| B1-RECOVERY | **NOT AUTHORIZED** (G0 Q1). |
 
-## Out of scope (the fence — do NOT drift here)
+## Pre-authorisation (G0 envelope)
 
-- Fixing #318's 8 failing test files (Hessian-PD/curvature defects) — that is the named fix
-  agent's lane; this programme reads and ranks it as arc #1 for them, does not touch it.
-- Running or authorising the S4 probe.
-- Bumping `Project.toml` version, tagging, or Julia General registration steps.
-- Building new covariance-grid engine code inside *this* slice unless capacity remains after
-  the docs/gap-inventory deliverable — if engine work starts, it is its own follow-on arc with
-  its own tests, not folded into this docs slice.
-- Twin (gllvmTMB) engine edits of any kind.
+**CONTINUE without re-ask:** scoped edits on a named branch/worktree; LOOP + `docs/dev-log/` updates; focused tests (`test/test_destination_b*.jl`, subsets of `runtests.jl`); local commits **by path**; graft/brain queries; `gh` read-only; checkpoint overwrites.
+
+**OPTIONAL:** push named feature branch; **draft** PR — never merge.
+
+**MUST STOP:** items in STOP fences; edits to files owned by foreign live lanes without ownership call; credentials/destructive out-of-worktree work.
+
+## Out of scope (do not drift)
+
+- Full Core070 **497-row** ledger re-campaign (parallel track; not DestB headline).
+- 0.7.1 oracle re-freeze (T2); spatial/slopes engines before phylo transport default; gllvmTMB T11 API-alignment (R lane).
+- Realistic-size grid + real-data T7 until compute + gllvmTMB **#1236** gates clear.
+- Fixing unrelated foreign-lane engine work — read/cite/rank only.

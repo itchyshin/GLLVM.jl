@@ -47,17 +47,17 @@ implementation detail only.
 | none × dep (`dep()` / unstructured trait covariance) | implemented (function API) |
 | none × latent (`latent()` / ordinary LV GLLVM) | implemented |
 | phylogenetic × indep (`phylo_indep()`) | implemented |
-| phylogenetic × dep (`phylo_dep()`) | planned |
+| phylogenetic × dep (`phylo_dep()`) | implemented (Arc 0 Gaussian function API only) |
 | phylogenetic × latent (`phylo_latent()`) | implemented |
 | animal × indep (`animal_indep()`) | implemented |
-| animal × dep (`animal_dep()`) | planned |
-| animal × latent (`animal_latent()`) | planned |
+| animal × dep (`animal_dep()`) | implemented (Arc 0 Gaussian function API only) |
+| animal × latent (`animal_latent()`) | implemented (Arc 0 Gaussian function API only) |
 | spatial × indep (`spatial_indep()`) | implemented |
-| spatial × dep (`spatial_dep()`) | planned |
+| spatial × dep (`spatial_dep()`) | planned (Arc 0 fail-loud entry only) |
 | spatial × latent (`spatial_latent()`) | implemented |
-| kernel × indep (`kernel_indep()`) | planned |
-| kernel × dep (`kernel_dep()`) | planned |
-| kernel × latent (`kernel_latent()`) | planned |
+| kernel × indep (`kernel_indep()`) | implemented (Arc 0 Gaussian function API only) |
+| kernel × dep (`kernel_dep()`) | implemented (Arc 0 Gaussian function API only) |
+| kernel × latent (`kernel_latent()`) | implemented (Arc 0 Gaussian function API only) |
 | phylo_latent + `lv = ~ x` (Phylo Model A public intervals) | rejected |
 
 Notes (not status rows): Julia phylo rows share three **equivalent** likelihood
@@ -84,6 +84,26 @@ the likelihood pins only the total `Σ_total = ΛΛᵀ + σ²I`. Verified 2026-0
 alternative parameterisation `(Λ = chol(Σ_total).L, σ_eps = 0)` reproduces
 `Σ_total` to `4.4e-16`. Read `σ_eps` from this path as one point on a flat
 ridge, never as an estimated residual variance.
+
+**Honest-0.7 Arc 0 grid promotion (2026-09-14, DestB G2 / Rose fence).** Seven
+covariance cells landed on `main` (#324–#334). This pass updates the matrix only;
+it is **not** Destination B `FINAL-REVIEW`, not twin Δ parity, and not formula /
+`@formula` / `gllvm()` / bridge admission.
+
+| Cell | PR (main) | Fitter / test | Status after G2 |
+|---|---|---|---|
+| phylo × dep | #324 | `fit_phylo_dep_gllvm`, `test/test_phylo_dep.jl` | Arc 0 Gaussian function API only |
+| animal × dep | #325 | `fit_animal_dep_gllvm`, `test/test_animal_dep.jl` | same |
+| animal × latent | #327 | `fit_animal_latent_gllvm`, `test/test_animal_latent.jl` | same; `unique = true` still refused |
+| spatial × dep | #329 | `fit_spatial_dep_gllvm`, `test/test_spatial_dep.jl` | **fail-loud only** — row stays `planned` |
+| kernel × indep | #331 | `fit_kernel_indep_gllvm`, `test/test_kernel_indep.jl` | Arc 0 Gaussian function API only |
+| kernel × dep | #333 | `fit_kernel_dep_gllvm`, `test/test_kernel_dep.jl` | same; `rho ≠ 1` refused |
+| kernel × latent | #334 | `fit_kernel_latent_gllvm`, `test/test_kernel_latent.jl` | same |
+
+**Shared scope caveats (all Arc 0 Gaussian rows above):** no `@formula` keyword sugar;
+non-Gaussian families fail loud; no R-bridge / light logLik receipt; no realistic-size
+(RSZ) or second-order (2SO) receipt; sparse-phy / mesh transport gaps unchanged.
+**Do not** read these rows as gllvmTMB `covered` or as honest-0.7 programme complete.
 
 ## Response families
 
@@ -272,6 +292,57 @@ slice. No twin light Δ.
 | Quadratic response | implemented |
 | Mixed-family response vector | planned |
 | `@formula` / long+wide data (fixed effects) | implemented |
+
+**Missing predictor `mi()` (T13 receipt, DestB G4 2026-09-14).** Row was already
+`implemented` on `origin/main`; this pass **pins test evidence** after
+true-parity map T13 drift audit (exports existed; receipt was implicit). Exports:
+`fit_gaussian_mi_fiml`, `fit_gaussian_mi_phylo`, `fit_gllvm_mi`, `fit_gllvm_mi_multi`
+(`src/GLLVM.jl`). Focused run (single Julia process, files included in order):
+
+```sh
+~/.juliaup/bin/julia --project=. -e 'using Test; include("test/test_mi_fitter.jl"); …'
+```
+
+| Test file | Pass / Total |
+|---|---|
+| `test/test_mi_fitter.jl` | 5 / 5 |
+| `test/test_missing_predictor_fiml.jl` | 9 / 9 |
+| `test/test_missing_predictor_phylo.jl` | 9 / 9 |
+| `test/test_missing_predictor_z.jl` | 6 / 6 |
+| `test/test_missing_predictor_poisson.jl` | 6 / 6 |
+| `test/test_missing_predictor_dispersion.jl` | 15 / 15 |
+| `test/test_missing_predictor_multi.jl` | 7 / 7 |
+| **Sum** | **57 / 57** |
+
+**Fence:** native Julia mi() axis only; no R-bridge light Δ pasted here; not
+Destination B `FINAL-REVIEW`; not full gllvmTMB 0.7 parity. `@formula` / public
+R `mi()` keyword parity is a separate surface (change-control / twin lane).
+
+**NB2 grouped-cov Wald at dispersion boundary (T14, DestB G5 2026-09-14).**
+Maintainer-approved fix set landed **2026-09-02** on `main`
+(`docs/dev-log/check-log.md` §T14; diagnosis
+`docs/dev-log/core070/t14-nb2-wald-nan-diagnosis.md`): **F3** bridge CI helper
+(`_bx_ci_max_absdiff`, agreed `Inf` not `NaN` poison); **F2** separate
+well-conditioned NB2 grouped-cov Wald cell + explicit seed-523 degenerate cell;
+**F1** `dispersion_boundary` on grouped NB/NB1/Beta/Gamma fits + per-parameter
+Wald degradation in `_family_wald` (`src/confint_family.jl`). Focused re-run
+this slice:
+
+| Test file | Pass / Total |
+|---|---|
+| `test/test_grouped_dispersion.jl` (incl. F1 boundary flag) | 20 / 20 |
+| `test/test_bridge_x.jl` (incl. F2/F3 NB2 Wald cells) | 192 / 192 |
+
+**Open sub-item (not blocking T14 closure):** no single seed gives the *old*
+3×70 default-shape fixture well-conditioned on **both** Julia 1.10 and 1.12
+(check-log 2026-09-02 F2 note); F2 uses a **different** well-conditioned DGP
+(`n = 200`, `nb_r = 2`, intercept 1.5). ≠ DestB FINAL-REVIEW; ≠ second-order
+parity certificate for all NB2+X cells.
+
+**Knife-edge fixture audit (T15, DestB G6 2026-09-14).** List-first inventory:
+`docs/dev-log/after-task/2026-09-14-destb-g6-t15-knife-edge.md` — **18**
+fixtures dispositioned (keep / document / already-retargeted); **0** test edits
+this slice. Named degenerate NB2 seed-523 cells stay **by design** post-T14.
 
 ## R bridge (`engine = "julia"`)
 

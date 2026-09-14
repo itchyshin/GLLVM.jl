@@ -29,6 +29,12 @@ advisory job conclusion separately from Julia 8/8 + Documenter.
    to the JSON receipt (`advisory-r-smoke-nb2-studentt-2026-09-05.json`).
 3. Do **not** widen Julia parity tolerances to absorb these failures.
 
+## Handoff (DestB G7, 2026-09-14)
+
+Codex/Totoro execution pack (commands, oracle pin, success criteria, D-139 estimate):
+
+[`docs/dev-log/after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md`](../after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md)
+
 ## Tracking
 
 - GitHub issue: **#323** (opened 2026-09-14 from this note)
