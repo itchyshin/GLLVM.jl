@@ -19568,3 +19568,16 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Merge gate comment: https://github.com/itchyshin/GLLVM.jl/pull/318#issuecomment-5658100360
 - Post-merge `main`: CI + Documenter workflows queued on `6c46873a` (2026-09-14).
 - No `--admin`, no `--auto`, no force. Stale `/tmp/merge-318.pid` removed (dead process).
+
+## 2026-09-14 — Post-#318 coordination board tick (docs-only)
+
+- Branch `cursor/post-318-board-20260913` from `origin/main` @ `1125eafb`
+  (post merge-log commit for #318).
+- Updated `docs/dev-log/coordination-board.md` Active-Lane-Split DestB row:
+  **MERGED #318** @ `6c46873a`; pointers to G2 closeout + B1 decision +
+  after-task; numerical gates deferred to `LOOP/arcs.md` (#321).
+- `gh run list -R itchyshin/GLLVM.jl --branch main -L 5` @ tick: merge commit
+  `6c46873a` — Documenter **success**; full **CI still in_progress**
+  (run `34798728654`); advisory Frozen R smoke **in_progress** (expected red
+  when settled — same oracle debt as pre-merge head).
+- No `src/` / `test/` edits. No push without maintainer instruction (PR only).
