@@ -19752,3 +19752,10 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
   yet drafted). `Project.toml` **not touched**; `capability-status.md`
   **not touched** (no promotion beyond G2's existing evidence).
 - No push / merge; sibling opens PR.
+
+## 2026-09-14 — T5: read-only inventory of 8 PARTIAL_PARITY_DEFECT rows (LOOP #16)
+
+- After-task: `docs/dev-log/after-task/2026-09-14-t5-partial-defect-inventory.md`
+- Branch: `docs/destb-checkpoint-post-336` (PR #337 lane); local commit only (no push — overlaps LOOP PR).
+- Ledger @ inventory: 7/8 bound on 2026-09-03 T5 receipts; `namespace/export/loading_profile` → `BLOCKED_NEEDS_JULIA_SURFACE` (D3); `PARTIAL_PARITY_DEFECT_PENDING_DECISION=0`.
+- Commands: `python3 tools/core070_ledger_counts.py`; row-id JSON scrape; `graft ask` (loading_profile / extract context). No Totoro; #323 not waived.
