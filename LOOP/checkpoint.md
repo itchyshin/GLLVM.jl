@@ -1,12 +1,12 @@
 # Checkpoint — honest-0.7 parity programme (2026-09-14)
 
-- **origin/main HEAD:** `b6e6dfcb` (LOOP tick **#326**; prior **#325** @ `1ef979f` animal × dep; **#324** phylo × dep)
-- **PR #318:** **MERGED** · **PR #321:** **MERGED** · **PR #324:** **MERGED** · **PR #325:** **MERGED** · **PR #326:** **MERGED**
-- **Post-#325 CI (Julia):** [`34813507356`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34813507356) on `1ef979f` — poll for 8/8 **PASS**
-- **Post-#326 CI (Documenter):** [`34813953399`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34813953399) on `b6e6dfcb` — poll for **PASS**
-- **Advisory Frozen R:** same CI workflow job on `1ef979f` — **non-blocking**; OWED **#323**
-- **Active slice:** arc **#11** `animal_latent()` — draft PR `cursor/animal-latent-070-20260914`; capability row still **`planned`**
-- **RESUME:** merge animal_latent Arc 0 PR → confirm CI → spatial_dep (#12) or maintainer pick
+- **origin/main HEAD:** `5e4f38b8` (arc **#327** animal × latent; prior **#326** LOOP tick @ `b6e6dfcb`; **#325** @ `1ef979f` animal × dep; **#324** phylo × dep)
+- **PR #318:** **MERGED** · **PR #321:** **MERGED** · **PR #324:** **MERGED** · **PR #325:** **MERGED** · **PR #326:** **MERGED** · **PR #327:** **MERGED**
+- **Post-#325 CI (Julia):** [`34813507356`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34813507356) on `1ef979f` — **8/8 PASS** (advisory Frozen R red, non-blocking)
+- **Post-#327 CI:** [`34818578019`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34818578019) on `5e4f38b` — poll for 8/8 Julia + Documenter **PASS**
+- **Advisory Frozen R:** non-blocking on #318/#324/#325/#327 pattern; OWED **#323**
+- **Active slice:** arc **#12** `spatial_dep()` — capability row still **`planned`**
+- **RESUME:** spatial_dep Arc 0 (#12) or maintainer pick among kernel row (#13–15)
 
 ---
 
