@@ -1,3 +1,18 @@
+## 2026-09-14 — issue #323 Totoro launch pack (`cursor/issue-323-totoro-launch-pack`)
+
+- Executable D-139 pack:
+  `docs/dev-log/after-task/2026-09-14-issue-323-totoro-launch-pack.md` — ack lines
+  (`ack Totoro D-139 #323 Track A|B`), oracle `b4d5fee6`, CI-mirror commands, success/fail
+  predicates, artifact paths. **No Totoro SSH** this slice; **no** #323 waive.
+
+## 2026-09-14 — second-order parity inventory prep (`docs/second-order-parity-inventory-20260914`)
+
+- Read-only after-task:
+  `docs/dev-log/after-task/2026-09-14-second-order-parity-inventory.md` — blocked
+  matched-θ cells (`beta_logit`, `nb2_log`), §6 holdouts, T3 scope, post-#323 slice
+  order, Totoro compute targets. **#323 not disposed**; no campaigns; `Project.toml`
+  unchanged. Branch separate from `cursor/issue-323-totoro-launch-pack`.
+
 ## 2026-09-14 — honest-070-destb Rose Done-when close (`cursor/honest-070-destb`)
 
 - Rose hard verify:

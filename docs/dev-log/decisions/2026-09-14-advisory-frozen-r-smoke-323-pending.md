@@ -7,6 +7,7 @@
 **Issue:** [#323](https://github.com/itchyshin/GLLVM.jl/issues/323) — advisory Frozen R 0.7.0 family smoke (NB2 + Student-t gradient health)  
 **Evidence pack:** [`docs/dev-log/owed/advisory-frozen-r-smoke-2026-09-14.md`](../owed/advisory-frozen-r-smoke-2026-09-14.md)  
 **G7 handoff (Track A/B, oracle pin, D-139 estimate):** [`docs/dev-log/after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md`](../after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md)  
+**Totoro launch pack (Codex runner, ack contract):** [`docs/dev-log/after-task/2026-09-14-issue-323-totoro-launch-pack.md`](../after-task/2026-09-14-issue-323-totoro-launch-pack.md)  
 **Prior disposition:** [`advisory-smoke-fail-disposition-2026-09-05.md`](../core070/advisory-smoke-fail-disposition-2026-09-05.md) (#284)
 
 ---
