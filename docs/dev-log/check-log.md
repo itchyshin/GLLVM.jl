@@ -18278,6 +18278,19 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
 - No src/test code changed by this update; docs/ledger only. No `--admin`,
   no force-push to `main`, no tolerance widening, no S4 probe, no B1 retry.
 
+## 2026-09-13 — honest-0.7 parity programme LOOP scaffold (G0)
+
+- Branch `cursor/gllvm-07-parity-programme-20260913` from `origin/main`
+  `d30a92bc` (post-#320).
+- Files: `LOOP/GOAL.md`, `LOOP/arcs.md`, `LOOP/checkpoint.md`,
+  `LOOP/ultra-plan.md`,
+  `docs/dev-log/decisions/2026-09-13-honest-070-parity-aim.md`,
+  after-task `docs/dev-log/after-task/2026-09-13-honest-070-parity-programme-scaffold.md`.
+- Evidence: `gh pr view 318` (open/draft, head `89235578`); `gh pr view 320`
+  (merged); no `Pkg.test()`.
+- Draft PR opened against `main` (number in gh output). No version bump, no S4
+  probe, no #318 test/engine edits.
+
 ## 2026-09-13 — DestB S4 recorder rehydrate pointer (docs-only)
 
 - Re-verified gllvmTMB object `97214679c94cc4a6b9e02d3c2b03ccce516027d8`
@@ -18290,3 +18303,37 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   PR #319 after-task; does not duplicate engine work on #318.
 - No model, bridge, parity, interval, release, or registry claim changed. S4
   probe not run.
+
+## 2026-09-13 — honest-0.7 parity programme scaffold + gap inventory (LOOP + decision note)
+
+- New branch `cursor/gllvm-07-parity-programme-20260913`, fresh from `origin/main`
+  @ `57ff35c5` (post-#319). Deliberately does **not** build on or check out PR
+  #318 (`codex/destination-b-b1-integration-20260910`) — its DestB G1/G2 docs
+  were read via `git fetch origin codex/destination-b-b1-integration-20260910`
+  + `git show FETCH_HEAD:<path>`, which touches nothing in this branch's
+  working tree. #318's CI is genuinely red today (7/10 checks fail, 8 test
+  files with real Hessian-PD/curvature defects across joint/precision/
+  grouped-nongaussian paths) — explicitly left for its own fix agent, not
+  touched here.
+- Wrote `LOOP/GOAL.md` (immutable goal: earn the joint 0.7.0 decision, never
+  bump `Project.toml` in this programme), `LOOP/arcs.md` (24 ranked arcs:
+  DestB numerical gates, 7/15 `planned` covariance-grid cells, second-order/
+  real-workflow gaps, the final gated version-bump arc), `LOOP/checkpoint.md`,
+  `LOOP/ultra-plan.md` (full gap inventory + rationale + ranked next-5).
+- Gap inventory built from: `docs/design/capability-status.md` (main —
+  covariance grid: 7/15 cells `planned`), `docs/src/gllvmtmb-parity.md` (main
+  — second-order programme NOT DONE, one-directional claim, FORWARD=77/
+  REVERSE=85 reverse-gap ledger), `docs/dev-log/core070/true-parity-decision-map.md`
+  (main — T5/T8/T11–T15 open), and PR #318's own G1 audit matrix (16 DONE / 7
+  OWED / 4 RETRACTED / 1 PROTECTED) + G2 closeout (B1 → `CLOSED — INTERFACE
+  LIMIT`; S3b consumer → qualified/fenced; S4 → `HELD`, blocked on both
+  authorisation and a physically-absent cross-repo recorder object
+  `97214679c`).
+- Decision note `docs/dev-log/decisions/2026-09-13-honest-070-parity-aim.md`:
+  aim is 0.7.0 (matching frozen gllvmTMB 0.7.0), earned not scheduled;
+  `Project.toml` stays `0.3.0`; cites vault D-183 (DRM.jl versioning entry,
+  which itself names and adopts "the GLLVM.jl↔gllvmTMB convention" that the
+  version communicates parity level with the R twin, not a race with the
+  twin's release cadence).
+- No `Project.toml` edit. No S4 probe. No edit to #318's failing test/engine
+  files or any `src/` file. No merge, no `gh pr ready`.
