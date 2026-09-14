@@ -3,7 +3,7 @@
 - ACCEPTED identity `docs/dev-log/decisions/2026-09-14-animal-latent-identity.md`.
 - Exported `fit_animal_latent_gllvm(Y, A, d)` → `K = 1`, `K_phy = d`; `d == p` delegates to `fit_animal_dep_gllvm`.
 - `unique = true` and non-Gaussian fail-loud; no formula/bridge/S4/version bump.
-- `julia --project=. test/test_animal_latent.jl` — see after-task for tally.
+- `julia --project=. test/test_animal_latent.jl` → 16/16 pass (~10 s).
 
 ## 2026-09-14 — animal × dep Arc 0 scaffold (branch `cursor/animal-dep-070-20260914`)
 
