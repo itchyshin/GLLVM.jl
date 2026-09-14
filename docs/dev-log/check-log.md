@@ -19558,3 +19558,13 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
   `cursor/gllvm-07-parity-programme-20260913`). Delivers LOOP scaffold +
   honest-0.7 decision note + after-task; **no `Project.toml` bump**.
 - Verified: `origin/main` @ `bf8a54ea`. PR #318 fix lane continues separately.
+
+## 2026-09-14 — PR #318 merged (destination-b G1/G2 closeout)
+
+- Squash-merged to `main` as `6c46873a` (PR head `5877a8b0`).
+- Pre-merge CI on head: 8/8 Julia shards SUCCESS, Documenter SUCCESS,
+  documenter/deploy SUCCESS; **advisory** Frozen R 0.7.0 family smoke FAILURE
+  (known NB2+Student-t oracle debt; `continue-on-error`).
+- Merge gate comment: https://github.com/itchyshin/GLLVM.jl/pull/318#issuecomment-5658100360
+- Post-merge `main`: CI + Documenter workflows queued on `6c46873a` (2026-09-14).
+- No `--admin`, no `--auto`, no force. Stale `/tmp/merge-318.pid` removed (dead process).
