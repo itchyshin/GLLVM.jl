@@ -41,7 +41,7 @@ Programme complete enough for a **joint 0.7.0 decision** (proposal only — **no
 - [x] **Capability promotion pass** (Rose G2): `docs/design/capability-status.md` Arc 0 fences — `2026-09-14-destb-g2-capability-promotion.md`.
 - [x] **T13** `mi()` row — test receipt pinned (`2026-09-14-destb-g4-t13-mi.md`; 57/57 focused tests).
 - [x] **T14** NB2 Wald NaN — F1/F2/F3 disposition receipted (`2026-09-14-destb-g5-t14-nb2-wald-nan.md`).
-- [ ] **T15** knife-edge fixture audit closed or carried with owner.
+- [x] **T15** knife-edge fixture audit — list-first 18 fixtures (`2026-09-14-destb-g6-t15-knife-edge.md`).
 - [ ] **Advisory Frozen R smoke** (**#323**) scoped/run on Totoro/Codex per G0 Q3 (NB2 + Student-t gradient health); non-blocking CI pattern documented.
 - [ ] **S4**: recorder **pushed** when G9 runs (G0 Q2); probe **only** after second maintainer yes post-fetch; else **HELD** with blocker documented in `FINAL-REVIEW`.
 - [ ] **`FINAL-REVIEW`**: Rose + Fisher sign-off on DestB-admitted rows + honest-0.7 programme fences (harness ≠ true parity).

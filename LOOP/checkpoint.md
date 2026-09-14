@@ -1,6 +1,6 @@
 # Checkpoint — honest-0.7 Destination B (`/goal` scaffold)
 
-GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **R0 + G1 + G2 + G4/T13 + G5/T14 done** on branch `cursor/honest-070-destb`.
+GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **R0–G2 + G4–G6 (T13–T15) done** on branch `cursor/honest-070-destb`.
 
 **G0 (2026-09-14):** Q1 B1 limit **permanent** (B1-RECOVERY off) · Q2 S4 **push only** (probe deferred) · Q3 **Totoro first**, DRAC if campaign sized.
 
@@ -10,7 +10,7 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **R0 + G1 + G2 + G4/T
 
 **ARC IN PROGRESS:** none.
 
-**NEXT:** **G6 T15** — knife-edge parity/bridge fixture audit (list first).
+**NEXT:** **G7** — advisory Frozen R smoke (#323) scope/handoff (Totoro; Codex per G0 Q3).
 
 **OPEN GATES (need human):** merge/push (unless pre-auth branch push); **S4 probe** (second yes after fetch); **arc #24** version bump (forbidden in-programme); foreign-lane file overlap (D-87).
 
@@ -30,5 +30,5 @@ Rehydrate origin/main; Shannon preflight + lane_lease before non-LOOP edits.
 
 G0 (locked): B1 limit permanent (B1-RECOVERY off) · S4 push only (probe = second yes after fetch) · Totoro first for smoke/D-139
 
-CONTINUE FROM: G6 T15 fixture audit. STOP: Project.toml bump, S4 probe without second yes, gllvmTMB engine surgery, merge without maintainer.
+CONTINUE FROM: G7 Frozen R smoke (#323). STOP: Project.toml bump, S4 probe without second yes, gllvmTMB engine surgery, merge without maintainer.
 ```

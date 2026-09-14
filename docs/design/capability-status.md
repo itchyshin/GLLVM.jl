@@ -339,6 +339,11 @@ this slice:
 (`n = 200`, `nb_r = 2`, intercept 1.5). ≠ DestB FINAL-REVIEW; ≠ second-order
 parity certificate for all NB2+X cells.
 
+**Knife-edge fixture audit (T15, DestB G6 2026-09-14).** List-first inventory:
+`docs/dev-log/after-task/2026-09-14-destb-g6-t15-knife-edge.md` — **18**
+fixtures dispositioned (keep / document / already-retargeted); **0** test edits
+this slice. Named degenerate NB2 seed-523 cells stay **by design** post-T14.
+
 ## R bridge (`engine = "julia"`)
 
 Same twin surface, transport layer. Status = code + bridge/parity test exist;
