@@ -1,3 +1,11 @@
+## 2026-09-14 — honest-070-destb Rose Done-when close (`cursor/honest-070-destb`)
+
+- Rose hard verify:
+  `docs/dev-log/after-task/2026-09-14-destb-goal-done-when-close.md` @ **`4765d041`**
+  — Done-when **1–3 PASS** (branch receipts); `destination_b_scope_check.mjs` PASS;
+  `Project.toml` `0.3.0`; G11 stub present. **No** merge, Totoro, S4 probe, bump.
+  OWED: #336 merge, #323 execute/waive, S4 probe (second yes).
+
 ## 2026-09-14 — honest-070-destb G7b local Track B + PR #336 ready (`cursor/honest-070-destb`)
 
 - `gh pr ready 336` @ tip **`7eee6fc2`** — Documenter + deploy green (docs-only).
