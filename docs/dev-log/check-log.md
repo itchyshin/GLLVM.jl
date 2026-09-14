@@ -1,3 +1,10 @@
+## 2026-09-14 — spatial × dep Arc 0 fail-loud admission (branch `cursor/spatial-dep-070-20260914`)
+
+- ACCEPTED identity `docs/dev-log/decisions/2026-09-14-spatial-dep-identity.md`.
+- Exported `fit_spatial_dep_gllvm` — every path `ArgumentError` (no mesh/SPDE fake).
+- `julia --project=. test/test_spatial_dep.jl` → 6/6 pass (~0.2 s).
+- Ledger row unchanged (`planned`); no formula/bridge/S4/version bump.
+
 ## 2026-09-14 — animal × latent Arc 0 scaffold (branch `cursor/animal-latent-070-20260914`)
 
 - ACCEPTED identity `docs/dev-log/decisions/2026-09-14-animal-latent-identity.md`.

@@ -21,6 +21,7 @@ fit_dep_gllvm
 fit_phylo_dep_gllvm
 fit_animal_dep_gllvm
 fit_animal_latent_gllvm
+fit_spatial_dep_gllvm
 fit_mixed_gllvm
 fit_gaussian_gllvm
 fit_gaussian_pervar_gllvm
