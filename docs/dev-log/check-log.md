@@ -19568,3 +19568,29 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Merge gate comment: https://github.com/itchyshin/GLLVM.jl/pull/318#issuecomment-5658100360
 - Post-merge `main`: CI + Documenter workflows queued on `6c46873a` (2026-09-14).
 - No `--admin`, no `--auto`, no force. Stale `/tmp/merge-318.pid` removed (dead process).
+<<<<<<< HEAD
+=======
+
+## 2026-09-14 — Post-#318 coordination board tick (docs-only)
+
+- Branch `cursor/post-318-board-20260913` from `origin/main` @ `1125eafb`
+  (post merge-log commit for #318).
+- Updated `docs/dev-log/coordination-board.md` Active-Lane-Split DestB row:
+  **MERGED #318** @ `6c46873a`; pointers to G2 closeout + B1 decision +
+  after-task; numerical gates deferred to `LOOP/arcs.md` (#321).
+- `gh run list -R itchyshin/GLLVM.jl --branch main -L 5` @ tick: merge commit
+  `6c46873a` — Documenter **success**; full **CI still in_progress**
+  (run `34798728654`); advisory Frozen R smoke **in_progress** (expected red
+  when settled — same oracle debt as pre-merge head).
+- No `src/` / `test/` edits. No push without maintainer instruction (PR only).
+
+## 2026-09-14 — phylo × dep Arc 0 scaffold (`cursor/phylo-dep-070-20260913`)
+
+- Identity: `docs/dev-log/decisions/2026-09-14-phylo-dep-identity.md` (ACCEPTED).
+- Engine: `src/phylo_dep.jl` — `fit_phylo_dep_gllvm(Y, phy)` → `fit_gaussian_gllvm(K=1, K_phy=p, Σ_phy)`.
+- Tests: `test/test_phylo_dep.jl` (routed to `runtests.jl`).
+- OWED advisory Frozen R smoke: `docs/dev-log/owed/advisory-frozen-r-smoke-2026-09-14.md` + GitHub issue (see PR body for #).
+- LOOP: `checkpoint.md` + `arcs.md` (#318 done; #9 in progress). Capability row stays **planned**.
+- Commands: (local `Pkg.instantiate` failed — StatsModels manifest drift; CI is canonical).
+- Deliberately not run: full `runtests.jl`, `Pkg.test()`, Documenter, R parity.
+>>>>>>> e6232e8f (feat(phylo-dep): Arc 0 Gaussian matrix fitter scaffold)
