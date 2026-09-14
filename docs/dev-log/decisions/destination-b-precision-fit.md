@@ -65,22 +65,26 @@ unlock the R signal extractor. No likelihood or point estimate changed.
 
 ## Frozen boundary and interior interval evidence cells
 
-The fixed `MersenneTwister(20260907)` 16-tip / six-observation fixture is
-frozen as a boundary finding, not feasibility evidence. Its Cholesky-solve
+The fixed `StableRNG(20260900)` 16-tip / six-observation fixture is frozen as
+a boundary finding, not feasibility evidence. `StableRNG` (not
+`MersenneTwister`) is required here because `Random.MersenneTwister`'s draw
+stream is not stable across Julia versions (confirmed empirically: identical
+seed, `randn` calls diverge between Julia 1.10 and 1.12+), and this fixture is
+exercised on both the 1.10 and 1.13 CI matrix cells. Its Cholesky-solve
 realization has `Y` SHA-256
-`905cbd4e3c2582c4f05c7f4b65189b78809f45125b6f00e0cdb3a9338e4524a2` and
+`5b46c45ac1b530bf0202208b3605cf06626b88447e4a38c6aa3f87e75da83cf4` and
 species-map SHA-256
-`7038f2d9e0a0362224e2507010d180542a6f825b39845afd48d2bf2192bdf578`.
-The first unique component reaches a lower boundary (estimated variance
-≈ `3e-9`) and its marginal finite-difference Hessian has an approximately
-`-5.96e-8` least eigenvalue concentrated on that coordinate on Julia
-1.10/macOS OpenBLAS. That eigenvalue sits on a BLAS/Julia-version sign
-knife-edge: Julia 1.13/Linux CI reports `:available` for the identical
-frozen `Y` and start while still leaving trait-one unique variance collapsed.
-Tests assert the structural boundary and interval self-consistency, not a
-single platform-specific coarse status label.
-The old inverse-square-root realization is different data despite the same
-seed and is not used as a receipt for this fixture.
+`7038f2d9e0a0362224e2507010d180542a6f825b39845afd48d2bf2192bdf578` (the
+species map is seed-independent, so this hash is unchanged from the earlier
+`MersenneTwister` realization). The first unique component reaches a lower
+boundary (estimated variance ≈ `3.16e-9`) and its marginal finite-difference
+Hessian has an approximately `-2.79e-7` least eigenvalue concentrated on that
+coordinate on Julia 1.10/macOS OpenBLAS. That eigenvalue sits on a
+BLAS/Julia-version sign knife-edge, matching the pattern already documented
+for the intermediate fixture below. Tests assert the structural boundary
+(`phylo_unique_variance[1] < 1e-6`, `abs(hessian_min_eigenvalue) < 1e-5`) and
+interval self-consistency, not a single platform-specific coarse status
+label.
 
 A separately declared 32-tip / eight-observation intermediate fixture at the
 same seed and with `U=(0.85,0.72,0.90)`, `psi=(0.10,0.12,0.11)` also reaches a

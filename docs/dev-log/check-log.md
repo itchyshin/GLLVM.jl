@@ -19358,3 +19358,43 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
   wording. No likelihood, ridge, or tolerance widening.
 - Verify: `julia --project=. test/test_precision_multivariate_fit.jl` →
   **47/47** pass (~11 s, local macOS).
+
+## 2026-09-13 (later) — 16-tip boundary fixture still used MersenneTwister; StableRNG re-seed (PR #318)
+
+- The prior fix (above) relaxed the assertion but the fixture itself
+  (`_pmvf_boundary_unique_fixture`) still called `MersenneTwister(20260907)`.
+  Verified locally on Julia 1.12/1.13: the `randn` stream differs from
+  Julia 1.10's, so the fit no longer lands near the boundary at all
+  (`phylo_unique_variance[1] = 0.758`, far from `< 1e-6`) — a real,
+  reproducible failure distinct from the earlier BLAS sign-flip, and not
+  yet caught by any completed CI run at the time of this entry (the branch
+  push that introduced the relaxed assertion did not trigger a fresh
+  GitHub Actions run — see the `not-triggered-ci` note filed the same day).
+- Fix: switched the fixture to `StableRNG` (added `using StableRNGs` to the
+  test file) and grid-searched seeds `20260900:20260940` for one that keeps
+  `phylo_unique_variance[1] < 1e-6` under the new stream; `20260900` gives
+  `3.16e-9` with `hessian_min_eigenvalue = -2.79e-7`, matching the intended
+  boundary shape. Updated `destination-b-precision-fit.md`'s frozen-fixture
+  paragraph with the new `Y` SHA-256 (species-map hash is seed-independent
+  and unchanged).
+- Verify: `julia --project=<repro env> test/test_precision_multivariate_fit.jl`
+  → **47/47** pass identically on Julia 1.10, 1.12, and 1.13 (no
+  cross-version divergence, unlike the pre-fix state). No tolerance
+  widening; the boundary and knife-edge assertions are unchanged from the
+  prior fix, only the fixture's RNG type and seed moved.
+
+## 2026-09-13 (later) — pushed commits did not trigger a new GitHub Actions run (PR #318)
+
+- Observed: five commits (`5d707600`..`14945852`) landed on
+  `codex/destination-b-b1-integration-20260910` and were confirmed present
+  on `origin` (`git ls-remote` / `gh api .../git/refs/heads/...` both
+  matched the pushed SHA), but `gh api .../commits/<sha>/check-runs` and
+  `.../status` both returned empty/`pending` with zero runs for over 25
+  minutes — no `pull_request: synchronize` workflow fired for that push,
+  unlike every other push in this session (which triggered normally within
+  seconds). Root cause not established (not a path-filter skip: the push
+  touched `.jl` test files, not just docs). Do not assume "pushed" implies
+  "CI will run" without confirming a run ID exists for the exact head SHA.
+  Worked around by continuing to commit forward (each subsequent push in
+  this session was checked individually for a matching run before waiting
+  on it).
