@@ -44,6 +44,7 @@ maintainer decision, out of scope here).
 | 19 | T13 — capability-status.md `mi()` row drift (exported+tested but marked `planned`) | **done** | Receipt pinned 2026-09-14; row already `implemented` on main — `2026-09-14-destb-g4-t13-mi.md`, 57/57 tests |
 | 20 | T14 — NB2 second-order health (Wald NaN at degenerate optimum) | **done** | F1+F2+F3 on main since 2026-09-02; DestB G5 receipt 2026-09-14 (`2026-09-14-destb-g5-t14-nb2-wald-nan.md`) |
 | 21 | T15 — single-seed knife-edge fixture audit | **done** | List-first audit 2026-09-14: 18 fixtures dispositioned (`2026-09-14-destb-g6-t15-knife-edge.md`); no test edits |
+| 25 | G7 — advisory Frozen R smoke (#323) | **done (handoff)** | Scope + Totoro/Codex pack 2026-09-14 (`2026-09-14-destb-g7-frozen-r-smoke-handoff.md`); **execution owed** Codex after D-139 ack |
 | 22 | Realistic-size grid (p≥20, n≥500) beyond the one pre-run cell | **blocked** | needs Totoro/DRAC compute allocation |
 | 23 | Real-data workflow acceptance (T7: `urbanisation_map` → `avian_trait_scales` → …) | **blocked** | needs gllvmTMB PR #1236 merged first |
 

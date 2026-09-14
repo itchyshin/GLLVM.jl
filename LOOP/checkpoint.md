@@ -10,7 +10,7 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **R0–G2 + G4–G6 (
 
 **ARC IN PROGRESS:** none.
 
-**NEXT:** **G7** — advisory Frozen R smoke (#323) scope/handoff (Totoro; Codex per G0 Q3).
+**NEXT:** **G10** — `FINAL-REVIEW` prep (Rose+Fisher on DestB branch receipts). **Parallel (Codex):** #323 frozen smoke on Totoro per [`2026-09-14-destb-g7-frozen-r-smoke-handoff.md`](../docs/dev-log/after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md) after D-139 ack. **Then:** G9 S4 push (G0 Q2) · branch PR / merge prep · G11 joint version proposal.
 
 **OPEN GATES (need human):** merge/push (unless pre-auth branch push); **S4 probe** (second yes after fetch); **arc #24** version bump (forbidden in-programme); foreign-lane file overlap (D-87).
 
@@ -30,5 +30,5 @@ Rehydrate origin/main; Shannon preflight + lane_lease before non-LOOP edits.
 
 G0 (locked): B1 limit permanent (B1-RECOVERY off) · S4 push only (probe = second yes after fetch) · Totoro first for smoke/D-139
 
-CONTINUE FROM: G7 Frozen R smoke (#323). STOP: Project.toml bump, S4 probe without second yes, gllvmTMB engine surgery, merge without maintainer.
+CONTINUE FROM: G10 FINAL-REVIEW prep (Codex runs #323 separately). Handoff: docs/dev-log/after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md. STOP: Project.toml bump, S4 probe without second yes, gllvmTMB engine surgery, Totoro without D-139, merge without maintainer.
 ```
