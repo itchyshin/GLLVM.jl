@@ -1,3 +1,8 @@
+## 2026-09-14 — LOOP post–#334 kernel_latent merged (branch `cursor/loop-post-334`)
+
+- Tick `LOOP/checkpoint.md` + `LOOP/arcs.md`: arc **#15 done** @ `9cb279e5`; grid arcs **#9–#15** on `main` @ `23fd0496`.
+- Post-#334 CI [`34848846828`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34848846828): 8/8 Julia + Documenter **PASS**; advisory Frozen R **FAIL** (non-blocking).
+
 ## 2026-09-14 — LOOP post–#331 kernel_indep merged (branch `cursor/loop-post-331`)
 
 - Tick `LOOP/checkpoint.md` + `LOOP/arcs.md`: arc **#13 done** @ `5e9bfcd4`; active **#14** `kernel_dep()`.

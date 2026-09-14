@@ -28,7 +28,7 @@ silently dropped.
 | 12 | `spatial_dep()` | **done** | `planned` — #329 @ `f110bf3`; Arc 0 fail-loud admission on `main`; ledger row unchanged until Rose/promotion |
 | 13 | `kernel_indep()` | **done** | `planned` — #331 @ `5e9bfcd4`; Arc 0 `fit_kernel_indep_gllvm` on `main`; ledger unchanged until Rose/promotion |
 | 14 | `kernel_dep()` | **done** | `planned` — #333 @ `c6f8233b`; Arc 0 `fit_kernel_dep_gllvm` on `main`; ledger unchanged until Rose/promotion |
-| 15 | `kernel_latent()` | **in PR** | `planned` — Arc 0 draft [#334](https://github.com/itchyshin/GLLVM.jl/pull/334); active after #333 merge |
+| 15 | `kernel_latent()` | **done** | `planned` — #334 @ `9cb279e5`; Arc 0 `fit_kernel_latent_gllvm` on `main`; ledger unchanged until Rose/promotion |
 
 7 of 15 grid cells are `planned` (not `implemented`). None is `blocked`/rejected outright except
 `phylo_latent + lv = ~x` (Phylo Model A public intervals — already `rejected` by 2026-08-28
