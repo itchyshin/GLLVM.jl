@@ -1,3 +1,11 @@
+## 2026-09-14 — honest-070-destb G7b local Track B + PR #336 ready (`cursor/honest-070-destb`)
+
+- `gh pr ready 336` @ tip **`7eee6fc2`** — Documenter + deploy green (docs-only).
+- Track B local: **BLOCKED→Totoro** —
+  `docs/dev-log/after-task/2026-09-14-destb-g7b-frozen-r-track-b-local.md`
+  (no `.unlazy/r-build`; R 4.6.0 vs contract 4.5.3; no cells run). Merge comment
+  on #336; **no merge**; `Project.toml` `0.3.0`.
+
 ## 2026-09-14 — honest-070-destb goal completion audit (`cursor/honest-070-destb`)
 
 - Ada audit:
