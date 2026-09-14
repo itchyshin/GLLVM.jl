@@ -19331,3 +19331,19 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
   to remove the masters' uneven opaque raster edge; the compact badge retains
   its native 277 × 304 aspect ratio.
 - No model, bridge, parity, interval, release, or registry claim changed.
+
+## 2026-09-13 — Destination B 16-tip precision boundary interval knife-edge (PR #318)
+
+- CI run `34783452200` shard 2/4: frozen 16-tip unique-boundary fixture
+  expected `:invalid_curvature` but Julia 1.13/Linux reported `:available`
+  (`intervals.status == :invalid_curvature` evaluated `available ==
+  invalid_curvature` at `test_precision_multivariate_fit.jl:198`).
+- Cause: marginal FD Hessian least eigenvalue ≈ `-5.96e-8` at the collapsed
+  trait-one unique variance (≈ `3e-9`); sign flips with BLAS/Julia like the
+  already-fixed 32-tip intermediate cell and Destination B NB2 joint test.
+- Fix: assert structural boundary + `abs(hess_min) < 1e-5` and interval
+  self-consistency (`:invalid_curvature` or `:available` with matching
+  per-target statuses); updated `destination-b-precision-fit.md` receipt
+  wording. No likelihood, ridge, or tolerance widening.
+- Verify: `julia --project=. test/test_precision_multivariate_fit.jl` →
+  **47/47** pass (~11 s, local macOS).
