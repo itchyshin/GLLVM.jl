@@ -71,17 +71,23 @@ realization has `Y` SHA-256
 `905cbd4e3c2582c4f05c7f4b65189b78809f45125b6f00e0cdb3a9338e4524a2` and
 species-map SHA-256
 `7038f2d9e0a0362224e2507010d180542a6f825b39845afd48d2bf2192bdf578`.
-The first unique component reaches a lower boundary and its observed Hessian
-has an approximately `-5.96e-8` least eigenvalue concentrated on that
-coordinate; the expected interval result is therefore `:invalid_curvature`.
+The first unique component reaches a lower boundary (estimated variance
+≈ `3e-9`) and its marginal finite-difference Hessian has an approximately
+`-5.96e-8` least eigenvalue concentrated on that coordinate on Julia
+1.10/macOS OpenBLAS. That eigenvalue sits on a BLAS/Julia-version sign
+knife-edge: Julia 1.13/Linux CI reports `:available` for the identical
+frozen `Y` and start while still leaving trait-one unique variance collapsed.
+Tests assert the structural boundary and interval self-consistency, not a
+single platform-specific coarse status label.
 The old inverse-square-root realization is different data despite the same
 seed and is not used as a receipt for this fixture.
 
 A separately declared 32-tip / eight-observation intermediate fixture at the
 same seed and with `U=(0.85,0.72,0.90)`, `psi=(0.10,0.12,0.11)` also reaches a
-unique-variance boundary (the second component) and is retained as another
-`:invalid_curvature` case. It does not become an interior receipt merely
-because its generative variances were positive.
+unique-variance boundary (the second component). Its coarse interval status is
+another finite-difference Hessian knife-edge (`:invalid_curvature` on Julia
+1.10, `:available` on Julia 1.12+ in grid probes). It does not become an
+interior receipt merely because its generative variances were positive.
 
 The distinct feasibility cell holds the seed, three traits, rank one, loading
 and variance construction fixed but increases phylogenetic units to
