@@ -288,6 +288,32 @@ slice. No twin light Δ.
 | Missing responses (NA / mask) | implemented |
 | Missing predictor `mi()` | implemented |
 | Latent scores on covariates `latent(..., lv = ~ x)` ordinary | implemented |
+
+**Missing predictor `mi()` (T13 receipt, DestB G4 2026-09-14).** Row was already
+`implemented` on `origin/main`; this pass **pins test evidence** after
+true-parity map T13 drift audit (exports existed; receipt was implicit). Exports:
+`fit_gaussian_mi_fiml`, `fit_gaussian_mi_phylo`, `fit_gllvm_mi`, `fit_gllvm_mi_multi`
+(`src/GLLVM.jl`). Focused run (single Julia process, files included in order):
+
+```sh
+~/.juliaup/bin/julia --project=. -e 'using Test; include("test/test_mi_fitter.jl"); …'
+```
+
+| Test file | Pass / Total |
+|---|---|
+| `test/test_mi_fitter.jl` | 5 / 5 |
+| `test/test_missing_predictor_fiml.jl` | 9 / 9 |
+| `test/test_missing_predictor_phylo.jl` | 9 / 9 |
+| `test/test_missing_predictor_z.jl` | 6 / 6 |
+| `test/test_missing_predictor_poisson.jl` | 6 / 6 |
+| `test/test_missing_predictor_dispersion.jl` | 15 / 15 |
+| `test/test_missing_predictor_multi.jl` | 7 / 7 |
+| **Sum** | **57 / 57** |
+
+**Fence:** native Julia mi() axis only; no R-bridge light Δ pasted here; not
+Destination B `FINAL-REVIEW`; not full gllvmTMB 0.7 parity. `@formula` / public
+R `mi()` keyword parity is a separate surface (change-control / twin lane).
+
 | Concurrent / constrained / RRR ordination (`num.lv.c` / `num.RR`) | implemented |
 | Quadratic response | implemented |
 | Mixed-family response vector | planned |

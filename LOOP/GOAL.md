@@ -39,7 +39,8 @@ Programme complete enough for a **joint 0.7.0 decision** (proposal only — **no
 - [x] Covariance grid Arc 0 **#9–#15 merged** on `main` (#324–#334).
 - [x] **`API-BOUNDARY`**: static 32-row DestB boundary audit vs `tools/destination_b_scope_check.mjs` + after-task receipt (`2026-09-14-destb-api-boundary.md`).
 - [x] **Capability promotion pass** (Rose G2): `docs/design/capability-status.md` Arc 0 fences — `2026-09-14-destb-g2-capability-promotion.md`.
-- [ ] **T13–T15** hygiene (`mi()` row, NB2 Wald NaN subset, knife-edge fixture audit) closed or carried with owner.
+- [x] **T13** `mi()` row — test receipt pinned (`2026-09-14-destb-g4-t13-mi.md`; 57/57 focused tests).
+- [ ] **T14–T15** hygiene (NB2 Wald NaN subset, knife-edge fixture audit) closed or carried with owner.
 - [ ] **Advisory Frozen R smoke** (**#323**) scoped/run on Totoro/Codex per G0 Q3 (NB2 + Student-t gradient health); non-blocking CI pattern documented.
 - [ ] **S4**: recorder **pushed** when G9 runs (G0 Q2); probe **only** after second maintainer yes post-fetch; else **HELD** with blocker documented in `FINAL-REVIEW`.
 - [ ] **`FINAL-REVIEW`**: Rose + Fisher sign-off on DestB-admitted rows + honest-0.7 programme fences (harness ≠ true parity).
