@@ -23,6 +23,8 @@ fit_animal_dep_gllvm
 fit_animal_latent_gllvm
 fit_spatial_dep_gllvm
 fit_kernel_indep_gllvm
+fit_kernel_dep_gllvm
+fit_kernel_latent_gllvm
 fit_mixed_gllvm
 fit_gaussian_gllvm
 fit_gaussian_pervar_gllvm
