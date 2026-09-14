@@ -1,18 +1,20 @@
 # Checkpoint — honest-0.7 Destination B (`/goal` scaffold)
 
-GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **G1–G11 stub + FINAL-REVIEW PASS-WITH-CORRECTIONS** on `cursor/honest-070-destb`; draft PR **#336**.
+GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** G0 locked; **G1–G11 stub + FINAL-REVIEW PASS-WITH-CORRECTIONS** on `cursor/honest-070-destb` @ `45363995`; draft PR **#336** (Documenter-green on tip; docs-only — no Julia shard re-run).
+
+**Goal NOT complete** until **all** of: **(a)** #336 **merged** **or** maintainer **accepts draft receipts** without merge; **(b)** **#323** Frozen R smoke **executed** (Codex/Totoro + receipt) **or** maintainer **waives** to keep-advisory-non-gating; **(c)** `Project.toml` stays **`0.3.0`**. Parent **`UpdateGoal` complete: NO** until then + #323 dispositioned — audit: [`docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md`](../docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md).
 
 **G0 (2026-09-14):** Q1 B1 limit **permanent** (B1-RECOVERY off) · Q2 S4 **push only** (probe deferred) · Q3 **Totoro first**, DRAC if campaign sized.
 
 **Rehydrate from:** `origin/main` @ `23fd0496` (#335 handoff); grid **#334** @ `9cb279e5`.
 
-**ARCS DONE (verified):** DestB #1–#2, #4, #6, #8; grid #9–#15 (Arc 0 on main, ledger still `planned` until G2 promotion).
+**ARCS DONE (verified):** DestB #1–#2, #4, #6–#8; grid #9–#15 (Arc 0 on main + G2 Rose promotion on #336 branch).
 
 **ARC IN PROGRESS:** none.
 
-**NEXT:** Maintainer — merge **draft PR #336** when ready (8/8 CI); **Codex #323** (D-139); **S4 probe** (second G0 yes). Optional: promote G11 stub → formal decision doc. **NOT:** version bump, S4 probe without yes, merge without maintainer.
+**NEXT:** Maintainer — merge **draft PR #336** when ready; **Codex #323** (D-139 ack first); **S4 probe** (second G0 yes only). Optional: promote G11 stub → formal decision doc. **NOT:** version bump, S4 probe without yes, Totoro in Cursor lane.
 
-**OPEN GATES (need human):** merge/push (unless pre-auth branch push); **S4 probe** (second yes after fetch); **arc #24** version bump (forbidden in-programme); foreign-lane file overlap (D-87).
+**OPEN GATES (need human):** #336 merge or receipt acceptance; **#323** execute vs waive; **S4 probe** (second yes); **arc #24** version bump (forbidden in-programme); foreign-lane file overlap (D-87).
 
 **TRUTH LIVES IN:** `origin/main`; `docs/dev-log/plans/2026-09-14-honest-070-destination-b-ultraplan.md`; `LOOP/arcs.md`; DestB closeout `docs/dev-log/2026-09-13-destination-b-g2-closeout.md`.
 
