@@ -26,7 +26,7 @@ silently dropped.
 | 10 | `animal_dep()` | **done** | `planned` — #325 @ `1ef979f`; Arc 0 `fit_animal_dep_gllvm` on `main`; ledger row unchanged until Rose/promotion |
 | 11 | `animal_latent()` | **done** | `planned` — #327 @ `5e4f38b`; Arc 0 `fit_animal_latent_gllvm` on `main`; ledger row unchanged until Rose/promotion |
 | 12 | `spatial_dep()` | **done** | `planned` — #329 @ `f110bf3`; Arc 0 fail-loud admission on `main`; ledger row unchanged until Rose/promotion |
-| 13 | `kernel_indep()` | **in PR** | `planned` — Arc 0 `fit_kernel_indep_gllvm` on `cursor/kernel-indep-070-20260914`; ledger unchanged until Rose/promotion |
+| 13 | `kernel_indep()` | **done** | `planned` — #331 @ `5e9bfcd4`; Arc 0 `fit_kernel_indep_gllvm` on `main`; ledger unchanged until Rose/promotion |
 | 14 | `kernel_dep()` | **next** | `planned` |
 | 15 | `kernel_latent()` | **next** | `planned` |
 

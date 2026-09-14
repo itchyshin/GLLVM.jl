@@ -1,12 +1,13 @@
 # Checkpoint — honest-0.7 parity programme (2026-09-14)
 
-- **origin/main HEAD:** `b2956e83` (LOOP tick post–#329/#330; arc **#329** spatial × dep merged)
-- **PR #318:** **MERGED** · **PR #321:** **MERGED** · **PR #324:** **MERGED** · **PR #325:** **MERGED** · **PR #326:** **MERGED** · **PR #327:** **MERGED** · **PR #329:** **MERGED**
+- **origin/main HEAD:** `5e9bfcd4` (arc **#331** kernel × indep; prior **#329** @ `f110bf3e` spatial × dep)
+- **PR #318:** **MERGED** · **PR #321:** **MERGED** · **PR #324:** **MERGED** · **PR #325:** **MERGED** · **PR #326:** **MERGED** · **PR #327:** **MERGED** · **PR #329:** **MERGED** · **PR #331:** **MERGED**
 - **Post-#327 CI (Julia):** [`34818578019`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34818578019) on `5e4f38b` — **8/8 PASS** (advisory Frozen R red, non-blocking)
 - **Post-#329 CI:** [`34823285459`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34823285459) on `f110bf3e` — **8/8 Julia + Documenter PASS** (2026-09-14)
-- **Advisory Frozen R:** non-blocking on #318/#324/#325/#327/#329 pattern; OWED **#323**
-- **Active slice:** arc **#13** `kernel_indep()` — branch `cursor/kernel-indep-070-20260914` (Gaussian `SourceCovariance` wrapper)
-- **RESUME:** open draft PR for #13 → merge → `#14` `kernel_dep()` or maintainer pick
+- **Post-#331 CI:** [`34828508282`](https://github.com/itchyshin/GLLVM.jl/actions/runs/34828508282) on `5e9bfcd4` — **8/8 Julia + Documenter PASS** (advisory Frozen R red, non-blocking)
+- **Advisory Frozen R:** non-blocking on #318/#324/#325/#327/#329/#331 pattern; OWED **#323**
+- **Active slice:** arc **#14** `kernel_dep()` — branch `cursor/kernel-dep-070-20260914` (Gaussian `SourceCovariance` `:dep` wrapper or fail-loud)
+- **RESUME:** open draft PR for #14 → merge → `#15` `kernel_latent()` or maintainer pick
 
 ---
 
