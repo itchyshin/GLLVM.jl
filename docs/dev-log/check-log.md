@@ -19759,3 +19759,10 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Branch: `docs/destb-checkpoint-post-336` (PR #337 lane); local commit only (no push — overlaps LOOP PR).
 - Ledger @ inventory: 7/8 bound on 2026-09-03 T5 receipts; `namespace/export/loading_profile` → `BLOCKED_NEEDS_JULIA_SURFACE` (D3); `PARTIAL_PARITY_DEFECT_PENDING_DECISION=0`.
 - Commands: `python3 tools/core070_ledger_counts.py`; row-id JSON scrape; `graft ask` (loading_profile / extract context). No Totoro; #323 not waived.
+
+## 2026-09-14 — T5: LOOP sync to inventory (7/8 bound, D3 row 8)
+
+- Branch: `docs/t5-loop-sync-post-337` (follow-on to PR #337 @ `57a4f4a6`).
+- Updated: `LOOP/arcs.md` #16 → **partial (7/8)**; `LOOP/GOAL.md` + `LOOP/checkpoint.md` T5 wording; after-task inventory follow-up marked done.
+- Ledger unchanged: 7 bound + `loading_profile` **BLOCKED_NEEDS_JULIA_SURFACE** (D3); T5 arc **not closed**. **#323 not waived.**
+- Docs-only; `Project.toml` untouched; no second-order engine work.
