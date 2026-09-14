@@ -1,3 +1,13 @@
+## 2026-09-14 — honest-070-destb G7 Frozen R smoke handoff (#323) (`cursor/honest-070-destb`)
+
+- Scope + Codex/Totoro pack:
+  `docs/dev-log/after-task/2026-09-14-destb-g7-frozen-r-smoke-handoff.md` (oracle
+  `b4d5fee6`, CI job mirror, Track A/B commands, D-139 ~90–150 min / ~60–90 min).
+- Linked from `docs/dev-log/owed/advisory-frozen-r-smoke-2026-09-14.md`; LOOP arc #25
+  handoff done; **no Totoro launch** this slice. Next: G10 FINAL-REVIEW prep; Codex
+  executes smoke after maintainer D-139 ack.
+- No push.
+
 ## 2026-09-14 — LOOP post–#334 kernel_latent merged (branch `cursor/loop-post-334`)
 
 - Tick `LOOP/checkpoint.md` + `LOOP/arcs.md`: arc **#15 done** @ `9cb279e5`; grid arcs **#9–#15** on `main` @ `23fd0496`.
