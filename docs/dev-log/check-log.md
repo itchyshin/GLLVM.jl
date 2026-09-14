@@ -18337,3 +18337,10 @@ idx9/17 max rel dSE ~5e-6 / ~1.9e-5.
   twin's release cadence).
 - No `Project.toml` edit. No S4 probe. No edit to #318's failing test/engine
   files or any `src/` file. No merge, no `gh pr ready`.
+
+## 2026-09-13 — PR #321 merged (honest-0.7 parity programme LOOP, G0)
+
+- `gh pr view 321`: **MERGED** @ `bf8a54e` into `main` (merge commit of
+  `cursor/gllvm-07-parity-programme-20260913`). Delivers LOOP scaffold +
+  honest-0.7 decision note + after-task; **no `Project.toml` bump**.
+- Verified: `origin/main` @ `bf8a54ea`. PR #318 fix lane continues separately.
