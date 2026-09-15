@@ -1,3 +1,20 @@
+## 2026-09-14 — D3 `loading_profile` surface scout (`docs/loading-profile-d3-surface-scout-20260914`)
+
+- Read-only after-task:
+  `docs/dev-log/after-task/2026-09-14-loading-profile-d3-surface-scout.md` — Julia
+  `loading_profile_exploratory` vs R confirmatory `loading_profile()`, proposed
+  staged Julia surface, test/receipt plan, STOP fences. **No engine export**; **no**
+  ledger JSON edit; **#323 not waived**; T5 row 8 stays `BLOCKED_NEEDS_JULIA_SURFACE`.
+  Branch separate from matched-θ / second-order inventory PR.
+
+## 2026-09-14 — matched-θ disposition draft (`docs/matched-theta-beta-nb2-pending`)
+
+- PENDING_ACCEPTANCE decision only:
+  `docs/dev-log/decisions/2026-09-14-matched-theta-beta-nb2-pending.md` — options
+  (A) Julia per-trait φ, (B) shared-φ θ-map/fixture, (C) permanent matched-θ OUT;
+  Ada default **(C)** if judgment while #323 paused. **No** accept, **no** engine,
+  **no** #323 waive, **no** `Project.toml` bump.
+
 ## 2026-09-14 — issue #323 Totoro launch pack (`cursor/issue-323-totoro-launch-pack`)
 
 - Executable D-139 pack:
