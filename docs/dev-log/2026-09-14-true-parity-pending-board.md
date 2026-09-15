@@ -1,6 +1,6 @@
 # True-parity programme — maintainer board (2026-09-14, updated 2026-09-15)
 
-**STATE:** **IN PROGRESS** — #323 and matched-θ **disposed** via **AGENT-APPLIED Ada defaults** (reversible until Shinichi reverses). **Still open:** S4 probe, D3 `loading_profile` Stage 0/1, ledger gaps, **`Project.toml` `0.3.0`**.
+**STATE:** **IN PROGRESS** — #323 and matched-θ **disposed** via **AGENT-APPLIED Ada defaults** (reversible until Shinichi reverses). **Ledger gap inventory done** (item 3 — [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md); **≠** closing gaps). **Still open:** S4 probe, D3 Stage **1** only (Stage **0** on main #345), **`Project.toml` `0.3.0`**.
 
 **Rehydrate:** `origin/main` · frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86` · **`Project.toml` stays `0.3.0`**.
 
@@ -29,8 +29,12 @@ S4 probe yes
 
 ### D3 `loading_profile` (T5 row 8)
 
-**Scout landed:** [GLLVM.jl PR #341](https://github.com/itchyshin/GLLVM.jl/pull/341) → [`docs/dev-log/after-task/2026-09-14-loading-profile-d3-surface-scout.md`](after-task/2026-09-14-loading-profile-d3-surface-scout.md).  
-**Next engineering (maintainer G0 only):** Stage 0 fixture + pins, then Stage 1 export/tests/ledger — **no auto-build** from agents without G0.
+**Scout:** [PR #341](https://github.com/itchyshin/GLLVM.jl/pull/341) · **Stage 0 merged** [PR #345](https://github.com/itchyshin/GLLVM.jl/pull/345) @ `2fd0cec8` — [`2026-09-15-loading-profile-d3-stage0.md`](after-task/2026-09-15-loading-profile-d3-stage0.md).  
+**Stage 1 (maintainer G0 only):** paste **`G0 Stage 1`** — public export, fitter pins, ledger; **no auto-build**.
+
+### Ledger / capability gaps (item 3)
+
+**Inventory:** [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md) — `FREE=0` spreadsheet vs **122** needs-surface / **47** partial-pending / capability **planned|missing** rows; ranked next slices (excludes Stage 1 / S4).
 
 ### Version
 
