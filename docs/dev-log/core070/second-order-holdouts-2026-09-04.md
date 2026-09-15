@@ -9,7 +9,7 @@ first second-order batch claim** until the listed blocker clears.
 | Tweedie shared + grouped | Default `:observed` ratified (A); **no Wald `_CIFit`** for grouped fit | First-order parity only; SO cell still not attempted |
 | GP-1 | Fisher-retained; parity vs TMB Fisher alternative unsettled | Out of scope pending ruling |
 | Student-t ν | Nonlinear boundary; Wald SE pathology (panel finding 4) | Batch 1 excluded |
-| Ordinal per-trait cutpoints | No `confint(..., method=:wald)` on `OrdinalPerTrait*Fit` | API gap |
+| Ordinal per-trait cutpoints | **OrdinalPerTraitFit + OrdinalPerTraitCovFit ∈ `_CIFit` 2026-09-15** | Native Wald wired; bridge CI guards held (#357 foreign) |
 | Lognormal, Truncated-Poisson, Truncated-NB2 | **LognormalFit + TruncatedPoissonFit + TruncatedNegBin2Fit ∈ `_FamilyFit` 2026-09-15** | Native Wald wired; bridge CI guards held for #357 |
 | Delta-lognormal, Delta-Gamma | In `_CIFit` but not reached in 20-cell window | Follow-up batch |
 | Multinomial, BetaBinomial shared-φ | Scope discipline (per-trait pairing only in 20-cell) | Follow-up |
@@ -40,7 +40,7 @@ NB2-log — covered by toy 20-cell grid (superset) and merged-tip refresh
 | GP-1 | OUT | Fisher-retained on Julia side; no ruling on whether R parity compares against a TMB Fisher alternative | Contract §6 lines 205–207; `GP1Fit` in `_CIFit` but no paired SO cell |
 | Student-t ν (free) | OUT | Wald SE pathology at ν boundary (§3); `StudentTFit` ∉ `_CIFit`; no SO pairing | Contract §3 lines 120–123; `src/confint_family.jl:44-45` |
 | Student-t fixed-ν | PARTIAL | First-order logLik parity exists; not in batch-1 or 20-cell SO window | Parity fixtures; no `core070_second_order` cell |
-| Ordinal per-trait cutpoints | OUT | `OrdinalPerTraitFit` / `OrdinalPerTraitCovFit` ∉ `_CIFit` Union | `src/confint_family.jl:44-45` vs `src/GLLVM.jl:262-263` |
+| Ordinal per-trait cutpoints | **PARTIAL (native Wald)** | `OrdinalPerTraitFit` / `OrdinalPerTraitCovFit` ∈ `_CIFit` + `_family_ci` (2026-09-15); bridge `ci_method` guard still refuses until post-#357 lift; no paired SO toy cell yet | `test/test_second_order_ordinal_pertrait_ci.jl`; `src/confint_family.jl` |
 | Lognormal | **PARTIAL (native Wald)** | `LognormalFit` ∈ `_FamilyFit` + `_family_ci` (2026-09-15); bridge `ci_method` guard still refuses until post-#357 lift; no paired SO toy cell yet | `test/test_second_order_lognormal_ci.jl`; `src/confint_family.jl` |
 | Truncated-Poisson | **PARTIAL (native Wald)** | `TruncatedPoissonFit` ∈ `_FamilyFit` + `_family_ci` (2026-09-15); bridge guard held; no paired SO cell | `test/test_second_order_truncpois_ci.jl` |
 | Truncated-NB2 | **PARTIAL (native Wald)** | `TruncatedNegBin2Fit` ∈ `_FamilyFit` + `_family_ci` (2026-09-15); no paired SO cell; bridge untouched | `test/test_second_order_truncnb2_ci.jl` |
