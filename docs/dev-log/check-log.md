@@ -19847,3 +19847,10 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Updated: `LOOP/arcs.md` #16 → **partial (7/8)**; `LOOP/GOAL.md` + `LOOP/checkpoint.md` T5 wording; after-task inventory follow-up marked done.
 - Ledger unchanged: 7 bound + `loading_profile` **BLOCKED_NEEDS_JULIA_SURFACE** (D3); T5 arc **not closed**. **#323 not waived.**
 - Docs-only; `Project.toml` untouched; no second-order engine work.
+
+## 2026-09-15 — fix §2 cloglog ratified test assert (CI red)
+
+- Root cause: `@test ok issues` treated `issues` as bare kw → `type Symbol has no field args`; body also ran after `@test_skip`.
+- Fix: `else` gate like `test_second_order_delta_followup.jl`; `@test ok` + `@test isempty(issues)`.
+- Local: default env → 1 broken (skip), 0 error.
+- Unblocks main CI / #355 merge of tools aliases.
