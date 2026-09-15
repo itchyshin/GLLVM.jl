@@ -1,3 +1,12 @@
+## 2026-09-15 — Mac Studio true-parity handover (`cursor/mac-studio-true-parity-handover-a0ce`)
+
+- Docs-only handoff for Shinichi Mac Studio as new true-parity main lane (brain-local
+  vault decisions). Evidence tip `origin/main` @ `1671b947`; cloud tranche #355/#356/#361/#362/#366
+  MERGED; #367 Student-t fixed-ν OPEN CONFLICTING; #357 foreign leave-alone. Goal **not** complete.
+- After-task: `docs/dev-log/after-task/2026-09-15-mac-studio-handover.md`.
+- Commands: `git fetch origin main`; `gh pr view 367 --json state,mergeable`;
+  `gh pr list --state open`.
+
 ## 2026-09-15: true-parity board records #366 MultinomialFit Wald MERGED
 
 - Docs-only: board + `LOOP/checkpoint.md` record #366 (`c1842dd69`); MultinomialFit native Wald PARTIAL; paste strings unchanged; #357 untouched.
