@@ -36,7 +36,7 @@ S4 probe yes
 
 ### Ledger / capability gaps (item 3)
 
-**Inventory:** [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). **Rank 7 done** (arcG disposition; #358 merged). In flight: [#356](https://github.com/itchyshin/GLLVM.jl/pull/356) Tweedie SO, [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge receipts, [#355](https://github.com/itchyshin/GLLVM.jl/pull/355) aliases, [#361](https://github.com/itchyshin/GLLVM.jl/pull/361) Lognormal/Trunc Wald, OrdinalPerTrait Wald branch.
+**Inventory:** [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). **Rank 7 done** (arcG disposition; #358 merged). In flight: [#356](https://github.com/itchyshin/GLLVM.jl/pull/356) Tweedie SO, [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge receipts, [#355](https://github.com/itchyshin/GLLVM.jl/pull/355) aliases, [#361](https://github.com/itchyshin/GLLVM.jl/pull/361) Lognormal/Trunc Wald; **#362** OrdinalPerTrait Wald merged.
 
 ### Second-order Delta follow-up
 
