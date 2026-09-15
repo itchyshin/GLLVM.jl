@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## 2026-09-15 — parity_ledger TWIN_ALIAS ALIASES (`chore/parity-ledger-aliases-20260915`)
 
 - Follow-on PR #350: 15 safe `TWIN_ALIAS` rows in `tools/parity_ledger.py` (3 skipped —
@@ -6,6 +7,16 @@
 - After-task: `docs/dev-log/after-task/2026-09-15-parity-ledger-aliases.md`.
 - Commands: `python3 tools/parity_ledger.py --self-test`; `python3 tools/parity_ledger.py`
   (FORWARD **77→62**, REVERSE 92→91 @ frozen oracle).
+=======
+## 2026-09-15 — OrdinalPerTrait Wald `_CIFit` (`feat/ordinal-pertrait-wald-ci-20260915`)
+
+- `OrdinalPerTraitFit` / `OrdinalPerTraitCovFit` ∈ `_CIFit` + `_family_ci` (free
+  natural-scale `tau[t,c]` for `c≥2`; CovFit needs `X`). Bridge untouched (#357).
+- Holdouts row → PARTIAL (native Wald). After-task:
+  `docs/dev-log/after-task/2026-09-15-ordinal-pertrait-wald-ci.md`.
+- Commands: `julia --project=. test/test_second_order_ordinal_pertrait_ci.jl` → 26 pass.
+
+>>>>>>> origin/main
 ## 2026-09-15 — Julia-only arcG disposition (rank 7; R CLOSURE)
 
 - Decision ACCEPTED: `docs/dev-log/decisions/2026-09-15-julia-only-arcg-disposition.md`.
