@@ -1,3 +1,14 @@
+## 2026-09-15 — True-parity ledger / capability gap inventory (`docs/true-parity-ledger-gap-inventory-20260915`)
+
+- Read-only after-task:
+  `docs/dev-log/after-task/2026-09-15-true-parity-ledger-gap-inventory.md` — Core070
+  `FREE=0` vs **122** `BLOCKED_NEEDS_JULIA_SURFACE` / **47** `PARTIAL_PENDING`; FORWARD=77
+  export gaps; capability-status **planned|missing|DIFFER** cross-walk; ranked next slices
+  (excludes D3 Stage 1 / S4). Updated pending board + `LOOP/checkpoint.md`. **No** ledger JSON
+  edit; **≠** gap closure or covered promotion.
+- Commands: `python3 tools/core070_ledger_counts.py docs/dev-log/core070/required-source-case-map.json`;
+  `python3 tools/parity_ledger.py`; gllvmTMB read-only `Rscript tools/parity_ledger.R`.
+
 ## 2026-09-15 — D3 `loading_profile` Stage 0 substrate (`docs/loading-profile-d3-stage0-20260915`)
 
 - Stage 0 after-task:
