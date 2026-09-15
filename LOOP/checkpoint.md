@@ -6,11 +6,19 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** DestB DONE; true-parity vs froze
 
 **NEXT (ranked):**
 
-1. **T4 realistic-size second-order** — Totoro after D-139 ack
-2. **Delta SO dispersion** — paste `accept delta dispersion A`
-3. **Merge open PRs when green** — #355 (aliases; watch shard fails), #356 (Tweedie SO), #357 (foreign bridge lane — do not edit)
-4. **D3 Stage 1** — `G0 Stage 1` only
-5. **S4 probe** — `S4 probe yes` only
+**NEXT (ranked):**
+
+1. **Merge** #1284/#356/#355/#361 when Julia+Documenter green (Frozen R advisory OK); **do not edit #357** (foreign)
+2. **T4 realistic-size second-order** — Totoro grid; D-139 ack before spend
+3. **Delta SO dispersion alignment** — paste `accept delta dispersion A`
+4. **SO holdouts** — OrdinalPerTrait `_CIFit` next (Lognormal/TruncPois/TruncNB2 on #361)
+5. **D3 Stage 1** — `G0 Stage 1` only
+6. **S4 probe** — `S4 probe yes` only
+7. **`Project.toml` stays `0.3.0`**
+
+**IN FLIGHT:** #356 TweedieGrouped Wald · #1284 arcG R disposition · #355 aliases · #361 trunc/lognormal Wald · #357 bridge (foreign)
+
+**DONE this tranche:** ledger gap inventory; Delta SO wiring (#347); §2 Hessian (A); twin-bridge inventory (#353); #359 cloglog `@test` fix; #360 board; arcG disposition ACCEPTED (this PR).
 
 **DONE this tranche:** ledger inventory · Delta SO wiring (#347) · §2 Hessian (A) · #353/#354 · **arcG ACCOUNTED disposition** (R `CLOSURE: PASS` locally) · TweedieGrouped Wald + `tweedie_fixed` on #356.
 
