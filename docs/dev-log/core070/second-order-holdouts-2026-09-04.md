@@ -6,7 +6,7 @@ first second-order batch claim** until the listed blocker clears.
 | Holdout | Blocker | Disposition |
 |---|---|---|
 | Binomial-cloglog | ~~§2 disputed~~ **ACCEPTED (A) 2026-09-15** — `:observed` ratified | Each-own-optimum D1 promotable (`binomial_cloglog`); ≠ §7 |
-| Tweedie shared + grouped | Default `:observed` ratified (A); **no Wald `_CIFit`** for grouped fit | First-order parity only; SO cell still not attempted |
+| Tweedie shared + grouped | Default `:observed` ratified (A); **`TweedieGroupedFit` ∈ `_CIFit`** (2026-09-15); shared `TweedieFit` already had Wald | First-order parity exists; **paired SO toy cell** still not attempted (`r_fit_se` lacks `:tweedie`) |
 | GP-1 | Fisher-retained; parity vs TMB Fisher alternative unsettled | Out of scope pending ruling |
 | Student-t ν | Nonlinear boundary; Wald SE pathology (panel finding 4) | Batch 1 excluded |
 | Ordinal per-trait cutpoints | No `confint(..., method=:wald)` on `OrdinalPerTrait*Fit` | API gap |
@@ -36,7 +36,7 @@ NB2-log — covered by toy 20-cell grid (superset) and merged-tip refresh
 | Holdout | Status | Reason (measured) | Evidence |
 |---|---|---|---|
 | Binomial-cloglog | **PARTIAL (SO promoted)** | §2 **(A)** 2026-09-15; `hessian_selector_disputed=false`; SE max rel Δ ≈ 2.1e-5 each-own-optimum | `docs/dev-log/core070/second-order-batch-out/binomial_cloglog.json` |
-| Tweedie shared + grouped | NOT ATTEMPTED (SO) / PARTIAL (1st) | §2 default signed; no paired SO toy cell; `_CIFit` gap | `test/parity/test_tweedie_parity.jl`; no `core070_second_order` cell |
+| Tweedie shared + grouped | PARTIAL (SO wiring) / PARTIAL (1st) | §2 default signed; `TweedieGroupedFit` Wald wired 2026-09-15; no paired SO toy cell yet | `test/test_second_order_tweedie_grouped_ci.jl`; `test/parity/test_tweedie_parity.jl` |
 | GP-1 | OUT | Fisher-retained on Julia side; no ruling on whether R parity compares against a TMB Fisher alternative | Contract §6 lines 205–207; `GP1Fit` in `_CIFit` but no paired SO cell |
 | Student-t ν (free) | OUT | Wald SE pathology at ν boundary (§3); `StudentTFit` ∉ `_CIFit`; no SO pairing | Contract §3 lines 120–123; `src/confint_family.jl:44-45` |
 | Student-t fixed-ν | PARTIAL | First-order logLik parity exists; not in batch-1 or 20-cell SO window | Parity fixtures; no `core070_second_order` cell |

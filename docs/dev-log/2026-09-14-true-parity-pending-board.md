@@ -1,6 +1,6 @@
 # True-parity programme — maintainer board (2026-09-14, updated 2026-09-15)
 
-**STATE:** **IN PROGRESS** — #323, matched-θ **(C)**, and **§2 Hessian (A)** disposed via **AGENT-APPLIED Ada defaults** (reversible until Shinichi reverses). **Ledger gap inventory done** (item 3). **PR #347 merged** @ `3091fe61`. **Still open:** S4 probe, D3 Stage **1**, **`Project.toml` `0.3.0`**.
+**STATE:** **IN PROGRESS** — #323, matched-θ **(C)**, and **§2 Hessian (A)** disposed via **AGENT-APPLIED Ada defaults** (reversible until Shinichi reverses). **Ledger gap inventory done** (item 3). **PR #347 merged** @ `3091fe61`. **TweedieGrouped Wald wired** (holdout `_CIFit` gap cleared; paired SO cell still owed). **Still open:** S4 probe, D3 Stage **1**, **`Project.toml` `0.3.0`**, Delta dispersion paste.
 
 **Rehydrate:** `origin/main` · frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86` · **`Project.toml` stays `0.3.0`**.
 
@@ -39,7 +39,12 @@ S4 probe yes
 
 ### Second-order Delta follow-up (rank 2 slice)
 
-**Receipt:** [`2026-09-15-second-order-delta-followup.md`](after-task/2026-09-15-second-order-delta-followup.md) — shared-η Wald wiring + cells; **paired D1 FAIL** (dispersion parameterisation gap). Lognormal/Truncated/Ordinal holdouts **not** attempted (still API gaps). **≠** §7 complete.
+**Receipt:** [`2026-09-15-second-order-delta-followup.md`](after-task/2026-09-15-second-order-delta-followup.md) — shared-η Wald wiring + cells; **paired D1 FAIL** (dispersion parameterisation gap).  
+**PENDING decision (main #354):** [`2026-09-15-delta-dispersion-alignment-pending.md`](decisions/2026-09-15-delta-dispersion-alignment-pending.md) — paste `accept delta dispersion A` (Ada recommends A).
+
+### TweedieGrouped Wald (post §2)
+
+**Receipt:** [`2026-09-15-tweedie-grouped-wald-ci.md`](after-task/2026-09-15-tweedie-grouped-wald-ci.md) — `_CIFit` gap cleared; **≠** paired SO cell / §7.
 
 ### Version
 
