@@ -72,3 +72,18 @@ end
     @test ci.estimate[g21] ≈ fit.γ[1, 1] atol = 1e-8
     @test isfinite(ci.se[g21]) && ci.se[g21] > 0
 end
+
+@testset "R paired multinomial_fe cell (live Δ)" begin
+    if get(ENV, "GLLVM_PARITY_TESTS", "0") != "1"
+        @test_skip "set GLLVM_PARITY_TESTS=1 with R + gllvmTMB for live second-order Δ"
+    else
+        using RCall
+        include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "common.jl"))
+        include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "cells.jl"))
+        d = run_one_cell("multinomial_fe")
+        @test get(d, "skip_reason", nothing) === nothing
+        @test get(d, "parameterisation_gap", true) == false
+        se_rel = d["se_max_relative_delta"]
+        @test se_rel !== nothing && isfinite(se_rel)
+    end
+end

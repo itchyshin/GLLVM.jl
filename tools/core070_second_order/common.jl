@@ -104,6 +104,9 @@ function r_fit_se(y::AbstractMatrix, K::Integer; family::Symbol,
         nb1          = gllvmTMB::nbinom1(),
         beta         = gllvmTMB::Beta(),
         betabinomial = gllvmTMB::betabinomial(),
+        lognormal = gllvmTMB::lognormal(),
+        truncated_poisson = gllvmTMB::truncated_poisson(),
+        truncated_nbinom2 = gllvmTMB::truncated_nbinom2(),
         stop(sprintf("unknown family: %s", fam))
     )
     weights_vec <- if (identical(fam, "betabinomial") || (identical(fam, "binomial") && trials_provided)) as.vector(trials) else NULL
@@ -229,6 +232,157 @@ function r_fit_se_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Real)
     fit_r <- gllvmTMB(
         value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
         data = df_long, unit = "site", trait = "trait", family = fam_obj,
+        control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+    )
+    wall_fit <- as.numeric(Sys.time() - t0, units = "secs")
+    r_logL  <- as.numeric(stats::logLik(fit_r))
+    r_obj   <- as.numeric(fit_r$opt$objective)
+    r_conv  <- identical(as.integer(fit_r$opt$convergence), 0L)
+    has_sd  <- !is.null(fit_r$sd_report)
+    nm <- character(0); pf <- numeric(0); cv <- matrix(numeric(0), 0, 0)
+    pdh <- NA; rcond <- NA_real_
+    if (has_sd) {
+        sdr <- fit_r$sd_report
+        pf  <- sdr$par.fixed
+        cv  <- sdr$cov.fixed
+        nm  <- names(pf)
+        pdh <- isTRUE(sdr$pdHess)
+        rcond <- tryCatch(kappa(cv), error = function(e) NA_real_)
+    }
+    """
+    return (
+        logLik = rcopy(Float64, R"r_logL"),
+        objective = rcopy(Float64, R"r_obj"),
+        converged = rcopy(Bool, R"r_conv"),
+        has_sd = rcopy(Bool, R"has_sd"),
+        names = has_sd_names(),
+        par_fixed = has_sd_pf(),
+        cov_fixed = has_sd_cv(),
+        pd_hessian = rcopy(Any, R"pdh"),
+        r_condition_number = rcopy(Any, R"rcond"),
+        wall_fit = rcopy(Float64, R"wall_fit"),
+    )
+end
+
+# Ordinal per-trait cutpoints (probit); twin matches test_ordinal_probit_parity.jl.
+function r_fit_se_ordinal_probit(y::AbstractMatrix{<:Integer}, K::Integer)
+    p, n = size(y)
+    _require_gllvmtmb!()
+    @rput y K p n
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)
+    )
+    t0 <- Sys.time()
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long, unit = "site", trait = "trait",
+        family = ordinal_probit(),
+        control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+    )
+    wall_fit <- as.numeric(Sys.time() - t0, units = "secs")
+    r_logL  <- as.numeric(stats::logLik(fit_r))
+    r_obj   <- as.numeric(fit_r$opt$objective)
+    r_conv  <- identical(as.integer(fit_r$opt$convergence), 0L)
+    has_sd  <- !is.null(fit_r$sd_report)
+    nm <- character(0); pf <- numeric(0); cv <- matrix(numeric(0), 0, 0)
+    pdh <- NA; rcond <- NA_real_
+    if (has_sd) {
+        sdr <- fit_r$sd_report
+        pf  <- sdr$par.fixed
+        cv  <- sdr$cov.fixed
+        nm  <- names(pf)
+        pdh <- isTRUE(sdr$pdHess)
+        rcond <- tryCatch(kappa(cv), error = function(e) NA_real_)
+    }
+    """
+    return (
+        logLik = rcopy(Float64, R"r_logL"),
+        objective = rcopy(Float64, R"r_obj"),
+        converged = rcopy(Bool, R"r_conv"),
+        has_sd = rcopy(Bool, R"has_sd"),
+        names = has_sd_names(),
+        par_fixed = has_sd_pf(),
+        cov_fixed = has_sd_cv(),
+        pd_hessian = rcopy(Any, R"pdh"),
+        r_condition_number = rcopy(Any, R"rcond"),
+        wall_fit = rcopy(Float64, R"wall_fit"),
+    )
+end
+
+# Student-t fixed df (identity link); per-trait σ on R side — pair β[] with species σ on Julia.
+function r_fit_se_student(y::AbstractMatrix, K::Integer; df_fixed::Real)
+    df_fixed > 1 || throw(ArgumentError("df_fixed must be > 1"))
+    p, n = size(y)
+    dfv = Float64(df_fixed)
+    _require_gllvmtmb!()
+    @rput y K p n dfv
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)
+    )
+    fam_obj <- gllvmTMB::student(link = "identity", df = dfv)
+    t0 <- Sys.time()
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long, unit = "site", trait = "trait", family = fam_obj,
+        control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+    )
+    wall_fit <- as.numeric(Sys.time() - t0, units = "secs")
+    r_logL  <- as.numeric(stats::logLik(fit_r))
+    r_obj   <- as.numeric(fit_r$opt$objective)
+    r_conv  <- identical(as.integer(fit_r$opt$convergence), 0L)
+    has_sd  <- !is.null(fit_r$sd_report)
+    nm <- character(0); pf <- numeric(0); cv <- matrix(numeric(0), 0, 0)
+    pdh <- NA; rcond <- NA_real_
+    if (has_sd) {
+        sdr <- fit_r$sd_report
+        pf  <- sdr$par.fixed
+        cv  <- sdr$cov.fixed
+        nm  <- names(pf)
+        pdh <- isTRUE(sdr$pdHess)
+        rcond <- tryCatch(kappa(cv), error = function(e) NA_real_)
+    }
+    """
+    return (
+        logLik = rcopy(Float64, R"r_logL"),
+        objective = rcopy(Float64, R"r_obj"),
+        converged = rcopy(Bool, R"r_conv"),
+        has_sd = rcopy(Bool, R"has_sd"),
+        names = has_sd_names(),
+        par_fixed = has_sd_pf(),
+        cov_fixed = has_sd_cv(),
+        pd_hessian = rcopy(Any, R"pdh"),
+        r_condition_number = rcopy(Any, R"rcond"),
+        wall_fit = rcopy(Float64, R"wall_fit"),
+    )
+end
+
+# Multinomial FE softmax (no LV); y is length-n category codes 1..ncat.
+function r_fit_se_multinomial(y::AbstractVector{<:Integer}, ncat::Integer)
+    ncat >= 3 || throw(ArgumentError("multinomial needs ncat ≥ 3"))
+    n = length(y)
+    yv = collect(Int, y)
+    _require_gllvmtmb!()
+    @rput yv ncat n
+    R"""
+    lev <- as.character(seq_len(ncat))
+    df_long <- data.frame(
+        unit  = factor(seq_len(n)),
+        trait = factor(rep("t1", n)),
+        value = factor(as.character(yv), levels = lev)
+    )
+    t0 <- Sys.time()
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait,
+        data = df_long, unit = "unit", trait = "trait",
+        family = multinomial(),
         control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
     )
     wall_fit <- as.numeric(Sys.time() - t0, units = "secs")

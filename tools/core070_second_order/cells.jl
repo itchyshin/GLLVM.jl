@@ -7,7 +7,10 @@
 # abstracted, since each family's fitter/CI accessor signature differs and a
 # live run is exactly where a wrong abstraction would hide a bug).
 
+using Random
+using LinearAlgebra
 using ForwardDiff
+using Distributions: TDist, NegativeBinomial
 
 # ---------------------------------------------------------------------------
 # Cell dispatcher
@@ -59,6 +62,18 @@ function run_one_cell(cell_id::AbstractString)
         return cell_delta_gamma()
     elseif cell_id == "tweedie_fixed"
         return cell_tweedie_fixed()
+    elseif cell_id == "lognormal"
+        return cell_lognormal()
+    elseif cell_id == "ordinal_pertrait_probit"
+        return cell_ordinal_pertrait_probit()
+    elseif cell_id == "truncated_poisson"
+        return cell_truncated_poisson()
+    elseif cell_id == "truncated_nbinom2"
+        return cell_truncated_nbinom2()
+    elseif cell_id == "multinomial_fe"
+        return cell_multinomial_fe()
+    elseif cell_id == "studentt_fixed_nu"
+        return cell_studentt_fixed_nu()
     else
         error("unknown cell id: $cell_id")
     end
@@ -844,6 +859,230 @@ function cell_delta_gamma()
         p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
     d["note"] = "Compared quantity is trait intercept block b_fix only; R per-trait phi_gamma_delta (CV) vs Julia shared shape α is a known parameterisation gap — not part of this β block."
     d["parameterisation_gap"] = true
+    return d
+end
+
+function _tp_rand_trunc_poisson(λ::Float64)
+    while true
+        k = _rand_poisson(clamp(λ, 0.0, 1e6))
+        k >= 1 && return k
+    end
+end
+
+function _r_trait_intercept_idx(r, n_beta::Int)
+    idx = findall(==("b_fix"), r.names)
+    if length(idx) == n_beta
+        return idx
+    end
+    if length(r.par_fixed) == n_beta
+        return collect(1:n_beta)
+    end
+    return Int[]
+end
+
+function cell_lognormal()
+    seed = 52
+    Random.seed!(seed)
+    p, K, n = 5, 2, 60
+    β = log.([3.0, 5.0, 2.0, 4.0, 3.5])
+    Λ = 0.45 .* parity_loadings_p5k2()
+    σ = 0.5
+    Z = randn(K, n)
+    η = β .+ Λ * Z
+    Y = exp.(η .+ σ .* randn(p, n))
+
+    t0 = time()
+    fit = fit_lognormal_gllvm(Y; K = K)
+    wall_fit = time() - t0
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se(Y, K; family = :lognormal)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = _r_trait_intercept_idx(r, length(beta_idx_jl))
+
+    d = _assemble("lognormal",
+        "test/parity/test_lognormal_parity.jl (seed=52,p=5,K=2,n=60)",
+        "Lognormal (shared σ; β[] block only)", "exact marginal (closed-form)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "Compared quantity is trait intercept block b_fix only; shared log_sigma_eps vs Julia single σ is not paired."
+    d["parameterisation_gap"] = false
+    return d
+end
+
+function cell_ordinal_pertrait_probit()
+    seed = 46
+    Random.seed!(seed)
+    p, K, n, C = 5, 1, 60, 3
+    β = [0.30, -0.20, 0.15, -0.10, 0.05]
+    Λ = reshape([0.8, 0.5, 0.3, -0.2, 0.1], p, K)
+    τ = [0.0, 0.75]
+    Z = randn(K, n)
+    η = β .+ Λ * Z
+    Y = Matrix{Int}(undef, p, n)
+    for s in 1:n, t in 1:p
+        u = rand()
+        Y[t, s] = u < GLLVM._ord_F(τ[1] - η[t, s], ProbitLink()) ? 1 :
+                  u < GLLVM._ord_F(τ[2] - η[t, s], ProbitLink()) ? 2 : 3
+    end
+
+    t0 = time()
+    fit = fit_ordinal_gllvm_pertrait(Y; K = K, link = ProbitLink(), iterations = 1_000)
+    wall_fit = time() - t0
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se_ordinal_probit(Y, K)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = _r_trait_intercept_idx(r, length(beta_idx_jl))
+
+    d = _assemble("ordinal_pertrait_probit",
+        "test/parity/test_ordinal_probit_parity.jl (seed=46,p=5,K=1,n=60,C=3,probit)",
+        "Ordinal-probit per-trait τ (β[] block only)", "observed (family default)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "Compared quantity is trait intercept block b_fix only; free cutpoints tau[t,c] are not paired in this toy cell."
+    d["parameterisation_gap"] = false
+    return d
+end
+
+function cell_truncated_poisson()
+    seed = 53
+    Random.seed!(seed)
+    p, K, n = 5, 2, 60
+    β = log.([3.0, 5.0, 2.0, 4.0, 3.5])
+    Λ = 0.45 .* parity_loadings_p5k2()
+    Z = randn(K, n)
+    η = β .+ Λ * Z
+    Y = [_tp_rand_trunc_poisson(exp(clamp(η[t, s], -8.0, 8.0))) for t in 1:p, s in 1:n]
+
+    t0 = time()
+    fit = fit_truncated_poisson_gllvm(Y; K = K)
+    wall_fit = time() - t0
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se(Y, K; family = :truncated_poisson)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = _r_trait_intercept_idx(r, length(beta_idx_jl))
+
+    d = _assemble("truncated_poisson",
+        "test/parity/test_truncated_poisson_parity.jl (seed=53,p=5,K=2,n=60)",
+        "Truncated-Poisson-log (no dispersion)", "observed (Laplace default)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["parameterisation_gap"] = false
+    return d
+end
+
+function cell_truncated_nbinom2()
+    seed = 58
+    Random.seed!(seed)
+    p, K, n = 5, 1, 120
+    β = log.([4.0, 5.0, 3.5, 4.5, 4.0])
+    r_true = 4.0
+    Λ = 0.2 .* parity_loadings_p5k2()[:, 1:K]
+    Z = randn(K, n)
+    η = β .+ Λ * Z
+    Y = Matrix{Int}(undef, p, n)
+    for t in 1:p, s in 1:n
+        μ = exp(clamp(η[t, s], -3.0, 3.5))
+        while true
+            v = rand(NegativeBinomial(r_true, r_true / (r_true + μ)))
+            if v >= 1
+                Y[t, s] = v
+                break
+            end
+        end
+    end
+
+    t0 = time()
+    fit = fit_truncated_nbinom2_gllvm(Y; K = K, hessian = :observed)
+    wall_fit = time() - t0
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y; hessian = :observed)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se(Y, K; family = :truncated_nbinom2)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = _r_trait_intercept_idx(r, length(beta_idx_jl))
+
+    d = _assemble("truncated_nbinom2",
+        "test/parity/test_truncated_nbinom2_parity.jl (seed=58,p=5,K=1,n=120; Julia shared r)",
+        "Truncated-NB2-log (β[] block only)", "observed (family default)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "Julia TruncatedNegBin2Fit uses one shared r; R uses per-trait log_phi_truncnb2 — β[] block paired only."
+    d["parameterisation_gap"] = false
+    return d
+end
+
+function cell_multinomial_fe()
+    seed = 57
+    Random.seed!(seed)
+    ncat, n = 4, 400
+    β_true = [0.0, 0.6, -0.4, 0.25]
+    w = exp.(β_true)
+    prob = w ./ sum(w)
+    cum = cumsum(prob)
+    y = [findfirst(>=(rand()), cum) for _ in 1:n]
+
+    t0 = time()
+    fit = fit_multinomial_gllvm(y; n_categories = ncat)
+    wall_fit = time() - t0
+    Y = reshape(collect(y), 1, n)
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se_multinomial(y, ncat)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = _r_trait_intercept_idx(r, length(beta_idx_jl))
+
+    d = _assemble("multinomial_fe",
+        "test/parity/test_multinomial_parity.jl (seed=57,ncat=4,n=400, FE-only)",
+        "Multinomial FE softmax (contrast beta[k], k≥2)", "exact FE (no Laplace)", false,
+        1, 0, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "No latent term on either side; K=0 on Julia metadata. Compared block is softmax contrast intercepts."
+    d["parameterisation_gap"] = false
+    return d
+end
+
+function cell_studentt_fixed_nu()
+    seed = 71
+    Random.seed!(seed)
+    p, K, n = 5, 1, 130
+    β_true = [0.2, -0.1, 0.3, 0.0, -0.2]
+    Λ_true = 0.5 .* parity_loadings_p5k2()[:, 1:K]
+    σ_true = 0.7
+    ν_true = 4.0
+    Z = randn(K, n)
+    η = β_true .+ Λ_true * Z
+    Y = [η[t, s] + σ_true * rand(TDist(ν_true)) for t in 1:p, s in 1:n]
+
+    t0 = time()
+    fit = fit_studentt_gllvm(Y; K = K, nu = ν_true, disp_group = :species, iterations = 400)
+    wall_fit = time() - t0
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se_student(Y, K; df_fixed = ν_true)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = _r_trait_intercept_idx(r, length(beta_idx_jl))
+
+    d = _assemble("studentt_fixed_nu",
+        "test/parity/test_studentt_parity.jl (seed=71,p=5,K=1,n=130,disp_group=:species,ν=4 fixed)",
+        "Student-t identity (fixed ν; per-trait σ; β[] block)", "observed (family default)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "Julia disp_group=:species matches R per-trait log_sigma_student; ν pinned on both sides."
+    d["parameterisation_gap"] = false
     return d
 end
 

@@ -97,3 +97,18 @@ end
     @test fit.estimated_nu === true
     @test_throws ArgumentError confint(fit, Y; method = :wald)
 end
+
+@testset "R paired studentt_fixed_nu cell (live Δ, beta[] block)" begin
+    if get(ENV, "GLLVM_PARITY_TESTS", "0") != "1"
+        @test_skip "set GLLVM_PARITY_TESTS=1 with R + gllvmTMB for live second-order Δ"
+    else
+        using RCall
+        include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "common.jl"))
+        include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "cells.jl"))
+        d = run_one_cell("studentt_fixed_nu")
+        @test get(d, "skip_reason", nothing) === nothing
+        @test get(d, "parameterisation_gap", true) == false
+        se_rel = d["se_max_relative_delta"]
+        @test se_rel !== nothing && isfinite(se_rel)
+    end
+end
