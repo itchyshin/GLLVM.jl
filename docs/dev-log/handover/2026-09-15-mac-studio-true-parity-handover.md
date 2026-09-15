@@ -8,6 +8,55 @@
 
 ---
 
+## Active goal (verbatim — persists until programme tranche complete)
+
+```
+Continue true-parity from origin/main: rehydrate board + after-tasks (ledger gap, §2 A, #347); merge leftover open PRs if CI green (Frozen R advisory OK); next ungated slice only. Hard fences: no Stage 1 / S4 probe / Totoro without Shinichi paste; no Project.toml bump; no gllvmTMB engine surgery. Goal persists until programme tranche complete.
+```
+
+---
+
+## Ultra-plan (canonical programme roadmap)
+
+**Canonical ultra-plan (board/baton source of truth):**  
+[`docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md`](../plans/2026-09-05-true-parity-ultra-plan.md) — MERGED as [#291](https://github.com/itchyshin/GLLVM.jl/pull/291).
+
+**Companion / remainder paths (cite, do not fork a second programme):**
+
+| Role | Path |
+|------|------|
+| Canonical ultra-plan | `docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md` (#291) |
+| Programme decision map | `docs/dev-log/core070/true-parity-programme-decision-map-2026-09-05.md` |
+| Gate-tier (signed) | `docs/dev-log/core070/true-parity-gate-tier-2026-09-05.md` |
+| Wayfinder ladder | `docs/dev-log/plans/2026-09-05-true-parity-wayfinder.md` |
+| M2 execution baton | `docs/dev-log/plans/2026-09-05-true-parity-m2-multiday-baton.md` (#299; points back to #291) |
+| Destination-B remainder packaging | `docs/dev-log/plans/2026-09-06-ultra-plan-true-parity-remainder.md` |
+| Live pending board | `docs/dev-log/2026-09-14-true-parity-pending-board.md` |
+
+**Summary:** True parity is a multi-month Destination-B programme against frozen gllvmTMB **0.7.0** (`b4d5fee6`), not “0.7.1 catch-up” and not Core070 `FREE=0`. #291 locked destination, bridge width, signed 42-row gate-tier, and M0–M5 envelope (map clearance closed; G0 recorded). Live work is ungated second-order / board slices only — rehydrate board + after-tasks, merge green leftovers, then one next ungated slice — while paste-gated items (D3 Stage 1, S4 probe, Totoro/D-139, Delta dispersion) wait for Shinichi strings. Do not reopen the gate-tier, do not claim §7 / full 0.7 / `v0.true-parity` sign-off, and do not touch the R engine. Remainder plan packages A+D and fences M2-R2 / Class-1 / campaigns behind fresh G0.
+
+---
+
+## Mac ownership
+
+- **Mac Studio + `shinichi-brain` = programme main lane.** Owns ungated true-parity slices, board/after-task rehydrate, paste-gated vault decisions, and merge authority for leftover green PRs on this programme.
+- Prefer Mac for Shinichi paste / brain gates (cloud is weak on vault decisions).
+- One PR in flight; live git + board outrank this summary.
+
+---
+
+## Cloud babysit-only (#367 / #369)
+
+| PR | Role | Cloud rule |
+|----|------|------------|
+| [#369](https://github.com/itchyshin/GLLVM.jl/pull/369) | Mac Studio handover docs | **MERGED** (`c00e9345`) — closed; residual goal/ultra-plan refresh only |
+| [#367](https://github.com/itchyshin/GLLVM.jl/pull/367) | StudentTFit fixed-ν Wald | Cloud may **babysit only**: rebase/CI wait / merge-when-green (Frozen R advisory OK). Mac may own or take over. After merge → board + `LOOP/checkpoint.md` tip refresh |
+| Other opens (#357, #363, #314) | Foreign / unrelated | **Leave alone** (especially **#357**) |
+
+Cloud must **not** start a next ungated engine slice, Stage 1, S4, Totoro, or `Project.toml` bump from this handoff. “Mac started” alone is not the goal — the Active goal + Ultra-plan above are.
+
+---
+
 ## START HERE (Mac Studio — new chat)
 
 ```bash
@@ -15,14 +64,15 @@
 cd "/Users/z3437171/Dropbox/Github Local/GLLVM.jl"   # or your Mac Studio path
 git fetch origin main
 git checkout main && git pull origin main
-git rev-parse --short origin/main   # expect ≥ 1671b947 at handoff; refresh if #367 merged
+git rev-parse --short origin/main   # expect ≥ c00e9345 (#369); refresh if #367 merged
 
 # 2. Lane preflight + brain contract
 ~/shinichi-brain/tools/lane_preflight.sh .
 sed -n '1,120p' ~/shinichi-brain/AGENTS.md
 
-# 3. Read this handover + live boards (live git outranks this summary)
-sed -n '1,260p' docs/dev-log/handover/2026-09-15-mac-studio-true-parity-handover.md
+# 3. Read this handover + ultra-plan + live boards (live git outranks this summary)
+sed -n '1,320p' docs/dev-log/handover/2026-09-15-mac-studio-true-parity-handover.md
+sed -n '1,70p'  docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md
 sed -n '1,120p' docs/dev-log/2026-09-14-true-parity-pending-board.md
 sed -n '1,80p'  docs/dev-log/core070/second-order-holdouts-2026-09-04.md
 sed -n '1,40p'  LOOP/checkpoint.md
@@ -45,14 +95,14 @@ Then classify **ungated vs paste-gated** against the live board before editing. 
 
 | Repo | Tip at handoff | Notes |
 |------|----------------|-------|
-| GLLVM.jl `origin/main` | **`1671b947`** | Board tip after **#366** MultinomialFit Wald (`#368`) |
+| GLLVM.jl `origin/main` | **`c00e9345`** | After **#369** Mac handover; prior board tip **#366**/`#368` @ `1671b947` |
 | gllvmTMB `origin/main` | **`fba20d61`** | Twin tip; arcG CLOSURE via #1284 already on main |
 | Frozen R oracle | **`b4d5fee64def88bc768dda1f1f77c29b295edd86`** | Unchanged; Destination B / smoke authority |
 | `Project.toml` | **`0.3.0`** | No bump (D-183) |
 
-**Just merged today (2026-09-15) onto `main`:** #355 aliases, #356 TweedieGrouped Wald, #361 Lognormal+TruncPois+TruncNB2 Wald, #362 OrdinalPerTrait Wald, #366 Multinomial FE Wald, plus board hygiene #364/#365/#368 (and earlier same-day docs #347–#360 tranche). See table below.
+**Just merged today (2026-09-15) onto `main`:** #355 aliases, #356 TweedieGrouped Wald, #361 Lognormal+TruncPois+TruncNB2 Wald, #362 OrdinalPerTrait Wald, #366 Multinomial FE Wald, board hygiene #364/#365/#368, **#369 Mac handover**, plus earlier same-day docs #347–#360 tranche. See table below.
 
-**#367 Student-t fixed-ν Wald:** **OPEN** at handoff — CI partially green, **`mergeable: CONFLICTING`** vs tip `1671b947` (needs rebase after #366/#368). Not yet on `main`.
+**#367 Student-t fixed-ν Wald:** **OPEN** at goal-refresh — rematched / **MERGEABLE** vs tip `c00e9345`; merge when Julia+Documenter green (Frozen R advisory OK). Not yet on `main`.
 
 ---
 
@@ -66,11 +116,12 @@ Then classify **ungated vs paste-gated** against the live board before editing. 
 | [#362](https://github.com/itchyshin/GLLVM.jl/pull/362) | `c1962c5d` | OrdinalPerTraitFit/CovFit Wald | **MERGED** |
 | [#366](https://github.com/itchyshin/GLLVM.jl/pull/366) | `c1842dd6` | MultinomialFit FE Wald + board refresh | **MERGED** |
 | [#364](https://github.com/itchyshin/GLLVM.jl/pull/364) / [#365](https://github.com/itchyshin/GLLVM.jl/pull/365) / [#368](https://github.com/itchyshin/GLLVM.jl/pull/368) | `d7353b14` / `deab192f` / `1671b947` | Board tips post-merge / #357 CONFLICTING note | **MERGED** |
-| [#367](https://github.com/itchyshin/GLLVM.jl/pull/367) | tip `840ec8c4` (not on main) | StudentTFit **fixed-ν** Wald `_CIFit` | **OPEN** · CONFLICTING · CI in flight |
+| [#369](https://github.com/itchyshin/GLLVM.jl/pull/369) | `c00e9345` | Mac Studio true-parity handover | **MERGED** |
+| [#367](https://github.com/itchyshin/GLLVM.jl/pull/367) | tip on `cursor/studentt-fixed-nu-wald-ci-a0ce` (not on main) | StudentTFit **fixed-ν** Wald `_CIFit` | **OPEN** · MERGEABLE · babysit |
 
 Same-day context (already on main before this babysit close): Ada defaults (#344), ledger/capability inventories (#346/#348/#350/#351/#353), §2 Hessian A + cloglog (#349/#359), Delta shared-η SO (#347), arcG disposition (#358 + twin #1284), D3 Stage 0 (#345).
 
-Holdouts after cloud work (see `second-order-holdouts-2026-09-04.md`): Ordinal / Lognormal / Trunc* / Multinomial FE / Student-t **fixed-ν** → **PARTIAL (native Wald)**; bridge CI still waits on #357.
+Holdouts after cloud work (see `second-order-holdouts-2026-09-04.md`): Ordinal / Lognormal / Trunc* / Multinomial FE / Student-t **fixed-ν** → **PARTIAL (native Wald)** once #367 lands; bridge CI still waits on #357.
 
 ---
 
@@ -78,7 +129,7 @@ Holdouts after cloud work (see `second-order-holdouts-2026-09-04.md`): Ordinal /
 
 | PR / item | State | Rule |
 |-----------|-------|------|
-| [#367](https://github.com/itchyshin/GLLVM.jl/pull/367) Student-t fixed-ν | OPEN · CONFLICTING | **Own or babysit:** rebase onto `main`, merge when Julia+Documenter green (Frozen R advisory OK). Then refresh board/checkpoint. |
+| [#367](https://github.com/itchyshin/GLLVM.jl/pull/367) Student-t fixed-ν | OPEN · MERGEABLE | **Mac own or cloud babysit:** merge when Julia+Documenter green (Frozen R advisory OK). Then refresh board/checkpoint. |
 | [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge logLik receipts | OPEN · CONFLICTING | **Foreign — leave alone** unless Shinichi pastes otherwise. Bridge CI lift waits here. |
 | [#363](https://github.com/itchyshin/GLLVM.jl/pull/363) Cloud Agent env | OPEN · CONFLICTING | Unrelated — skip |
 | [#314](https://github.com/itchyshin/GLLVM.jl/pull/314) old D-220 handover | OPEN · CONFLICTING | Unrelated — skip |
@@ -87,11 +138,11 @@ Holdouts after cloud work (see `second-order-holdouts-2026-09-04.md`): Ordinal /
 
 ## Next ungated candidates vs paste / Shinichi-gated
 
-Verified against `docs/dev-log/2026-09-14-true-parity-pending-board.md`, `docs/dev-log/core070/second-order-holdouts-2026-09-04.md`, and `LOOP/checkpoint.md` at tip `1671b947`.
+Verified against `docs/dev-log/2026-09-14-true-parity-pending-board.md`, `docs/dev-log/core070/second-order-holdouts-2026-09-04.md`, and `LOOP/checkpoint.md` at tip `c00e9345`.
 
 ### Ungated (Mac may pick without paste)
 
-1. **Land #367** — rebase Student-t fixed-ν Wald onto `main`; merge on green; board + `LOOP/checkpoint.md` tip refresh (mirror #368).
+1. **Land #367** — merge Student-t fixed-ν Wald when green; board + `LOOP/checkpoint.md` tip refresh (mirror #368).
 2. **BetaBinomial shared-φ SO pairing** — holdout still **OUT / not attempted**; same class as Multinomial before #366 (API/wiring gap, not paste-gated). Prefer native `_CIFit` / toy cell only; ≠ §7.
 3. **Optional paired SO toy / RCall receipts** for newly PARTIAL native-Wald families (Ordinal, Lognormal, Trunc*, Multinomial FE, fixed-ν Student-t) — optional, ≠ coverage claim.
 4. **Remaining FORWARD hygiene** — three skipped TWIN_ALIAS rows (`animal_indep`, `animal_scalar`, `extract_residual_split`) or thin export wrappers per #350/#355 after-tasks; tool-only; ≠ capability promote.
@@ -128,8 +179,8 @@ Verified against `docs/dev-log/2026-09-14-true-parity-pending-board.md`, `docs/d
 
 ## Suggested first Mac actions
 
-1. **Rehydrate** (`git fetch` + board + holdouts + brain `AGENTS.md`) — tip must be ≥ `1671b947`.
-2. **If #367 still OPEN:** rebase onto `main`, wait Julia+Documenter green, merge, then **rehydrate board/checkpoint** (Student-t fixed-ν → MERGED PARTIAL).
+1. **Rehydrate** (`git fetch` + **Active goal** + **ultra-plan** + board + holdouts + brain `AGENTS.md`) — tip must be ≥ `c00e9345`.
+2. **If #367 still OPEN:** wait Julia+Documenter green (or finish babysit rebase), merge, then **rehydrate board/checkpoint** (Student-t fixed-ν → MERGED PARTIAL).
 3. **If #367 already MERGED:** board tip only, then pick next **ungated** slice (BB shared-φ wiring is the strongest SO leftover) **or** unblock a gated decision with brain (Delta dispersion A is the highest-leverage paste).
 4. Keep one PR in flight; do not touch #357/#363/#314.
 
@@ -140,8 +191,8 @@ Verified against `docs/dev-log/2026-09-14-true-parity-pending-board.md`, `docs/d
 ```bash
 gh pr view 367 -R itchyshin/GLLVM.jl
 gh pr checks 367 -R itchyshin/GLLVM.jl
-# after green + rebase:
+# after green:
 # ~/shinichi-brain/tools/pr_merge_when_green.sh itchyshin/GLLVM.jl 367 --squash
 ```
 
-**Ada verdict:** Yes — **start Mac Studio as the new true-parity main lane now.** Cloud babysit leftovers are landed or in final merge (#367); goal is **not** complete.
+**Ada verdict:** Mac Studio is the true-parity **main** lane with Active goal + #291 ultra-plan in this handover. Cloud babysits #367 only; #369 already MERGED. Goal is **not** complete.
