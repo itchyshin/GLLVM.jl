@@ -30,7 +30,7 @@ using Random: AbstractRNG, MersenneTwister, randn
 # Families handled by this layer (single latent block, optional scalar dispersion).
 const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GP1Fit, BetaFit, GammaFit, ExponentialFit,
                          TweedieFit, BetaBinomialFit, RowRandomFit, LognormalFit, TruncatedPoissonFit,
-                         TruncatedNegBin2Fit}
+                         TruncatedNegBin2Fit, StudentTFit}
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
 const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
@@ -422,6 +422,63 @@ function _family_ci(fit::LognormalFit, Y::AbstractMatrix; kwargs...)
     end
     names = vcat(_glm_lin_names(p, K), "sigma")
     kinds = vcat(fill(:linear, length(θ) - 1), :log)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# Student-t fixed-ν only (contract §6 free-ν holdout). Packing matches
+# fit_studentt_gllvm with `nu` pinned: [β; pack(Λ); log σ…] — ν is a plug-in.
+# Free / estimated ν stays OUT (Wald SE pathology at the ν→∞ boundary).
+function _family_ci(fit::StudentTFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    fit.estimated_nu && throw(ArgumentError(
+        "StudentTFit Wald CI: estimated ν (free degrees of freedom) is held out of " *
+        "_CIFit until the ν-boundary second-order ruling clears; refit with a finite " *
+        "`nu = …` pin (e.g. fit_studentt_gllvm(Y; nu = 4.0))"))
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; hess = fit.hessian; ν = fit.ν
+    shared = fit.disp_group === :shared
+    ndisp = shared ? 1 : p
+    logσ = shared ? [log(fit.σ)] : log.(fit.σ)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), logσ)
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        σ = shared ? exp(θv[p + rr + 1]) : exp.(θv[(p + rr + 1):(p + rr + ndisp)])
+        v = try
+            -studentt_marginal_loglik_laplace(Y, Λ, β, σ; ν = ν, link = link,
+                                              hessian = hess,
+                                              maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = linkinv(link, _clamp_eta(η[t]))
+                σ_t = shared ? fit.σ : fit.σ[t]
+                ν_t = ν isa Real ? ν : ν[t]
+                Yb[t, s] = μ + σ_t * rand(rng, TDist(ν_t))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_studentt_gllvm(Yb; K = K, nu = ν, link = link, hessian = hess,
+                               disp_group = fit.disp_group)
+        catch
+            return nothing
+        end
+        logσb = shared ? [log(fb.σ)] : log.(fb.σ)
+        return vcat(fb.β, pack_lambda(fb.Λ), logσb)
+    end
+    σ_names = shared ? ["sigma"] : ["sigma[$t]" for t in 1:p]
+    names = vcat(_glm_lin_names(p, K), σ_names)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, ndisp))
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
 
@@ -2781,7 +2838,7 @@ end
 Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
 families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
 `TweedieFit`, `BetaBinomialFit`, `LognormalFit`, `TruncatedPoissonFit`,
-`TruncatedNegBin2Fit`), shared-cutpoint `OrdinalFit`, per-trait
+`TruncatedNegBin2Fit`, fixed-ν `StudentTFit`), shared-cutpoint `OrdinalFit`, per-trait
 cutpoint `OrdinalPerTraitFit` / `OrdinalPerTraitCovFit` (free `tau[t,c]` for
 `c≥2`; `τ₁=0` fixed; CovFit needs `X`), FE softmax `MultinomialFit`
 (contrast `beta[k]` / `gamma[k,j]` for categories `k≥2`; `η₁≡0`; n×p `X` when
@@ -2797,8 +2854,10 @@ likelihood. For `BinomialFit` / `BetaBinomialFit` (and a `Binomial`-family
 (not the 3-array `GllvmCovFit` layout). For
 response-mask fits, pass the same Boolean `mask` matrix used by the fitter;
 masked cells are ignored by the likelihood and by bootstrap refits.
+`StudentTFit` admits Wald only when `ν` was pinned at fit time
+(`estimated_nu == false`); free / estimated ν remains a contract §6 holdout.
 
-Term names are `beta[t]` / `Lambda[i,k]` (+ a dispersion `r`/`phi`/`alpha`) for
+Term names are `beta[t]` / `Lambda[i,k]` (+ a dispersion `r`/`phi`/`alpha`/`sigma`) for
 the GLM families, `beta[k]` / `gamma[k,j]` (category indices `k≥2`) for
 `MultinomialFit`, `... + phi` for `BetaBinomialFit` (the Beta precision) and
 `... + sigma_row (+ r/phi/alpha)` for `RowRandomFit`, and `betaz[t]` (occurrence / zero-inflation logits) / `betac[t]`

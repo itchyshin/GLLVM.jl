@@ -1,10 +1,19 @@
+## 2026-09-15 — StudentTFit fixed-ν Wald `_CIFit` (`cursor/studentt-fixed-nu-wald-ci-a0ce`)
+
+- Cleared §6 Student-t fixed-ν holdout API gap: `StudentTFit` ∈ `_FamilyFit` +
+  `_family_ci` when `estimated_nu == false` (shared + species σ). Free / estimated
+  ν still throws (contract §6 OUT). Bridge untouched (#357 foreign).
+  After-task: `docs/dev-log/after-task/2026-09-15-studentt-fixed-nu-wald-ci.md`.
+  Focused **29/29**. Rematched onto `origin/main` @ `9519b3e28` (#371 goal+ultra-plan).
+- Commands: `julia --project=. test/test_second_order_studentt_ci.jl`.
+
 ## 2026-09-15 — Mac handover Active goal + ultra-plan (`cursor/mac-handover-goal-ultraplan-f9d7`)
 
 - Docs-only follow-up while Mac-STARTED note may still be in flight: handover now carries
   **Active goal (verbatim)** + canonical ultra-plan paths (#291
   `docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md` + companions) + Mac ownership +
   cloud babysit-only (#367/#369/#370). Not “Mac started” alone. Rematched onto `origin/main` @ `c459751b` (#370);
-  #357 untouched; goal **not** complete.
+  #357 untouched; goal **not** complete. MERGED as #371 @ `9519b3e28`.
 - After-task: `docs/dev-log/after-task/2026-09-15-mac-handover-goal-ultraplan.md`.
 - Commands: `git fetch origin main`; `gh pr view 369 --json state,mergedAt`;
   `gh pr view 367 --json state,mergeable`.

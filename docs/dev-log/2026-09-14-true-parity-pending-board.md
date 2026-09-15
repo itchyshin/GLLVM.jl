@@ -1,8 +1,8 @@
 # True-parity programme: maintainer board (2026-09-14, updated 2026-09-15)
 
-STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15); cloud babysit-only for in-flight #367 (+ #369/#370 MERGED @ `c459751b`); do not start new ungated slices from cloud.** Cross-lane handoff must carry **Active goal (verbatim) + ultra-plan (#291)** — see [`handover/2026-09-15-mac-studio-true-parity-handover.md`](handover/2026-09-15-mac-studio-true-parity-handover.md) and [`plans/2026-09-05-true-parity-ultra-plan.md`](plans/2026-09-05-true-parity-ultra-plan.md); not “Mac started” alone. #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`), **#369 Mac handover** (`c00e9345`), **#370 Mac STARTED** (`c459751b`); native Wald **PARTIAL** (like Ordinal/Lognormal). **Cloud babysit:** #367 Student-t fixed-ν. Foreign: #357 CONFLICTING (do not edit). Paste-blocked; goal **not** complete.
+STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15); cloud babysit-only for in-flight #367 (+ #369/#370/#371 MERGED @ `9519b3e28`); do not start new ungated slices from cloud.** Cross-lane handoff must carry **Active goal (verbatim) + ultra-plan (#291)** — see [`handover/2026-09-15-mac-studio-true-parity-handover.md`](handover/2026-09-15-mac-studio-true-parity-handover.md) and [`plans/2026-09-05-true-parity-ultra-plan.md`](plans/2026-09-05-true-parity-ultra-plan.md); not “Mac started” alone. #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`), **#369 Mac handover** (`c00e9345`), **#370 Mac STARTED** (`c459751b`), **#371 goal+ultra-plan** (`9519b3e28`); native Wald **PARTIAL** (like Ordinal/Lognormal). **Cloud babysit / this tip:** #367 Student-t fixed-ν Wald `_CIFit`. Foreign: #357 CONFLICTING (do not edit). Paste-blocked; goal **not** complete.
 
-Rehydrate: `origin/main` @ `c459751b` (#370); gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
+Rehydrate: `origin/main` @ `9519b3e28` (#371; + this PR tip); gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
 ---
 
@@ -40,7 +40,7 @@ Inventory: [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09
 
 ### Second-order follow-up
 
-Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **MultinomialFit** native Wald on main (#366, [`2026-09-15-multinomial-wald-ci.md`](after-task/2026-09-15-multinomial-wald-ci.md)); holdout → **PARTIAL** (like Ordinal/Lognormal). Bridge CI lift still waits on #357.  
+Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* / MultinomialFit on main (#362/#356/#361/#366); **Student-t fixed-ν Wald** this PR ([`2026-09-15-studentt-fixed-nu-wald-ci.md`](after-task/2026-09-15-studentt-fixed-nu-wald-ci.md)) — holdout → PARTIAL (native Wald); free ν stays OUT. Bridge CI lift still waits on #357.  
 Delta SO species dispersion: still OUT until paste `accept delta dispersion A`.  
 BB shared-φ pairing / GP-1 ruling / Student-t free ν / Λ raw: still OUT.
 
@@ -62,7 +62,7 @@ Blocked on D-139 ack before Totoro spend (no separate paste string beyond an exp
 
 ## Agent rules
 
-- **Mac owns true-parity (STARTED 2026-09-15).** Cloud babysit-only for in-flight #367 (+ #369 MERGED); do not start new ungated slices from cloud.
+- **Mac owns true-parity (STARTED 2026-09-15).** Cloud babysit-only for in-flight #367 (+ #369/#370/#371 MERGED); do not start new ungated slices from cloud.
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.
