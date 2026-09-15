@@ -19854,3 +19854,8 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Fix: `else` gate like `test_second_order_delta_followup.jl`; `@test ok` + `@test isempty(issues)`.
 - Local: default env → 1 broken (skip), 0 error.
 - Unblocks main CI / #355 merge of tools aliases.
+
+## 2026-09-15 — LognormalFit Wald `_CIFit` (SO holdout)
+
+- Added `LognormalFit` to `_FamilyFit` + `_family_ci` (closed-form NLL).
+- Focused test 15/15; holdouts updated; bridge CI guard left for post-#357.

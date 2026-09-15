@@ -29,7 +29,7 @@ using Random: AbstractRNG, MersenneTwister, randn
 
 # Families handled by this layer (single latent block, optional scalar dispersion).
 const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GP1Fit, BetaFit, GammaFit, ExponentialFit,
-                         TweedieFit, BetaBinomialFit, RowRandomFit}
+                         TweedieFit, BetaBinomialFit, RowRandomFit, LognormalFit}
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
 const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
@@ -382,6 +382,47 @@ function _family_ci(fit::GammaFit, Y::AbstractMatrix;
         return vcat(fb.β, pack_lambda(fb.Λ), log(fb.α))
     end
     names = vcat(_glm_lin_names(p, K), "alpha")
+    kinds = vcat(fill(:linear, length(θ) - 1), :log)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+"""
+One-part lognormal Wald/profile/bootstrap adapter.
+
+Packing matches `LognormalFit.theta_packed = [β; pack(Λ); log σ]` (Identity /
+Gaussian free-σ layout). The NLL is the closed-form y-scale marginal
+(`lognormal_marginal_loglik`), not a Laplace approximation.
+"""
+function _family_ci(fit::LognormalFit, Y::AbstractMatrix; kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.σ))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        σ = exp(θv[p + rr + 1])
+        v = try
+            -lognormal_marginal_loglik(Y, Λ, β, σ)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        σ = fit.σ
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                Yb[t, s] = exp(η[t] + σ * randn(rng))
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_lognormal_gllvm(Yb; K = K) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ), log(fb.σ))
+    end
+    names = vcat(_glm_lin_names(p, K), "sigma")
     kinds = vcat(fill(:linear, length(θ) - 1), :log)
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
@@ -2337,7 +2378,7 @@ end
 
 Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
 families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
-`TweedieFit`, `BetaBinomialFit`), the random-row-effect fit (`RowRandomFit`,
+`TweedieFit`, `BetaBinomialFit`, `LognormalFit`), the random-row-effect fit (`RowRandomFit`,
 which adds a `sigma_row` term plus the underlying family's dispersion), and the
 two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
 `HurdleNBFit`, `ZIPFit`, `ZIPCovFit`, `ZINBFit`, `ZINBCovFit`, `ZIBFit`). `Y` is the same
