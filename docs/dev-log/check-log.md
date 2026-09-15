@@ -1,3 +1,12 @@
+## 2026-09-15 — D3 `loading_profile` Stage 0 substrate (`docs/loading-profile-d3-stage0-20260915`)
+
+- Stage 0 after-task:
+  `docs/dev-log/after-task/2026-09-15-loading-profile-d3-stage0.md` — frozen Core070 pin
+  fixtures (`MASK-B-PINS` / `UPPER` / `ALLFIXED`), test-only pin enumeration helpers,
+  contract `docs/dev-log/core070/loading-profile-confirmatory-substrate.json`.
+  **No** public `loading_profile` export; **no** ledger edit; row 8 stays
+  `BLOCKED_NEEDS_JULIA_SURFACE`. Focused test: `test/test_loading_profile_stage0.jl` (24 pass).
+
 ## 2026-09-15 — Ada defaults: waive #323 (B) + matched-θ (C) (`docs/ada-defaults-true-parity-20260915`)
 
 - **AGENT-APPLIED Ada defaults** (reversible pending Shinichi reverse): **#323** option **(B)**
