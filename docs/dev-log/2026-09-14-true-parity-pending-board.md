@@ -36,6 +36,10 @@ S4 probe yes
 
 **Inventory:** [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md) — `FREE=0` spreadsheet vs **122** needs-surface / **47** partial-pending / capability **planned|missing** rows; ranked next slices (excludes Stage 1 / S4).
 
+### Second-order Delta follow-up (rank 2 slice)
+
+**Receipt:** [`2026-09-15-second-order-delta-followup.md`](after-task/2026-09-15-second-order-delta-followup.md) — shared-η Wald wiring + cells; **paired D1 FAIL** (dispersion parameterisation gap). Lognormal/Truncated/Ordinal holdouts **not** attempted (still API gaps). **≠** §7 complete.
+
 ### Version
 
 **`Project.toml` remains `0.3.0`** (D-183). No bump until joint G11 / true-parity version proposal is accepted.

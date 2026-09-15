@@ -332,6 +332,7 @@ println(_SHARD === nothing ?
     _shard_include("test_offset.jl")
     _shard_include("test_fd_hessian.jl")
     _shard_include("test_confint_family.jl")
+    _shard_include("test_second_order_delta_followup.jl")
     _shard_include("test_diagnostics.jl")
     _shard_include("test_se_machinery.jl")
     _shard_include("test_nobs_pn_convention.jl")
