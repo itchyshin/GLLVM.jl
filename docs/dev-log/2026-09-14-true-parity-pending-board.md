@@ -1,10 +1,8 @@
 # True-parity programme: maintainer board (2026-09-14, updated 2026-09-15)
 
-STATE: IN PROGRESS. #323, matched-θ (C), §2 Hessian (A) disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284 merged). Still open: S4 probe, D3 Stage 1, Project.toml 0.3.0, Delta dispersion paste. Merged this waiter: #362 OrdinalPerTrait Wald, #356 TweedieGrouped Wald, #361 Lognormal/TruncPois/TruncNB2 Wald, #355 parity_ledger aliases, board tip #364. Foreign open: #357 bridge receipts, CONFLICTING (cannot squash without conflict resolve). Goal not complete.
+STATE: **IN PROGRESS**. #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips. **This slice:** Multinomial FE Wald `_CIFit`. Foreign: #357 CONFLICTING (do not edit). Goal **not** complete.
 
-Rehydrate: origin/main @ d7353b14e; gllvmTMB origin/main @ fba20d613; frozen oracle b4d5fee64def88bc768dda1f1f77c29b295edd86; Project.toml stays 0.3.0.
-
-2026-09-15 continuation poll: no ungated engine slice. Skipped #363 / #314. #357 Julia+Documenter green (Frozen R advisory FAIL OK by fence); pr_merge_when_green refused advisory FAIL; GitHub mergeable=false / DIRTY (conflict only on docs/dev-log/check-log.md). This lane does not edit #357.
+Rehydrate: `origin/main` @ `deab192f` (+ this PR tip); gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
 ---
 
@@ -14,7 +12,7 @@ Rehydrate: origin/main @ d7353b14e; gllvmTMB origin/main @ fba20d613; frozen ora
 |------|---------|----------|
 | [#323](https://github.com/itchyshin/GLLVM.jl/issues/323) Frozen R smoke | Waived (B); advisory CI stays non-gating | [`2026-09-14-advisory-frozen-r-smoke-323-pending.md`](decisions/2026-09-14-advisory-frozen-r-smoke-323-pending.md) ACCEPTED |
 | matched-θ beta_logit, nb2_log | Permanent OUT (C); each-own-optimum only | [`2026-09-14-matched-theta-beta-nb2-pending.md`](decisions/2026-09-14-matched-theta-beta-nb2-pending.md) ACCEPTED |
-| §2 Hessian Binomial/cloglog + Tweedie grouped | Ratify :observed (A); receipts + defaults signed | [`2026-09-15-second-order-hessian-s2-pending.md`](decisions/2026-09-15-second-order-hessian-s2-pending.md) ACCEPTED |
+| §2 Hessian Binomial/cloglog + Tweedie grouped | Ratify `:observed` (A); receipts + defaults signed | [`2026-09-15-second-order-hessian-s2-pending.md`](decisions/2026-09-15-second-order-hessian-s2-pending.md) ACCEPTED |
 | Julia-only arcG / DRAC (parity_ledger CLOSURE) | ACCOUNTED; Julia-beyond diagnostics; not owed to R | [`2026-09-15-julia-only-arcg-disposition.md`](decisions/2026-09-15-julia-only-arcg-disposition.md) ACCEPTED |
 
 Reverse: Shinichi may paste `reopen #323`, `reject matched-θ C`, `reject §2 hessian A`, or `reject arcG disposition` in chat; agents must revert on explicit reverse only.
@@ -38,13 +36,13 @@ Stage 1: paste `G0 Stage 1` only.
 
 ### Ledger / capability gaps (item 3)
 
-Inventory: [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). Rank 7 done (arcG; #358/#1284). Aliases landed (#355). Foreign: [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge logLik receipts. Julia+Documenter green; Frozen R advisory FAIL OK; CONFLICTING vs main on check-log.md only. Foreign lane or Shinichi must rebase/resolve (this lane does not edit).
+Inventory: [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). Rank 7 done (arcG; #358/#1284). Aliases landed (#355). Foreign: [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge logLik receipts — CONFLICTING on `check-log.md` only; do not edit from this lane.
 
-### Second-order Delta follow-up
+### Second-order follow-up
 
-Receipt: [`2026-09-15-second-order-delta-followup.md`](after-task/2026-09-15-second-order-delta-followup.md).  
-OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* native Wald: on main (#362/#356/#361); holdouts PARTIAL (native Wald); bridge CI lift still waits on #357.  
-Delta SO: still OUT until dispersion alignment. PENDING: paste `accept delta dispersion A`.
+Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **Multinomial FE Wald** this PR ([`2026-09-15-multinomial-wald-ci.md`](after-task/2026-09-15-multinomial-wald-ci.md)) — holdout → PARTIAL (native Wald). Bridge CI lift still waits on #357.  
+Delta SO species dispersion: still OUT until paste `accept delta dispersion A`.  
+BB shared-φ pairing / GP-1 ruling / Student-t free ν / Λ raw: still OUT.
 
 ### Version
 
@@ -71,3 +69,4 @@ Blocked on D-139 ack before Totoro spend (no separate paste string beyond an exp
 - Do not treat arcG/DRAC diagnostics as a coverage certificate or R-owed port.
 - No gllvmTMB engine surgery (TMB/likelihood); tools disposition PRs OK.
 - Do not edit #357 unless Shinichi pastes otherwise.
+- Skipped unrelated opens: #363 env, #314 handover.
