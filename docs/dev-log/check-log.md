@@ -1,3 +1,12 @@
+## 2026-09-15 — parity_ledger TWIN_ALIAS ALIASES (`chore/parity-ledger-aliases-20260915`)
+
+- Follow-on PR #350: 15 safe `TWIN_ALIAS` rows in `tools/parity_ledger.py` (3 skipped —
+  `animal_indep`, `animal_scalar`, `extract_residual_split`). **Tool-only**; **≠** export
+  promotion or gap closure.
+- After-task: `docs/dev-log/after-task/2026-09-15-parity-ledger-aliases.md`.
+- Commands: `python3 tools/parity_ledger.py --self-test`; `python3 tools/parity_ledger.py`
+  (FORWARD **77→62**, REVERSE 92→91 @ frozen oracle).
+
 ## 2026-09-15 — §2 Hessian Ada default (A) + cloglog receipt (`cursor/s2-hessian-a-tweedie-receipt-01b1`)
 
 - Decision **ACCEPTED:** `docs/dev-log/decisions/2026-09-15-second-order-hessian-s2-pending.md`

@@ -58,6 +58,10 @@ DEFAULT_REF = DEFAULT_R_REF
 # "## R bridge: parameterization map" (the quantity/family-naming
 # conventions the R<->Julia bridge already reconciles) plus obvious
 # family-constructor renames documented in the same file.
+#
+# TWIN_ALIAS rows from docs/dev-log/core070/forward-export-disposition-20260915.tsv
+# (after-task 2026-09-15-forward-export-disposition.md, PR #350): only entries
+# where a exported Julia symbol already implements the capability.
 # ---------------------------------------------------------------------------
 ALIASES = {
     # parity-map row: NB2 dispersion phi (R) <-> r=1/phi (Julia); same family
@@ -76,6 +80,22 @@ ALIASES = {
     # the fitting verb
     "gllvmTMB": "fit_gllvm",
     "gllvm_julia_fit": "bridge_fit",
+    # --- TWIN_ALIAS (forward-export disposition 2026-09-15) ---
+    "dep": "fit_dep_gllvm",
+    "Beta": "fit_beta_gllvm",  # Distributions Beta() marker not re-exported; fitter is the twin
+    "kernel_indep": "fit_kernel_indep_gllvm",
+    "kernel_dep": "fit_kernel_dep_gllvm",
+    "kernel_latent": "fit_kernel_latent_gllvm",
+    "kernel_scalar": "fit_kernel_indep_gllvm",  # scalar modifier = indep(..., common=TRUE)
+    "kernel_unique": "fit_kernel_latent_gllvm",  # unique modifier on latent tier
+    "animal_dep": "fit_animal_dep_gllvm",
+    "animal_latent": "fit_animal_latent_gllvm",
+    "extract_Sigma_B": "extract_Sigma",  # level=:unit, part=:total
+    "extract_Sigma_W": "extract_Sigma",  # level=:unit_obs, part=:total
+    "gllvmTMB_wide": "gllvm",  # wide-matrix @formula entry; R soft-deprecated wrapper name
+    ".proportions_bootstrap_ci": "extract_proportions",  # R internal; user-layer proportions twin
+    ".proportions_wald_ci": "extract_proportions",
+    "flag_unreliable_loadings": "check_gllvmTMB",  # loading-runaway / Heywood flags in diagnose cluster
 }
 
 # FORWARD, R-idiom helpers with no meaningful Julia counterpart: control-object
