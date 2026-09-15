@@ -1,8 +1,8 @@
 # True-parity programme — maintainer board (2026-09-14, updated 2026-09-15)
 
-**STATE:** **IN PROGRESS** — #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). **Ledger gap inventory done**. **arcG Julia-only disposition** ACCEPTED (**#358 merged**; gllvmTMB #1284 pending). **Still open:** S4 probe, D3 Stage **1**, **`Project.toml` `0.3.0`**, Delta dispersion paste; open PRs #355/#356/#357/#361; **#359/#360/#358/#362 merged**; this PR rematched onto #362.
+**STATE:** **IN PROGRESS** — #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). **Ledger gap inventory done**. **arcG Julia-only disposition** ACCEPTED (**#358** + gllvmTMB **#1284** merged). **Still open:** S4 probe, D3 Stage **1**, **`Project.toml` `0.3.0`**, Delta dispersion paste. **Merged this waiter:** **#362** OrdinalPerTrait Wald · **#356** TweedieGrouped Wald · **#361** Lognormal/TruncPois/TruncNB2 Wald · **#355** parity_ledger aliases. **Foreign open:** **#357** bridge receipts (do not edit). Goal **not** complete.
 
-**Rehydrate:** `origin/main` · frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86` · **`Project.toml` stays `0.3.0`**.
+**Rehydrate:** `origin/main` @ `e87a4670` · frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86` · **`Project.toml` stays `0.3.0`**.
 
 ---
 
@@ -36,12 +36,13 @@ S4 probe yes
 
 ### Ledger / capability gaps (item 3)
 
-**Inventory:** [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). **Rank 7 done** (arcG disposition; #358 merged). In flight: [#356](https://github.com/itchyshin/GLLVM.jl/pull/356) Tweedie SO, [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge receipts, [#355](https://github.com/itchyshin/GLLVM.jl/pull/355) aliases, [#361](https://github.com/itchyshin/GLLVM.jl/pull/361) Lognormal/Trunc Wald; **#362** OrdinalPerTrait Wald merged.
+**Inventory:** [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). **Rank 7 done** (arcG; #358/#1284). **Aliases landed** (#355). **Foreign:** [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge logLik receipts (Julia+Documenter green on last poll; Frozen R advisory FAIL OK — **do not edit** from this lane).
 
 ### Second-order Delta follow-up
 
 **Receipt:** [`2026-09-15-second-order-delta-followup.md`](after-task/2026-09-15-second-order-delta-followup.md).  
 **OrdinalPerTrait native Wald:** [`2026-09-15-ordinal-pertrait-wald-ci.md`](after-task/2026-09-15-ordinal-pertrait-wald-ci.md) (PARTIAL holdout; bridge still #357).  
+**TweedieGrouped Wald:** [`2026-09-15-tweedie-grouped-wald-ci.md`](after-task/2026-09-15-tweedie-grouped-wald-ci.md).  
 **PENDING:** paste `accept delta dispersion A`.
 
 ### Version
@@ -64,3 +65,4 @@ ack Totoro D-139 #323 Track A
 - **Do not** cite matched-θ for `beta_logit` / `nb2_log` default cells.
 - **Do not** treat arcG/DRAC diagnostics as a coverage certificate or R-owed port.
 - **No gllvmTMB engine surgery** (TMB/likelihood); tools disposition PRs OK.
+- **Do not edit #357** unless Shinichi pastes otherwise.
