@@ -1,3 +1,14 @@
+## 2026-09-15 — Mac handover Active goal + ultra-plan (`cursor/mac-handover-goal-ultraplan-f9d7`)
+
+- Docs-only follow-up while Mac-STARTED note may still be in flight: handover now carries
+  **Active goal (verbatim)** + canonical ultra-plan paths (#291
+  `docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md` + companions) + Mac ownership +
+  cloud babysit-only (#367/#369/#370). Not “Mac started” alone. Rematched onto `origin/main` @ `c459751b` (#370);
+  #357 untouched; goal **not** complete.
+- After-task: `docs/dev-log/after-task/2026-09-15-mac-handover-goal-ultraplan.md`.
+- Commands: `git fetch origin main`; `gh pr view 369 --json state,mergedAt`;
+  `gh pr view 367 --json state,mergeable`.
+
 ## 2026-09-15 — Mac Studio lane STARTED note (`cursor/mac-lane-active-note-a0ce`)
 
 - Coordination only: **Mac owns true-parity**; cloud babysit-only for in-flight **#367**

@@ -4,7 +4,7 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). STATE: DestB DONE; true-parity vs frozen 0.
 
 CreateGoal: armed in parent chat (2026-09-14). Do not mark complete.
 
-**LANE (2026-09-15):** Mac Studio owns true-parity; cloud babysit-only for in-flight #367 (+ #369 MERGED); do not start new ungated slices from cloud. START HERE: [`docs/dev-log/handover/2026-09-15-mac-studio-true-parity-handover.md`](../docs/dev-log/handover/2026-09-15-mac-studio-true-parity-handover.md).
+**LANE (2026-09-15):** Mac Studio owns true-parity; cloud babysit-only for in-flight #367 (+ #369/#370 MERGED); do not start new ungated slices from cloud. **Active goal + ultra-plan (#291)** live in START HERE: [`docs/dev-log/handover/2026-09-15-mac-studio-true-parity-handover.md`](../docs/dev-log/handover/2026-09-15-mac-studio-true-parity-handover.md) (canonical plan: [`docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md`](../docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md)).
 
 ARC IN PROGRESS: true-parity tranche. Board: [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md).
 
