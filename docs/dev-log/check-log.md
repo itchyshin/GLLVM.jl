@@ -1,9 +1,20 @@
+<<<<<<< HEAD
 ## 2026-09-15 — Julia-only arcG disposition (rank 7; R CLOSURE)
 
 - Decision ACCEPTED: `docs/dev-log/decisions/2026-09-15-julia-only-arcg-disposition.md`.
   Twin tools: `gllvmTMB/tools/parity_ledger.R` ACCOUNTED → local `CLOSURE: PASS`.
   After-task: `docs/dev-log/after-task/2026-09-15-julia-only-arcg-disposition.md`.
 - Commands: `Rscript tools/parity_ledger.R` (gllvmTMB) → `CLOSURE: PASS`.
+=======
+## 2026-09-15 — Lognormal + truncated-Poisson bridge logLik receipts (#353 ranks 1–2)
+
+- Worktree `feat/lognormal-truncpois-loglik-receipts-20260915` @ `origin/main` `d05cb15c8`.
+- Live re-run (`GLLVM_PARITY_TESTS=1`, parity project): lognormal abs Δ **2.239e-8** (seed=52);
+  truncated_poisson abs Δ **2.713e-9** (seed=53) — matches 2026-08-24 receipt.
+- Cleared stale “light RCall Δ still OWED” from `src/bridge.jl` + bridge tests; inventory TSV
+  rows → `live_delta`. After-task:
+  `docs/dev-log/after-task/2026-09-15-lognormal-truncpois-bridge-receipts.md`. **≠** full family parity.
+>>>>>>> 2465c738c (fix(bridge): wire lognormal and trunc-Poisson parity receipts)
 
 ## 2026-09-15 — §2 Hessian Ada default (A) + cloglog receipt (`cursor/s2-hessian-a-tweedie-receipt-01b1`)
 

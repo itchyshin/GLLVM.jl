@@ -5,8 +5,8 @@ logLik	poisson	no-X	live_delta	test/parity/test_poisson_parity.jl
 logLik	nb2	no-X	live_delta	test/parity/test_negbin_parity.jl
 logLik	beta	no-X	live_delta	test/parity/test_beta_parity.jl
 logLik	ordinal_probit	no-X	live_delta	test/parity/test_ordinal_probit_parity.jl
-logLik	lognormal	no-X	live_delta_fenced_bridge	test/parity/test_lognormal_parity.jl; test_bridge_capabilities OWED
-logLik	truncated_poisson	no-X	live_delta_fenced_bridge	test/parity/test_truncated_poisson_parity.jl
+logLik	lognormal	no-X	live_delta	test/parity/test_lognormal_parity.jl; bridge note wired 2026-09-15 (abs Δ≈2.24e-8 seed=52)
+logLik	truncated_poisson	no-X	live_delta	test/parity/test_truncated_poisson_parity.jl; bridge note wired 2026-09-15 (abs Δ≈2.71e-9 seed=53)
 logLik	truncated_nb2	no-X	live_delta	test/parity/test_truncated_nbinom2_parity.jl
 logLik	gamma	no-X	live_delta	test/parity/test_nox_dispersion_parity.jl
 logLik	nb1	no-X	live_delta	test/parity/test_nox_dispersion_parity.jl

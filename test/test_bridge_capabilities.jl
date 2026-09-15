@@ -246,7 +246,7 @@ using GLLVM
 
     # lognormal: no-X only (twin fid 3). CI / X / X_lv / masks / scalar-mean
     # postfit remain follow-ups — LognormalFit is not in `_CIFit` and has no
-    # residuals/simulate extractor. Light RCall Δ is still OWED (not invented).
+    # residuals/simulate extractor. Light no-X logLik Δ is wired via parity cell.
     ln_idx = findfirst(==("lognormal"), caps.family)
     @test ln_idx !== nothing
     @test ln_idx == findfirst(==("poisson"), caps.family) + 1
@@ -266,14 +266,14 @@ using GLLVM
     @test caps.postfit_ordination[ln_idx]
     @test occursin("twin fid 3", caps.notes[ln_idx])
     @test occursin("fit_lognormal_gllvm", caps.notes[ln_idx])
-    @test occursin("light RCall Δ still OWED", caps.notes[ln_idx])
-    @test occursin("not invented", caps.notes[ln_idx])
+    @test occursin("test/parity/test_lognormal_parity.jl", caps.notes[ln_idx])
+    @test occursin("light no-X RCall logLik Δ PAID", caps.notes[ln_idx])
+    @test !occursin("still OWED", caps.notes[ln_idx])
     @test occursin("narrower than full R-user parity", caps.notes[ln_idx])
 
     # truncated_poisson: no-X only (twin fid 10). CI / X / X_lv / masks /
     # scalar-mean postfit remain follow-ups — TruncatedPoissonFit is not in
-    # `_CIFit` and has no residuals/simulate extractor. Light RCall Δ is still
-    # OWED (not invented).
+    # `_CIFit` and has no residuals/simulate extractor. Light no-X logLik Δ wired.
     tp_idx = findfirst(==("truncated_poisson"), caps.family)
     @test tp_idx !== nothing
     @test tp_idx == findfirst(==("zib"), caps.family) + 1
@@ -293,8 +293,9 @@ using GLLVM
     @test caps.postfit_ordination[tp_idx]
     @test occursin("twin fid 10", caps.notes[tp_idx])
     @test occursin("fit_truncated_poisson_gllvm", caps.notes[tp_idx])
-    @test occursin("light RCall Δ still OWED", caps.notes[tp_idx])
-    @test occursin("not invented", caps.notes[tp_idx])
+    @test occursin("test/parity/test_truncated_poisson_parity.jl", caps.notes[tp_idx])
+    @test occursin("light no-X RCall logLik Δ PAID", caps.notes[tp_idx])
+    @test !occursin("still OWED", caps.notes[tp_idx])
     @test occursin("narrower than full R-user parity", caps.notes[tp_idx])
 
     # zib: no-X only. `cbind_binomial` stays FALSE (ZIB's N is one shared scalar,
@@ -377,15 +378,17 @@ using GLLVM
         elseif fam == "lognormal"
             @test occursin("twin fid 3", note)
             @test occursin("fit_lognormal_gllvm", note)
-            @test occursin("light RCall Δ still OWED", note)
-            @test occursin("not invented", note)
+            @test occursin("test/parity/test_lognormal_parity.jl", note)
+            @test occursin("light no-X RCall logLik Δ PAID", note)
+            @test !occursin("still OWED", note)
             @test occursin("narrower than full R-user parity", note)
             @test !occursin("Wald/profile/bootstrap CI payloads are routed", note)
         elseif fam == "truncated_poisson"
             @test occursin("twin fid 10", note)
             @test occursin("fit_truncated_poisson_gllvm", note)
-            @test occursin("light RCall Δ still OWED", note)
-            @test occursin("not invented", note)
+            @test occursin("test/parity/test_truncated_poisson_parity.jl", note)
+            @test occursin("light no-X RCall logLik Δ PAID", note)
+            @test !occursin("still OWED", note)
             @test occursin("narrower than full R-user parity", note)
             @test !occursin("Wald/profile/bootstrap CI payloads are routed", note)
         else

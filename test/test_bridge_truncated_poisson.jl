@@ -5,8 +5,8 @@
 # matches the native fitter at 1e-8, and X / X_lv / mask / CI stay loud rejects.
 # Support is y ≥ 1 strictly — zeros fail loud (no silent skip).
 #
-# Twin fence: light RCall Δ is still OWED. Do not invent a number here. Do not
-# add a skipped "parity" test that looks like a live Δ.
+# Twin receipt: light no-X logLik Δ is gated in test/parity/test_truncated_poisson_parity.jl
+# (GLLVM_PARITY_TESTS=1). Bridge notes cite that cell; do not invent numbers here.
 
 using Test
 using Random
@@ -83,9 +83,9 @@ end
         @test br.converged isa Bool
         @test br.nobs == 120
         @test occursin("twin fid 10", br.note)
-        @test occursin("light RCall Δ still OWED", br.note)
-        @test occursin("not invented", br.note)
-        @test !occursin("parity", lowercase(br.note))
+        @test occursin("test/parity/test_truncated_poisson_parity.jl", br.note)
+        @test occursin("light no-X RCall logLik Δ PAID", br.note)
+        @test !occursin("still OWED", br.note)
 
         br_alias = bridge_fit(; y = Y, family = "TruncPois", d = 1)
         @test br_alias.family == "truncated_poisson"
