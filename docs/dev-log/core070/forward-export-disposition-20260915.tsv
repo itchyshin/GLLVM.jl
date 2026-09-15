@@ -1,0 +1,64 @@
+rank	r_export	disposition	julia_twin_or_route	executable_next_owner	notes
+1	dep	TWIN_ALIAS	fit_dep_gllvm	Julia export slice	None×dep Gaussian engine on main; FORWARD gap is name-only (capability-status: implemented function API).
+2	Beta	TWIN_ALIAS	Beta + fit_beta_gllvm / fit_gllvm	Ledger/tool only	Already exported family marker; parity_ledger name match missing.
+3	kernel_indep	TWIN_ALIAS	fit_kernel_indep_gllvm	Julia export slice	Dense-kernel × indep Gaussian wrapper exists.
+4	kernel_dep	TWIN_ALIAS	fit_kernel_dep_gllvm	Julia export slice	Paired with capability row kernel×dep AGREE.
+5	kernel_latent	TWIN_ALIAS	fit_kernel_latent_gllvm	Julia export slice	Paired with capability row kernel×latent AGREE.
+6	animal_dep	TWIN_ALIAS	fit_animal_dep_gllvm	Julia export slice	Animal×dep matrix fitter; no formula keyword export.
+7	animal_latent	TWIN_ALIAS	fit_animal_latent_gllvm	Julia export slice	Animal×latent Gaussian wrapper.
+8	extract_Sigma_B	TWIN_ALIAS	extract_Sigma(fit; level=:unit, part=:total)	Julia export slice	postfit_tables already labels Sigma_B from extract_Sigma.
+9	extract_Sigma_W	TWIN_ALIAS	extract_Sigma(fit; level=:unit_obs, part=:total)	Julia export slice	Same pattern as extract_Sigma_B.
+10	gllvmTMB_wide	TWIN_ALIAS	gllvm(@formula(...), Y, data)	Julia export slice	Wide-matrix formula path; R soft-deprecated wrapper name only.
+11	.proportions_bootstrap_ci	TWIN_ALIAS	extract_proportions + confint bootstrap	Ledger disposition	R internal helper; Julia has extract_proportions at user layer.
+12	.proportions_wald_ci	TWIN_ALIAS	extract_proportions + Wald CI	Ledger disposition	R internal helper.
+13	kernel_scalar	TWIN_ALIAS	fit_kernel_indep_gllvm (common variance)	Julia export slice	Modifier scalar = indep(..., common=TRUE); no export alias yet.
+14	kernel_unique	TWIN_ALIAS	fit_kernel_latent_gllvm + diag ψ companion	Julia export slice	unique modifier on latent tier; engine partial vs full formula.
+15	animal_indep	TWIN_ALIAS	relatedness_cov + Gaussian indep route	Julia export + phylo transport	Engine partial (capability: scope-limited on R side); needs public animal_indep export or alias.
+16	animal_scalar	TWIN_ALIAS	relatedness_cov + common-variance indep	Julia export slice	Same as scalar modifier pattern.
+17	extract_residual_split	TWIN_ALIAS	extract_residual_cov / link_residual	Julia export slice	R split API not byte-identical; structural twin not name twin.
+18	flag_unreliable_loadings	TWIN_ALIAS	check_gllvmTMB / gllvmTMB_diagnose loading flags	Julia postfit slice	Threshold logic partially mirrored in diagnostics.
+19	gllvm_julia_setup	R_ONLY_REFUSE	(R) gllvmTMB::gllvm_julia_setup	Ledger disposition	Julia side is bridge_fit target; setup stays R+JuliaCall bootstrap per namespace-2 contract.
+20	indep	PARTIAL_DECISION	fit_gllvm / fit_gaussian_gllvm none×indep	Maintainer G0 + Dest B	Engine implemented; export-name promotion pending (Dest B Arc 0).
+21	scalar	PARTIAL_DECISION	indep(..., common=TRUE) modifier	Maintainer G0 + Dest B	Same as indep; ledger PARTIAL not engine gap.
+22	latent	FORMULA_EXPORT_NEEDED	@formula latent() recognizer + fit_gllvm	Destination B	Engine exists; ledger BLOCKED = public formula keyword export.
+23	traits	FORMULA_EXPORT_NEEDED	@formula traits() LHS	Destination B	Required for R-wide data-frame grammar parity.
+24	phylo	FORMULA_EXPORT_NEEDED	phylo() source keyword	Phylo transport S2+	Router export; sparse phylo engines exist without keyword exports.
+25	phylo_indep	FORMULA_EXPORT_NEEDED	fit_phylo_gaussian / precision route	Phylo transport	S1 proofs + fit_phylo_gaussian; keyword export owed.
+26	phylo_latent	FORMULA_EXPORT_NEEDED	fit_phylo_gaussian / fit_phylo_glm	Phylo transport	Capability row implemented at function API.
+27	phylo_dep	FORMULA_EXPORT_NEEDED	fit_phylo_dep_gllvm	Phylo transport	Arc 0 Gaussian function API only.
+28	phylo_scalar	FORMULA_EXPORT_NEEDED	phylo_indep common-variance route	Phylo transport	Modifier not export.
+29	phylo_unique	FORMULA_EXPORT_NEEDED	phylo_latent(..., unique=TRUE)	Phylo transport	Folded ψ decomposition keyword.
+30	phylo_rr	FORMULA_EXPORT_NEEDED	constrained ordination / RRR fitters	Planned	RRR engine partial; R keyword not mirrored.
+31	phylo_slope	TRUE_MISSING_DEferred	phylo_slope keyword	Deferred (decision map)	Slopes sequenced after phylo transport; out of frozen 0.7.0 oracle scope.
+32	phylo_signal_mi	FORMULA_EXPORT_NEEDED	phylo_signal + interval extractors	Postfit	Julia has phylo_signal; R MI export is postfit wrapper.
+33	spatial	FORMULA_EXPORT_NEEDED	spatial() source keyword	SPDE arc	Router; SPDE fitters exist without keyword exports.
+34	spatial_indep	FORMULA_EXPORT_NEEDED	spatial_cov + indep route	SPDE arc	Partial vs R scope-limited claim.
+35	spatial_latent	FORMULA_EXPORT_NEEDED	fit_spde_latent_gllvm	SPDE arc	Engine scaffold; bridge depth partial.
+36	spatial_dep	FORMULA_EXPORT_NEEDED	fit_spatial_dep_gllvm (fail-loud)	SPDE arc	Capability DIFFER: R scope-limited vs Julia planned.
+37	spatial_scalar	FORMULA_EXPORT_NEEDED	spatial_indep common variance	SPDE arc	Modifier.
+38	spatial_unique	FORMULA_EXPORT_NEEDED	spatial_latent unique=TRUE	SPDE arc	Modifier.
+39	spde	FORMULA_EXPORT_NEEDED	SPDE mesh + fit_spde_* family	SPDE arc	Mesh builders differ from R make_mesh (accounted NOT_PORTED).
+40	meta	TRUE_MISSING	meta_V / meta-analysis keyword	Meta arc	No Julia meta-analytic known-V GLLVM surface.
+41	meta_V	TRUE_MISSING	block_V / meta known sampling cov	Meta arc	DRM parallel: not GLLVM engine capability on either side for full stack.
+42	isdm_source	TRUE_MISSING	iSDM detection arm constructor	iSDM arc	R programme public; Julia missing.
+43	isdm_sources	TRUE_MISSING	iSDM multi-source registry	iSDM arc	R programme public; Julia missing.
+44	pedigree_to_A	TRUE_MISSING	A matrix builder for pedigrees	Phylo transport	Julia has AugmentedPhy / build_AnB_sparse — needs R-name export or alias.
+45	pedigree_to_Ainv_sparse	TRUE_MISSING	sparse precision builder	Phylo transport	Sparse phylo path exists; export name missing.
+46	animal_unique	TRUE_MISSING	animal_latent unique=TRUE	Animal arc	Ledger BLOCKED; animal×unique folded ψ not exported.
+47	animal_slope	TRUE_MISSING_DEferred	animal_slope keyword	Deferred (decision map)	Same slopes fence as phylo_slope.
+48	confirmatory_lambda	TRUE_MISSING_DEferred	confirmatory λ constraint API	Deferred (D3 adjacent)	Exploratory loading_profile Stage 0 only; confirmatory not owed without G0.
+49	simulate_site_trait	TRUE_MISSING	long-format unit×trait simulator	Simulation	Julia simulate(fit) exists; R long-format export missing.
+50	suggest_lambda_constraint	TRUE_MISSING	loading constraint suggester	Postfit / D3	R helper for Heywood remedies; no Julia export.
+51	suggest_lambda_constraints	TRUE_MISSING	plural suggester	Postfit / D3	Same class as singular form.
+52	VP	INTENTIONALLY_EXCLUDED	—	Ledger only	R variance-parameterization helper; not required_core user surface.
+53	block_V	INTENTIONALLY_EXCLUDED	—	Ledger only	Meta block builder; paired with meta_V deferral.
+54	delta_* (8 rows)	INTENTIONALLY_EXCLUDED	fit_delta_* / Delta families	Ledger only	R mix/delta constructors not in frozen 0.7.0 Julia oracle set; engines partial under different names.
+55	gamma_mix INTENTIONALLY_EXCLUDED	—	Ledger only	Unported mix family export names.
+56	gengamma INTENTIONALLY_EXCLUDED	—	Ledger only	Unported.
+57	lognormal_mix INTENTIONALLY_EXCLUDED	—	Ledger only	Unported.
+58	nbinom2_mix INTENTIONALLY_EXCLUDED	—	Ledger only	Unported.
+59	truncated_nbinom1 INTENTIONALLY_EXCLUDED	TruncatedNegBin1 engine partial	Ledger only	R export name; Julia uses TruncatedNegBin1 marker.
+60	plot_* (8 rows)	INTENTIONALLY_EXCLUDED	CairoMakie / diagnostics plots	Future viz arc	R ggplot helpers; Florence port not owed as export names.
+61	ridge_path INTENTIONALLY_EXCLUDED	—	Ledger only	R loading ridge diagnostic plot path.
+62	screen_gllvmTMB INTENTIONALLY_EXCLUDED	—	Ledger only	R screening workflow; no Julia analogue advertised.
+63	screen_table INTENTIONALLY_EXCLUDED	—	Ledger only	Companion to screen_gllvmTMB.
