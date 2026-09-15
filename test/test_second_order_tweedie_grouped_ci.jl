@@ -1,6 +1,6 @@
-# Second-order follow-up: TweedieGroupedFit Wald `_family_ci` (post §2 A).
-# Clears the holdout `_CIFit` gap for grouped Tweedie; power held at fit (TweedieFit contract).
-# Paired R SO cell still not wired (`r_fit_se` has no :tweedie) — ≠ programme §7.
+# Second-order follow-up: TweedieGroupedFit Wald `_family_ci` + fixed-power SO cell.
+# Clears the holdout `_CIFit` gap; wires `r_fit_se_tweedie` + `tweedie_fixed` cell.
+# R↔Julia live Δ only when GLLVM_PARITY_TESTS=1. ≠ programme §7.
 
 using GLLVM, Test, Random
 
@@ -50,10 +50,25 @@ using GLLVM, Test, Random
         @test fit isa GLLVM.TweedieGroupedFit
         @test !fit.power_fixed
         ad = GLLVM._family_ci(fit, Y)
-        # CI profiles φ only; shared power is plug-in (same as TweedieFit)
         @test length(ad.θ) == p + GLLVM.rr_theta_len(p, K) + length(fit.φ)
         ci = confint(fit, Y; method = :wald, parm = "beta[1]")
         @test ci.term == ["beta[1]"]
         @test length(ad.θ) == GLLVM._nparams(fit) - 1  # minus free power coordinate
+    end
+
+    @testset "R paired tweedie_fixed cell (live Δ)" begin
+        if get(ENV, "GLLVM_PARITY_TESTS", "0") != "1"
+            @test_skip "set GLLVM_PARITY_TESTS=1 with R + gllvmTMB for live second-order Δ"
+        else
+            using RCall
+            include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "common.jl"))
+            include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "cells.jl"))
+            d = run_one_cell("tweedie_fixed")
+            @test get(d, "skip_reason", nothing) === nothing
+            @test get(d, "parameterisation_gap", true) == false
+            se_rel = d["se_max_relative_delta"]
+            @test se_rel !== nothing && isfinite(se_rel)
+            # Do not assert contract §4 D1 here — record live Δ; promote only after smoke receipt.
+        end
     end
 end
