@@ -3,7 +3,7 @@
 - Docs-only follow-up while Mac-STARTED note may still be in flight: handover now carries
   **Active goal (verbatim)** + canonical ultra-plan paths (#291
   `docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md` + companions) + Mac ownership +
-  cloud babysit-only (#367/#369). Not “Mac started” alone. Tip `origin/main` @ `c00e9345`;
+  cloud babysit-only (#367/#369/#370). Not “Mac started” alone. Rematched onto `origin/main` @ `c459751b` (#370);
   #357 untouched; goal **not** complete.
 - After-task: `docs/dev-log/after-task/2026-09-15-mac-handover-goal-ultraplan.md`.
 - Commands: `git fetch origin main`; `gh pr view 369 --json state,mergedAt`;
