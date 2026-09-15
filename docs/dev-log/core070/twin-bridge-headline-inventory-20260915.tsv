@@ -1,0 +1,29 @@
+estimand	family	route	status	evidence_ref
+logLik	gaussian	no-X	live_delta	test/parity/test_gaussian_parity.jl
+logLik	binomial	no-X	live_delta	test/parity/test_binomial_parity.jl
+logLik	poisson	no-X	live_delta	test/parity/test_poisson_parity.jl
+logLik	nb2	no-X	live_delta	test/parity/test_negbin_parity.jl
+logLik	beta	no-X	live_delta	test/parity/test_beta_parity.jl
+logLik	ordinal_probit	no-X	live_delta	test/parity/test_ordinal_probit_parity.jl
+logLik	lognormal	no-X	live_delta_fenced_bridge	test/parity/test_lognormal_parity.jl; test_bridge_capabilities OWED
+logLik	truncated_poisson	no-X	live_delta_fenced_bridge	test/parity/test_truncated_poisson_parity.jl
+logLik	truncated_nb2	no-X	live_delta	test/parity/test_truncated_nbinom2_parity.jl
+logLik	gamma	no-X	live_delta	test/parity/test_nox_dispersion_parity.jl
+logLik	nb1	no-X	live_delta	test/parity/test_nox_dispersion_parity.jl
+logLik	betabinomial	no-X	live_delta	test/parity/test_nox_dispersion_parity.jl
+logLik	multinomial	no-X	live_delta	test/parity/test_multinomial_parity.jl
+logLik	student_t	no-X	fenced	test/parity/test_studentt_parity.jl one-sided shared-sigma
+logLik	tweedie	no-X	live_delta_atol	test/parity/test_tweedie_parity.jl
+logLik	delta_lognormal	no-X	live_delta	test/parity/test_delta_lognormal_parity.jl
+logLik	delta_gamma	no-X	live_delta	test/parity/test_delta_gamma_parity.jl
+logLik	gaussian	plus_X_shared	live_delta	test/parity/test_x_covariate_parity.jl
+logLik	poisson_speciesx	species-X	live_delta	test/parity/test_species_x_parity.jl
+logLik	zip	no-X	missing	no parity scaffold; R zi_poisson partial
+logLik	zinb	no-X	missing	no parity scaffold; R zi_nbinom2 partial
+coef_beta	all	no-X_or_X	missing	explicit beta delta not gated in parity suite
+se_wald	gaussian	no-X	receipt	second-order-d1-gate-receipt-2026-09-04.json
+se_wald	binomial_cloglog	no-X	fenced	hessian_selector_disputed
+se_wald	delta_lognormal	shared_eta	fenced	parameterisation_gap test_second_order_delta_followup.jl
+se_wald	lognormal	no-X	missing	no Wald _CIFit dispatch
+se_wald	ordinal_pertrait	no-X	missing	OrdinalPerTraitFit not in _CIFit
+se_wald	realistic_grid	gaussian_poisson_nb2	receipt	Totoro campaign LOOP #22 not local top-8
