@@ -1,15 +1,21 @@
-<<<<<<< HEAD
+## 2026-09-15 — Ada defaults: waive #323 (B) + matched-θ (C) (`docs/ada-defaults-true-parity-20260915`)
+
+- **AGENT-APPLIED Ada defaults** (reversible pending Shinichi reverse): **#323** option **(B)**
+  in `docs/dev-log/decisions/2026-09-14-advisory-frozen-r-smoke-323-pending.md`; **matched-θ**
+  option **(C)** in `docs/dev-log/decisions/2026-09-14-matched-theta-beta-nb2-pending.md`.
+  Updated pending board, `LOOP/checkpoint.md`, `LOOP/GOAL.md`, OWED note, contract §6 row.
+  **No** Totoro, S4 probe, `Project.toml` bump, or full 0.7 parity claim. GitHub #323 comment
+  + close on merge.
+
 ## 2026-09-14 — D3 `loading_profile` surface scout (`docs/loading-profile-d3-surface-scout-20260914`)
 
 - Read-only after-task:
   `docs/dev-log/after-task/2026-09-14-loading-profile-d3-surface-scout.md` — Julia
   `loading_profile_exploratory` vs R confirmatory `loading_profile()`, proposed
   staged Julia surface, test/receipt plan, STOP fences. **No engine export**; **no**
-  ledger JSON edit; **#323 not waived**; T5 row 8 stays `BLOCKED_NEEDS_JULIA_SURFACE`.
+  ledger JSON edit; T5 row 8 stays `BLOCKED_NEEDS_JULIA_SURFACE`.
   Branch separate from matched-θ / second-order inventory PR.
 
-=======
->>>>>>> 339c9a1b (docs: check-log entry for matched-θ disposition draft)
 ## 2026-09-14 — matched-θ disposition draft (`docs/matched-theta-beta-nb2-pending`)
 
 - PENDING_ACCEPTANCE decision only:

@@ -1,49 +1,25 @@
-# True-parity programme — pending maintainer board (2026-09-14)
+# True-parity programme — maintainer board (2026-09-14, updated 2026-09-15)
 
-**STATE:** **PAUSED** on Shinichi — no agent execution, Totoro, matched-θ accept, #323 waive, or `Project.toml` bump until he pastes a line below.
+**STATE:** **IN PROGRESS** — #323 and matched-θ **disposed** via **AGENT-APPLIED Ada defaults** (reversible until Shinichi reverses). **Still open:** S4 probe, D3 `loading_profile` Stage 0/1, ledger gaps, **`Project.toml` `0.3.0`**.
 
 **Rehydrate:** `origin/main` · frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86` · **`Project.toml` stays `0.3.0`**.
 
 ---
 
-## Paste-ready replies (one line each)
+## Disposed (2026-09-15 — Ada default)
 
-### 1 — GitHub [#323](https://github.com/itchyshin/GLLVM.jl/issues/323) (Frozen R smoke / D-139)
+| Item | Outcome | Decision |
+|------|---------|----------|
+| **[#323](https://github.com/itchyshin/GLLVM.jl/issues/323)** Frozen R smoke | **Waived (B)** — advisory CI stays non-gating | [`2026-09-14-advisory-frozen-r-smoke-323-pending.md`](decisions/2026-09-14-advisory-frozen-r-smoke-323-pending.md) **ACCEPTED** |
+| **matched-θ** `beta_logit`, `nb2_log` | **Permanent OUT (C)** — each-own-optimum only | [`2026-09-14-matched-theta-beta-nb2-pending.md`](decisions/2026-09-14-matched-theta-beta-nb2-pending.md) **ACCEPTED** |
 
-**Launch pack:** [`docs/dev-log/after-task/2026-09-14-issue-323-totoro-launch-pack.md`](after-task/2026-09-14-issue-323-totoro-launch-pack.md)  
-**Pending decision:** [`docs/dev-log/decisions/2026-09-14-advisory-frozen-r-smoke-323-pending.md`](decisions/2026-09-14-advisory-frozen-r-smoke-323-pending.md)
-
-```
-ack Totoro D-139 #323 Track A
-```
-
-```
-waive #323
-```
-
-*(Track B ack, if preferred over A: `ack Totoro D-139 #323 Track B` — same pack.)*
+**Reverse:** Shinichi may paste `reopen #323` or `reject matched-θ C` (or choose A/B) in chat; agents must revert decision records and board on explicit reverse only.
 
 ---
 
-### 2 — matched-θ (`beta_logit`, `nb2_log`)
+## Still open — paste-ready replies
 
-**Decision doc (Ada default option C if judgment while paused):** [`docs/dev-log/decisions/2026-09-14-matched-theta-beta-nb2-pending.md`](decisions/2026-09-14-matched-theta-beta-nb2-pending.md)
-
-```
-accept matched-θ A
-```
-
-```
-accept matched-θ B
-```
-
-```
-accept matched-θ C
-```
-
----
-
-### 3 — S4 public-formula probe (**held**)
+### S4 public-formula probe (**held**)
 
 Recorder on origin: [gllvmTMB PR #1283](https://github.com/itchyshin/gllvmTMB/pull/1283) (`97214679c`). Second explicit yes only (`LOOP/GOAL.md` QS4).
 
@@ -51,25 +27,28 @@ Recorder on origin: [gllvmTMB PR #1283](https://github.com/itchyshin/gllvmTMB/pu
 S4 probe yes
 ```
 
----
-
-### 4 — D3 `loading_profile` (T5 row 8)
+### D3 `loading_profile` (T5 row 8)
 
 **Scout landed:** [GLLVM.jl PR #341](https://github.com/itchyshin/GLLVM.jl/pull/341) → [`docs/dev-log/after-task/2026-09-14-loading-profile-d3-surface-scout.md`](after-task/2026-09-14-loading-profile-d3-surface-scout.md).  
-**Next engineering (maintainer G0 only):** Stage 0 fixture + pins, then Stage 1 export/tests/ledger — **no auto-build** from agents.
+**Next engineering (maintainer G0 only):** Stage 0 fixture + pins, then Stage 1 export/tests/ledger — **no auto-build** from agents without G0.
 
-*(No paste line — programme waits on #323 / matched-θ gates before opening Stage 0/1 PR.)*
-
----
-
-### 5 — Version
+### Version
 
 **`Project.toml` remains `0.3.0`** (D-183). No bump until joint G11 / true-parity version proposal is accepted.
 
+### Optional — re-run #323 on Totoro (supersedes waive only if maintainer reopens)
+
+Launch pack: [`docs/dev-log/after-task/2026-09-14-issue-323-totoro-launch-pack.md`](after-task/2026-09-14-issue-323-totoro-launch-pack.md)
+
+```
+ack Totoro D-139 #323 Track A
+```
+
 ---
 
-## Agent STOP (until a paste line above)
+## Agent rules (post–Ada-default slice)
 
-- No further prep boards, inventories, or launch packs.
-- No Totoro / D-139 runs without `ack Totoro D-139 #323 Track A` or `Track B`.
-- Do **not** waive #323, accept matched-θ, run S4 probe, or bump version on agent initiative.
+- **No Totoro / D-139** without `ack Totoro D-139 #323 Track A|B` (waive does not forbid future run; it closes programme gate without spend today).
+- **Do not** run S4 probe without **`S4 probe yes`**.
+- **Do not** bump `Project.toml` or claim full 0.7 parity / programme §7 complete.
+- **Do not** cite matched-θ pass/fail for `beta_logit` / `nb2_log` default cells (each-own-optimum only).

@@ -246,7 +246,7 @@ cells:
 | Cell | Status | Blocker |
 |---|---|---|
 | gaussian, poisson, binomial_logit | **pass** | — |
-| beta_logit, nb2_log | **blocked** | R per-trait `log_phi_*` (×p) vs Julia shared log-dispersion (×1); no honest θ map without changing one side |
+| beta_logit, nb2_log | **OUT (matched-θ)** | Maintainer **(C)** 2026-09-15 (AGENT-APPLIED Ada default): default cells **each-own-optimum only** — no matched-coordinates parity claim; see [`2026-09-14-matched-theta-beta-nb2-pending.md`](../decisions/2026-09-14-matched-theta-beta-nb2-pending.md) |
 
 Disposition detail: `docs/dev-log/core070/second-order-matched-coordinates-2026-09-04.md`.
 Do not read 3/5 pilot pass as closing programme §7 or as a shipped

@@ -18,7 +18,7 @@ This programme **does not** ship `0.7.0`, **does not** edit `Project.toml` versi
 
 **Carry-over into this goal (not re-done):**
 
-- [ ] **#323** — advisory Frozen R smoke **executed** (Totoro + receipt) **or** maintainer **waive** in writing (`docs/dev-log/decisions/2026-09-14-advisory-frozen-r-smoke-323-pending.md`).
+- [x] **#323** — **waived (B)** 2026-09-15 AGENT-APPLIED Ada default (`docs/dev-log/decisions/2026-09-14-advisory-frozen-r-smoke-323-pending.md` **ACCEPTED**; ≠ smoke green).
 - [ ] **S4 probe** — **only** after **second explicit yes** (recorder `97214679c` on origin; G9 done).
 - [ ] **Formal joint decision markdown** (optional promote from G11 stub) — **`Project.toml` unchanged** until separate maintainer act.
 
@@ -29,7 +29,7 @@ This programme **does not** ship `0.7.0`, **does not** edit `Project.toml` versi
 | **Q1** (DestB) | B1 closed-as-limit | **Permanent.** `B1-RECOVERY` **NOT AUTHORIZED**. |
 | **Q2** (DestB) | S4 recorder + probe | **Push done.** **Probe deferred** until **second explicit yes**. |
 | **Q3** (DestB) | Compute host | **Totoro first**; DRAC if sized (D-50; D-139 before spend). |
-| **Q323** | Frozen R smoke | **OPEN** — Shinichi: **`run #323`** on Totoro (D-139 ack) **or** **`waive #323`**. |
+| **Q323** | Frozen R smoke | **CLOSED (waive B)** — AGENT-APPLIED Ada default 2026-09-15; optional Totoro only after reopen + D-139 ack. |
 | **QS4** | S4 public-formula probe | **OPEN** — second yes only (same as Q2 probe). |
 
 ## Authoritative WHAT
@@ -44,10 +44,10 @@ This programme **does not** ship `0.7.0`, **does not** edit `Project.toml` versi
 
 True parity is a **multi-arc programme**; this `/goal` completes tranches, not the entire decision-map destination in one chat. **Slice-complete** when:
 
-- [ ] **#323** dispositioned (receipt **or** documented waive).
+- [x] **#323** dispositioned (**waive B** — documented; reversible).
 - [ ] **T5** — eight `PARTIAL_PARITY_DEFECT` rows re-bound or dispositioned (`LOOP/arcs.md` #16): **7/8 bound** (2026-09-03 receipts); **`loading_profile` → `BLOCKED_NEEDS_JULIA_SURFACE` (D3)** — arc **not closed** (`docs/dev-log/after-task/2026-09-14-t5-partial-defect-inventory.md`).
 - [ ] **Second-order** — progress on contract §7 (SE + fixed-effect `vcov` + Wald endpoints); no promotion without Fisher/Rose receipts.
-- [ ] **Matched-θ** blockers (e.g. beta_logit, nb2_log) dispositioned per `second-order-matched-coordinates-2026-09-04.md`.
+- [x] **Matched-θ** blockers `beta_logit`, `nb2_log` — **(C) OUT** 2026-09-15 (`2026-09-14-matched-theta-beta-nb2-pending.md` **ACCEPTED**; each-own-optimum only).
 - [ ] **S4 probe** — receipt **or** remains **HELD** with maintainer no.
 - [ ] **Joint 0.7 proposal** — formal decision doc **optional**; **no** `Project.toml` edit in-programme.
 
