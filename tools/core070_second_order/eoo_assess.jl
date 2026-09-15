@@ -25,6 +25,24 @@ function cond_scale(r_cond::Real)
     r_cond > COND_SCALE_THRESHOLD ? r_cond / COND_SCALE_THRESHOLD : 1.0
 end
 
+"""Log-likelihood-only receipt gate for cells where Wald/D1 is intentionally not claimed
+(e.g. Tweedie estimated power with Julia plug-in power in `_family_ci`)."""
+function assess_loglik_receipt(d::Dict{String,Any}; atol::Real = 1e-6, rtol::Real = 1e-5)
+    issues = String[]
+    if get(d, "skip_reason", nothing) !== nothing
+        push!(issues, "skip: $(d["skip_reason"])")
+        return false, issues
+    end
+    δ = get(d, "loglik_delta_jl_minus_r", nothing)
+    rll = get(d, "r_logLik", 0.0)
+    if δ === nothing || !isfinite(δ)
+        push!(issues, "missing or non-finite loglik_delta_jl_minus_r")
+    elseif abs(δ) > atol + rtol * max(abs(rll), 1.0)
+        push!(issues, "logLik |Δ|=$(abs(δ)) exceeds atol=$atol rtol=$rtol (r_logLik=$rll)")
+    end
+    return isempty(issues), issues
+end
+
 function assess_eoo(d::Dict{String,Any})
     issues = String[]
     if get(d, "skip_reason", nothing) !== nothing
