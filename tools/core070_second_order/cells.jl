@@ -57,6 +57,8 @@ function run_one_cell(cell_id::AbstractString)
         return cell_delta_lognormal()
     elseif cell_id == "delta_gamma"
         return cell_delta_gamma()
+    elseif cell_id == "tweedie_fixed"
+        return cell_tweedie_fixed()
     else
         error("unknown cell id: $cell_id")
     end
@@ -842,6 +844,43 @@ function cell_delta_gamma()
         p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
     d["note"] = "Compared quantity is trait intercept block b_fix only; R per-trait phi_gamma_delta (CV) vs Julia shared shape α is a known parameterisation gap — not part of this β block."
     d["parameterisation_gap"] = true
+    return d
+end
+
+function cell_tweedie_fixed()
+    # Fixed common power — honest twin of Julia `power=p_true` (parity seed 82).
+    seed = 82
+    Random.seed!(seed)
+    p, K, n = 5, 1, 150
+    β_true = [0.5, -0.2, 0.3, -0.4, 0.1]
+    Λ_true = 0.5 .* parity_loadings_p5k2()[:, 1:K]
+    φ_true = [0.8, 1.0, 1.2, 0.9, 1.1]
+    p_true = 1.5
+    Z = randn(K, n)
+    μ = exp.(β_true .+ Λ_true * Z)
+    Y = zeros(p, n)
+    for t in 1:p, s in 1:n
+        Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ_true[t], p_true, Random.default_rng())
+    end
+
+    t0 = time()
+    fit = fit_tweedie_gllvm_grouped(Y; K = K, power = p_true, hessian = :observed, iterations = 400)
+    wall_fit = time() - t0
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se_tweedie(Y, K; p_fixed = p_true)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = findall(==("b_fix"), r.names)
+
+    d = _assemble("tweedie_fixed",
+        "test/parity/test_tweedie_parity.jl (seed=82,p=5,K=1,n=150,power=1.5 fixed)",
+        "Tweedie-log (fixed power; per-trait φ via group=1:p)", "observed (family default; §2 A)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "Compared quantity is trait intercept block b_fix; power fixed on both sides. Julia CI profiles φ_g with power plug-in (TweedieFit contract)."
+    d["parameterisation_gap"] = false
     return d
 end
 
