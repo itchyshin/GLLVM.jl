@@ -42,7 +42,8 @@ const _GroupedDispersionCovFit = Union{NBGroupedCovFit, NB1GroupedCovFit, BetaGr
                                        BetaBinomialGroupedCovFit}
 
 const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, _GroupedDispersionCovFit,
-                     OrdinalFit, GllvmCovFit, ZIPCovFit, ZINBCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
+                     OrdinalFit, OrdinalPerTraitFit, OrdinalPerTraitCovFit,
+                     GllvmCovFit, ZIPCovFit, ZINBCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
 
 # ---------------------------------------------------------------------------
 # Per-family adapter. Bundles everything the generic routines need:
@@ -1987,6 +1988,168 @@ function _family_ci(fit::OrdinalFit, Y::AbstractMatrix;
     return _FamilyCI(θ, nll, names, fill(:linear, length(θ)), sim, refit)
 end
 
+# Per-trait ordinal cutpoints (twin τ₁=0): free natural-scale entries are
+# τ[t,c] for c = 2:(C[t]−1). Wald / profile / bootstrap run in that τ-space
+# (same natural-scale choice as shared-cutpoint OrdinalFit). Bridge ci_method
+# guards stay until a separate bridge lift (do not edit bridge.jl here).
+function _pack_free_tau_pertrait(τ::AbstractMatrix, C::AbstractVector{<:Integer})
+    pieces = Float64[]
+    @inbounds for t in eachindex(C)
+        for c in 2:(C[t] - 1)
+            push!(pieces, Float64(τ[t, c]))
+        end
+    end
+    return pieces
+end
+
+function _unpack_free_tau_pertrait(θτ::AbstractVector, C::AbstractVector{<:Integer})
+    p = length(C)
+    Cmax = maximum(C)
+    τ = fill(NaN, p, max(Cmax - 1, 0))
+    pos = 1
+    @inbounds for t in 1:p
+        m = C[t] - 1
+        m >= 1 || continue
+        τ[t, 1] = 0.0
+        for c in 2:m
+            τ[t, c] = θτ[pos]
+            pos += 1
+        end
+    end
+    return τ
+end
+
+function _free_tau_pertrait_names(C::AbstractVector{<:Integer})
+    names = String[]
+    @inbounds for t in eachindex(C)
+        for c in 2:(C[t] - 1)
+            push!(names, "tau[$t,$c]")
+        end
+    end
+    return names
+end
+
+# Working vector [β; pack_lambda(Λ); free τ] — τ₁ fixed at 0 per trait.
+function _family_ci(fit::OrdinalPerTraitFit, Y::AbstractMatrix;
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); C = fit.C
+    ncut = sum(C .- 2)
+    τ_free = _pack_free_tau_pertrait(fit.τ, C)
+    length(τ_free) == ncut || throw(ArgumentError(
+        "OrdinalPerTraitFit free cutpoint length $(length(τ_free)) ≠ sum(C−2)=$ncut"))
+    θ = vcat(fit.β, pack_lambda(fit.Λ), τ_free)
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        τ = _unpack_free_tau_pertrait(θv[(p + rr + 1):(p + rr + ncut)], C)
+        v = try
+            -ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, C;
+                link = fit.link, maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                τt = _trait_cutpoints(fit.τ, C, t)
+                u = rand(rng); cum = 0.0; cat = C[t]
+                for c in 1:C[t]
+                    cum += _ord_prob(c, η[t], τt, fit.link)
+                    if u <= cum
+                        cat = c; break
+                    end
+                end
+                Yb[t, s] = cat
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_ordinal_gllvm_pertrait(Yb; K = K, link = fit.link) catch; return nothing end
+        fb.C == C || return nothing
+        return vcat(fb.β, pack_lambda(fb.Λ), _pack_free_tau_pertrait(fb.τ, C))
+    end
+    names = vcat(["beta[$t]" for t in 1:p],
+                 _confint_lambda_term_names("Lambda", p, K),
+                 _free_tau_pertrait_names(C))
+    return _FamilyCI(θ, nll, names, fill(:linear, length(θ)), sim, refit)
+end
+
+# Working vector [β; γ_free; pack_lambda(Λ); free τ]. Needs design `X`.
+function _family_ci(fit::OrdinalPerTraitCovFit, Y::AbstractMatrix;
+                    X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    X === nothing && throw(ArgumentError(
+        "confint on an OrdinalPerTraitCovFit needs the design `X` " *
+        "(the same array passed to fit_ordinal_gllvm_pertrait_cov): " *
+        "confint(fit, Y; method=…, X=X)"))
+    p, K = size(fit.Λ); n = size(Y, 2); q_full = length(fit.γ); rr = rr_theta_len(p, K)
+    C = fit.C; ncut = sum(C .- 2)
+    length(fit.γ_fixed) == q_full || throw(ArgumentError(
+        "fit.γ_fixed length ($(length(fit.γ_fixed))) must equal length(fit.γ) = $q_full"))
+    Xfit, γ_free_idx = _slice_fixed_X(X, fit.γ_fixed)
+    q = length(γ_free_idx)
+    γ_free = fit.γ[γ_free_idx]
+    τ_free = _pack_free_tau_pertrait(fit.τ, C)
+    length(τ_free) == ncut || throw(ArgumentError(
+        "OrdinalPerTraitCovFit free cutpoint length $(length(τ_free)) ≠ sum(C−2)=$ncut"))
+    θ = vcat(fit.β, γ_free, pack_lambda(fit.Λ), τ_free)
+    nll = function (θv)
+        β = θv[1:p]
+        γ = θv[(p + 1):(p + q)]
+        Λ = unpack_lambda(θv[(p + q + 1):(p + q + rr)], p, K)
+        τ = _unpack_free_tau_pertrait(θv[(p + q + rr + 1):(p + q + rr + ncut)], C)
+        O = _build_offset(Xfit, γ)
+        v = try
+            -ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, C;
+                link = fit.link, offset = O,
+                maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        O = _build_offset(X, fit.γ)
+        @inbounds for s in 1:n
+            η = fit.β .+ view(O, :, s) .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                τt = _trait_cutpoints(fit.τ, C, t)
+                u = rand(rng); cum = 0.0; cat = C[t]
+                for c in 1:C[t]
+                    cum += _ord_prob(c, η[t], τt, fit.link)
+                    if u <= cum
+                        cat = c; break
+                    end
+                end
+                Yb[t, s] = cat
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_ordinal_gllvm_pertrait_cov(Yb; X = X, K = K, link = fit.link,
+                                           γ_fixed = fit.γ_fixed)
+        catch
+            return nothing
+        end
+        fb.C == C || return nothing
+        return vcat(fb.β, fb.γ[γ_free_idx], pack_lambda(fb.Λ),
+                    _pack_free_tau_pertrait(fb.τ, C))
+    end
+    names = vcat(["beta[$t]" for t in 1:p],
+                 ["gamma[$k]" for k in γ_free_idx],
+                 _confint_lambda_term_names("Lambda", p, K),
+                 _free_tau_pertrait_names(C))
+    return _FamilyCI(θ, nll, names, fill(:linear, length(θ)), sim, refit)
+end
+
 # --- Covariate fit (GllvmCovFit: β + Xγ + Λz) ------------------------------
 # Working vector [β; γ_free; pack_lambda(Λ); (log-dispersion)]. Fixed-zero γ
 # entries are structural constraints, not free Hessian/profile/bootstrap terms.
@@ -2399,7 +2562,9 @@ end
 
 Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
 families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
-`TweedieFit`, `BetaBinomialFit`), the random-row-effect fit (`RowRandomFit`,
+`TweedieFit`, `BetaBinomialFit`), shared-cutpoint `OrdinalFit`, per-trait
+cutpoint `OrdinalPerTraitFit` / `OrdinalPerTraitCovFit` (free `tau[t,c]` for
+`c≥2`; `τ₁=0` fixed; CovFit needs `X`), the random-row-effect fit (`RowRandomFit`,
 which adds a `sigma_row` term plus the underlying family's dispersion), and the
 two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
 `HurdleNBFit`, `ZIPFit`, `ZIPCovFit`, `ZINBFit`, `ZINBCovFit`, `ZIBFit`). `Y` is the same
