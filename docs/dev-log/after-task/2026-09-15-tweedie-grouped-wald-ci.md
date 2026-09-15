@@ -22,7 +22,7 @@
 
 ```text
 julia --project=. test/test_second_order_tweedie_grouped_ci.jl
-# (wiring); R cell @test_skip unless GLLVM_PARITY_TESTS=1
+# Test Summary: … | Pass: 13  Broken: 1 (R skip)  Total: 14
 ```
 
 **Not claimed:** D1 pass at §4 tolerances (needs live smoke receipt before promote).
