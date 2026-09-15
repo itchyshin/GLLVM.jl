@@ -37,7 +37,7 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
 const _GroupedDispersionFit = Union{NBGroupedFit, NB1GroupedFit, BetaGroupedFit, GammaGroupedFit,
-                                    BetaBinomialGroupedFit}
+                                    BetaBinomialGroupedFit, TweedieGroupedFit}
 const _GroupedDispersionCovFit = Union{NBGroupedCovFit, NB1GroupedCovFit, BetaGroupedCovFit, GammaGroupedCovFit,
                                        BetaBinomialGroupedCovFit}
 
@@ -982,6 +982,68 @@ function _family_ci(fit::TweedieFit, Y::AbstractMatrix;
     names = vcat(_glm_lin_names(p, K), "phi")
     kinds = vcat(fill(:linear, length(θ) - 1), :log)
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# --- Tweedie grouped dispersion (shared power held at fit; φ per group) -----
+# Mirrors `TweedieFit`: the CI layer profiles only the group φ's on the log
+# scale; `fit.power` is fixed for Hessian / profile / bootstrap. Estimated
+# shared power on the fitter is therefore treated as a plug-in (same contract
+# as shared-φ Tweedie). `TweediePerTraitPowerFit` stays out of `_CIFit`.
+function _family_ci(fit::TweedieGroupedFit, Y::AbstractMatrix;
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.φ)
+    pw = fit.power
+    Yf = max.(Float64.(Y), 0.0)   # Tweedie allows exact zeros
+    M = _ci_mask(mask, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        φg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        φvec = [φg[group[t]] for t in 1:p]
+        v = try
+            -tweedie_grouped_marginal_loglik_laplace(Yf, Λ, β, φvec, pw; link = link,
+                                                     mask = M, hessian = fit.hessian,
+                                                     maxiter = newton_maxiter,
+                                                     tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                Yb[t, s] = _rand_tweedie(rng, μ, fit.φ[group[t]], pw)
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            if fit.power_fixed
+                fit_tweedie_gllvm_grouped(Yb; K = K, group = group, power = pw,
+                                          link = link, mask = M, hessian = fit.hessian)
+            else
+                fit_tweedie_gllvm_grouped(Yb; K = K, group = group, power_group = :shared,
+                                          link = link, mask = M, hessian = fit.hessian)
+            end
+        catch
+            return nothing
+        end
+        fb isa TweedieGroupedFit || return nothing
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.φ))
+    end
+    names = _grouped_dispersion_names(p, K, "phi", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
+    # No T14 `dispersion_boundary` field on TweedieGroupedFit yet — treat all φ free.
+    boundary = falses(p + rr + G)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end
 
 # --- Exponential (positive continuous, no dispersion) ----------------------

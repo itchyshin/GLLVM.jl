@@ -1,13 +1,12 @@
-<<<<<<< HEAD
-## 2026-09-15 — parity_ledger TWIN_ALIAS ALIASES (`chore/parity-ledger-aliases-20260915`)
+## 2026-09-15 — TweedieGroupedFit Wald `_family_ci` (`feat/tweedie-grouped-wald-ci-20260915`)
 
-- Follow-on PR #350: 15 safe `TWIN_ALIAS` rows in `tools/parity_ledger.py` (3 skipped —
-  `animal_indep`, `animal_scalar`, `extract_residual_split`). **Tool-only**; **≠** export
-  promotion or gap closure.
-- After-task: `docs/dev-log/after-task/2026-09-15-parity-ledger-aliases.md`.
-- Commands: `python3 tools/parity_ledger.py --self-test`; `python3 tools/parity_ledger.py`
-  (FORWARD **77→62**, REVERSE 92→91 @ frozen oracle).
-=======
+- Cleared §6 holdout `_CIFit` gap for `TweedieGroupedFit` (power plug-in; φ per group).
+  After-task: `docs/dev-log/after-task/2026-09-15-tweedie-grouped-wald-ci.md`.
+  Focused test **13/13**. Merged leftover docs PRs **#354** (Documenter) and **#353**
+  (8/8 Julia + Documenter; Frozen R advisory FAIL OK). **#355** aliases still waiting CI.
+- Commands: `julia --project=. test/test_second_order_tweedie_grouped_ci.jl`;
+  `gh pr merge 353 --squash`; `pr_merge_when_green` #354.
+
 ## 2026-09-15 — OrdinalPerTrait Wald `_CIFit` (`feat/ordinal-pertrait-wald-ci-20260915`)
 
 - `OrdinalPerTraitFit` / `OrdinalPerTraitCovFit` ∈ `_CIFit` + `_family_ci` (free
@@ -16,7 +15,15 @@
   `docs/dev-log/after-task/2026-09-15-ordinal-pertrait-wald-ci.md`.
 - Commands: `julia --project=. test/test_second_order_ordinal_pertrait_ci.jl` → 26 pass.
 
->>>>>>> origin/main
+## 2026-09-15 — parity_ledger TWIN_ALIAS ALIASES (`chore/parity-ledger-aliases-20260915`)
+
+- Follow-on PR #350: 15 safe `TWIN_ALIAS` rows in `tools/parity_ledger.py` (3 skipped —
+  `animal_indep`, `animal_scalar`, `extract_residual_split`). **Tool-only**; **≠** export
+  promotion or gap closure.
+- After-task: `docs/dev-log/after-task/2026-09-15-parity-ledger-aliases.md`.
+- Commands: `python3 tools/parity_ledger.py --self-test`; `python3 tools/parity_ledger.py`
+  (FORWARD **77→62**, REVERSE 92→91 @ frozen oracle).
+
 ## 2026-09-15 — Julia-only arcG disposition (rank 7; R CLOSURE)
 
 - Decision ACCEPTED: `docs/dev-log/decisions/2026-09-15-julia-only-arcg-disposition.md`.
