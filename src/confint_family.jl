@@ -29,7 +29,7 @@ using Random: AbstractRNG, MersenneTwister, randn
 
 # Families handled by this layer (single latent block, optional scalar dispersion).
 const _FamilyFit = Union{PoissonFit, BinomialFit, NBFit, NB1Fit, GP1Fit, BetaFit, GammaFit, ExponentialFit,
-                         TweedieFit, BetaBinomialFit, RowRandomFit, LognormalFit}
+                         TweedieFit, BetaBinomialFit, RowRandomFit, LognormalFit, TruncatedPoissonFit}
 
 # Two-part families ([βz; βc; pack_lambda(Λc); (log-dispersion)] layout).
 const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
@@ -386,13 +386,9 @@ function _family_ci(fit::GammaFit, Y::AbstractMatrix;
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
 end
 
-"""
-One-part lognormal Wald/profile/bootstrap adapter.
-
-Packing matches `LognormalFit.theta_packed = [β; pack(Λ); log σ]` (Identity /
-Gaussian free-σ layout). The NLL is the closed-form y-scale marginal
-(`lognormal_marginal_loglik`), not a Laplace approximation.
-"""
+# One-part lognormal: packing [β; pack(Λ); log σ]; closed-form y-scale NLL
+# (`lognormal_marginal_loglik`). No public docstring — keeps Documenter
+# `:missing_docs` clean (adapters are internal).
 function _family_ci(fit::LognormalFit, Y::AbstractMatrix; kwargs...)
     p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
     θ = vcat(fit.β, pack_lambda(fit.Λ), log(fit.σ))
@@ -425,6 +421,49 @@ function _family_ci(fit::LognormalFit, Y::AbstractMatrix; kwargs...)
     names = vcat(_glm_lin_names(p, K), "sigma")
     kinds = vcat(fill(:linear, length(θ) - 1), :log)
     return _FamilyCI(θ, nll, names, kinds, simulate, refit)
+end
+
+# Zero-truncated Poisson: packing [β; pack(Λ)]; Laplace NLL via
+# truncated_poisson_marginal_loglik_laplace. Bridge ci_method guard stays
+# until after foreign #357.
+function _family_ci(fit::TruncatedPoissonFit, Y::AbstractMatrix;
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K); link = fit.link
+    M = _ci_mask(mask, Y)
+    Yi = round.(Int, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ))
+    nll = function (θv)
+        β = θv[1:p]; Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        v = try
+            -truncated_poisson_marginal_loglik_laplace(Yi, Λ, β, link;
+                mask = M, maxiter = newton_maxiter, tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Int}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                # Reject-sample zeros (support y ≥ 1).
+                y = 0
+                while y < 1
+                    y = rand(rng, Poisson(μ))
+                end
+                Yb[t, s] = y
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try fit_truncated_poisson_gllvm(Yb; K = K, link = link, mask = M) catch; return nothing end
+        return vcat(fb.β, pack_lambda(fb.Λ))
+    end
+    return _FamilyCI(θ, nll, _glm_lin_names(p, K), fill(:linear, length(θ)), simulate, refit)
 end
 
 # --- Grouped / per-trait dispersion bridge families -----------------------
@@ -2378,7 +2417,7 @@ end
 
 Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
 families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
-`TweedieFit`, `BetaBinomialFit`, `LognormalFit`), the random-row-effect fit (`RowRandomFit`,
+`TweedieFit`, `BetaBinomialFit`, `LognormalFit`, `TruncatedPoissonFit`), the random-row-effect fit (`RowRandomFit`,
 which adds a `sigma_row` term plus the underlying family's dispersion), and the
 two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
 `HurdleNBFit`, `ZIPFit`, `ZIPCovFit`, `ZINBFit`, `ZINBCovFit`, `ZIBFit`). `Y` is the same

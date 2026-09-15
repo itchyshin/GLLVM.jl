@@ -1,29 +1,28 @@
-# After-task — LognormalFit Wald `_CIFit` (SO holdout)
+# After-task — LognormalFit + TruncatedPoissonFit Wald `_CIFit`
 
 **Date:** 2026-09-15  
 **Lane:** Cursor / Ada (`honest-070-true-parity` `/goal`)  
-**Branch:** `feat/lognormal-wald-ci-20260915` from `origin/main` @ `0b3f75ba8` (#359)
+**Branch:** `feat/lognormal-wald-ci-20260915` (#361)
 
 ## Rose fence
 
-- **≠** second-order §7 complete; **≠** paired R SO cell; **≠** bridge `ci_method` lift (#357 owns `bridge.jl`).
-- **=** native `confint(LognormalFit, Y; method=:wald|:profile|:bootstrap)` via `_FamilyFit`.
+- **≠** second-order §7; **≠** paired R SO cells; **≠** bridge `ci_method` lift (#357 owns `bridge.jl`).
+- **=** native `confint` for `LognormalFit` and `TruncatedPoissonFit`.
 
 ## What landed
 
-1. `LognormalFit` ∈ `_FamilyFit`; `_family_ci` packs `[β; pack(Λ); log σ]` with closed-form `lognormal_marginal_loglik`.
-2. `test/test_second_order_lognormal_ci.jl` + `runtests.jl` shard include.
-3. Holdout table: Lognormal → **PARTIAL (native Wald)**; Truncated* remain OUT.
+1. `LognormalFit` / `TruncatedPoissonFit` ∈ `_FamilyFit` + `_family_ci` (no orphan public docstrings — Documenter `:missing_docs`).
+2. Tests: `test_second_order_lognormal_ci.jl` (15/15), `test_second_order_truncpois_ci.jl` (8/8).
+3. Holdouts: Lognormal + Truncated-Poisson → PARTIAL (native Wald); Truncated-NB2 still OUT.
 
 ## Checks
 
 ```text
-julia --project=. test/test_second_order_lognormal_ci.jl
-→ 15 pass / 0 fail
+julia --project=. test/test_second_order_lognormal_ci.jl  → 15 pass
+julia --project=. test/test_second_order_truncpois_ci.jl → 8 pass
 ```
 
 ## Follow-up
 
-- After #357: lift `_bridge_ci_guard_lognormal` and wire bridge CI payload.
-- Truncated-Poisson / Truncated-NB2 `_CIFit` next (same holdout class).
-- Optional: `core070_second_order` `lognormal` cell + live Δ (not claimed here).
+- TruncatedNegBin2 `_CIFit`.
+- After #357: lift bridge CI guards for lognormal + truncated_poisson.

@@ -19859,3 +19859,8 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 
 - Added `LognormalFit` to `_FamilyFit` + `_family_ci` (closed-form NLL).
 - Focused test 15/15; holdouts updated; bridge CI guard left for post-#357.
+
+## 2026-09-15 — TruncatedPoissonFit Wald + Documenter docstring fix
+
+- Added TruncatedPoissonFit to `_FamilyFit`; removed orphan Lognormal `_family_ci` docstring (Documenter `:missing_docs`).
+- Tests: lognormal 15/15, truncpois 8/8.
