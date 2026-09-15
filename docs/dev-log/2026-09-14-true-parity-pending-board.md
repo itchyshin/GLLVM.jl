@@ -42,7 +42,7 @@ Inventory: [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09
 
 Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **MultinomialFit** native Wald on main (#366); **Student-t fixed-ν** native Wald on main (#367, `9d300783c`) → **PARTIAL (native Wald)**. Bridge CI lift still waits on #357.  
 Delta SO species dispersion: still OUT until paste `accept delta dispersion A`.  
-Next ungated: BB shared-φ SO **cell/test only** (already in `_CIFit`; see [`plans/2026-09-15-betabinomial-shared-phi-so.md`](plans/2026-09-15-betabinomial-shared-phi-so.md)). GP-1 ruling / Student-t free ν / Λ raw: still OUT.
+BB shared-φ: **PARTIAL** (native Wald + `betabinomial_shared` SO cell; β block only). GP-1 ruling / Student-t free ν / Λ raw: still OUT.
 
 ### Version
 
