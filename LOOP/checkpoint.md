@@ -8,20 +8,19 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** DestB DONE; true-parity vs froze
 
 **NEXT (ranked):**
 
-1. **Merge** #1284/#356/#355/#361 when Julia+Documenter green (Frozen R advisory OK); **do not edit #357** (foreign)
-2. **Land** OrdinalPerTrait Wald PR when green (this slice)
-3. **T4 realistic-size second-order** — Totoro grid; D-139 ack before spend
-4. **Delta SO dispersion alignment** — paste `accept delta dispersion A`
-5. **D3 Stage 1** — `G0 Stage 1` only
-6. **S4 probe** — `S4 probe yes` only
-7. **`Project.toml` stays `0.3.0`**
+1. **#357** bridge receipts — foreign; Julia+Documenter were green on last poll; **do not edit**; Shinichi merge-or-direct only
+2. **T4 realistic-size second-order** — Totoro grid; D-139 ack before spend
+3. **Delta SO dispersion alignment** — paste `accept delta dispersion A`
+4. **D3 Stage 1** — `G0 Stage 1` only
+5. **S4 probe** — `S4 probe yes` only
+6. **`Project.toml` stays `0.3.0`**
 
-**IN FLIGHT:** #356 TweedieGrouped Wald · #1284 arcG R · #355 aliases · #361 Lognormal/Trunc Wald · OrdinalPerTrait Wald · #357 bridge (foreign)
+**IN FLIGHT:** #357 bridge (foreign); paste gates above
 
-**DONE this tranche:** ledger gap inventory; Delta SO wiring (#347); §2 Hessian (A); twin-bridge inventory (#353); #359 cloglog `@test` fix; #360 board; **#358 arcG disposition merged**; OrdinalPerTrait `_CIFit` slice opened.
+**DONE this tranche:** ledger gap inventory; Delta SO wiring (#347); §2 Hessian (A); twin-bridge inventory (#353); #359 cloglog `@test` fix; #360 board; **#358/#1284 arcG**; **#362** OrdinalPerTrait Wald; **#356** TweedieGrouped Wald; **#361** Lognormal+TruncPois+TruncNB2 Wald; **#355** parity_ledger aliases.
 
 **DISPOSED:** #323 waive · matched-θ C · §2 A · arcG Julia-only ACCOUNTED (#358).
 
 **OPEN GATES:** QS4 · Stage 1 · version bump forbidden · foreign #357.
 
-**RESUME:** Merge green leftover PRs; rematch if cloglog `@test` flake recurs; no Stage 1 / S4 / Totoro without paste; no `Project.toml` bump; no gllvmTMB engine surgery.
+**RESUME:** No new large engine slice without paste; no Stage 1 / S4 / Totoro without paste; no `Project.toml` bump; no gllvmTMB engine surgery; do not edit #357.

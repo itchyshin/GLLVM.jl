@@ -1,3 +1,17 @@
+## 2026-09-15 — true-parity merge waiter (#355/#356/#361/#362)
+
+- Squash-merged when Julia+Documenter green (Frozen R advisory FAIL OK; Documenter
+  gh-pages race on #355 rerun → SUCCESS): **#362** OrdinalPerTrait Wald
+  (`c1962c5d`), **#356** TweedieGrouped Wald (`569cd873`), **#361**
+  Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), **#355** parity_ledger aliases
+  (`e87a4670`). Prior **#358** + gllvmTMB **#1284** already on `main`.
+- Hard fail: #355 Documenter once failed on `gh-pages` non-fast-forward push race;
+  reran Documenter. #356 first merge attempt dirty after #362; rematched then
+  merged. #355/#361 rematched through #356/#361 landings.
+- **#357** untouched (foreign). Board + `LOOP/checkpoint.md` refreshed; goal not complete.
+- Commands: advisory merge gates `/tmp/merge-advisory-pr-gate.sh`;
+  `gh run rerun 34976108097 --failed`; `gh pr merge --squash --delete-branch`.
+
 ## 2026-09-15 — TweedieGroupedFit Wald `_family_ci` (`feat/tweedie-grouped-wald-ci-20260915`)
 
 - Cleared §6 holdout `_CIFit` gap for `TweedieGroupedFit` (power plug-in; φ per group).
