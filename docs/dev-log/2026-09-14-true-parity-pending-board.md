@@ -1,6 +1,6 @@
 # True-parity programme — maintainer board (2026-09-14, updated 2026-09-15)
 
-**STATE:** **IN PROGRESS** — #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). **Ledger gap inventory done**. **arcG Julia-only disposition** ACCEPTED (this PR #358 / gllvmTMB #1284). **Still open:** S4 probe, D3 Stage **1**, **`Project.toml` `0.3.0`**, Delta dispersion paste; open PRs #355/#356/#357/#361; **#359/#360 merged**.
+**STATE:** **IN PROGRESS** — #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). **Ledger gap inventory done**. **arcG Julia-only disposition** ACCEPTED (**#358 merged**; gllvmTMB #1284 pending). **Still open:** S4 probe, D3 Stage **1**, **`Project.toml` `0.3.0`**, Delta dispersion paste; open PRs #355/#356/#357/#361 + OrdinalPerTrait Wald PR; **#359/#360/#358 merged**.
 
 **Rehydrate:** `origin/main` · frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86` · **`Project.toml` stays `0.3.0`**.
 
@@ -36,11 +36,12 @@ S4 probe yes
 
 ### Ledger / capability gaps (item 3)
 
-**Inventory:** [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). **Rank 7 done** (arcG disposition). In flight: [#356](https://github.com/itchyshin/GLLVM.jl/pull/356) Tweedie SO, [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge receipts, [#355](https://github.com/itchyshin/GLLVM.jl/pull/355) aliases (watch Julia shard fails).
+**Inventory:** [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). **Rank 7 done** (arcG disposition; #358 merged). In flight: [#356](https://github.com/itchyshin/GLLVM.jl/pull/356) Tweedie SO, [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge receipts, [#355](https://github.com/itchyshin/GLLVM.jl/pull/355) aliases, [#361](https://github.com/itchyshin/GLLVM.jl/pull/361) Lognormal/Trunc Wald, OrdinalPerTrait Wald branch.
 
 ### Second-order Delta follow-up
 
 **Receipt:** [`2026-09-15-second-order-delta-followup.md`](after-task/2026-09-15-second-order-delta-followup.md).  
+**OrdinalPerTrait native Wald:** [`2026-09-15-ordinal-pertrait-wald-ci.md`](after-task/2026-09-15-ordinal-pertrait-wald-ci.md) (PARTIAL holdout; bridge still #357).  
 **PENDING:** paste `accept delta dispersion A`.
 
 ### Version
