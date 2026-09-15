@@ -1,3 +1,10 @@
+## 2026-09-15 — BetaBinomial shared-φ SO cell (`feat/betabinomial-shared-phi-so-20260915`)
+
+- §6 holdout BB shared-φ → PARTIAL: `cell_betabinomial_shared` + native Wald test file; no
+  `confint_family.jl` change. Base `origin/main` @ `9d300783c`. #357 untouched.
+- After-task: `docs/dev-log/after-task/2026-09-15-betabinomial-shared-phi-so.md`.
+- Focused **10/0/1** (1 `@test_skip` R cell). Commands: `julia --project=. test/test_second_order_betabinomial_shared_ci.jl`.
+
 ## 2026-09-15 — StudentTFit fixed-ν Wald `_CIFit` (`cursor/studentt-fixed-nu-wald-ci-a0ce`)
 
 - Cleared §6 Student-t fixed-ν holdout API gap: `StudentTFit` ∈ `_FamilyFit` +
