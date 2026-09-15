@@ -219,7 +219,7 @@ function cell_binomial(link::Symbol, seed::Int)
     beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
     r_beta_idx = findall(==("b_fix"), r.names)
 
-    disputed = link == :cloglog
+    disputed = false  # §2 ACCEPTED (A) 2026-09-15 — cloglog default :observed ratified
     sel_str = link == :logit ? "observed (explicit override; package default :fisher for LogitLink)" :
               "$(hessian_override) (family default for $(link))"
 

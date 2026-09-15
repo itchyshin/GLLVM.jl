@@ -1,3 +1,13 @@
+## 2026-09-15 — §2 Hessian Ada default (A) + cloglog receipt (`cursor/s2-hessian-a-tweedie-receipt-01b1`)
+
+- Decision **ACCEPTED:** `docs/dev-log/decisions/2026-09-15-second-order-hessian-s2-pending.md`
+  (AGENT-APPLIED; reverse via `reject §2 hessian A`). Contract §2 + holdouts + pending board +
+  `LOOP/checkpoint.md`; `binomial_cloglog.json` `hessian_selector_disputed=false`; `cells.jl`;
+  `test/test_second_order_s2_cloglog_ratified.jl` (GLLVM_PARITY_TESTS gate). After-task:
+  `docs/dev-log/after-task/2026-09-15-s2-hessian-a-cloglog-receipt.md`. **≠** §7 complete.
+- PR **#347** confirmed **MERGED** @ `3091fe61`. Swept **#350/#351/#353** (merge #351 when green).
+- Commands: `gh pr view 347 --json state`; `julia --project=. test/test_second_order_s2_cloglog_ratified.jl`
+
 ## 2026-09-15 — Second-order Delta follow-up batch (`feat/second-order-delta-followup-20260915`)
 
 - Shared-η `_family_ci` for Delta-lognormal / Delta-Gamma; `core070_second_order` cells +
