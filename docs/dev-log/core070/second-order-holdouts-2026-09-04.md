@@ -14,7 +14,7 @@ first second-order batch claim** until the listed blocker clears.
 | Lognormal, Truncated-Poisson, Truncated-NB2 | **LognormalFit + TruncatedPoissonFit + TruncatedNegBin2Fit ∈ `_FamilyFit` 2026-09-15** | Native Wald + paired SO cells `lognormal` / `truncated_poisson` / `truncated_nbinom2` (2026-09-16) |
 | Delta-lognormal, Delta-Gamma | Julia shared scalar dispersion vs R per-trait dispersion (PR #347 measured FAIL) | Decision pending: `accept delta dispersion A` |
 | Multinomial FE softmax | **MultinomialFit ∈ `_CIFit` 2026-09-15** (FE softmax) | Native Wald + paired SO cell `multinomial_fe` (2026-09-16) |
-| BetaBinomial shared-φ | **BetaBinomialFit ∈ `_CIFit`** (Wald pre-existing) | Native Wald; shared-φ paired SO cell tracked in #374 (open) |
+| BetaBinomial shared-φ | **BetaBinomialFit ∈ `_CIFit`** (Wald pre-existing); **`betabinomial_shared` SO cell** (2026-09-15) | Native Wald + paired toy cell (β block only; φ not R-paired); ≠ §7 |
 | Realistic Gaussian grid | Intercept-`X` patch cleared estimand mismatch (2026-09-04) | Repaired: 8/8 cells pass SE D1; outside toy batch-1 |
 | Loadings Λ raw entries | Rotation ambiguity (§3) | Compare derived quantities or Procrustes (deferred) |
 
@@ -33,7 +33,7 @@ NB2-log — covered by toy 20-cell grid (superset) and merged-tip refresh
 - **PARTIAL** — first-order or health-only / each-own-optimum receipts; no second-order bind
 - **NOT ATTEMPTED** — no honest paired run in this arc
 
-**Summary:** OUT **5** · PARTIAL **10** · NOT ATTEMPTED **0** (plus batch-1 NB2 noted below; Student-t fixed-ν and Multinomial FE now PARTIAL)
+**Summary:** OUT **5** · PARTIAL **10** · NOT ATTEMPTED **0** (plus batch-1 NB2 noted below; BB shared-φ SO cell 2026-09-15)
 
 | Holdout | Status | Reason (measured) | Evidence |
 |---|---|---|---|
@@ -48,13 +48,8 @@ NB2-log — covered by toy 20-cell grid (superset) and merged-tip refresh
 | Truncated-NB2 | **PARTIAL (native Wald + SO cell)** | paired `truncated_nbinom2` (β[] only; Julia shared `r` vs R per-trait φ — live Δ se_rel ≈ 0.098) | `test/test_second_order_truncnb2_ci.jl` |
 | NB2-log (batch-1) | PARTIAL (SO) | In batch-1 each-own-optimum receipts (20/20 SE D1 toy; 5/5 batch-1 smoke); **not** matched-coordinates; vcov full-block skipped on boundary | `second-order-d1-gate-receipt-2026-09-04.json`; `t14-nb2-wald-nan-diagnosis.md` |
 | Delta-lognormal, Delta-Gamma | OUT (paired SO) / PARTIAL (native Wald) | SO wiring landed in PR #347; D1 comparison fails on dispersion parameterisation (Julia shared vs R per-trait); pending decision A | `after-task/2026-09-15-second-order-delta-followup.md`; `decisions/2026-09-15-delta-dispersion-alignment-pending.md` |
-<<<<<<< HEAD
-| Multinomial FE softmax | **PARTIAL (native Wald)** | `MultinomialFit` ∈ `_CIFit` + `_family_ci` (2026-09-15); no LV / no φ; n×p `X` when covariates; no paired SO toy cell yet | `test/test_second_order_multinomial_ci.jl`; `src/confint_family.jl` |
-| BetaBinomial shared-φ | OUT | 20-cell arc paired per-trait dispersion only; shared-φ grouping not attempted | `second-order-batch-2026-09-03.md` lines 37–39 |
-=======
 | Multinomial FE softmax | **PARTIAL (native Wald + SO cell)** | paired `multinomial_fe`; live Δ se_rel ≈ 5e-6 | `test/test_second_order_multinomial_ci.jl`; `tools/core070_second_order/cells.jl` |
 | BetaBinomial shared-φ | **PARTIAL (native Wald + SO cell)** | `BetaBinomialFit` Wald was already wired; added `cell_betabinomial_shared` (β[] block vs R per-trait φ; φ not paired) | `test/test_second_order_betabinomial_shared_ci.jl`; `tools/core070_second_order/cells.jl` |
->>>>>>> cef42f7a0 (feat(second-order): paired SO cells for six holdout families)
 | Realistic Gaussian grid | PARTIAL | **Repaired 2026-09-04:** intercept-`X` patch clears estimand mismatch; 8/8 realistic Gaussian cells SE D1 pass (max rel ΔSE β = 2.2e-5). Still outside toy batch-1 scope | `second-order-gaussian-intercept-disposition-2026-09-04.md`; `realistic-size-pairing-disposition-2026-09-04.md` |
 | Loadings Λ raw | OUT | Rotation ambiguity (§3); compare derived Σ_y / communality / correlation instead | Contract §3 lines 108–119 |
 

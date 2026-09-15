@@ -36,6 +36,8 @@ function run_one_cell(cell_id::AbstractString)
         return cell_nb1_grouped()
     elseif cell_id == "betabinomial_logit"
         return cell_betabinomial_grouped()
+    elseif cell_id == "betabinomial_shared"
+        return cell_betabinomial_shared()
     elseif cell_id == "gaussian_x"
         return cell_gaussian_x()
     elseif cell_id == "binomial_x"
@@ -403,6 +405,47 @@ function cell_betabinomial_grouped()
     return _assemble("betabinomial_logit", "test/parity/test_nox_dispersion_parity.jl (seed=56,p=5,K=1,n=120, per-trait phi, N=8)",
         "BetaBinomial-logit (per-trait phi)", "observed (grouped default)", false,
         p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+end
+
+function cell_betabinomial_shared()
+    seed = 57
+    Random.seed!(seed)
+    p, K, n = 5, 1, 120
+    β = [0.30, -0.20, 0.25, -0.15, 0.05]
+    φ_true = 8.0
+    N = fill(8, p, n)
+    Λ = 0.2 .* parity_loadings_p5k2()[:, 1:K]
+    Z = randn(K, n)
+    η = β .+ Λ * Z
+    Y = Matrix{Int}(undef, p, n)
+    for t in 1:p, s in 1:n
+        μ = clamp(1 / (1 + exp(-η[t, s])), 1e-4, 1 - 1e-4)
+        psucc = clamp(rand(Beta(μ * φ_true, (1 - μ) * φ_true)), 1e-6, 1 - 1e-6)
+        Y[t, s] = rand(Binomial(N[t, s], psucc))
+    end
+
+    t0 = time()
+    fit = fit_beta_binomial_gllvm(Y; K = K, N = N)
+    wall_fit = time() - t0
+    ci = confint(fit, Float64.(Y); method = :wald, N = N)
+    ad = GLLVM._family_ci(fit, Float64.(Y); N = N)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se(Float64.(Y), K; family = :betabinomial, N = N)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = findall(==("b_fix"), r.names)
+
+    d = _assemble("betabinomial_shared",
+        "test/parity/test_nox_dispersion_parity.jl (seed=57,p=5,K=1,n=120, SHARED phi, N=8)",
+        "BetaBinomial-logit (shared phi; Julia scalar vs R per-trait — beta[] block only)",
+        "fisher (no observed-Hessian variant; G0 lock)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "R gllvmTMB::betabinomial() has no public shared-phi knob (per-trait log_phi_betabinom always); " *
+        "compared quantity is the beta[] fixed-effect block only, mirroring cell_beta(). " *
+        "phi itself is not paired — different estimand (Julia: 1 free scalar; R: p free per-trait)."
+    d["parameterisation_gap"] = false
+    return d
 end
 
 # ===========================================================================
