@@ -339,6 +339,7 @@ println(_SHARD === nothing ?
     _shard_include("test_second_order_truncpois_ci.jl")
     _shard_include("test_second_order_truncnb2_ci.jl")
     _shard_include("test_second_order_tweedie_grouped_ci.jl")
+    _shard_include("test_second_order_multinomial_ci.jl")
     _shard_include("test_diagnostics.jl")
     _shard_include("test_se_machinery.jl")
     _shard_include("test_nobs_pn_convention.jl")
