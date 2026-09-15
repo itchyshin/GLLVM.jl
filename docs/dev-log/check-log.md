@@ -1,3 +1,10 @@
+## 2026-09-15 — Julia-only arcG disposition (rank 7; R CLOSURE)
+
+- Decision ACCEPTED: `docs/dev-log/decisions/2026-09-15-julia-only-arcg-disposition.md`.
+  Twin tools: `gllvmTMB/tools/parity_ledger.R` ACCOUNTED → local `CLOSURE: PASS`.
+  After-task: `docs/dev-log/after-task/2026-09-15-julia-only-arcg-disposition.md`.
+- Commands: `Rscript tools/parity_ledger.R` (gllvmTMB) → `CLOSURE: PASS`.
+
 ## 2026-09-15 — §2 Hessian Ada default (A) + cloglog receipt (`cursor/s2-hessian-a-tweedie-receipt-01b1`)
 
 - Decision **ACCEPTED:** `docs/dev-log/decisions/2026-09-15-second-order-hessian-s2-pending.md`
