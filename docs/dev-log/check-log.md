@@ -1,3 +1,8 @@
+## 2026-09-15: true-parity board records #366 MultinomialFit Wald MERGED
+
+- Docs-only: board + `LOOP/checkpoint.md` record #366 (`c1842dd69`); MultinomialFit native Wald PARTIAL; paste strings unchanged; #357 untouched.
+- After-task: `docs/dev-log/after-task/2026-09-15-true-parity-366-merged-board.md`.
+
 ## 2026-09-15 — MultinomialFit Wald `_CIFit` (`cursor/cloud-agent-1789479714671-jvn5g`)
 
 - Cleared §6 Multinomial FE holdout API gap: `MultinomialFit` ∈ `_CIFit` + `_family_ci`
