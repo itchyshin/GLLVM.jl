@@ -1,6 +1,6 @@
 # True-parity programme — maintainer board (2026-09-14, updated 2026-09-15)
 
-**STATE:** **IN PROGRESS** — #323, matched-θ **(C)**, and **§2 Hessian (A)** disposed via **AGENT-APPLIED Ada defaults** (reversible until Shinichi reverses). **Ledger gap inventory done** (item 3). **PR #347 merged** @ `3091fe61`. **Still open:** S4 probe, D3 Stage **1**, **`Project.toml` `0.3.0`**.
+**STATE:** **IN PROGRESS** — #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). **Ledger gap inventory done**. **arcG Julia-only disposition** ACCEPTED (PRs #358 / gllvmTMB #1284). **Still open:** S4 probe, D3 Stage **1**, **`Project.toml` `0.3.0`**, Delta dispersion paste; open PRs #355/#356/#357; hotfix **#359** (§2 cloglog `@test` CI).
 
 **Rehydrate:** `origin/main` · frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86` · **`Project.toml` stays `0.3.0`**.
 
