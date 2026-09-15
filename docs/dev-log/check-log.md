@@ -19887,3 +19887,17 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Fix: `else` gate like `test_second_order_delta_followup.jl`; `@test ok` + `@test isempty(issues)`.
 - Local: default env → 1 broken (skip), 0 error.
 - Unblocks main CI / #355 merge of tools aliases.
+
+## 2026-09-15 — LognormalFit Wald `_CIFit` (SO holdout)
+
+- Added `LognormalFit` to `_FamilyFit` + `_family_ci` (closed-form NLL).
+- Focused test 15/15; holdouts updated; bridge CI guard left for post-#357.
+
+## 2026-09-15 — TruncatedPoissonFit Wald + Documenter docstring fix
+
+- Added TruncatedPoissonFit to `_FamilyFit`; removed orphan Lognormal `_family_ci` docstring (Documenter `:missing_docs`).
+- Tests: lognormal 15/15, truncpois 8/8.
+
+## 2026-09-15 — TruncatedNegBin2Fit Wald `_CIFit`
+
+- Added TruncatedNegBin2Fit to `_FamilyFit` + `_family_ci`; test 12/12; holdouts PARTIAL.

@@ -10,7 +10,7 @@ first second-order batch claim** until the listed blocker clears.
 | GP-1 | Fisher-retained; parity vs TMB Fisher alternative unsettled | Out of scope pending ruling |
 | Student-t ν | Nonlinear boundary; Wald SE pathology (panel finding 4) | Batch 1 excluded |
 | Ordinal per-trait cutpoints | **OrdinalPerTraitFit + OrdinalPerTraitCovFit ∈ `_CIFit` 2026-09-15** | Native Wald wired; bridge CI guards held (#357 foreign) |
-| Lognormal, Truncated-Poisson, Truncated-NB2 | No Wald `_CIFit` dispatch | API gap |
+| Lognormal, Truncated-Poisson, Truncated-NB2 | **LognormalFit + TruncatedPoissonFit + TruncatedNegBin2Fit ∈ `_FamilyFit` 2026-09-15** | Native Wald wired; bridge CI guards held for #357 |
 | Delta-lognormal, Delta-Gamma | In `_CIFit` but not reached in 20-cell window | Follow-up batch |
 | Multinomial, BetaBinomial shared-φ | Scope discipline (per-trait pairing only in 20-cell) | Follow-up |
 | Realistic Gaussian grid | Julia `confint` reports σ + Λ SEs; R pairs trait intercept `t1…tp` | **Estimand mismatch** — not a tolerance failure |
@@ -41,7 +41,9 @@ NB2-log — covered by toy 20-cell grid (superset) and merged-tip refresh
 | Student-t ν (free) | OUT | Wald SE pathology at ν boundary (§3); `StudentTFit` ∉ `_CIFit`; no SO pairing | Contract §3 lines 120–123; `src/confint_family.jl:44-45` |
 | Student-t fixed-ν | PARTIAL | First-order logLik parity exists; not in batch-1 or 20-cell SO window | Parity fixtures; no `core070_second_order` cell |
 | Ordinal per-trait cutpoints | **PARTIAL (native Wald)** | `OrdinalPerTraitFit` / `OrdinalPerTraitCovFit` ∈ `_CIFit` + `_family_ci` (2026-09-15); bridge `ci_method` guard still refuses until post-#357 lift; no paired SO toy cell yet | `test/test_second_order_ordinal_pertrait_ci.jl`; `src/confint_family.jl` |
-| Lognormal, Truncated-Poisson, Truncated-NB2 | OUT (SO) / PARTIAL (1st) | `LognormalFit`, `TruncatedPoissonFit`, `TruncatedNegBin2Fit` ∉ `_CIFit`; logLik parity fixtures only | `src/confint_family.jl:31-45`; parity tests |
+| Lognormal | **PARTIAL (native Wald)** | `LognormalFit` ∈ `_FamilyFit` + `_family_ci` (2026-09-15); bridge `ci_method` guard still refuses until post-#357 lift; no paired SO toy cell yet | `test/test_second_order_lognormal_ci.jl`; `src/confint_family.jl` |
+| Truncated-Poisson | **PARTIAL (native Wald)** | `TruncatedPoissonFit` ∈ `_FamilyFit` + `_family_ci` (2026-09-15); bridge guard held; no paired SO cell | `test/test_second_order_truncpois_ci.jl` |
+| Truncated-NB2 | **PARTIAL (native Wald)** | `TruncatedNegBin2Fit` ∈ `_FamilyFit` + `_family_ci` (2026-09-15); no paired SO cell; bridge untouched | `test/test_second_order_truncnb2_ci.jl` |
 | NB2-log (batch-1) | PARTIAL (SO) | In batch-1 each-own-optimum receipts (20/20 SE D1 toy; 5/5 batch-1 smoke); **not** matched-coordinates; vcov full-block skipped on boundary | `second-order-d1-gate-receipt-2026-09-04.json`; `t14-nb2-wald-nan-diagnosis.md` |
 | Delta-lognormal, Delta-Gamma | OUT | `DeltaLogNormalFit`/`DeltaGammaFit` ∈ `_CIFit` but absent from 20-cell window | `second-order-batch-2026-09-03.md` cell list |
 | Multinomial, BetaBinomial shared-φ | OUT | 20-cell arc paired per-trait dispersion only; shared-φ grouping not attempted | `second-order-batch-2026-09-03.md` lines 37–39 |
