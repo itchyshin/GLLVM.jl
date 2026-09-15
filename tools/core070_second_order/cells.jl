@@ -66,6 +66,8 @@ function run_one_cell(cell_id::AbstractString)
         return cell_tweedie_fixed()
     elseif cell_id == "tweedie_shared"
         return cell_tweedie_shared()
+    elseif cell_id == "tweedie_species"
+        return cell_tweedie_species()
     elseif cell_id == "lognormal"
         return cell_lognormal()
     elseif cell_id == "ordinal_pertrait_probit"
@@ -1168,9 +1170,7 @@ function cell_tweedie_fixed()
     return d
 end
 
-function cell_tweedie_shared()
-    # Estimated shared power — option A: compare b_fix / beta only (parity seed 82).
-    seed = 82
+function _tweedie_parity_fixture_y(seed::Integer = 82)
     Random.seed!(seed)
     p, K, n = 5, 1, 150
     β_true = [0.5, -0.2, 0.3, -0.4, 0.1]
@@ -1183,7 +1183,12 @@ function cell_tweedie_shared()
     for t in 1:p, s in 1:n
         Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ_true[t], p_true, Random.default_rng())
     end
+    return Y, p, K, n, seed
+end
 
+function cell_tweedie_shared()
+    # Estimated shared power — option A: compare b_fix / beta only (parity seed 82).
+    Y, p, K, n, seed = _tweedie_parity_fixture_y(82)
     t0 = time()
     fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :shared, hessian = :observed, iterations = 400)
     wall_fit = time() - t0
@@ -1205,6 +1210,33 @@ function cell_tweedie_shared()
         "Tweedie-log (estimated shared power; per-trait φ)", "observed (family default; §2 A)", false,
         p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
     d["note"] = "Compared quantity is trait intercept block b_fix only (option A). Julia Wald plug-ins shared power; R sdreport includes logit_p_tweedie in the full fixed block — not compared."
+    d["parameterisation_gap"] = false
+    d["reference_constraint_adapter"] = r.reference_constraint_adapter
+    d["n_power_free"] = r.n_power_free
+    return d
+end
+
+function cell_tweedie_species()
+    Y, p, K, n, seed = _tweedie_parity_fixture_y(82)
+    t0 = time()
+    fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :species, hessian = :observed, iterations = 400)
+    wall_fit = time() - t0
+    fit isa GLLVM.TweediePerTraitPowerFit ||
+        error("tweedie_species: expected TweediePerTraitPowerFit with free per-trait power")
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se_tweedie_species(Y, K)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = findall(==("b_fix"), r.names)
+
+    d = _assemble("tweedie_species",
+        "test/parity/test_tweedie_parity.jl (seed=82,p=5,K=1,n=150,power_group=:species)",
+        "Tweedie-log (per-trait estimated power; per-trait φ)", "observed (family default; §2 A)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "Compared quantity is trait intercept block b_fix only (option A). Julia Wald plug-ins per-trait power; R par.fixed includes logit_p_tweedie — not compared."
     d["parameterisation_gap"] = false
     d["reference_constraint_adapter"] = r.reference_constraint_adapter
     d["n_power_free"] = r.n_power_free

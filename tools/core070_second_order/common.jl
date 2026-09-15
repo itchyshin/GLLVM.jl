@@ -347,6 +347,47 @@ function r_fit_se_tweedie_shared(y::AbstractMatrix, K::Integer)
     )
 end
 
+# Per-trait estimated Tweedie power — public frozen-R `tweedie()` with se=TRUE.
+function r_fit_se_tweedie_species(y::AbstractMatrix, K::Integer)
+    p, n = size(y)
+    _require_gllvmtmb!()
+    @rput y K p n
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)
+    )
+    fam_obj <- gllvmTMB::tweedie(link = "log")
+    t0 <- Sys.time()
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long, unit = "site", trait = "trait", family = fam_obj,
+        control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+    )
+    wall_fit <- as.numeric(Sys.time() - t0, units = "secs")
+    r_logL  <- as.numeric(stats::logLik(fit_r))
+    r_obj   <- as.numeric(fit_r$opt$objective)
+    r_conv  <- identical(as.integer(fit_r$opt$convergence), 0L)
+    """
+    _run_r_tweedie_sd_extract!()
+    return (
+        logLik = rcopy(Float64, R"r_logL"),
+        objective = rcopy(Float64, R"r_obj"),
+        converged = rcopy(Bool, R"r_conv"),
+        has_sd = rcopy(Bool, R"has_sd"),
+        names = has_sd_names(),
+        par_fixed = has_sd_pf(),
+        cov_fixed = has_sd_cv(),
+        pd_hessian = rcopy(Any, R"pdh"),
+        r_condition_number = rcopy(Any, R"rcond"),
+        wall_fit = rcopy(Float64, R"wall_fit"),
+        reference_constraint_adapter = false,
+        n_power_free = p,
+    )
+end
+
 # Ordinal per-trait cutpoints (probit); twin matches test_ordinal_probit_parity.jl.
 function r_fit_se_ordinal_probit(y::AbstractMatrix{<:Integer}, K::Integer)
     p, n = size(y)
