@@ -1,0 +1,5 @@
+{
+  "name": "GLLVM.jl (Julia 1.10)",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh"
+}
