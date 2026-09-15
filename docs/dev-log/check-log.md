@@ -19946,3 +19946,7 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 ## 2026-09-15 — TruncatedNegBin2Fit Wald `_CIFit`
 
 - Added TruncatedNegBin2Fit to `_FamilyFit` + `_family_ci`; test 12/12; holdouts PARTIAL.
+
+## 2026-09-15 — SO toy receipts inventory (PARTIAL native Wald)
+
+- Docs-only: bank `docs/dev-log/after-task/2026-09-15-so-toy-receipts-inventory.md` (six holdout families; paired SO toy/R SE Δ missing for all; Student-t fixed-ν Wald still on #367).
