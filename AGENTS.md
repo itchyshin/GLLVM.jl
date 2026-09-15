@@ -93,6 +93,13 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
+- **True-parity continuation (2026-09-15).** `origin/main` @ `deab192f` after
+  #362/#356/#361/#355/#364/#365. Multinomial FE Wald `_CIFit` on lane tip
+  (`docs/dev-log/after-task/2026-09-15-multinomial-wald-ci.md`). #357 foreign
+  CONFLICTING — do not edit. Still paste-gated: S4, D3 Stage 1, Totoro T4,
+  Delta dispersion A; `Project.toml` stays `0.3.0`. Goal **not** complete.
+  Board: `docs/dev-log/2026-09-14-true-parity-pending-board.md`.
+
 - **HANDED OVER to a single Cursor lane holding BOTH repos (2026-09-04).** GLLVM.jl `main`
   `4d57cb29` (CI 8/8 shards + Documenter green, 0 open PRs); gllvmTMB `main` `72ed68b5`
   (R-CMD-check green). Both lanes reported ready, nothing in flight. The move follows the

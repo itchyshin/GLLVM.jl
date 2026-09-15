@@ -43,7 +43,7 @@ const _GroupedDispersionCovFit = Union{NBGroupedCovFit, NB1GroupedCovFit, BetaGr
                                        BetaBinomialGroupedCovFit}
 
 const _CIFit = Union{_FamilyFit, _TwoPartFit, _GroupedDispersionFit, _GroupedDispersionCovFit,
-                     OrdinalFit, OrdinalPerTraitFit, OrdinalPerTraitCovFit,
+                     OrdinalFit, OrdinalPerTraitFit, OrdinalPerTraitCovFit, MultinomialFit,
                      GllvmCovFit, ZIPCovFit, ZINBCovFit, OrderedBetaFit, QuadraticFit, RowEffectFit}
 
 # ---------------------------------------------------------------------------
@@ -2278,6 +2278,96 @@ function _family_ci(fit::OrdinalPerTraitCovFit, Y::AbstractMatrix;
     return _FamilyCI(θ, nll, names, fill(:linear, length(θ)), sim, refit)
 end
 
+# Unordered categorical FE softmax (v1; twin fid 16): packing
+# [β₂…β_K; γ₂ (p); …; γ_K (p)] with η₁≡0. No LV / no φ. Design `X` is n×p
+# (site covariates), not the 3-array GllvmCovFit layout — pass via kwargs as
+# AbstractMatrix. No-X fits omit X.
+function _multinomial_ci_names(n_categories::Integer, n_covariates::Integer)
+    names = String["beta[$k]" for k in 2:n_categories]
+    @inbounds for k in 2:n_categories
+        for j in 1:n_covariates
+            push!(names, "gamma[$k,$j]")
+        end
+    end
+    return names
+end
+
+function _family_ci(fit::MultinomialFit, Y::AbstractMatrix;
+                    X::Union{Nothing, AbstractMatrix{<:Real}} = nothing,
+                    kwargs...)
+    K = fit.n_categories
+    p = size(fit.γ, 2)
+    n = size(Y, 2)
+    if p == 0
+        X === nothing || throw(ArgumentError(
+            "MultinomialFit was fit without covariates; omit X in confint"))
+    else
+        X === nothing && throw(ArgumentError(
+            "confint on a covariate MultinomialFit needs the design `X` " *
+            "(the same n×p matrix passed to fit_multinomial_gllvm): " *
+            "confint(fit, Y; method=…, X=X)"))
+        size(X) == (n, p) || throw(DimensionMismatch(
+            "multinomial confint X must be n×p = ($n, $p); got $(size(X))"))
+    end
+    θ = copy(fit.theta_packed)
+    length(θ) == multinomial_pack_len(K, p) || throw(DimensionMismatch(
+        "MultinomialFit.theta_packed length $(length(θ)) ≠ (K-1)(1+p) = " *
+        "$(multinomial_pack_len(K, p))"))
+    nll = function (θv)
+        v = try
+            -multinomial_loglik(Y, θv; X = X, n_categories = K)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    sim = function (rng)
+        Yb = Matrix{Int}(undef, 1, n)
+        xbuf = p == 0 ? Float64[] : Vector{Float64}(undef, p)
+        @inbounds for i in 1:n
+            if p > 0
+                for j in 1:p
+                    xbuf[j] = X[i, j]
+                end
+            end
+            η = multinomial_eta(fit.β, fit.γ, xbuf)
+            # Softmax draw (η₁≡0 already in multinomial_eta).
+            m = η[1]
+            for k in 2:K
+                η[k] > m && (m = η[k])
+            end
+            s = 0.0
+            for k in 1:K
+                s += exp(η[k] - m)
+            end
+            u = rand(rng) * s
+            cum = 0.0
+            cat = K
+            for k in 1:K
+                cum += exp(η[k] - m)
+                if u <= cum
+                    cat = k
+                    break
+                end
+            end
+            Yb[1, i] = cat
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_multinomial_gllvm(Yb; X = X, n_categories = K, link = fit.link)
+        catch
+            return nothing
+        end
+        fb.n_categories == K || return nothing
+        size(fb.γ, 2) == p || return nothing
+        return copy(fb.theta_packed)
+    end
+    return _FamilyCI(θ, nll, _multinomial_ci_names(K, p), fill(:linear, length(θ)),
+                     sim, refit)
+end
+
 # --- Covariate fit (GllvmCovFit: β + Xγ + Λz) ------------------------------
 # Working vector [β; γ_free; pack_lambda(Λ); (log-dispersion)]. Fixed-zero γ
 # entries are structural constraints, not free Hessian/profile/bootstrap terms.
@@ -2693,7 +2783,9 @@ families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
 `TweedieFit`, `BetaBinomialFit`, `LognormalFit`, `TruncatedPoissonFit`,
 `TruncatedNegBin2Fit`), shared-cutpoint `OrdinalFit`, per-trait
 cutpoint `OrdinalPerTraitFit` / `OrdinalPerTraitCovFit` (free `tau[t,c]` for
-`c≥2`; `τ₁=0` fixed; CovFit needs `X`), the random-row-effect fit (`RowRandomFit`,
+`c≥2`; `τ₁=0` fixed; CovFit needs `X`), FE softmax `MultinomialFit`
+(contrast `beta[k]` / `gamma[k,j]` for categories `k≥2`; `η₁≡0`; n×p `X` when
+covariates were fit), the random-row-effect fit (`RowRandomFit`,
 which adds a `sigma_row` term plus the underlying family's dispersion), and the
 two-part families (`DeltaLogNormalFit`, `DeltaGammaFit`, `HurdlePoissonFit`,
 `HurdleNBFit`, `ZIPFit`, `ZIPCovFit`, `ZINBFit`, `ZINBCovFit`, `ZIBFit`). `Y` is the same
@@ -2701,11 +2793,14 @@ response matrix passed to the fitter; it is needed to reconstruct the marginal
 likelihood. For `BinomialFit` / `BetaBinomialFit` (and a `Binomial`-family
 `RowRandomFit`) supply the trial counts via `N` (default all-ones). For
 `ZIPCovFit` / `ZINBCovFit` (and other covariate fits) supply the design via `X`. For
+`MultinomialFit` with covariates, `X` is the same n×p matrix passed to the fitter
+(not the 3-array `GllvmCovFit` layout). For
 response-mask fits, pass the same Boolean `mask` matrix used by the fitter;
 masked cells are ignored by the likelihood and by bootstrap refits.
 
 Term names are `beta[t]` / `Lambda[i,k]` (+ a dispersion `r`/`phi`/`alpha`) for
-the GLM families, `... + phi` for `BetaBinomialFit` (the Beta precision) and
+the GLM families, `beta[k]` / `gamma[k,j]` (category indices `k≥2`) for
+`MultinomialFit`, `... + phi` for `BetaBinomialFit` (the Beta precision) and
 `... + sigma_row (+ r/phi/alpha)` for `RowRandomFit`, and `betaz[t]` (occurrence / zero-inflation logits) / `betac[t]`
 (positive / count intercepts) / `Lambda[i,k]` (+ `sigma`/`alpha`/`r`) for the
 two-part families. `ZIPCovFit` / `ZINBCovFit` add free dual slopes `gammaz[k]` / `gammac[k]`
@@ -2768,7 +2863,7 @@ function confint(fit::_CIFit, Y::AbstractMatrix;
                  level::Real = 0.95,
                  parm = nothing,
                  N::Union{Nothing, AbstractMatrix} = nothing,
-                 X::Union{Nothing, AbstractArray{<:Real, 3}} = nothing,
+                 X::Union{Nothing, AbstractMatrix{<:Real}, AbstractArray{<:Real, 3}} = nothing,
                  mask = nothing,
                  n_boot::Integer = 200,
                  seed::Integer = 0,

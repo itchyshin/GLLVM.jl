@@ -1,3 +1,12 @@
+## 2026-09-15 — MultinomialFit Wald `_CIFit` (`cursor/cloud-agent-1789479714671-jvn5g`)
+
+- Cleared §6 Multinomial FE holdout API gap: `MultinomialFit` ∈ `_CIFit` + `_family_ci`
+  (contrast `beta[k]`/`gamma[k,j]`; n×p `X` when covariates). BB shared-φ pairing still OUT.
+  After-task: `docs/dev-log/after-task/2026-09-15-multinomial-wald-ci.md`. Focused **27/27**.
+  Board/#365 tip already on main (`deab192f`); #357 untouched.
+- Commands: `julia --project=. test/test_second_order_multinomial_ci.jl`;
+  `gh pr view 365` (Documenter SUCCESS → already merged).
+
 ## 2026-09-15 — true-parity merge waiter (#355/#356/#361/#362)
 
 - Squash-merged when Julia+Documenter green (Frozen R advisory FAIL OK; Documenter
