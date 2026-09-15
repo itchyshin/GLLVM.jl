@@ -105,6 +105,18 @@ From `true-parity-decision-map.md` §Out of scope (plain language):
 
 Export-level gap honesty (FORWARD=77 @ frozen oracle): `docs/dev-log/core070/export-gap-honesty-2026-09-04.md`.
 
+### Twin capability matrix — six DIFFER rows
+
+The joined capability ledger (Julia `docs/design/capability-status.md` vs twin
+`tools/parity_ledger.R`) reports **6 DIFFER** rows alongside 48 matched. Those
+six are **not** covered twin capability — status words disagree by design or by
+gap (`spatial × dep`, Phylo Model A `lv` intervals, multinomial depth, broad
+simulation coverage certificate, public AGHQ, full mixed-family vector). The
+R bridge may admit a **partial** mixed-family point-fit while the matrix row
+remains `planned`; that is transport only, not row promotion. Enumerated fences:
+`docs/design/capability-status.md` § *Twin join — six DIFFER rows* and
+`docs/dev-log/after-task/2026-09-15-capability-differ-honesty-fence.md`.
+
 ## Response families
 
 | Family | GLLVM.jl | Notes |

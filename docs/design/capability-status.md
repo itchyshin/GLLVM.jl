@@ -34,6 +34,32 @@ Status words (MC parser; counts derived at render time — never hand-typed into
 - Prefer reading this beside R `/p/gllvmTMB/surface` — gaps should stay visible
   as `planned` / `missing` / `rejected`, not renamed away.
 
+## Twin join — six DIFFER rows (capability-status cross-walk)
+
+`tools/parity_ledger.R` (twin, read-only) joined to this file reports **48
+matched**, **32 R-only**, **33 J-only**, and **6 DIFFER** @ frozen oracle
+(inventory: `docs/dev-log/after-task/2026-09-15-true-parity-ledger-gap-inventory.md`).
+**DIFFER ≠ covered twin.** Do not promote these rows, paste light Δ, or describe
+them as “aligned capability” on public surfaces until both sides share the same
+status word *and* the scope fence is written.
+
+| # | Capability row (join key) | Twin (R) status | Julia (this file) | Honesty fence |
+|---|---------------------------|-----------------|-------------------|---------------|
+| 1 | `spatial × dep` | scope-limited | `planned` (fail-loud only) | Arc 0 stub only (#329); not structured spatial dep parity |
+| 2 | `phylo_latent + lv = ~ x` (Phylo Model A intervals) | planned | `rejected` | Intentional Julia refusal; not a lag to “catch up” |
+| 3 | `multinomial / categorical` | scope-limited | `missing` | FE softmax engine ≠ twin latent/phylo/spatial multinomial (Design 123) |
+| 4 | Simulation-validated coverage certificate | scope-limited | `missing` | Julia arcG/DRAC diagnostics are **not** this row; out of R↔Julia parity |
+| 5 | `AGHQ` estimator | scope-limited (opt-in experimental) | `missing` | Julia internal GH for VA only; no public `aghq=` knob |
+| 6 | Mixed-family response vector | scope-limited (native programme validated) | `planned` | **Bridge mixed-family point-fit (`implemented` below) is a transport subset only** — does not close this row |
+
+**Planned / missing rows that must not read as harness parity:** any row still
+`planned` or `missing` here (including Arc 0 Gaussian-only cells marked
+`implemented` with scope caveats) stays **out** of “R workflow runs identically
+through Julia” claims on `docs/src/gllvmtmb-parity.md`. **R-NARROWER (21):**
+Julia `implemented` where R registers `scope-limited` is a **promotion fence**,
+not evidence that Julia exceeds the twin — wait for receipts at R’s narrower
+claim before advertising.
+
 ## Covariance structure grid (sources × modes)
 
 R grammar: source ∈ {none, phylogenetic, animal, spatial, kernel} × mode ∈
@@ -357,7 +383,7 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 | Bridge missing-response mask (selected families) | implemented |
 | Bridge CI transport Wald/profile/bootstrap (selected) | implemented |
 | Bridge predictor-informed `lv` / `X_lv` (selected) | implemented |
-| Bridge mixed-family vector | implemented |
+| Bridge mixed-family vector | implemented (bridge point-fit only — **DIFFER #6**; full row stays `planned` above) |
 | Bridge full family × full structure parity | rejected |
 | Bridge phylo / animal / spatial / kernel source parity | planned |
 | Bridge Phylo Model A / source-specific `lv` advertising | rejected |
