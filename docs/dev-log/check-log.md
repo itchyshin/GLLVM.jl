@@ -6,6 +6,15 @@
   `docs/dev-log/after-task/2026-09-15-ordinal-pertrait-wald-ci.md`.
 - Commands: `julia --project=. test/test_second_order_ordinal_pertrait_ci.jl` → 26 pass.
 
+## 2026-09-15 — TweedieGroupedFit Wald `_family_ci` (`feat/tweedie-grouped-wald-ci-20260915`)
+
+- Cleared §6 holdout `_CIFit` gap for `TweedieGroupedFit` (power plug-in; φ per group).
+  After-task: `docs/dev-log/after-task/2026-09-15-tweedie-grouped-wald-ci.md`.
+  Focused test **13/13**. Merged leftover docs PRs **#354** (Documenter) and **#353**
+  (8/8 Julia + Documenter; Frozen R advisory FAIL OK). **#355** aliases still waiting CI.
+- Commands: `julia --project=. test/test_second_order_tweedie_grouped_ci.jl`;
+  `gh pr merge 353 --squash`; `pr_merge_when_green` #354.
+
 ## 2026-09-15 — Julia-only arcG disposition (rank 7; R CLOSURE)
 
 - Decision ACCEPTED: `docs/dev-log/decisions/2026-09-15-julia-only-arcg-disposition.md`.

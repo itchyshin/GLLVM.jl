@@ -207,6 +207,60 @@ function r_fit_se_delta(y::AbstractMatrix, K::Integer; family::Symbol)
     )
 end
 
+# Tweedie fixed-power (parity with Julia `fit_tweedie_gllvm_grouped(...; power=p0)`).
+# Shared/species estimated power stays out of this helper — use the reference
+# adapter in `fit_gllvmtmb_parity_tweedie` for first-order only until a public R knob exists.
+function r_fit_se_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Real)
+    (1.0 < p_fixed < 2.0) || throw(ArgumentError(
+        "r_fit_se_tweedie: p_fixed must be in (1, 2); got $p_fixed"))
+    p, n = size(y)
+    pv = Float64(p_fixed)
+    _require_gllvmtmb!()
+    @rput y K p n pv
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)
+    )
+    fam_obj <- gllvmTMB::tweedie(link = "log", p = pv)
+    t0 <- Sys.time()
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long, unit = "site", trait = "trait", family = fam_obj,
+        control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+    )
+    wall_fit <- as.numeric(Sys.time() - t0, units = "secs")
+    r_logL  <- as.numeric(stats::logLik(fit_r))
+    r_obj   <- as.numeric(fit_r$opt$objective)
+    r_conv  <- identical(as.integer(fit_r$opt$convergence), 0L)
+    has_sd  <- !is.null(fit_r$sd_report)
+    nm <- character(0); pf <- numeric(0); cv <- matrix(numeric(0), 0, 0)
+    pdh <- NA; rcond <- NA_real_
+    if (has_sd) {
+        sdr <- fit_r$sd_report
+        pf  <- sdr$par.fixed
+        cv  <- sdr$cov.fixed
+        nm  <- names(pf)
+        pdh <- isTRUE(sdr$pdHess)
+        rcond <- tryCatch(kappa(cv), error = function(e) NA_real_)
+    }
+    """
+    return (
+        logLik = rcopy(Float64, R"r_logL"),
+        objective = rcopy(Float64, R"r_obj"),
+        converged = rcopy(Bool, R"r_conv"),
+        has_sd = rcopy(Bool, R"has_sd"),
+        names = has_sd_names(),
+        par_fixed = has_sd_pf(),
+        cov_fixed = has_sd_cv(),
+        pd_hessian = rcopy(Any, R"pdh"),
+        r_condition_number = rcopy(Any, R"rcond"),
+        wall_fit = rcopy(Float64, R"wall_fit"),
+    )
+end
+
 # shared site-X
 function r_fit_se_x(y::AbstractMatrix, x_site::AbstractVector{<:Real}, K::Integer;
         family::Symbol, N::Union{Nothing,AbstractMatrix} = nothing,
