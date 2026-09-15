@@ -1,3 +1,13 @@
+## 2026-09-15 — Second-order Delta follow-up batch (`feat/second-order-delta-followup-20260915`)
+
+- Shared-η `_family_ci` for Delta-lognormal / Delta-Gamma; `core070_second_order` cells +
+  `r_fit_se_delta`; `test/test_second_order_delta_followup.jl`.
+- After-task: `docs/dev-log/after-task/2026-09-15-second-order-delta-followup.md` — paired D1
+  **FAIL** measured (SE rel 0.145 / 0.212; dispersion parameterisation gap). **≠** §7 complete.
+- Commands: `julia --project=. test/test_second_order_delta_followup.jl`;
+  `julia --project=. tools/core070_second_order/smoke_delta_lognormal_eoo.jl` (FAIL, receipt);
+  `smoke_delta_gamma_eoo.jl` (FAIL, receipt). Full `Pkg.test()` deferred to CI.
+
 ## 2026-09-15 — True-parity ledger / capability gap inventory (`docs/true-parity-ledger-gap-inventory-20260915`)
 
 - Read-only after-task:
