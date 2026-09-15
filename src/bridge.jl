@@ -794,9 +794,9 @@ function bridge_capabilities()
                 f == "poisson" ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f == "lognormal" ?
-                    "one-part reduced-rank bridge family (twin fid 3); no-X routes fit_lognormal_gllvm (shared scalar σ on log y; y-scale loglik includes Jacobian); CI, fixed-effect-X, X_lv, and missing-response masks remain follow-ups; light RCall Δ still OWED (not invented here); route support is narrower than full R-user parity" :
+                    "one-part reduced-rank bridge family (twin fid 3); no-X routes fit_lognormal_gllvm (shared scalar σ on log y; y-scale loglik includes Jacobian); CI, fixed-effect-X, X_lv, and missing-response masks remain follow-ups; light no-X RCall logLik Δ PAID (test/parity/test_lognormal_parity.jl @ GLLVM_PARITY_TESTS=1; receipt abs≈2.24e-8 @ rtol 1e-6, seed=52, p=5, K=2, n=60); route support is narrower than full R-user parity" :
                 f == "truncated_poisson" ?
-                    "one-part reduced-rank bridge family (twin fid 10); no-X routes fit_truncated_poisson_gllvm (log link on untruncated μ; support y ≥ 1); CI, fixed-effect-X, X_lv, and missing-response masks remain follow-ups; light RCall Δ still OWED (not invented here); route support is narrower than full R-user parity" :
+                    "one-part reduced-rank bridge family (twin fid 10); no-X routes fit_truncated_poisson_gllvm (log link on untruncated μ; support y ≥ 1); CI, fixed-effect-X, X_lv, and missing-response masks remain follow-ups; light no-X RCall logLik Δ PAID (test/parity/test_truncated_poisson_parity.jl @ GLLVM_PARITY_TESTS=1; receipt abs≈2.71e-9 @ rtol 1e-6, seed=53, p=5, K=2, n=60); route support is narrower than full R-user parity" :
                 f == "binomial" ?
                     "one-part reduced-rank bridge family; no-X, masked no-X, and complete-response fixed-effect-X Wald/profile/bootstrap CI payloads are routed; predictor-informed latent-score X_lv is wired for complete-response point fits; X_lv Wald B_lv CI payloads are routed; profile/bootstrap X_lv CIs remain follow-ups; route support is narrower than full R-user parity" :
                 f in _BRIDGE_BINOMIAL_XLV_FAMILIES ?
@@ -1108,8 +1108,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                    "no-X only; Sigma/correlation use the shared block " *
                    "Lambda*Lambda' only (communality 1); scores empty " *
                    "(no getLV(::LognormalFit)); CI, X, X_lv, and masks " *
-                   "remain follow-ups; light RCall Δ still OWED " *
-                   "(not invented here)",
+                   "remain follow-ups; light no-X RCall logLik Δ PAID " *
+                   "(test/parity/test_lognormal_parity.jl @ GLLVM_PARITY_TESTS=1; " *
+                   "receipt abs≈2.24e-8 @ rtol 1e-6, seed=52, p=5, K=2, n=60)",
             ci = nothing,
             # gradient_max: NaN — LognormalFit has no _family_ci adapter (no packed
             # objective to rebuild on this engine yet).
@@ -1151,8 +1152,9 @@ function _bridge_fit_onepart(y, key::AbstractString, K::Integer, N,
                    "mean; support y ≥ 1; no-X only; Sigma/correlation use " *
                    "the shared block Lambda*Lambda' only (communality 1); " *
                    "scores empty (no getLV(::TruncatedPoissonFit)); CI, X, " *
-                   "X_lv, and masks remain follow-ups; light RCall Δ still " *
-                   "OWED (not invented here)",
+                   "X_lv, and masks remain follow-ups; light no-X RCall logLik Δ PAID " *
+                   "(test/parity/test_truncated_poisson_parity.jl @ GLLVM_PARITY_TESTS=1; " *
+                   "receipt abs≈2.71e-9 @ rtol 1e-6, seed=53, p=5, K=2, n=60)",
             ci = nothing,
             # gradient_max: NaN — TruncatedPoissonFit has no _family_ci adapter (no
             # packed objective to rebuild on this engine yet).

@@ -56,8 +56,8 @@ campaigns, **no** `Project.toml` bump, **no** covered-row promotion, **no** gllv
 | NB2 no-X (per-trait φ) | **live Δ** | `test_negbin_parity.jl`; public `fit_gllvm` → grouped; `NATIVE-06` |
 | Beta no-X (per-trait φ) | **live Δ** | `test_beta_parity.jl` / `test_beta_required.jl`; `NATIVE-08` |
 | Ordinal probit no-X | **live Δ** | `test_ordinal_probit_parity.jl`; `NATIVE-15` |
-| Lognormal no-X | **live Δ** (parity) · **fenced** (bridge) | `test_lognormal_parity.jl`; bridge still prints “light RCall Δ still OWED” in `test_bridge_capabilities.jl` until receipt is wired into bridge notes |
-| Truncated-Poisson no-X | **live Δ** (parity) · **fenced** (bridge) | `test_truncated_poisson_parity.jl`; bridge OWED same pattern |
+| Lognormal no-X | **live Δ** | `test_lognormal_parity.jl`; bridge notes wired 2026-09-15 (`feat/lognormal-truncpois-loglik-receipts-20260915`) |
+| Truncated-Poisson no-X | **live Δ** | `test_truncated_poisson_parity.jl`; bridge notes wired same PR |
 | Truncated-NB2 no-X | **live Δ** | `test_truncated_nbinom2_parity.jl`; `NATIVE-12` |
 | Gamma / NB1 / BetaBinomial no-X (per-trait disp.) | **live Δ** | `test_nox_dispersion_parity.jl`; `NATIVE-05/16/09` |
 | Multinomial FE no-X | **live Δ** | `test_multinomial_parity.jl`; `NATIVE-17` |
