@@ -1,8 +1,8 @@
 # True-parity programme: maintainer board (2026-09-14, updated 2026-09-15)
 
-STATE: **IN PROGRESS**. #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips. **This slice:** Multinomial FE Wald `_CIFit`. Foreign: #357 CONFLICTING (do not edit). Goal **not** complete.
+STATE: **IN PROGRESS**. #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`); native Wald **PARTIAL** (like Ordinal/Lognormal). Foreign: #357 CONFLICTING (do not edit). Paste-blocked; goal **not** complete.
 
-Rehydrate: `origin/main` @ `deab192f` (+ this PR tip); gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
+Rehydrate: `origin/main` @ `c1842dd69`; gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
 ---
 
@@ -40,7 +40,7 @@ Inventory: [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09
 
 ### Second-order follow-up
 
-Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **Multinomial FE Wald** this PR ([`2026-09-15-multinomial-wald-ci.md`](after-task/2026-09-15-multinomial-wald-ci.md)) — holdout → PARTIAL (native Wald). Bridge CI lift still waits on #357.  
+Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **MultinomialFit** native Wald on main (#366, [`2026-09-15-multinomial-wald-ci.md`](after-task/2026-09-15-multinomial-wald-ci.md)); holdout → **PARTIAL** (like Ordinal/Lognormal). Bridge CI lift still waits on #357.  
 Delta SO species dispersion: still OUT until paste `accept delta dispersion A`.  
 BB shared-φ pairing / GP-1 ruling / Student-t free ν / Λ raw: still OUT.
 
