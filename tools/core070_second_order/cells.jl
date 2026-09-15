@@ -53,6 +53,10 @@ function run_one_cell(cell_id::AbstractString)
         return cell_poisson_speciesx()
     elseif cell_id == "binomial_speciesx"
         return cell_binomial_speciesx()
+    elseif cell_id == "delta_lognormal"
+        return cell_delta_lognormal()
+    elseif cell_id == "delta_gamma"
+        return cell_delta_gamma()
     else
         error("unknown cell id: $cell_id")
     end
@@ -764,6 +768,81 @@ function cell_binomial_speciesx()
     return _assemble_speciescov("binomial_speciesx", "test/parity/test_species_x_parity.jl (seed=49,p=5,K=1,n=80,q=1 per-trait B, Bernoulli)",
         "Binomial-logit species-XB", "not exposed by fit_gllvm_speciescov (no hessian kwarg)", true,
         p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, beta_idx_jl, r_beta_idx)
+end
+
+function cell_delta_lognormal()
+    seed = 61
+    Random.seed!(seed)
+    p, K, n = 5, 1, 130
+    β_true = [0.2, -0.1, 0.3, 0.0, -0.2]
+    Λ_true = 0.5 .* parity_loadings_p5k2()[:, 1:K]
+    σ_true = 0.5
+    Z = randn(K, n)
+    η = β_true .+ Λ_true * Z
+    Y = zeros(p, n)
+    for t in 1:p, s in 1:n
+        π = 1 / (1 + exp(-η[t, s]))
+        rand() < π && (Y[t, s] = exp(η[t, s] + σ_true * randn()))
+    end
+
+    t0 = time()
+    fit = fit_delta_lognormal_gllvm(Y; K = K, predictor = :shared, hessian = :observed, iterations = 500)
+    wall_fit = time() - t0
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y; hessian = :observed)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se_delta(Y, K; family = :delta_lognormal)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = findall(==("b_fix"), r.names)
+
+    d = _assemble("delta_lognormal",
+        "test/parity/test_delta_lognormal_parity.jl (seed=61,p=5,K=1,n=130,predictor=:shared)",
+        "Delta-lognormal (shared η, twin fid 12)", "observed (family default)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "Compared quantity is trait intercept block b_fix only; R per-trait sigma_lognormal_delta vs Julia shared σ is a known first-order parameterisation gap — not part of this β SE/vcov/Wald block."
+    d["parameterisation_gap"] = true
+    return d
+end
+
+function cell_delta_gamma()
+    seed = 62
+    Random.seed!(seed)
+    p, K, n = 5, 1, 130
+    β_true = [0.2, -0.1, 0.3, 0.0, -0.2]
+    Λ_true = 0.5 .* parity_loadings_p5k2()[:, 1:K]
+    α_true = 4.0
+    Z = randn(K, n)
+    η = β_true .+ Λ_true * Z
+    Y = zeros(p, n)
+    for t in 1:p, s in 1:n
+        π = 1 / (1 + exp(-η[t, s]))
+        if rand() < π
+            μ = exp(η[t, s])
+            Y[t, s] = rand(Gamma(α_true, μ / α_true))
+        end
+    end
+
+    t0 = time()
+    fit = fit_delta_gamma_gllvm(Y; K = K, predictor = :shared, hessian = :observed, iterations = 500)
+    wall_fit = time() - t0
+    ci = confint(fit, Y; method = :wald)
+    ad = GLLVM._family_ci(fit, Y; hessian = :observed)
+    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    Σ = _safe_inv(H)
+
+    r = r_fit_se_delta(Y, K; family = :delta_gamma)
+    beta_idx_jl = findall(t -> startswith(t, "beta["), ad.names)
+    r_beta_idx = findall(==("b_fix"), r.names)
+
+    d = _assemble("delta_gamma",
+        "test/parity/test_delta_gamma_parity.jl (seed=62,p=5,K=1,n=130,predictor=:shared)",
+        "Delta-Gamma (shared η, twin fid 13)", "observed (family default; specialised Wc)", false,
+        p, K, n, seed, fit.converged, fit.loglik, wall_fit, r, ci, Σ, ad.names, beta_idx_jl, r_beta_idx)
+    d["note"] = "Compared quantity is trait intercept block b_fix only; R per-trait phi_gamma_delta (CV) vs Julia shared shape α is a known parameterisation gap — not part of this β block."
+    d["parameterisation_gap"] = true
+    return d
 end
 
 # ===========================================================================
