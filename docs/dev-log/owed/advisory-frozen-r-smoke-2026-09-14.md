@@ -1,6 +1,6 @@
 # OWED — advisory Frozen R 0.7.0 family smoke (NB2 + Student-t)
 
-**Status:** **OWED** (tracked debt; non-blocking CI)  
+**Status:** **OWED** (tracked debt; non-blocking CI) · **#323 disposition:** maintainer **waive (B)** — AGENT-APPLIED Ada default 2026-09-15 (≠ green smoke)  
 **Last verified:** 2026-09-14 @ `main` `6c46873a` / `1125eafb`  
 **Prior disposition:** [`advisory-smoke-fail-disposition-2026-09-05.md`](../core070/advisory-smoke-fail-disposition-2026-09-05.md) (#284)
 

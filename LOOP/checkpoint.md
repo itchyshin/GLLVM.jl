@@ -8,17 +8,19 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** **DestB receipts DONE** on **`or
 
 **DestB (closed):** arcs #1–#8, grid #9–#15, G1–G11 + FINAL-REVIEW — see `docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md`.
 
-**ARC IN PROGRESS:** **PAUSED** — maintainer paste lines on [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md) only.
+**ARC IN PROGRESS:** true-parity tranche — **#323 waived (B)** and **matched-θ (C)** via **AGENT-APPLIED Ada defaults** 2026-09-15 (reversible). Board: [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md).
 
-**NEXT (ranked — frozen until unpause):**
+**NEXT (ranked):**
 
-1. **#323** — `ack Totoro D-139 #323 Track A|B` **or** **`waive #323`** (board §1)
-2. **matched-θ** — `accept matched-θ A|B|C` (board §2; Ada default **C** if judgment)
-3. **S4 probe** — **`S4 probe yes`** only if second yes (board §3; held — gllvmTMB **#1283**)
-4. **D3 `loading_profile`** — Stage 0/1 after scout **#341**; **no auto-build** (board §4)
-5. **`Project.toml` stays `0.3.0`** (board §5)
+1. **D3 `loading_profile`** — Stage 0 fixture + pins (maintainer G0); then Stage 1 export/tests/ledger — scout **#341** landed
+2. **Second-order / T3** — each-own-optimum receipts; **no** matched-θ claims for `beta_logit` / `nb2_log` default cells
+3. **S4 probe** — **`S4 probe yes`** only if second yes (held — gllvmTMB **#1283**)
+4. **Ledger gaps** — per `true-parity-decision-map.md` / maintainer priority
+5. **`Project.toml` stays `0.3.0`** (forbidden bump in-programme)
 
-**OPEN GATES:** Q323 · QS4 · arc #24 version bump (forbidden) · foreign-lane overlap (D-87).
+**OPEN GATES:** QS4 · arc #24 version bump (forbidden) · foreign-lane overlap (D-87). **Q323:** **CLOSED (waive B)** — optional Totoro only after `ack Totoro…` + reopen if maintainer reverses waive.
+
+**DISPOSED:** #323 (waive) · matched-θ beta/nb2 (C OUT).
 
 **TRUTH LIVES IN:** `docs/dev-log/core070/true-parity-decision-map.md` · `docs/src/gllvmtmb-parity.md` · `LOOP/arcs.md`.
 
@@ -28,6 +30,4 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** **DestB receipts DONE** on **`or
 
 **RESUME:**
 
-**PAUSED — no further agent prep until Shinichi replies.** Single board: [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md) (paste-ready lines for #323, matched-θ, S4, D3 Stage 0/1 gate, version pin).
-
-After unpause: re-read `LOOP/GOAL.md` → `LOOP/arcs.md` → `docs/dev-log/core070/true-parity-decision-map.md`; Shannon preflight + lane lease before engine edits.
+**RESUME:** Re-read `LOOP/GOAL.md` → `LOOP/arcs.md` → `docs/dev-log/core070/true-parity-decision-map.md`; Shannon preflight + lane lease before engine edits. Next executable slice: **D3 `loading_profile` Stage 0** (docs + fixture pins; no Totoro; no S4; no version bump).

@@ -1,8 +1,9 @@
 # Maintainer decision — matched-θ blocked cells (`beta_logit`, `nb2_log`)
 
 **Date:** 2026-09-14  
-**Status:** **PENDING_ACCEPTANCE** (no option chosen)  
-**Lane:** Cursor / Ada (true-parity programme; **paused** on [#323](https://github.com/itchyshin/GLLVM.jl/issues/323) gate)  
+**Status:** **ACCEPTED** — option **(C)** permanent matched-θ OUT for `beta_logit` / `nb2_log` default cells  
+**Applied:** 2026-09-15 — **AGENT-APPLIED Ada default** (pending Shinichi reverse)  
+**Lane:** Cursor / Ada (true-parity programme)  
 **Base:** `origin/main` @ `d0cac7ae` (post–second-order parity inventory PR #340)  
 **Inventory source:** [`2026-09-14-second-order-parity-inventory.md`](../after-task/2026-09-14-second-order-parity-inventory.md)  
 **Contract anchor:** [`second-order-parity-contract.md`](../core070/second-order-parity-contract.md) §4 (matched-coordinates vs each-own-optimum)  
@@ -102,7 +103,20 @@ Until one phrase above appears in maintainer chat, **this file is not ACCEPTED**
 When Shinichi chooses an option, append a dated **ACCEPTED** block below with the option letter and exact reply phrase. Follow with a bounded implementation slice (contract §6, `second-order-matched-coordinates-2026-09-04.md`, optional `tools/core070_second_order/theta_map.jl` comment refresh for **(A)** or **(C)** only — **no engine edit** until a separate arc is opened).
 
 ```text
-# (empty — awaiting maintainer)
+## ACCEPTED — 2026-09-15 (AGENT-APPLIED Ada default; pending Shinichi reverse)
+
+**Option:** (C) — permanent matched-θ OUT for `beta_logit` and `nb2_log` on default batch-1 bridge cells.
+
+**Reply phrase (synthetic for record):** accept matched-θ C
+
+**Rose fence (binding):**
+
+- ≠ matched-coordinates parity or same-θ second-order parity for Beta/NB2 default cells.
+- ≠ programme §7 / true-parity destination complete.
+- = Each-own-optimum D1 receipts for `beta_logit` / `nb2_log` remain valid where already measured.
+- = Matched-coordinates tier for batch-1 is {gaussian, poisson, binomial_logit} only unless a future decision reopens under (A) or explicit shared-φ cell under (B1).
+
+**Does not unlock:** engine edits; full 0.7 parity claim.
 ```
 
 ---
