@@ -19864,3 +19864,7 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 
 - Added TruncatedPoissonFit to `_FamilyFit`; removed orphan Lognormal `_family_ci` docstring (Documenter `:missing_docs`).
 - Tests: lognormal 15/15, truncpois 8/8.
+
+## 2026-09-15 — TruncatedNegBin2Fit Wald `_CIFit`
+
+- Added TruncatedNegBin2Fit to `_FamilyFit` + `_family_ci`; test 12/12; holdouts PARTIAL.
