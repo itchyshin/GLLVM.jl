@@ -1,0 +1,52 @@
+{
+  "schema": "core070-loading-profile-confirmatory-substrate/v1",
+  "status": "STAGE_0_FROZEN",
+  "programme_row": "namespace/export/loading_profile",
+  "ledger_disposition": "BLOCKED_NEEDS_JULIA_SURFACE",
+  "d3_decision": "docs/dev-log/core070/maintainer-decision-set-2026-09-03.md",
+  "scout_after_task": "docs/dev-log/after-task/2026-09-14-loading-profile-d3-surface-scout.md",
+  "claim_boundary": "Stage 0 pins the confirmatory Λ substrate (fixture matrices, free-index oracles, test-only pin/refit helpers). It does not export loading_profile, fit with lambda_constraint, reproduce R grid objectives, bind the ledger row, or establish Julia–R parity on profile curves.",
+  "source_pins": {
+    "test/parity/fixtures/core070_masks_known.R": "5716cd335416ac375affbb32e1369e3bb1cd2471ad08b2a38459f14f7cd09132",
+    "gllvmTMB/R/loading-profile.R": "read-only reference for is_pinned and free_idx semantics"
+  },
+  "julia_artifacts": {
+    "fixtures": "test/parity/fixtures/loading_profile_confirmatory_substrate.jl",
+    "substrate_helpers": "test/parity/loading_profile_confirmatory_substrate.jl",
+    "tests": "test/test_loading_profile_stage0.jl"
+  },
+  "likelihood_oracles": {
+    "contract": "docs/dev-log/core070/masks-known-contract.json",
+    "primary_cases": [
+      "CORE070-MASKS-KNOWN-MASK-B-PINS-PAIRED-CONTROL",
+      "CORE070-MASKS-KNOWN-MASK-B-UPPER-PAIRED-CONTROL",
+      "CORE070-MASKS-KNOWN-MASK-B-ALLFIXED-PAIRED-CONTROL"
+    ],
+    "receipt_tool": "tools/core070_masks_known.jl",
+    "note": "Gaussian nll/gradient at P1/P2 already frozen; Stage 1 profile grid compares objectives via pin-and-refit on this substrate."
+  },
+  "pin_fixtures": {
+    "MASK-B-PINS": {
+      "matrix": "loading_profile_fixture_mask_b_pins()",
+      "free_parameter_count_theta_rr_B": 3,
+      "free_lambda_entries_default_profile": [[2, 1], [2, 2], [3, 1]],
+      "user_pins": {"L11": -0.8, "L32": 0.0}
+    },
+    "MASK-B-UPPER": {
+      "matrix": "loading_profile_fixture_mask_b_upper()",
+      "normalized_equals": "MASK-B-PINS",
+      "ignored_entry": {"L12": 99.0}
+    },
+    "MASK-B-ALLFIXED": {
+      "matrix": "loading_profile_fixture_mask_b_allfixed()",
+      "free_parameter_count_theta_rr_B": 0,
+      "free_lambda_entries_default_profile": []
+    }
+  },
+  "stage_1_fences": [
+    "Maintainer G0 before exporting confirmatory loading_profile",
+    "Remove loading_profile exploratory shim only in a separate maintainer-approved API slice",
+    "Ledger JSON update only after Stage 1 export + paired fixture evidence",
+    "No reclassification using loading_profile_exploratory receipts"
+  ]
+}

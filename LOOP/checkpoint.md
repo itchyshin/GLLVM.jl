@@ -12,7 +12,7 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** **DestB receipts DONE** on **`or
 
 **NEXT (ranked):**
 
-1. **D3 `loading_profile`** — Stage 0 fixture + pins (maintainer G0); then Stage 1 export/tests/ledger — scout **#341** landed
+1. **D3 `loading_profile`** — **Stage 0 landed** (fixture + pin oracles + test helpers; PR pending merge); **Stage 1** export/fitter/ledger needs **maintainer G0** — scout **#341**
 2. **Second-order / T3** — each-own-optimum receipts; **no** matched-θ claims for `beta_logit` / `nb2_log` default cells
 3. **S4 probe** — **`S4 probe yes`** only if second yes (held — gllvmTMB **#1283**)
 4. **Ledger gaps** — per `true-parity-decision-map.md` / maintainer priority
@@ -30,4 +30,4 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** **DestB receipts DONE** on **`or
 
 **RESUME:**
 
-**RESUME:** Re-read `LOOP/GOAL.md` → `LOOP/arcs.md` → `docs/dev-log/core070/true-parity-decision-map.md`; Shannon preflight + lane lease before engine edits. Next executable slice: **D3 `loading_profile` Stage 0** (docs + fixture pins; no Totoro; no S4; no version bump).
+**RESUME:** Re-read `LOOP/GOAL.md` → `LOOP/arcs.md` → `docs/dev-log/core070/true-parity-decision-map.md`; Shannon preflight + lane lease before engine edits. **Stage 0 done** — next: **Stage 1 only after Shinichi G0** (public `loading_profile`, fitter pins, grid receipts, ledger).
