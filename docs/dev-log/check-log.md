@@ -1,3 +1,11 @@
+## 2026-09-15 — Mac Studio lane STARTED note (`cursor/mac-lane-active-note-a0ce`)
+
+- Coordination only: **Mac owns true-parity**; cloud babysit-only for in-flight **#367**
+  (+ #369 MERGED); **do not start new ungated slices from cloud**. Fences unchanged;
+  goal **not** complete. Tip base `origin/main` @ `c00e9345`.
+- Touched: handover, true-parity board, `LOOP/checkpoint.md`, this check-log.
+- Commands: `gh pr view 369 --json state`; `git fetch origin main`.
+
 ## 2026-09-15 — Mac Studio true-parity handover (`cursor/mac-studio-true-parity-handover-a0ce`)
 
 - Docs-only handoff for Shinichi Mac Studio as new true-parity main lane (brain-local

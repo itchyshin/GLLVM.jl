@@ -6,6 +6,10 @@
 
 **Programme goal: NOT complete.** Do not mark `/goal` done. Core070 `FREE=0` ≠ true parity.
 
+### Lane status (2026-09-15 — Mac STARTED)
+
+**Mac Studio owns the true-parity programme.** Cloud is **babysit-only** for in-flight **#367** (Student-t fixed-ν Wald) and any residual docs for this handover (#369 MERGED @ `c00e9345`). **Do not start new ungated slices from cloud.** Fences unchanged (#357 foreign; no Stage 1 / S4 / Totoro / `Project.toml` bump without paste). Goal still **not** complete.
+
 ---
 
 ## START HERE (Mac Studio — new chat)
@@ -145,3 +149,5 @@ gh pr checks 367 -R itchyshin/GLLVM.jl
 ```
 
 **Ada verdict:** Yes — **start Mac Studio as the new true-parity main lane now.** Cloud babysit leftovers are landed or in final merge (#367); goal is **not** complete.
+
+**Update (same day):** Shinichi reports **Mac Studio main true-parity lane has STARTED.** Cloud → babysit-only for in-flight #367 (+ #369 MERGED); **no new ungated cloud slices.**

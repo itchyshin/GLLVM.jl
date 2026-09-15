@@ -1,8 +1,8 @@
 # True-parity programme: maintainer board (2026-09-14, updated 2026-09-15)
 
-STATE: **IN PROGRESS**. #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`); native Wald **PARTIAL** (like Ordinal/Lognormal). Foreign: #357 CONFLICTING (do not edit). Paste-blocked; goal **not** complete.
+STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15); cloud babysit-only for in-flight #367 (+ #369 MERGED @ `c00e9345`); do not start new ungated slices from cloud.** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`), **#369 Mac handover** (`c00e9345`); native Wald **PARTIAL** (like Ordinal/Lognormal). **Cloud babysit:** #367 Student-t fixed-ν. Foreign: #357 CONFLICTING (do not edit). Paste-blocked; goal **not** complete.
 
-Rehydrate: `origin/main` @ `c1842dd69`; gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
+Rehydrate: `origin/main` @ `c00e9345` (#369); gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
 ---
 
@@ -62,6 +62,7 @@ Blocked on D-139 ack before Totoro spend (no separate paste string beyond an exp
 
 ## Agent rules
 
+- **Mac owns true-parity (STARTED 2026-09-15).** Cloud babysit-only for in-flight #367 (+ #369 MERGED); do not start new ungated slices from cloud.
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.
