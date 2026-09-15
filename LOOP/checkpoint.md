@@ -8,22 +8,22 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** **DestB receipts DONE** on **`or
 
 **DestB (closed):** arcs #1–#8, grid #9–#15, G1–G11 + FINAL-REVIEW — see `docs/dev-log/after-task/2026-09-14-destb-goal-completion-audit.md`.
 
-**ARC IN PROGRESS:** true-parity tranche — **#323 waived (B)** and **matched-θ (C)** via **AGENT-APPLIED Ada defaults** 2026-09-15 (reversible). Board: [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md).
+**ARC IN PROGRESS:** true-parity tranche — **#323 waived (B)**, **matched-θ (C)**, **§2 Hessian (A)** via **AGENT-APPLIED Ada defaults** 2026-09-15 (reversible). **PR #347** merged @ `3091fe61`. Board: [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md).
 
 **NEXT (ranked):**
 
 1. **T4 realistic-size second-order** — Totoro grid (Gaussian, Poisson, NB2); D-139 ack before spend (`2026-09-15-true-parity-ledger-gap-inventory.md` rank 1)
-2. **§2 disputed-default decision** — cloglog / Tweedie-grouped Hessian selector (rank 3)
-3. **Delta SO dispersion alignment** — maintainer choice to unblock D1 after wiring batch (`2026-09-15-second-order-delta-followup.md`)
+2. **Delta SO dispersion alignment** — maintainer choice to unblock D1 after wiring batch (`2026-09-15-second-order-delta-followup.md`)
+3. **Docs PR sweep** — merge #350/#351/#353 when Julia+Documenter green (Frozen R advisory FAIL OK)
 4. **D3 Stage 1** — **`G0 Stage 1` only** (Stage 0 on main #345)
 5. **S4 probe** — **`S4 probe yes`** only (held — gllvmTMB **#1283**)
 6. **`Project.toml` stays `0.3.0`** (forbidden bump in-programme)
 
-**DONE this tranche:** ledger gap inventory @ `2026-09-15-true-parity-ledger-gap-inventory.md`; Delta SO wiring batch @ `2026-09-15-second-order-delta-followup.md` (**PARTIAL** — D1 fail measured, parameterisation gap).
+**DONE this tranche:** ledger gap inventory; Delta SO wiring (#347 @ `3091fe61`); **§2 Hessian (A)** + cloglog receipt promotion @ `2026-09-15-second-order-hessian-s2-pending.md`.
 
 **OPEN GATES:** QS4 · arc #24 version bump (forbidden) · foreign-lane overlap (D-87). **Q323:** **CLOSED (waive B)** — optional Totoro only after `ack Totoro…` + reopen if maintainer reverses waive.
 
-**DISPOSED:** #323 (waive) · matched-θ beta/nb2 (C OUT).
+**DISPOSED:** #323 (waive) · matched-θ beta/nb2 (C OUT) · §2 Hessian cloglog/Tweedie-default (A observed).
 
 **TRUTH LIVES IN:** `docs/dev-log/core070/true-parity-decision-map.md` · `docs/src/gllvmtmb-parity.md` · `LOOP/arcs.md`.
 

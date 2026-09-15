@@ -1,6 +1,6 @@
 # True-parity programme — maintainer board (2026-09-14, updated 2026-09-15)
 
-**STATE:** **IN PROGRESS** — #323 and matched-θ **disposed** via **AGENT-APPLIED Ada defaults** (reversible until Shinichi reverses). **Ledger gap inventory done** (item 3 — [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md); **≠** closing gaps). **Still open:** S4 probe, D3 Stage **1** only (Stage **0** on main #345), **`Project.toml` `0.3.0`**.
+**STATE:** **IN PROGRESS** — #323, matched-θ **(C)**, and **§2 Hessian (A)** disposed via **AGENT-APPLIED Ada defaults** (reversible until Shinichi reverses). **Ledger gap inventory done** (item 3). **PR #347 merged** @ `3091fe61`. **Still open:** S4 probe, D3 Stage **1**, **`Project.toml` `0.3.0`**.
 
 **Rehydrate:** `origin/main` · frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86` · **`Project.toml` stays `0.3.0`**.
 
@@ -12,8 +12,9 @@
 |------|---------|----------|
 | **[#323](https://github.com/itchyshin/GLLVM.jl/issues/323)** Frozen R smoke | **Waived (B)** — advisory CI stays non-gating | [`2026-09-14-advisory-frozen-r-smoke-323-pending.md`](decisions/2026-09-14-advisory-frozen-r-smoke-323-pending.md) **ACCEPTED** |
 | **matched-θ** `beta_logit`, `nb2_log` | **Permanent OUT (C)** — each-own-optimum only | [`2026-09-14-matched-theta-beta-nb2-pending.md`](decisions/2026-09-14-matched-theta-beta-nb2-pending.md) **ACCEPTED** |
+| **§2 Hessian** Binomial/cloglog + Tweedie grouped | **Ratify `:observed` (A)** — receipts + defaults signed | [`2026-09-15-second-order-hessian-s2-pending.md`](decisions/2026-09-15-second-order-hessian-s2-pending.md) **ACCEPTED** |
 
-**Reverse:** Shinichi may paste `reopen #323` or `reject matched-θ C` (or choose A/B) in chat; agents must revert decision records and board on explicit reverse only.
+**Reverse:** Shinichi may paste `reopen #323`, `reject matched-θ C`, or **`reject §2 hessian A`** (or `accept §2 hessian B|C`) in chat; agents must revert decision records and board on explicit reverse only.
 
 ---
 

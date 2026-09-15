@@ -71,32 +71,21 @@ marginal's log-det is `hessian::Symbol`, generic default `:fisher`
   GP-1... a minority of cells derail badly under the observed weight"*
   (`src/families/laplace.jl:332`).
 
-- **Binomial-cloglog — STALE IN THE BRIEF, flagged not resolved.** The
-  2026-08-28 batch kept it Fisher (*"cloglog stays Fisher — intrinsic
-  saturation pathology"*,
-  `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md:10`; still what
-  `docs/src/gllvmtmb-parity.md:229-232` says). But
-  `src/families/binomial.jl:95` currently reads `_default_hessian(::Binomial,
-  ::CLogLogLink) = :observed`, dated *"CONFIRMED (2026-09-01, maintainer
-  decisions round 1, item 2)... matches R to 7.4e-12... `:fisher` was a
-  genuine Julia-side defect"* (`src/families/binomial.jl:74-90`); the
-  round-1 note itself only authorized *opening* the investigation
-  (`docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md:8-10`).
-  Cannot pick a side here: either cloglog is already repaired (drop from
-  exclusions, update `gllvmtmb-parity.md` under the cascade rule) or the
-  flip needs reverting. Excluded as a precaution until signed; receipt
-  reason must say "disputed default" (§5), not restate 2026-08-28 as
-  settled.
+- **Binomial-cloglog — ACCEPTED (A), 2026-09-15.** Twin-default selector is
+  **`:observed`** (`_default_hessian(::Binomial, ::CLogLogLink) = :observed`,
+  `src/families/binomial.jl`; decision
+  [`2026-09-15-second-order-hessian-s2-pending.md`](../decisions/2026-09-15-second-order-hessian-s2-pending.md)).
+  Each-own-optimum receipt **`binomial_cloglog`** may be cited with
+  `hessian_selector_disputed=false`. **≠** programme §7 complete.
 
-- **Tweedie grouped — SAME STALENESS.** Brief says "no selector," matching
-  the historical defect (`src/families/grouped_dispersion.jl:1596-1602`),
-  but current HEAD already has `hessian::Symbol = :observed`
-  (`src/families/grouped_dispersion.jl:1630-1633`, *"this grouped route now
-  reduces EXACTLY to the shared route under ITS default"*, lines
-  1611-1613). Flag identically; exclude pending resolution.
+- **Tweedie grouped — ACCEPTED (A), 2026-09-15.** Default **`hessian =
+  :observed`** on `fit_tweedie_gllvm_grouped` / grouped marginal
+  (`src/families/grouped_dispersion.jl`). First-order twin receipts stand;
+  **second-order Wald** for `TweedieGroupedFit` remains **OUT** until `_CIFit`
+  dispatch exists (holdout table unchanged).
 
-Net: only **GP-1** is confirmed current-HEAD Fisher-retained; cloglog and
-Tweedie-grouped read as already flipped — surfaced, not resolved.
+Net: **GP-1** remains the only Fisher-retained family on the public Laplace
+path by decision; cloglog and Tweedie-grouped defaults are **signed observed**.
 
 ## 3. Parameter alignment
 
@@ -177,7 +166,7 @@ Additions to the cell TOML (`test/parity/core070_receipts.jl:172-186`,
 | Field | Type | Writer | Notes |
 |---|---|---|---|
 | `hessian_selector` | string | Julia | `"observed"`\|`"fisher"`, per `_default_hessian` |
-| `hessian_selector_disputed` | bool | Julia | `true` for cloglog/Tweedie-grouped until §2 resolves |
+| `hessian_selector_disputed` | bool | Julia | `false` when §2 (A) ratifies family default; else `true` |
 | `matched_coordinates` | bool | Julia | both engines' Hessians at the same θ, vs each-own-optimum |
 | `se_max_relative_delta` | float | Julia | max `\|SE_jl−SE_r\|/SE_r` |
 | `vcov_frobenius_relative_delta` | float | Julia | `‖Σ_jl−Σ_r‖_F/‖Σ_r‖_F` |
@@ -201,11 +190,10 @@ cleanly: Gaussian has no curvature choice; Poisson-log/Binomial-logit are
 canonical (Fisher≡observed exactly, CLAUDE.md "Status"); Beta-logit/NB2-log
 are the two families explicitly flipped to `:observed` on curvature
 evidence (`docs/src/gllvmtmb-parity.md:238-247`, "2026-08-27... decision
-A"). None touches the disputed cloglog/Tweedie-grouped defaults or the
-Student-t/GP-1 boundary issues.
+A"). Cloglog/Tweedie-grouped defaults signed **(A)** 2026-09-15; GP-1 and
+Student-t boundary issues unchanged.
 
-**Need a decision first:** Binomial-cloglog, Tweedie (shared+grouped) —
-blocked on §2's disputed default; GP-1 — Fisher-retained by standing
+**Still blocked (not §2):** GP-1 — Fisher-retained by standing
 decision, needs a ruling on whether "parity" means comparing against a
 TMB Fisher alternative (if one exists) or is declared out of scope
 alongside the existing logLik exclusion; Student-t — ν boundary repair
