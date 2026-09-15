@@ -12,12 +12,17 @@ GOAL: see [`LOOP/GOAL.md`](GOAL.md). **STATE:** **DestB receipts DONE** on **`or
 
 **NEXT (ranked):**
 
-1. **T4 realistic-size second-order** — Totoro grid (Gaussian, Poisson, NB2); D-139 ack before spend (`2026-09-15-true-parity-ledger-gap-inventory.md` rank 1)
-2. **Delta SO dispersion alignment** — maintainer choice to unblock D1 after wiring batch (`2026-09-15-second-order-delta-followup.md`)
-3. **Docs PR sweep** — merge #350/#351/#353 when Julia+Documenter green (Frozen R advisory FAIL OK)
-4. **D3 Stage 1** — **`G0 Stage 1` only** (Stage 0 on main #345)
-5. **S4 probe** — **`S4 probe yes`** only (held — gllvmTMB **#1283**)
-6. **`Project.toml` stays `0.3.0`** (forbidden bump in-programme)
+1. **Merge** #358/#1284/#356 when Julia+Documenter green (Frozen R advisory OK); rematch #355 after #359; **do not edit #357** (foreign)
+2. **T4 realistic-size second-order** — Totoro grid; D-139 ack before spend
+3. **Delta SO dispersion alignment** — paste `accept delta dispersion A`
+4. **SO holdouts after #356** — Lognormal / Truncated / OrdinalPerTrait `_CIFit` (avoid confint_family overlap with #356)
+5. **D3 Stage 1** — `G0 Stage 1` only
+6. **S4 probe** — `S4 probe yes` only
+7. **`Project.toml` stays `0.3.0`**
+
+**IN FLIGHT:** #356 TweedieGrouped Wald · #358/#1284 arcG disposition · #355 aliases · #357 bridge (foreign)
+
+**DONE this tranche:** ledger gap inventory; Delta SO wiring (#347 @ `3091fe61`); §2 Hessian (A); twin-bridge inventory (#353); arcG disposition ACCEPTED (merge pending).
 
 **DONE this tranche:** ledger gap inventory; Delta SO wiring (#347 @ `3091fe61`); **§2 Hessian (A)** + cloglog receipt promotion @ `2026-09-15-second-order-hessian-s2-pending.md`.
 
