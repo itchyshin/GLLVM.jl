@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## 2026-09-14 — D3 `loading_profile` surface scout (`docs/loading-profile-d3-surface-scout-20260914`)
 
 - Read-only after-task:
@@ -7,6 +8,8 @@
   ledger JSON edit; **#323 not waived**; T5 row 8 stays `BLOCKED_NEEDS_JULIA_SURFACE`.
   Branch separate from matched-θ / second-order inventory PR.
 
+=======
+>>>>>>> 339c9a1b (docs: check-log entry for matched-θ disposition draft)
 ## 2026-09-14 — matched-θ disposition draft (`docs/matched-theta-beta-nb2-pending`)
 
 - PENDING_ACCEPTANCE decision only:
