@@ -93,12 +93,15 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **True-parity continuation (2026-09-15).** `origin/main` @ `deab192f` after
-  #362/#356/#361/#355/#364/#365. Multinomial FE Wald `_CIFit` on lane tip
-  (`docs/dev-log/after-task/2026-09-15-multinomial-wald-ci.md`). #357 foreign
-  CONFLICTING — do not edit. Still paste-gated: S4, D3 Stage 1, Totoro T4,
-  Delta dispersion A; `Project.toml` stays `0.3.0`. Goal **not** complete.
-  Board: `docs/dev-log/2026-09-14-true-parity-pending-board.md`.
+- **True-parity continuation (2026-09-15).** `origin/main` @ `9d300783c` after
+  #362/#356/#361/#355/#364/#365/#366/#368/#369/#370/#371/#367. Multinomial FE
+  Wald `_CIFit` MERGED (#366, `c1842dd6`); Student-t fixed-ν Wald MERGED (#367,
+  `9d300783c`) → PARTIAL (native Wald). Mac Studio owns the programme lane
+  (#369 handover; #370/#371 goal+ultra-plan). #357 foreign CONFLICTING — do not
+  edit. Still paste-gated: S4, D3 Stage 1, Totoro T4, Delta dispersion A;
+  `Project.toml` stays `0.3.0`. Goal **not** complete. Board:
+  `docs/dev-log/2026-09-14-true-parity-pending-board.md`. Handover:
+  `docs/dev-log/handover/2026-09-15-mac-studio-true-parity-handover.md`.
 
 - **HANDED OVER to a single Cursor lane holding BOTH repos (2026-09-04).** GLLVM.jl `main`
   `4d57cb29` (CI 8/8 shards + Documenter green, 0 open PRs); gllvmTMB `main` `72ed68b5`
