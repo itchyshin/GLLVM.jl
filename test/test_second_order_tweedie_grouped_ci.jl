@@ -1,5 +1,5 @@
-# Second-order follow-up: TweedieGroupedFit Wald `_family_ci` + fixed-power SO cell.
-# Clears the holdout `_CIFit` gap; wires `r_fit_se_tweedie` + `tweedie_fixed` cell.
+# Second-order follow-up: TweedieGroupedFit / TweediePerTraitPowerFit Wald + SO cells.
+# Fixed / shared / species estimated-power cells (option A: β/`b_fix` only).
 # R↔Julia live Δ only when GLLVM_PARITY_TESTS=1. ≠ programme §7.
 
 using GLLVM, Test, Random
@@ -56,14 +56,42 @@ using GLLVM, Test, Random
         @test length(ad.θ) == GLLVM._nparams(fit) - 1  # minus free power coordinate
     end
 
-    @testset "R paired tweedie_fixed / tweedie_shared cells (live Δ)" begin
+    @testset "species estimated power: power plug-in; φ still in θ" begin
+        Random.seed!(184)
+        p, K, n = 4, 1, 70
+        β = 0.2 .* randn(p)
+        Λ = 0.3 .* randn(p, K)
+        φ = fill(0.95, p)
+        pw = 1.5
+        Z = randn(K, n)
+        μ = exp.(β .+ Λ * Z)
+        Y = zeros(p, n)
+        for t in 1:p, s in 1:n
+            Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ[t], pw, Random.default_rng())
+        end
+        fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :species, iterations = 200)
+        @test fit isa GLLVM.TweediePerTraitPowerFit
+        @test all(x -> 1.0 < x < 2.0, fit.power)
+        ad = GLLVM._family_ci(fit, Y)
+        @test length(ad.θ) == p + GLLVM.rr_theta_len(p, K) + length(fit.φ)
+        @test length(ad.θ) == GLLVM._nparams(fit) - p  # minus free per-trait powers
+        @test count(startswith("beta["), ad.names) == p
+        @test count(startswith("phi["), ad.names) == length(fit.φ)
+        ci = confint(fit, Y; method = :wald, parm = "beta")
+        @test length(ci.term) == p
+        fin = isfinite.(ci.se)
+        @test count(fin) ≥ 2
+        @test all(ci.lower[fin] .< ci.estimate[fin] .< ci.upper[fin])
+    end
+
+    @testset "R paired tweedie_fixed / shared / species cells (live Δ)" begin
         if get(ENV, "GLLVM_PARITY_TESTS", "0") != "1"
             @test_skip "set GLLVM_PARITY_TESTS=1 with R + gllvmTMB for live second-order Δ"
         else
             using RCall
             include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "common.jl"))
             include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "cells.jl"))
-            for cell_id in ("tweedie_fixed", "tweedie_shared")
+            for cell_id in ("tweedie_fixed", "tweedie_shared", "tweedie_species")
                 d = run_one_cell(cell_id)
                 @test get(d, "skip_reason", nothing) === nothing
                 @test get(d, "parameterisation_gap", true) == false
@@ -72,6 +100,9 @@ using GLLVM, Test, Random
                 if cell_id == "tweedie_shared"
                     @test d["reference_constraint_adapter"] === true
                     @test d["n_power_free"] == 1
+                elseif cell_id == "tweedie_species"
+                    @test d["reference_constraint_adapter"] === false
+                    @test d["n_power_free"] == d["p"]
                 end
             end
             # Do not assert contract §4 D1 here — record live Δ; promote only after smoke receipt.

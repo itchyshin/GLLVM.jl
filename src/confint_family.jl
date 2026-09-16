@@ -38,7 +38,7 @@ const _TwoPartFit = Union{DeltaLogNormalFit, DeltaGammaFit, HurdlePoissonFit,
 
 # Everything the unified confint(fit, Y; method=…) entry accepts.
 const _GroupedDispersionFit = Union{NBGroupedFit, NB1GroupedFit, BetaGroupedFit, GammaGroupedFit,
-                                    BetaBinomialGroupedFit, TweedieGroupedFit}
+                                    BetaBinomialGroupedFit, TweedieGroupedFit, TweediePerTraitPowerFit}
 const _GroupedDispersionCovFit = Union{NBGroupedCovFit, NB1GroupedCovFit, BetaGroupedCovFit, GammaGroupedCovFit,
                                        BetaBinomialGroupedCovFit}
 
@@ -1173,7 +1173,7 @@ end
 # Mirrors `TweedieFit`: the CI layer profiles only the group φ's on the log
 # scale; `fit.power` is fixed for Hessian / profile / bootstrap. Estimated
 # shared power on the fitter is therefore treated as a plug-in (same contract
-# as shared-φ Tweedie). `TweediePerTraitPowerFit` stays out of `_CIFit`.
+# as shared-φ Tweedie). Species estimated power: see `TweediePerTraitPowerFit`.
 function _family_ci(fit::TweedieGroupedFit, Y::AbstractMatrix;
                     mask = nothing,
                     newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
@@ -1227,6 +1227,63 @@ function _family_ci(fit::TweedieGroupedFit, Y::AbstractMatrix;
     names = _grouped_dispersion_names(p, K, "phi", G)
     kinds = vcat(fill(:linear, p + rr), fill(:log, G))
     # No T14 `dispersion_boundary` field on TweedieGroupedFit yet — treat all φ free.
+    boundary = falses(p + rr + G)
+    return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
+end
+
+# --- Tweedie per-trait estimated power (option A: power vector plug-in) -----
+# θ = [β; pack(Λ); log φ_g]. Each `fit.power[t]` is held at the MLE for
+# Hessian / profile / bootstrap (same plug-in contract as shared-power
+# TweedieGroupedFit). Option B (ξ in θ) is a separate engine slice.
+function _family_ci(fit::TweediePerTraitPowerFit, Y::AbstractMatrix;
+                    mask = nothing,
+                    newton_maxiter::Integer = 100, newton_tol::Real = 1e-9, kwargs...)
+    p, K = size(fit.Λ); n = size(Y, 2); rr = rr_theta_len(p, K)
+    link = fit.link; group = collect(Int, fit.group); G = length(fit.φ)
+    pw = collect(Float64, fit.power)
+    length(pw) == p || throw(ArgumentError(
+        "TweediePerTraitPowerFit CI expects length(power)=p=$p; got $(length(pw))"))
+    Yf = max.(Float64.(Y), 0.0)
+    M = _ci_mask(mask, Y)
+    θ = vcat(fit.β, pack_lambda(fit.Λ), log.(fit.φ))
+    nll = function (θv)
+        β = θv[1:p]
+        Λ = unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        φg = exp.(θv[(p + rr + 1):(p + rr + G)])
+        φvec = [φg[group[t]] for t in 1:p]
+        v = try
+            -tweedie_grouped_marginal_loglik_laplace(Yf, Λ, β, φvec, pw; link = link,
+                                                     mask = M, hessian = fit.hessian,
+                                                     maxiter = newton_maxiter,
+                                                     tol = newton_tol)
+        catch
+            return 1e12
+        end
+        return isfinite(v) ? v : 1e12
+    end
+    simulate = function (rng)
+        Yb = Matrix{Float64}(undef, p, n)
+        @inbounds for s in 1:n
+            η = fit.β .+ fit.Λ * randn(rng, K)
+            for t in 1:p
+                μ = max(linkinv(link, _clamp_eta(η[t])), 1e-12)
+                Yb[t, s] = _rand_tweedie(rng, μ, fit.φ[group[t]], pw[t])
+            end
+        end
+        return Yb
+    end
+    refit = function (Yb)
+        fb = try
+            fit_tweedie_gllvm_grouped(Yb; K = K, group = group, power_group = :species,
+                                      link = link, mask = M, hessian = fit.hessian)
+        catch
+            return nothing
+        end
+        fb isa TweediePerTraitPowerFit || return nothing
+        return vcat(fb.β, pack_lambda(fb.Λ), log.(fb.φ))
+    end
+    names = _grouped_dispersion_names(p, K, "phi", G)
+    kinds = vcat(fill(:linear, p + rr), fill(:log, G))
     boundary = falses(p + rr + G)
     return _FamilyCI(θ, nll, names, kinds, simulate, refit, boundary)
 end

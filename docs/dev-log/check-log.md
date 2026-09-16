@@ -1,3 +1,13 @@
+## 2026-09-16 — Tweedie estimated species-power SO cell (`cursor/tweedie-species-power-so-a0ce`)
+
+- Option A: `TweediePerTraitPowerFit` ∈ `_CIFit` + `cell_tweedie_species` +
+  `r_fit_se_tweedie_species` (public `tweedie()` + sdreport) + smoke.
+  Compare `b_fix` / `beta[]` only; Julia Wald keeps the per-trait power plug-in.
+  From `origin/main` @ `67247f520` (#378). #357 untouched. Project.toml stays 0.3.0.
+- After-task: `docs/dev-log/after-task/2026-09-16-tweedie-species-power-so.md`.
+- Focused **22/0/1** (1 `@test_skip` R cell). Commands:
+  `julia --project=. test/test_second_order_tweedie_grouped_ci.jl`.
+
 ## 2026-09-16 — Tweedie estimated shared-power SO cell (`feat/tweedie-shared-power-so-20260916`)
 
 - Option A: `cell_tweedie_shared` + `r_fit_se_tweedie_shared` (adapter + sdreport) + smoke.

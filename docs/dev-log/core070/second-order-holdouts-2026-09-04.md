@@ -6,7 +6,7 @@ first second-order batch claim** until the listed blocker clears.
 | Holdout | Blocker | Disposition |
 |---|---|---|
 | Binomial-cloglog | ~~§2 disputed~~ **ACCEPTED (A) 2026-09-15** — `:observed` ratified | Each-own-optimum D1 promotable (`binomial_cloglog`); ≠ §7 |
-| Tweedie shared + grouped | Default `:observed` ratified (A); **`TweedieGroupedFit` ∈ `_CIFit`** + fixed-power `tweedie_fixed` + estimated-shared `tweedie_shared` (option A, β/`b_fix` only; 2026-09-16) | First-order parity exists; species estimated-power SO cell still not attempted |
+| Tweedie shared + grouped | Default `:observed` ratified (A); **`TweedieGroupedFit` ∈ `_CIFit`** + fixed-power `tweedie_fixed` + estimated-shared `tweedie_shared` + estimated-species `tweedie_species` (option A, β/`b_fix` only; 2026-09-16) | First-order parity exists; all three power contracts have SO cells (power plug-in on Julia Wald) |
 | GP-1 | Fisher-retained; parity vs TMB Fisher alternative unsettled | Out of scope pending ruling |
 | Student-t fixed-ν | First-order logLik parity; native Wald in `_FamilyFit` (2026-09-15, fixed ν only; #367) | Native fixed-ν Wald + paired SO cell `studentt_fixed_nu` (2026-09-16; β[] block) |
 | Student-t free ν | Nonlinear boundary; Wald SE pathology (panel finding 4) | Excluded; `_family_ci` throws ArgumentError |
@@ -38,7 +38,7 @@ NB2-log — covered by toy 20-cell grid (superset) and merged-tip refresh
 | Holdout | Status | Reason (measured) | Evidence |
 |---|---|---|---|
 | Binomial-cloglog | **PARTIAL (SO promoted)** | §2 **(A)** 2026-09-15; `hessian_selector_disputed=false`; SE max rel Δ ≈ 2.1e-5 each-own-optimum | `docs/dev-log/core070/second-order-batch-out/binomial_cloglog.json` |
-| Tweedie shared + grouped | PARTIAL (SO wiring + `tweedie_fixed` + `tweedie_shared`) / PARTIAL (1st) | §2 default signed; Wald + `tweedie_fixed`; estimated shared option A cell 2026-09-16 (β/`b_fix` only; power plug-in). Species SO still open. ≠ D1 until smoke JSON | `test/test_second_order_tweedie_grouped_ci.jl`; `tools/core070_second_order/{common,cells}.jl` |
+| Tweedie shared + grouped | PARTIAL (SO wiring + `tweedie_fixed` + `tweedie_shared` + `tweedie_species`) / PARTIAL (1st) | §2 default signed; Wald + fixed/shared/species estimated-power cells 2026-09-16 (β/`b_fix` only; power plug-in). ≠ D1 until smoke JSON | `test/test_second_order_tweedie_grouped_ci.jl`; `tools/core070_second_order/{common,cells}.jl` |
 | GP-1 | OUT | Fisher-retained on Julia side; no ruling on whether R parity compares against a TMB Fisher alternative | Contract §6 lines 205–207; `GP1Fit` in `_CIFit` but no paired SO cell |
 | Student-t ν (free) | OUT | Wald SE pathology at ν boundary (§3); `_family_ci` rejects `estimated_nu=true`; no SO pairing | Contract §3 lines 120–123; `test/test_second_order_studentt_ci.jl` |
 | Student-t fixed-ν | **PARTIAL (native Wald + SO cell)** | `StudentTFit` Wald (#367); paired `studentt_fixed_nu` cell (species σ, fixed ν; live Δ se_rel ≈ 3e-6); bridge untouched | `test/test_second_order_studentt_ci.jl`; `tools/core070_second_order/cells.jl` |

@@ -230,7 +230,7 @@ end
 
 # Tweedie fixed-power (parity with Julia `fit_tweedie_gllvm_grouped(...; power=p0)`).
 # Estimated shared power: `r_fit_se_tweedie_shared` (adapter + sdreport).
-# Species estimated power stays out until its own SO cell.
+# Estimated species power: `r_fit_se_tweedie_species` (public `tweedie()` + se=TRUE).
 function r_fit_se_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Real)
     (1.0 < p_fixed < 2.0) || throw(ArgumentError(
         "r_fit_se_tweedie: p_fixed must be in (1, 2); got $p_fixed"))
@@ -344,6 +344,49 @@ function r_fit_se_tweedie_shared(y::AbstractMatrix, K::Integer)
         wall_fit = rcopy(Float64, R"wall_fit"),
         reference_constraint_adapter = true,
         n_power_free = 1,
+    )
+end
+
+# Estimated per-species Tweedie power — public gllvmTMB `tweedie()` default + se=TRUE.
+# Julia-side tools only; no R engine change. n_power_free = p (one logit_p_tweedie per trait).
+function r_fit_se_tweedie_species(y::AbstractMatrix, K::Integer)
+    p, n = size(y)
+    _require_gllvmtmb!()
+    @rput y K p n
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)
+    )
+    fam_obj <- gllvmTMB::tweedie(link = "log")
+    t0 <- Sys.time()
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long, unit = "site", trait = "trait", family = fam_obj,
+        control = gllvmTMBcontrol(n_init = 1L, se = TRUE)
+    )
+    wall_fit <- as.numeric(Sys.time() - t0, units = "secs")
+    r_logL  <- as.numeric(stats::logLik(fit_r))
+    r_obj   <- as.numeric(fit_r$opt$objective)
+    r_conv  <- identical(as.integer(fit_r$opt$convergence), 0L)
+    n_power_free <- sum(grepl("^logit_p_tweedie", names(fit_r$opt$par)))
+    """
+    _run_r_tweedie_sd_extract!()
+    return (
+        logLik = rcopy(Float64, R"r_logL"),
+        objective = rcopy(Float64, R"r_obj"),
+        converged = rcopy(Bool, R"r_conv"),
+        has_sd = rcopy(Bool, R"has_sd"),
+        names = has_sd_names(),
+        par_fixed = has_sd_pf(),
+        cov_fixed = has_sd_cv(),
+        pd_hessian = rcopy(Any, R"pdh"),
+        r_condition_number = rcopy(Any, R"rcond"),
+        wall_fit = rcopy(Float64, R"wall_fit"),
+        reference_constraint_adapter = false,
+        n_power_free = rcopy(Int, R"n_power_free"),
     )
 end
 
