@@ -10,7 +10,7 @@ ARC IN PROGRESS: true-parity tranche. Board: [`docs/dev-log/2026-09-14-true-pari
 Morning wake: [`docs/dev-log/handover/2026-09-16-morning-wake-briefing.md`](../docs/dev-log/handover/2026-09-16-morning-wake-briefing.md).
 Paste packet (canonical): [`docs/dev-log/owed/2026-09-16-post-397-paste-packet.md`](../docs/dev-log/owed/2026-09-16-post-397-paste-packet.md).
 
-Rehydrate (2026-09-16): GLLVM.jl `origin/main` @ **`4df7d2732`** (#401 node24 @ `c33745302`; #357 bridge @ `5ee6dc596`; #391 engine @ `c4dba35c4`); gllvmTMB origin/main @ `02b46cfc8`.
+Rehydrate (2026-09-16): GLLVM.jl `origin/main` @ **`ebde07f00`** (#406; #401 @ `c33745302`; #357 bridge @ `5ee6dc596`; #391 @ `c4dba35c4`); gllvmTMB origin/main @ `02b46cfc8`.
 
 CLOUD STOP: Ungated cloud queue **exhausted** after **#391+#393 through #403** + **#401** @ `c33745302`. No further ungated cloud engine slices. No mergeable leftover ours PRs. Next requires Shinichi pastes only.
 

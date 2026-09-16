@@ -1,3 +1,12 @@
+## 2026-09-16 — Real noon briefing refresh (`docs/noon-real-briefing-20260916`)
+
+- **origin/main** @ **`ebde07f00`** before edit (#406). Replaced false #403 ~06:00 MDT “noon” wake
+  content in `handover/2026-09-16-noon-true-parity-wake-briefing.md`. Board + LOOP tip →
+  **`ebde07f00`**; **#357** documented **MERGED** @ **`5ee6dc596`** on `main` (no revert).
+  **#401** MERGED @ `c33745302`; DRAFT **#399** MERGEABLE rebased; **#402** stay DRAFT. No paste
+  fired. Goal **not** complete.
+- Commands: `git rev-parse origin/main`; `gh pr view 399 401 402 --json state,isDraft,mergeable`.
+
 ## 2026-09-16 — Cloud babysit STOP → Mac handoff (`cursor/cloud-babysit-handoff-4a16`)
 
 - Cloud babysit lane **STOPPING**; Mac owns true-parity programme. Tip:
