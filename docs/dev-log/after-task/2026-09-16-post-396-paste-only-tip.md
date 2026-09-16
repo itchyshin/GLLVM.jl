@@ -1,4 +1,4 @@
-# After-task — post-#396 paste-only STOP tip
+# After-task: post-#396 paste-only STOP tip
 
 **Date:** 2026-09-16  
 **Branch:** `docs/post-396-paste-only-tip-20260916` (docs-only tip)  
