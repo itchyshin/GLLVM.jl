@@ -9,6 +9,14 @@
   check-log, `after-task/2026-09-16-post-399-paste-tip.md`.
 - Commands: `git fetch origin main`; `git rev-parse origin/main`; `gh pr view 399`.
 
+## 2026-09-16 — Post-#357 merge board tip (`docs/post-357-merge-tip-20260916`)
+
+- **#357** squash-merged @ **`5ee6dc596`** (lognormal + truncated-Poisson bridge logLik receipts;
+  rebased head `78a705e2a`). CI on head: Julia **8/8** SUCCESS; Documenter SUCCESS; Frozen R advisory
+  FAIL (OK per #323). Conflict resolved: `docs/dev-log/check-log.md` only. Board + checkpoint tip;
+  paste gates unchanged; goal **IN PROGRESS**.
+- Commands: `git fetch origin`; `gh pr merge 357 --squash`; `gh pr view 357 --json mergeCommit`.
+
 ## 2026-09-16 - Adversarial rehydrate post-#397 (`docs/adversarial-rehydrate-20260916`)
 
 - **origin/main** @ **`8d74f8007`** (#397). Prior "ungated exhausted" claim re-checked: tip SHA
