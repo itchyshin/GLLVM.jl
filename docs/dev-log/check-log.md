@@ -52,6 +52,11 @@
   Goal **not** complete.
 - Commands: `git fetch origin main`; `git rev-parse origin/main`; `rg 'leave.*357|487e2cb74|62091750d' docs LOOP AGENTS.md`.
 
+## 2026-09-16 — Totoro #323 Track A harness DRAFT (paste `ack Totoro D-139 #323 Track A`)
+
+- Branch `feat/totoro-323-track-a-harness-draft-20260916`; DRAFT **[#410](https://github.com/itchyshin/GLLVM.jl/pull/410)** @ `cbf341bbf`. Runbook on `main` (#402).
+- Commands: `julia --project=. test/test_totoro_323_track_a_harness.jl`; `tools/totoro_323_track_a_launcher.sh --gllvm-root .` (expect exit 2).
+
 ## 2026-09-16 — Four DRAFT paste harnesses on canonical packet (`docs/four-draft-paste-packet-20260916`)
 
 - **origin/main** @ **`576cd927d`** before merge. Board + [`owed/2026-09-16-post-402-paste-packet.md`](owed/2026-09-16-post-402-paste-packet.md) list DRAFT **#399/#409/#410/#411** (do not merge without paste). Goal **not** complete.
