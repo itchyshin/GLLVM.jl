@@ -1,3 +1,14 @@
+## 2026-09-16 — Paste-queue STOP tip (`cursor/paste-queue-stop-a0ce`)
+
+- **Cloud ungated exhausted** after **#391** (Tweedie EOO SO @ `c4dba35c4`) + **#393**
+  (board refresh @ `df852f6b2`). Tip records STOP: no Stage 1 / S4 / Totoro / Delta /
+  GP-1 / free-ν / Λ raw / `Project.toml` from cloud. **Next requires Shinichi pastes only**:
+  `accept delta dispersion A` / `G0 Stage 1` / `S4 probe yes` /
+  `ack Totoro D-139 #323 Track A`. #357 leave alone. Goal **not** complete.
+- Files: board, `LOOP/checkpoint.md`, this check-log,
+  `docs/dev-log/after-task/2026-09-16-paste-queue-stop.md`.
+- Commands: `git fetch origin main`; `git rev-parse origin/main`; `gh pr list --state open`.
+
 ## 2026-09-16 — Post-#391 board refresh (`cursor/board-refresh-391-a0ce`)
 
 - **#391** squash-merged @ **`c4dba35c4`** (Mac shared+species Tweedie estimated-power SO;
