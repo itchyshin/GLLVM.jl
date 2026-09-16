@@ -10,9 +10,9 @@ ARC IN PROGRESS: true-parity tranche. Board: [`docs/dev-log/2026-09-14-true-pari
 Morning wake (pre-#391 HOLD snapshot): [`docs/dev-log/handover/2026-09-16-morning-wake-briefing.md`](../docs/dev-log/handover/2026-09-16-morning-wake-briefing.md).
 Paste-queue STOP: [`docs/dev-log/after-task/2026-09-16-paste-queue-stop.md`](../docs/dev-log/after-task/2026-09-16-paste-queue-stop.md).
 
-Rehydrate (2026-09-16): GLLVM.jl `origin/main` @ **`df852f6b2`** (#393 tip; #391 engine @ `c4dba35c4`); gllvmTMB origin/main @ `02b46cfc`.
+Rehydrate (2026-09-16): GLLVM.jl `origin/main` @ **`947656d12`** (#394 tip; #391 engine @ `c4dba35c4`); gllvmTMB origin/main @ `02b46cfc`.
 
-**CLOUD STOP:** Ungated cloud queue **exhausted** after **#391+#393**. No further ungated cloud engine/docs slices. **Next requires Shinichi pastes only.**
+**CLOUD STOP:** Ungated cloud queue **exhausted** after **#391+#393+#394**. No further ungated cloud engine/docs slices. **Next requires Shinichi pastes only.**
 
 NEXT (ranked):
 
@@ -21,14 +21,13 @@ NEXT (ranked):
    - `G0 Stage 1`
    - `S4 probe yes`
    - `ack Totoro D-139 #323 Track A`
-2. **Close #384 without merge** (superseded by #391) — parent/Mac if still OPEN (cloud 403 on close).
-3. #357 bridge receipts: foreign; CONFLICTING (check-log.md only). Do not edit.
+2. #357 bridge receipts: foreign; CONFLICTING (check-log.md only). Do not edit.
 4. T4 realistic-size second-order: Totoro grid; D-139 ack before spend (Mac / paste).
 5. Project.toml stays 0.3.0.
 
-IN FLIGHT: #357 CONFLICTING (foreign). Skipped #363/#314 DRAFT. **#384** close-owed (superseded). Cloud: **paste-gated STOP**.
+IN FLIGHT: #357 CONFLICTING (foreign). Skipped #363/#314 DRAFT. **#384** CLOSED superseded. Cloud: **paste-gated STOP**.
 
-DONE this tranche: (prior SO tranche through #378); **#385–#390** / wake tip **#392** / board refresh **#393**; **#391** Tweedie estimated-power SO (shared+species) @ `c4dba35c4`.
+DONE this tranche: (prior SO tranche through #378); **#385–#394**; **#391** Tweedie estimated-power SO (shared+species) @ `c4dba35c4` → **PARTIAL** (after-task `2026-09-16-tweedie-estimated-power-so.md`).
 
 DISPOSED: #323 waive; matched-θ C; §2 A; arcG Julia-only ACCOUNTED (#358); Rose dual-PR HOLD (#384/#391) → **#391 winner**.
 

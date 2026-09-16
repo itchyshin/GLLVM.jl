@@ -1,3 +1,12 @@
+## 2026-09-16 — Post-#391 CI verify + #384 closed + after-task (`docs/post-391-ci-receipt-20260916`)
+
+- **origin/main** @ **`947656d12`** (#394). Post-#391 CI run **35058263626**: Julia 8/8 success;
+  Documenter green; Frozen R advisory FAIL (OK per #323 waive). **#384** already **CLOSED**
+  superseded. No MERGEABLE green opens (#357 CONFLICTING; #363/#314 DRAFT). Added
+  `after-task/2026-09-16-tweedie-estimated-power-so.md`; board/LOOP tip SHA + #384 state.
+- Commands: `git fetch origin`; `gh run watch 35058263626`; `gh pr view 384 --json state`;
+  `gh pr list --state open`.
+
 ## 2026-09-16 — Paste-queue STOP tip (`cursor/paste-queue-stop-a0ce`)
 
 - **Cloud ungated exhausted** after **#391** (Tweedie EOO SO @ `c4dba35c4`) + **#393**
