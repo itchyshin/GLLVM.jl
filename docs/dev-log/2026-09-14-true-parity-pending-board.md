@@ -2,7 +2,7 @@
 
 STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste.
 
-CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** + **#393 through #398**. Tip @ **`b1c048f2f`** (#398). DRAFT **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** is Option A scaffold only — do **not** mark ready / merge / claim ACCEPTED. Cloud does **not** start Stage 1 / S4 / Totoro / GP-1 / free-ν / Λ raw / `Project.toml` bump. Open: **#357** foreign leave alone; **#363/#314** CONFLICTING DRAFT skip. Next requires Shinichi pastes only. Goal **not** complete.
+CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** + **#393 through #398**. Tip @ **`b1c048f2f`** (#398). DRAFT **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** is Option A scaffold only; do **not** mark ready / merge / claim ACCEPTED. Cloud does **not** start Stage 1 / S4 / Totoro / GP-1 / free-ν / Λ raw / `Project.toml` bump. Open: **#357** foreign leave alone; **#363/#314** CONFLICTING DRAFT skip. Next requires Shinichi pastes only. Goal **not** complete.
 
 Merged SO tranche: #374/#376/#378 + **#391** Tweedie estimated-power SO (shared+species; Rose winner over #384) @ **`c4dba35c4`**. Docs through #398. **#384** **CLOSED** superseded. **Canonical paste table:** [`owed/2026-09-16-post-399-paste-packet.md`](owed/2026-09-16-post-399-paste-packet.md).
 
