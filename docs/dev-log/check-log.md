@@ -16,6 +16,13 @@
   Goal **not** complete.
 - Commands: `git fetch origin main`; `git rev-parse origin/main`; `rg 'leave.*357|487e2cb74|62091750d' docs LOOP AGENTS.md`.
 
+## 2026-09-16 — DRAFT #399 pre-paste deepen (postfit + D1 runbook)
+
+- Branch `feat/delta-dispersion-a-scaffold-20260916` (DRAFT **#399**): vector σ/α postfit,
+  `fit_gllvm(..., disp_group=)` Delta routing, paste-gate ACCEPTED HTML draft, D1 remeasure runbook.
+  **No** ACCEPTED block live; **no** public default coerce; **no** merge. Goal **not** complete.
+- Commands: `julia --project=. test/test_second_order_delta_followup.jl` → **34 pass / 1 broken**.
+
 ## 2026-09-16 — Four DRAFT paste harnesses on canonical packet (`docs/four-draft-paste-packet-20260916`)
 
 - **origin/main** @ **`576cd927d`** before merge. Board + [`owed/2026-09-16-post-402-paste-packet.md`](owed/2026-09-16-post-402-paste-packet.md) list DRAFT **#399/#409/#410/#411** (do not merge without paste). Goal **not** complete.
