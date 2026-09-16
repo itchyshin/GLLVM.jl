@@ -56,14 +56,38 @@ using GLLVM, Test, Random
         @test length(ad.θ) == GLLVM._nparams(fit) - 1  # minus free power coordinate
     end
 
-    @testset "R paired tweedie_fixed / tweedie_shared cells (live Δ)" begin
+    @testset "species estimated power: plug-in θ length + beta Wald" begin
+        Random.seed!(184)
+        p, K, n = 5, 1, 70
+        β = 0.15 .* randn(p)
+        Λ = 0.25 .* randn(p, K)
+        φ = [0.75, 0.85, 0.95, 1.05, 1.15]
+        pw = 1.4 .+ 0.05 .* collect(1:p)
+        Z = randn(K, n)
+        μ = exp.(β .+ Λ * Z)
+        Y = zeros(p, n)
+        for t in 1:p, s in 1:n
+            Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ[t], pw[t], Random.default_rng())
+        end
+        fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :species, iterations = 250)
+        @test fit isa GLLVM.TweediePerTraitPowerFit
+        ad = GLLVM._family_ci(fit, Y)
+        @test length(ad.θ) == p + GLLVM.rr_theta_len(p, K) + length(fit.φ)
+        @test length(ad.θ) == GLLVM._nparams(fit) - p
+        ci = confint(fit, Y; method = :wald, parm = "beta")
+        @test length(ci.term) == p
+        fin = isfinite.(ci.se)
+        @test count(fin) ≥ 3
+    end
+
+    @testset "R paired tweedie_fixed / tweedie_shared / tweedie_species cells (live Δ)" begin
         if get(ENV, "GLLVM_PARITY_TESTS", "0") != "1"
             @test_skip "set GLLVM_PARITY_TESTS=1 with R + gllvmTMB for live second-order Δ"
         else
             using RCall
             include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "common.jl"))
             include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "cells.jl"))
-            for cell_id in ("tweedie_fixed", "tweedie_shared")
+            for cell_id in ("tweedie_fixed", "tweedie_shared", "tweedie_species")
                 d = run_one_cell(cell_id)
                 @test get(d, "skip_reason", nothing) === nothing
                 @test get(d, "parameterisation_gap", true) == false
