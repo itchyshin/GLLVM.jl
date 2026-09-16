@@ -1,8 +1,8 @@
 # True-parity programme: maintainer board (2026-09-14, updated 2026-09-16)
 
-STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`), **#369 Mac handover** (`c00e9345`), **#370 Mac STARTED** (`c459751b`), **#371 goal+ultra-plan** (`9519b3e28`), **#367 Student-t fixed-ν Wald** (`9d300783c`), **#372/#373 SO inventory + post-#367 tips**, **#374 BetaBinomial shared-φ SO cell** (`eeb7e092`) → **PARTIAL (native Wald; φ unpaired)**, **#376 six holdout SO cells** (`47fcb23e`) → **PARTIAL (native Wald + paired toy Δ)**, **#378 Tweedie shared-power SO** (`67247f520`) → **PARTIAL**, **#377/#379/#381 tips**. Foreign: **#357** (do not edit). Paste-blocked remainder; goal **not** complete.
+STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`), **#369 Mac handover** (`c00e9345`), **#370 Mac STARTED** (`c459751b`), **#371 goal+ultra-plan** (`9519b3e28`), **#367 Student-t fixed-ν Wald** (`9d300783c`), **#372/#373 SO inventory + post-#367 tips**, **#374 BetaBinomial shared-φ SO cell** (`eeb7e092`) → **PARTIAL (native Wald; φ unpaired)**, **#376 six holdout SO cells** (`47fcb23e`) → **PARTIAL (native Wald + paired toy Δ)**, **#377/#379 tips** (board correction), **#381 overnight handover**, **#382 morning-briefing refresh**, **#378 Tweedie shared-power SO cell** (`67247f52`) → **PARTIAL (option A; β/`b_fix` block only, power plug-in — not paired)**, **#384 Tweedie species-power SO cell** (this tip) → **PARTIAL (option A)**. Foreign: **#357** (do not edit). Paste-blocked remainder; goal **not** complete.
 
-Rehydrate: `origin/main` tip after `#378` `67247f520` (+ overnight handover `#381`); gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
+Rehydrate: `origin/main` tip after `#378` `67247f52` (on top of `#374`/`#376`/`#379`/`#381`/`#382`); this PR `#384` species estimated-power SO; gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
 ---
 
@@ -40,11 +40,14 @@ Inventory: [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09
 
 ### Second-order follow-up
 
-Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **MultinomialFit** native Wald on main (#366); **Student-t fixed-ν** native Wald on main (#367); **BetaBinomial shared-φ** SO cell on main ([#374](after-task/2026-09-15-betabinomial-shared-phi-so.md), `eeb7e092`); **six holdout paired SO cells** on main ([#376](after-task/2026-09-16-six-holdout-so-cells.md), `47fcb23e`) → **PARTIAL (native Wald + toy Δ)**; **Tweedie shared-power** SO on main ([#378](after-task/2026-09-16-tweedie-shared-power-so.md), `67247f520`); **Tweedie species-power** SO cell (this tip / follow-on PR) → **PARTIAL (native Wald + toy Δ; option A)**. Bridge CI lift still waits on #357.  
+Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **MultinomialFit** native Wald on main (#366); **Student-t fixed-ν** native Wald on main (#367); **BetaBinomial shared-φ** SO cell on main ([#374](after-task/2026-09-15-betabinomial-shared-phi-so.md), `eeb7e092`); **six holdout paired SO cells** on main ([#376](after-task/2026-09-16-six-holdout-so-cells.md), `47fcb23e`) → **PARTIAL (native Wald + toy Δ)**; **Tweedie shared-power SO cell** on main ([#378](after-task/2026-09-16-tweedie-shared-power-so.md), `67247f52`) → **PARTIAL (option A; `b_fix`/β block only, power plug-in, not jointly estimated — not paired in live Δ; contract §4 D1 not claimed)**; **Tweedie species-power SO cell** ([#384](after-task/2026-09-16-tweedie-species-power-so.md), this tip) → **PARTIAL (option A; `b_fix`/β block only, power plug-in)**. Bridge CI lift still waits on #357.  
 Delta SO species dispersion: still OUT until paste `accept delta dispersion A`.  
 BB shared-φ: **PARTIAL** (native Wald + `betabinomial_shared` toy cell; **β block only** — per-trait φ on R not paired in live Δ).  
 Six-family holdout live-Δ: **MERGED** (#376) — Lognormal / OrdinalPerTrait / TruncPois / TruncNB2 / Multinomial FE / Student-t fixed-ν paired toy cells (β[] blocks; TruncNB2 large se_rel documented as shared-`r` vs R per-trait φ).  
-Tweedie estimated power: shared (#378) + species (this slice) SO cells attempted (option A). Still OUT: GP-1 ruling / Student-t free ν / Λ raw.
+Tweedie shared-power: **MERGED** (#378) — `cell_tweedie_shared`, option A (plug-in power, not jointly estimated); `b_fix`/β block only.  
+Tweedie species estimated-power: **this PR (#384)** — `TweediePerTraitPowerFit` / `cell_tweedie_species`, option A.  
+Still OUT / open: GP-1 ruling / Student-t free ν / Λ raw / Tweedie **estimated** (jointly-optimised, not plug-in) power.
+
 ### Version
 
 Project.toml remains 0.3.0 (D-183).
@@ -63,7 +66,7 @@ Blocked on D-139 ack before Totoro spend (no separate paste string beyond an exp
 
 ## Agent rules
 
-- **Mac owns true-parity (STARTED 2026-09-15).** #374+#376+#378 MERGED; next ungated engine/Wald slices only if still clearly ungated after Tweedie species lands. Remainder is paste-gated.
+- **Mac owns true-parity (STARTED 2026-09-15).** #374+#376+#378 MERGED; **#384** Tweedie species-power SO cell is this tip. After #384 lands, remainder is paste-gated (cloud does not start GP-1 / free-ν / Λ raw / Delta paste / Stage1 / S4 / Totoro / Project.toml).
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.
