@@ -8,7 +8,7 @@ CreateGoal: armed in parent chat (2026-09-14). Do not mark complete.
 
 ARC IN PROGRESS: true-parity tranche. Board: [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md).
 
-Rehydrate (2026-09-16): GLLVM.jl origin/main tip includes `#378` `67247f52` (Tweedie shared-power SO cell, on top of `#374` `eeb7e092` + `#376` `47fcb23e` + `#379`/`#381`/`#382` docs); gllvmTMB origin/main @ fba20d613.
+Rehydrate (2026-09-16): GLLVM.jl `origin/main` @ **`b68aa3da9`** (#390 on #389/#387 FORWARD/TWIN_ALIAS + #385/#386/#388 docs); this PR **#384** Tweedie species-power SO; gllvmTMB origin/main @ fba20d613.
 
 NEXT (ranked):
 
@@ -22,7 +22,7 @@ NEXT (ranked):
 
 IN FLIGHT: Tweedie species-power SO cell (#384); #357 CONFLICTING (foreign). Skipped #363/#314.
 
-DONE this tranche: ledger gap inventory; Delta SO wiring (#347); §2 Hessian (A); twin-bridge inventory (#353); #359 cloglog @test fix; #360 board; #358/#1284 arcG; #362 OrdinalPerTrait Wald; #356 TweedieGrouped Wald; #361 Lognormal+TruncPois+TruncNB2 Wald; #355 parity_ledger aliases; #364/#365 board tips; **#366 MultinomialFit Wald** (`c1842dd69`); **#369/#370/#371 Mac handover + goal**; **#367 Student-t fixed-ν Wald** (`9d300783c`); **#372/#373 tips**; **#374 BB shared-φ SO** (`eeb7e092`); **#376 six holdout SO cells** (`47fcb23e`); **#377/#379 tips** (stale CONFLICTING note corrected by board-refresh); **#381 overnight handover**; **#382 morning-briefing refresh**; **#378 Tweedie shared-power SO cell** (`67247f52`, option A plug-in power, `b_fix` block only).
+DONE this tranche: (prior SO tranche through #378); **#385** tip receipt; **#387 FORWARD/TWIN_ALIAS hygiene** (`8321d5ce6`); **#386/#388** handover policy notes; **#389/#390** tip docs.
 
 DISPOSED: #323 waive; matched-θ C; §2 A; arcG Julia-only ACCOUNTED (#358).
 

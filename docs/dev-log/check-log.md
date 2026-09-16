@@ -7,6 +7,38 @@
 - After-task: `docs/dev-log/after-task/2026-09-16-tweedie-species-power-so.md`.
 - Focused **22/0/1** (1 `@test_skip` R cell). Commands:
   `julia --project=. test/test_second_order_tweedie_grouped_ci.jl`.
+## 2026-09-16 — Post-#387 board + checkpoint (`docs/true-parity-tip-post-387-20260916`)
+
+- Tip `8321d5ce6` (#387 MERGED). Tweedie EOO rebased locally @ `e84824c40` (unpushed). No open
+  MERGEABLE PRs (#357/#363/#314/#384 skipped). Ungated queue exhausted; paste inventory unchanged.
+- Fix: resolve stray merge conflict markers at top of this file (from #385/#387 overlap).
+- Commands: `git fetch origin`; `git rebase origin/main` on `feat/tweedie-estimated-power-so-20260915`;
+  `gh pr list --state open`.
+
+## 2026-09-16 — Ungated queue verification + tip SHA (`docs/true-parity-stop-verify-20260916`)
+
+- Rehydrate: `git fetch origin`; `origin/main` @ **`7619fd5e9`** (#389); `gh pr list --state open` → no
+  MERGEABLE+gating-green PRs (#357/#384 CONFLICTING; #363/#314/#384 DRAFT). Verified prior "exhausted
+  after #387/#389" claim: six holdout SO cells on main (#376); FORWARD/TWIN_ALIAS hygiene on main (#387);
+  `python3 tools/parity_ledger.py --ref b4d5fee6…` → FORWARD=62 REVERSE=91. Tweedie EOO local only @
+  `e84824c40` (unpushed). Goal **IN PROGRESS**; ungated STOP until Tweedie push authorized or #357
+  unblocked.
+- Commands: `gh pr view 357,384,363,314 --json mergeable,mergeStateStatus,isDraft`;
+  `python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86`.
+
+## 2026-09-16 — FORWARD/TWIN_ALIAS doc hygiene (#387 MERGED @ `8321d5ce6`)
+
+- Sync public parity page to post-#355 ledger counts (**FORWARD=62**, **REVERSE=91** @ frozen
+  oracle); document three deferred `TWIN_ALIAS` rows in `tools/parity_ledger.py` (#350/#355).
+  No new `ALIASES`; no capability promote.
+- Commands: `python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86`.
+
+## 2026-09-16 — Post-#376/#377 board + Tweedie local receipt (#385 MERGED @ `5e4239b7b`)
+
+- #376 MERGED @ `47fcb23ee` (six holdout SO cells); #377 MERGED @ `e47430735` (docs tip). Tweedie
+  estimated-power local branch (unpushed; option A PARTIAL; `eoo_claimed=false`). #357/#363/#314
+  skipped.
+- After-task: `docs/dev-log/after-task/2026-09-16-post-376-377-tweedie-local.md`.
 
 ## 2026-09-16 — Tweedie estimated shared-power SO cell (`feat/tweedie-shared-power-so-20260916`)
 

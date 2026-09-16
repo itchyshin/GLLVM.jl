@@ -1,8 +1,8 @@
 # True-parity programme: maintainer board (2026-09-14, updated 2026-09-16)
 
-STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`), **#369 Mac handover** (`c00e9345`), **#370 Mac STARTED** (`c459751b`), **#371 goal+ultra-plan** (`9519b3e28`), **#367 Student-t fixed-ν Wald** (`9d300783c`), **#372/#373 SO inventory + post-#367 tips**, **#374 BetaBinomial shared-φ SO cell** (`eeb7e092`) → **PARTIAL (native Wald; φ unpaired)**, **#376 six holdout SO cells** (`47fcb23e`) → **PARTIAL (native Wald + paired toy Δ)**, **#377/#379 tips** (board correction), **#381 overnight handover**, **#382 morning-briefing refresh**, **#378 Tweedie shared-power SO cell** (`67247f52`) → **PARTIAL (option A; β/`b_fix` block only, power plug-in — not paired)**, **#384 Tweedie species-power SO cell** (this tip) → **PARTIAL (option A)**. Foreign: **#357** (do not edit). Paste-blocked remainder; goal **not** complete.
+STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged through **#387 FORWARD/TWIN_ALIAS doc hygiene** (`8321d5ce6`; #385 tip receipt, handover #386/#388, tip #389/#390). Prior SO tranche: #374/#376/#378 as before. **This PR (#384):** Tweedie species estimated-power SO cell → **PARTIAL (option A; `TweediePerTraitPowerFit` / `cell_tweedie_species`; β/`b_fix` block only, power plug-in)**. Foreign: **#357** (do not edit). Skipped #363/#314. Paste-blocked remainder after #384; goal **not** complete.
 
-Rehydrate: `origin/main` tip after `#378` `67247f52` (on top of `#374`/`#376`/`#379`/`#381`/`#382`); this PR `#384` species estimated-power SO; gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
+Rehydrate: GLLVM.jl `origin/main` @ **`b68aa3da9`** (#390); this PR `#384` species estimated-power SO; gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
 ---
 
@@ -66,7 +66,7 @@ Blocked on D-139 ack before Totoro spend (no separate paste string beyond an exp
 
 ## Agent rules
 
-- **Mac owns true-parity (STARTED 2026-09-15).** #374+#376+#378 MERGED; **#384** Tweedie species-power SO cell is this tip. After #384 lands, remainder is paste-gated (cloud does not start GP-1 / free-ν / Λ raw / Delta paste / Stage1 / S4 / Totoro / Project.toml).
+- **Mac owns true-parity (STARTED 2026-09-15).** #374+#376+#378+#387 MERGED; **#384** Tweedie species-power SO cell is this tip. After #384 lands, remainder is paste-gated (cloud does not start GP-1 / free-ν / Λ raw / Delta paste / Stage1 / S4 / Totoro / Project.toml).
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.

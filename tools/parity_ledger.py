@@ -98,6 +98,12 @@ ALIASES = {
     "flag_unreliable_loadings": "check_gllvmTMB",  # loading-runaway / Heywood flags in diagnose cluster
 }
 
+# TWIN_ALIAS rows intentionally omitted from ALIASES (#350/#355 after-task): no single Julia
+# export target yet — stay in FORWARD until maintainer picks one symbol or thin wrapper.
+#   animal_indep, animal_scalar — relatedness_cov + indep Gaussian; scope-limited on R side
+#   extract_residual_split — split across extract_residual_cov / link_residual (structural twin)
+TWIN_ALIAS_DEFERRED = frozenset({"animal_indep", "animal_scalar", "extract_residual_split"})
+
 # FORWARD, R-idiom helpers with no meaningful Julia counterpart: control-object
 # constructors, screen/meta helpers with no ported analogue, gradient plumbing.
 # Mirrors DRM.jl's NOT_CAPABILITY entries "drm_control"/"gr"/"meta_known_V"
