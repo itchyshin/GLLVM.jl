@@ -1,3 +1,15 @@
+## 2026-09-16 - Adversarial rehydrate post-#397 (`docs/adversarial-rehydrate-20260916`)
+
+- **origin/main** @ **`8d74f8007`** (#397). Prior "ungated exhausted" claim re-checked: tip SHA
+  correct; no mergeable leftover ours PRs; no free engine slice. Paste packet tip was stale at
+  `d2353b013` after #397 merge. Added `owed/2026-09-16-post-397-paste-packet.md` with named-item
+  scorecard + four pastes (one-line after-paste). Refreshed board, checkpoint, wake, morning paste
+  briefing (cleared stale #384/#391 HOLD). Goal **not** complete.
+- Files: board, checkpoint, wake, morning paste briefing, post-395 supersession banner, post-397
+  packet, this check-log, `after-task/2026-09-16-adversarial-rehydrate-post-397.md`.
+- Commands: `git fetch origin main`; `git rev-parse origin/main`; `gh pr list --state open`;
+  `gh pr view 347/384/391/357`.
+
 ## 2026-09-16 — Post-#396 paste-only STOP tip (`docs/post-396-paste-only-tip-20260916`)
 
 - **origin/main** @ **`d2353b013`** (#396). Rehydrate after overnight STOP: #391 MERGED,

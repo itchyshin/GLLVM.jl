@@ -1,9 +1,13 @@
+> Superseded tip SHA: use [`2026-09-16-post-397-paste-packet.md`](2026-09-16-post-397-paste-packet.md) @ tip `8d74f8007` (#397). Four paste strings unchanged.
+
 # True-parity paste packet (post-#395)
+
+<!-- slop-ok: historical paste-packet field labels; tip superseded by post-397 packet -->
 
 **STATE:** **IN PROGRESS**. Do **not** mark the programme or `/goal` complete.
 
 **Rehydrate:** `git fetch origin main && git rev-parse origin/main`  
-**Tip (2026-09-16):** **`d2353b013`** — `docs: post-#395 paste packet + tip @ e7f869932 (#396)` (engine #391 @ `c4dba35c4`; #395 CI receipt @ `e7f869932`)
+Tip (historical, pre-#397): **`d2353b013`** (`docs: post-#395 paste packet + tip @ e7f869932 (#396)`; engine #391 @ `c4dba35c4`; #395 CI receipt @ `e7f869932`).
 
 **Twin:** gllvmTMB `origin/main` @ `02b46cfc`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
@@ -13,7 +17,7 @@
 
 ## Cloud fence (verified)
 
-Ungated cloud engine queue **exhausted** after **#391** (Tweedie estimated-power SO) and docs tips **#393–#396**. Cloud / this lane **must not** start Stage 1, S4, Totoro, Delta implementation, GP-1, free-ν, Λ raw, `Project.toml` bump, or **#357** edits without the exact Shinichi pastes below.
+Ungated cloud engine queue **exhausted** after **#391** (Tweedie estimated-power SO) and docs tips **#393 through #396**. Cloud / this lane **must not** start Stage 1, S4, Totoro, Delta implementation, GP-1, free-ν, Λ raw, `Project.toml` bump, or **#357** edits without the exact Shinichi pastes below.
 
 **Rose fence:** Docs and SO receipts ≠ true-parity destination ≠ §7 complete ≠ bridge CI lift (#357) ≠ Core070 `FREE=0` as parity.
 
@@ -47,7 +51,7 @@ Copy **exact** strings into chat. Agents must not start the row without the past
 | `S4 probe yes` | Second explicit yes for S4 public-formula probe (`LOOP/GOAL.md` QS4) | Probe driver vs gllvmTMB [#1283](https://github.com/itchyshin/gllvmTMB/pull/1283) recorder (`97214679c`); **no** R TMB/likelihood edits |
 | `ack Totoro D-139 #323 Track A` | Optional advisory Frozen R #323 Track A under D-139 | Launch documented Totoro batch only after ack; T4 realistic-size second-order needs a separate D-139 ack naming that grid |
 
-Alternatives for Delta (only if **not** choosing A): `accept delta dispersion B` / `C` / `C+B` — see the pending decision doc.
+Alternatives for Delta (only if **not** choosing A): `accept delta dispersion B` / `C` / `C+B`. See the pending decision doc.
 
 ---
 

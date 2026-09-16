@@ -2,11 +2,24 @@
 
 STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste.
 
-CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** (Tweedie estimated-power SO) + **#393 through #396** (board, paste-queue STOP, #391 CI receipt, post-#395 paste packet). Tip @ **`d2353b013`** (#396). Cloud does **not** start Stage 1 / S4 / Totoro / Delta / GP-1 / free-ν / Λ raw / `Project.toml` bump. No mergeable leftover ours PRs (#363/#314 CONFLICTING DRAFT; **#357** foreign leave alone). Next requires Shinichi pastes only (exact strings below). Goal **not** complete.
+CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** + **#393 through #397**. Tip @ **`8d74f8007`** (#397). Adversarial rehydrate confirms: no mergeable leftover ours PRs; no free engine slice. Cloud does **not** start Stage 1 / S4 / Totoro / Delta / GP-1 / free-ν / Λ raw / `Project.toml` bump. Open: **#357** foreign leave alone; **#363/#314** CONFLICTING DRAFT skip. Next requires Shinichi pastes only. Goal **not** complete.
 
-Merged SO tranche: #374/#376/#378 + **#391** Tweedie estimated-power SO (shared+species; Rose winner over #384) @ **`c4dba35c4`**. Docs through #387 through #396 (#387 TWIN_ALIAS; #389/#390 verify; #394 STOP; #395 post-#391 receipt; #396 paste packet). Rose HOLD cleared: #391 squash-merged; **#384** **CLOSED** superseded (2026-09-16). Open foreign: **#357** (leave alone). Unrelated DRAFT skips: **#363/#314**.
+Merged SO tranche: #374/#376/#378 + **#391** Tweedie estimated-power SO (shared+species; Rose winner over #384) @ **`c4dba35c4`**. Docs through #397. **#384** **CLOSED** superseded. **Canonical paste table:** [`owed/2026-09-16-post-397-paste-packet.md`](owed/2026-09-16-post-397-paste-packet.md).
 
-Rehydrate: GLLVM.jl `origin/main` @ **`d2353b013`** (#396 tip; engine #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. **Canonical paste table:** [`owed/2026-09-16-post-395-paste-packet.md`](owed/2026-09-16-post-395-paste-packet.md). Receipts: [`after-task/2026-09-16-tweedie-estimated-power-so.md`](after-task/2026-09-16-tweedie-estimated-power-so.md); paste-queue STOP: [`after-task/2026-09-16-paste-queue-stop.md`](after-task/2026-09-16-paste-queue-stop.md).
+Rehydrate: GLLVM.jl `origin/main` @ **`8d74f8007`** (#397 tip; engine #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
+
+---
+
+## Named-item scorecard (adversarial, tip `8d74f8007`)
+
+| Item | Verdict |
+|------|---------|
+| Ledger gap | **DONE** (inventory); remaining ranks are paste / Totoro / foreign / large surface |
+| §2 A (delta dispersion) | **PASTE-GATED** (`accept delta dispersion A`) |
+| #347 | **DONE** (shared-η Wald MERGED); species follow-on paste-gated |
+| D3 Stage 1 / S4 / Totoro | **PASTE-GATED** |
+| #357 | **FOREIGN** (leave alone) |
+| #363 / #314 | **SKIP** (CONFLICTING DRAFT) |
 
 ---
 
@@ -42,17 +55,13 @@ Stage 1: paste `G0 Stage 1` only.
 
 ### Ledger / capability gaps (item 3)
 
-Inventory: [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). Rank 7 done (arcG; #358/#1284). Aliases landed (#355). Foreign: [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge logLik receipts - CONFLICTING on `check-log.md` only; do not edit from this lane.
+Inventory: [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09-15-true-parity-ledger-gap-inventory.md). Rank 7 done (arcG; #358/#1284). Aliases landed (#355). Foreign: [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge logLik receipts; do not edit from this lane.
 
 ### Second-order follow-up
 
-Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **MultinomialFit** native Wald on main (#366); **Student-t fixed-ν** native Wald on main (#367); **BetaBinomial shared-φ** SO cell on main ([#374](after-task/2026-09-15-betabinomial-shared-phi-so.md), `eeb7e092`); **six holdout paired SO cells** on main ([#376](after-task/2026-09-16-six-holdout-so-cells.md), `47fcb23e`) → **PARTIAL (native Wald + toy Δ)**; **Tweedie shared-power SO cell** on main ([#378](after-task/2026-09-16-tweedie-shared-power-so.md), `67247f52`) → **PARTIAL (option A; `b_fixed`/β block only, power plug-in, not jointly estimated - not paired in live Δ; contract §4 D1 not claimed)**; **Tweedie estimated-power SO (shared+species)** on main ([#391](https://github.com/itchyshin/GLLVM.jl/pull/391), `c4dba35c4`) → **PARTIAL (option A; β/`b_fixed` block only; power plug-in / EOO cells; Rose winner over #384)**. Bridge CI lift still waits on #357.  
+Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md) **MERGED**; OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **MultinomialFit** native Wald on main (#366); **Student-t fixed-ν** native Wald on main (#367); **BetaBinomial shared-φ** SO cell on main ([#374](after-task/2026-09-15-betabinomial-shared-phi-so.md), `eeb7e092`); **six holdout paired SO cells** on main ([#376](after-task/2026-09-16-six-holdout-so-cells.md), `47fcb23e`) → **PARTIAL (native Wald + toy Δ)**; **Tweedie shared-power SO cell** on main ([#378](after-task/2026-09-16-tweedie-shared-power-so.md), `67247f52`) → **PARTIAL (option A)**; **Tweedie estimated-power SO (shared+species)** on main ([#391](https://github.com/itchyshin/GLLVM.jl/pull/391), `c4dba35c4`) → **PARTIAL (option A; Rose winner over #384)**. Bridge CI lift still waits on #357.  
 Delta SO species dispersion: still OUT until paste `accept delta dispersion A`.  
-BB shared-φ: **PARTIAL** (native Wald + `betabinomial_shared` toy cell; **β block only** - per-trait φ on R not paired in live Δ).  
-Six-family holdout live-Δ: **MERGED** (#376) - Lognormal / OrdinalPerTrait / TruncPois / TruncNB2 / Multinomial FE / Student-t fixed-ν paired toy cells (β[] blocks; TruncNB2 large se_rel documented as shared-`r` vs R per-trait φ).  
-Tweedie shared-power: **MERGED** (#378) - `cell_tweedie_shared`, option A (plug-in power, not jointly estimated); `b_fixed`/β block only.  
-Tweedie estimated-power (`tweedie_shared` / `tweedie_species` EOO): **MERGED** (#391 @ `c4dba35c4`) → **PARTIAL** (native Wald + cells + logLik; option A β-block; `eoo_claimed=false`; not D1). **#384** CLOSED superseded.  
-Still OUT / open: GP-1 ruling / Student-t free ν / Λ raw / Tweedie **jointly-optimised** (not plug-in) power / BB φ pairing / Delta species dispersion paste.
+Still OUT / open: GP-1 ruling / Student-t free ν / Λ raw / Tweedie **jointly-optimised** power / BB φ pairing / Delta species dispersion paste.
 
 ### Version
 
@@ -72,20 +81,20 @@ Blocked on D-139 ack before Totoro spend (no separate paste string beyond an exp
 
 ## Exact Shinichi pastes required (cloud STOP)
 
-| Paste (exact) | Unlocks |
-|---------------|---------|
-| `accept delta dispersion A` | Delta species / per-trait dispersion SO |
-| `G0 Stage 1` | D3 `loading_profile` Stage 1 |
-| `S4 probe yes` | S4 public-formula probe |
+| Paste (exact) | Unlocks (one line) |
+|---------------|--------------------|
+| `accept delta dispersion A` | Accept Delta (A); then `:species` CI + default twin cells + D1 remeasure |
+| `G0 Stage 1` | D3 `loading_profile` Stage 1 after Stage 0 #345 |
+| `S4 probe yes` | S4 public-formula probe vs gllvmTMB #1283 (no R engine edits) |
 | `ack Totoro D-139 #323 Track A` | Optional Totoro #323 Track A under D-139 |
 
-After-task inventory: [`after-task/2026-09-16-paste-queue-stop.md`](after-task/2026-09-16-paste-queue-stop.md). Post-#395 paste packet: [`owed/2026-09-16-post-395-paste-packet.md`](owed/2026-09-16-post-395-paste-packet.md).
+Canonical packet: [`owed/2026-09-16-post-397-paste-packet.md`](owed/2026-09-16-post-397-paste-packet.md).
 
 ---
 
 ## Agent rules
 
-- Mac owns true-parity (STARTED 2026-09-15). Tip @ **`d2353b013`** (#396). Cloud ungated **exhausted** after #391+#393 through #396; Shinichi pastes only for next work. **#384** **CLOSED** superseded.
+- Mac owns true-parity (STARTED 2026-09-15). Tip @ **`8d74f8007`** (#397). Cloud ungated **exhausted**; Shinichi pastes only for next work. **#384** **CLOSED** superseded.
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.
