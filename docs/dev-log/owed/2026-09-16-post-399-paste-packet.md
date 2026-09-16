@@ -1,5 +1,7 @@
 # True-parity paste packet (post-#399 Delta A DRAFT scaffold)
 
+> **Superseded tip:** use [`2026-09-16-post-402-paste-packet.md`](2026-09-16-post-402-paste-packet.md) (DRAFT #402 Stage1/S4/Totoro runbooks).
+
 <!-- slop-ok: paste-packet field labels (**STATE:** / Tip / Twin) match prior owed packets -->
 
 STATE: **IN PROGRESS**. Do **not** mark the programme or `/goal` complete.
