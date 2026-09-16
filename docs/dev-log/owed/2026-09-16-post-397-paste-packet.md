@@ -1,5 +1,7 @@
 # True-parity paste packet (post-#397 adversarial rehydrate)
 
+> **Superseded tip:** use [`2026-09-16-post-399-paste-packet.md`](2026-09-16-post-399-paste-packet.md) (DRAFT #399 + four post-paste steps). Tip SHA below is historical.
+
 <!-- slop-ok: paste-packet field labels (**STATE:** / Tip / Twin) match prior owed packets -->
 
 STATE: **IN PROGRESS**. Do **not** mark the programme or `/goal` complete.

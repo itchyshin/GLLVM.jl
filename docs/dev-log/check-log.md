@@ -1,3 +1,14 @@
+## 2026-09-16 — Post-#399 paste packet tip (`docs/post-399-delta-a-paste-tip-20260916`)
+
+- **origin/main** @ **`b1c048f2f`** (#398). DRAFT **#399** Option A scaffold landed (not ready / not
+  ACCEPTED). Canonical paste packet now points `accept delta dispersion A` at #399 and lists the
+  four post-paste steps (ACCEPTED block → public `:species` → D1 remeasure → ready+merge). Board
+  CLOUD STOP + paste table refreshed. Stage 1 DRAFT **skipped** (Stage 0 #345 already froze the
+  substrate; Stage 1 *is* the G0-gated export). Goal **not** complete.
+- Files: `owed/2026-09-16-post-399-paste-packet.md`, post-397 supersession banner, board, this
+  check-log, `after-task/2026-09-16-post-399-paste-tip.md`.
+- Commands: `git fetch origin main`; `git rev-parse origin/main`; `gh pr view 399`.
+
 ## 2026-09-16 - Adversarial rehydrate post-#397 (`docs/adversarial-rehydrate-20260916`)
 
 - **origin/main** @ **`8d74f8007`** (#397). Prior "ungated exhausted" claim re-checked: tip SHA
