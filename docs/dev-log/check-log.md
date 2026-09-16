@@ -6,6 +6,17 @@
 - Commands: `git fetch origin`; `git rebase origin/main` on `feat/tweedie-estimated-power-so-20260915`;
   `gh pr list --state open`.
 
+## 2026-09-16 — Ungated queue verification + tip SHA (`docs/true-parity-stop-verify-20260916`)
+
+- Rehydrate: `git fetch origin`; `origin/main` @ **`7619fd5e9`** (#389); `gh pr list --state open` → no
+  MERGEABLE+gating-green PRs (#357/#384 CONFLICTING; #363/#314/#384 DRAFT). Verified prior "exhausted
+  after #387/#389" claim: six holdout SO cells on main (#376); FORWARD/TWIN_ALIAS hygiene on main (#387);
+  `python3 tools/parity_ledger.py --ref b4d5fee6…` → FORWARD=62 REVERSE=91. Tweedie EOO local only @
+  `e84824c40` (unpushed). Goal **IN PROGRESS**; ungated STOP until Tweedie push authorized or #357
+  unblocked.
+- Commands: `gh pr view 357,384,363,314 --json mergeable,mergeStateStatus,isDraft`;
+  `python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86`.
+
 ## 2026-09-16 — FORWARD/TWIN_ALIAS doc hygiene (#387 MERGED @ `8321d5ce6`)
 
 - Sync public parity page to post-#355 ledger counts (**FORWARD=62**, **REVERSE=91** @ frozen

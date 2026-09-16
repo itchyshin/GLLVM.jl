@@ -2,7 +2,7 @@
 
 STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged through **#387 FORWARD/TWIN_ALIAS doc hygiene** (`8321d5ce6`; #385 tip receipt `#385`, handover #386/#388). Prior SO tranche: #374/#376/#378 as before. **Local only (unpushed):** Tweedie estimated-power SO (`feat/tweedie-estimated-power-so-20260915` @ `e84824c40`, rebased onto `8321d5ce6`) → **PARTIAL (option A; `tweedie_species` + shared cells; power plug-in; push/PR only with maintainer paste)**. Open PRs skipped: **#357** CONFLICTING (foreign); **#363/#314/#384** DRAFT. Ungated engine/docs queue **exhausted** after #387; next engine = Tweedie EOO push when authorized, else #357 when unblocked. Paste-blocked; goal **not** complete.
 
-Rehydrate: GLLVM.jl `origin/main` @ **`8321d5ce6`**; gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
+Rehydrate: GLLVM.jl `origin/main` @ **`7619fd5e9`** (#389 post-#387 tip + check-log hygiene on `8321d5ce6`); gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
 ---
 
