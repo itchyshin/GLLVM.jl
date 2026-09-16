@@ -8,7 +8,7 @@ CreateGoal: armed in parent chat (2026-09-14). Do not mark complete.
 
 ARC IN PROGRESS: true-parity tranche. Board: [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md).
 
-Rehydrate (2026-09-16): GLLVM.jl `origin/main` @ **`8321d5ce6`** (#387 FORWARD/TWIN_ALIAS hygiene; #385/#386/#388 docs); gllvmTMB origin/main @ fba20d613.
+Rehydrate (2026-09-16): GLLVM.jl `origin/main` @ **`7619fd5e9`** (#389 on #387 FORWARD/TWIN_ALIAS + #385/#386/#388 docs); gllvmTMB origin/main @ fba20d613.
 
 NEXT (ranked):
 
