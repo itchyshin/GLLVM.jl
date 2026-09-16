@@ -1,9 +1,16 @@
 # Overnight true-parity handover (2026-09-15 → 2026-09-16)
 
-**Lane:** Ada (Cursor), overnight conductor, ~17:00–~00:50 MDT window.
-**Rehydrate:** `origin/main` @ `bf83d5f75` (#379, on top of #376/#374). `Project.toml` stays `0.3.0`.
-Goal **NOT** complete. `#357` (foreign bridge PR) untouched throughout — do not edit it without
-Shinichi's explicit say.
+**Lane:** Ada (Cursor), overnight conductor, ~17:00 MDT–ongoing window.
+**Rehydrate:** `origin/main` @ `9d021de63` (#383, on top of #382/#378/#379/#376/#374). `Project.toml`
+stays `0.3.0`. Goal **NOT** complete. `#357` (foreign bridge PR) untouched throughout — do not edit
+it without Shinichi's explicit say.
+
+**Update (post-initial-handover, same lane):** #378 (Tweedie shared-power SO cell) merged; the
+morning briefing was refreshed directly (no evidence the named refresh agent had run); a small
+board/checkpoint tip (#383) corrected the two docs #378's own diff didn't touch. The ungated queue
+this lane can act on is now effectively **exhausted** — everything remaining past a
+draft/conflicting sibling PR (#384, see below) is paste-gated or foreign (#357). See DONE / IN
+PROGRESS / OWED below for the current, corrected state.
 
 ## DONE this overnight tranche
 
@@ -39,23 +46,49 @@ merge loop could act; #379/#380 were two independently-opened duplicates of the 
 slice from two different lanes. No conflicts landed on `main`; the redundant PR (#380) was closed
 rather than merged.
 
+**Continued after the above, same lane:**
+
+- **#382** — morning-paste-briefing refresh (`2a97043a9`). The named refresh agent (`7a3f8015`)
+  showed no activity on its scratch copy since 16:47 MDT, so this lane refreshed
+  `docs/dev-log/owed/2026-09-16-morning-paste-briefing.md` directly rather than leave it stale;
+  docs-only, Documenter-only CI.
+- **#378** — Tweedie shared-power SO cell (option A; `b_fix`/β block only, power plug-in), merged
+  at `67247f520`. All 8 Julia shards passed (slowest shard 1h7m27s); advisory Frozen R smoke
+  failed as expected (accepted per standing rule); Grace babysat the merge. Own after-task file:
+  `docs/dev-log/after-task/2026-09-16-tweedie-shared-power-so.md`.
+- **#383** — post-#378 board/checkpoint tip (`9d021de63`). #378's own diff already covered
+  `check-log.md` and the holdouts doc; this tip corrected only the two files it hadn't touched
+  (`docs/dev-log/2026-09-14-true-parity-pending-board.md`, `LOOP/checkpoint.md`), which still
+  described Tweedie as local-only/unpushed. Docs-only; Documenter-only CI.
+
+As of `9d021de63`, this lane's ungated queue is effectively exhausted — see IN PROGRESS and OWED
+below for what's left.
+
 ## IN PROGRESS (not yet merged)
 
-- **#378** — Tweedie shared-power SO cell (option A; β/`b_fix` block only, power plug-in), on
-  `feat/tweedie-shared-power-so-20260916`, based on `47fcb23ee`. Opened ~00:39 MDT. **Grace is
-  babysitting this merge** — this lane did not merge it. At last check (~00:48 MDT): Documenter +
-  `documenter/deploy` pass; all 8 Julia shards + the advisory Frozen R smoke still `pending`/
-  `in_progress`, no failures observed. **Whoever picks this up next:** confirm `gh pr view 378
-  --json state,mergedAt,mergeCommit` before assuming it landed, and check whether a follow-up
-  board tip (analogous to #379) is needed to record the Tweedie cell as PARTIAL in
-  `docs/dev-log/core070/second-order-holdouts-2026-09-04.md` + `LOOP/checkpoint.md` — only if that
-  content isn't already covered by #378's own after-task file
-  (`docs/dev-log/after-task/2026-09-16-tweedie-shared-power-so.md`, part of #378's diff).
+None owned by this lane as of this update. One sibling PR is open and **held**, not in flight:
 
-## OWED (paste-gated; do not invent engine work around these)
+- **#384** — `feat(second-order): Tweedie species estimated-power Wald CI`
+  (`cursor/tweedie-species-power-so-a0ce`), opened ~02:15 MDT by another Cursor lane (Grace),
+  **DRAFT**. Triaged this update: content follows the same pattern as #374/#376/#378 (wires
+  `TweediePerTraitPowerFit` into `_family_ci`, adds `cell_tweedie_species` + smoke, PARTIAL
+  `b_fix`/β-block-only claim, no `Project.toml` bump, `#357` untouched, focused tests claimed
+  22 pass / 1 R-skip in the PR body) and looks well-scoped and ungated on content alone. **Held
+  DRAFT, not promoted to ready-for-review**, for two mechanical reasons, not a content objection:
+  (1) `mergeStateStatus=DIRTY` / `mergeable=CONFLICTING` against current `main` — it was branched
+  before #383 landed and touches the same `LOOP/checkpoint.md` + board lines #383 already edited;
+  (2) `gh pr checks 384` reports **no checks have run at all** (draft PRs may not trigger this
+  repo's CI), so there is no green-CI evidence yet, only the PR body's self-reported local test
+  count. Rebasing #384 is the PR owner's/Grace's job, not this lane's scope to expand into; this
+  lane did not touch #384's branch. Re-check `gh pr checks 384` and `gh pr view 384 --json
+  mergeable,mergeStateStatus` after a rebase before promoting it to ready-for-review.
 
-Everything else on the board past Tweedie is paste-gated. Do **not** start Stage 1 / S4 / Totoro
-work without the matching paste string below, and do not bump `Project.toml`.
+## OWED
+
+Two kinds of "not done": four paste-gated items, one foreign PR, and one mechanical (not
+paste-gated) blocker on a sibling PR.
+
+**Paste-gated — do not start without the matching string, and do not bump `Project.toml`:**
 
 ```text
 accept delta dispersion A
@@ -81,29 +114,33 @@ Authorises the optional Totoro run for the advisory Frozen R #323 smoke under th
 estimate. For T4 realistic-size second-order work specifically, use an explicit D-139 ack naming
 the T4 grid before spending Totoro time.
 
+**Foreign — do not edit:**
+
 - **#357** (`feat/lognormal-truncpois-loglik-receipts-20260915`) — foreign bridge PR wiring
   lognormal + truncated-Poisson logLik receipts. CONFLICTING against this lane's docs edits on
   `check-log.md` only. **Left untouched all night**, per standing instruction. Do not edit without
   Shinichi's explicit say.
 
-## Morning briefing refresh — path confirmed, content stale
+**Mechanical, not paste-gated:**
 
-- Path: `docs/dev-log/owed/2026-09-16-morning-paste-briefing.md` (drafted in #375, `ab8891e06`).
-  Sibling scratch copy: `/Users/z3437171/local-scratch/gllvm-morning-paste-20260916` (branch
-  `docs/morning-paste-briefing-20260916`).
-- **Content is stale as of this handover** — last live refresh recorded inside the file itself is
-  "2026-09-15 16:45 MDT", and it names `origin/main` @ `83990686d0` (#373), i.e. **before** #374,
-  #376, #377, #379 (and #378, if it lands). The file's own text already says "rerun the refresh
-  before pasting if the morning window has arrived" — that refresh has not happened yet in this
-  handover.
-- Per earlier briefing (2026-09-15 ~17:17 MDT): a GPT agent is expected to refresh this file
-  ~04:50 Denver, ahead of the 05:00 Denver stop. **This handover does not confirm that refresh
-  ran** — whoever reads this near or after 04:50 Denver should check the file's own "Last live
-  refresh" line before trusting its paste strings or DONE list, and refresh it themselves
-  (`gh pr list`, `git fetch origin && git rev-parse origin/main`) if the GPT agent has not.
+- **#384** (see IN PROGRESS above) — needs a rebase past `main` @ `9d021de63` and a green CI run
+  before it can be promoted to ready-for-review. This is a merge-conflict + missing-CI-evidence
+  blocker, not a policy gate; it does not need a Shinichi paste to clear, just the PR owner's
+  rebase.
+
+## Morning briefing refresh — DONE (superseding the earlier "content stale" note)
+
+- Path: `docs/dev-log/owed/2026-09-16-morning-paste-briefing.md` (drafted in #375, `ab8891e06`;
+  refreshed in #382, `2a97043a9`).
+- The named refresh agent (`7a3f8015`) showed no activity on its scratch copy
+  (`/Users/z3437171/local-scratch/gllvm-morning-paste-20260916`) since 16:47 MDT, so **this lane
+  refreshed the file directly in #382** rather than assume the scheduled ~04:50 Denver refresh
+  would still happen. The file now names `origin/main` @ `56b1a9f6f` (#381) as its last live
+  refresh point — one merge behind the current `9d021de63` (#383) tip, since #378/#383 landed
+  after #382. Whoever reads this near/after 04:50 Denver should still re-run the refresh commands
+  in the briefing file if more has landed since `9d021de63`.
 - Paste-string content in the file (Delta dispersion A / G0 Stage 1 / S4 probe yes / Totoro D-139
-  ack) is unchanged and still correct as gate text; only the "last refreshed" tip and DONE list
-  need updating.
+  ack) is unchanged and still correct as gate text.
 
 ## Checks run this tranche
 
@@ -123,4 +160,6 @@ This handover records merge/close bookkeeping and CI-monitoring receipts only. I
 ledger promotion, **not** a §7 programme-parity claim, and does not clear any of the paste gates
 above. The six #376 cells and the #374/#378 shared-dispersion cells remain **β/`b_fix`-block-only**
 live Δ pairings — dispersion parameters (σ, r, φ, power) are documented as unpaired or
-parameterisation-mismatched, not silently promoted. Goal **not** complete.
+parameterisation-mismatched, not silently promoted. The #384 triage above is a merge-readiness
+check, not a review of its statistical content — it was not opened by this lane and has not been
+independently re-derived. Goal **not** complete.
