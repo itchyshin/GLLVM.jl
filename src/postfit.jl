@@ -1715,7 +1715,8 @@ _loglik(fit::DeltaLogNormalFit)   = fit.loglik
 
 function _nparams(fit::DeltaLogNormalFit)
     p, K = size(fit.Λc)
-    return 2p + (p * K - div(K * (K - 1), 2)) + 1   # βz + βc + Λc + σ
+    ndisp = fit.disp_group === :shared ? 1 : p
+    return 2p + (p * K - div(K * (K - 1), 2)) + ndisp   # βz + βc + Λc + σ
 end
 
 """
@@ -1975,7 +1976,8 @@ _loglik(fit::DeltaGammaFit)   = fit.loglik
 
 function _nparams(fit::DeltaGammaFit)
     p, K = size(fit.Λc)
-    return 2p + (p * K - div(K * (K - 1), 2)) + 1   # βz + βc + Λc + α
+    ndisp = fit.disp_group === :shared ? 1 : p
+    return 2p + (p * K - div(K * (K - 1), 2)) + ndisp   # βz + βc + Λc + α
 end
 
 """
