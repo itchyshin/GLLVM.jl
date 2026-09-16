@@ -1,9 +1,20 @@
+## 2026-09-16 — Post-#391 board refresh (`cursor/board-refresh-391-a0ce`)
+
+- **#391** squash-merged @ **`c4dba35c4`** (Mac shared+species Tweedie estimated-power SO;
+  Julia 8/8 + Documenter green; Frozen R advisory FAIL OK). Rose dual-PR HOLD cleared: #391
+  winner. **#384** superseded (do not merge); close attempted but cloud token 403
+  (`pull_requests=write`) — parent/Mac close owed. #357 untouched. Goal **not** complete.
+- Files: board, `LOOP/checkpoint.md`, this check-log, after-task.
+- Commands: `gh pr view 391 --json mergeable,statusCheckRollup,mergeCommit`;
+  `gh pr merge 391 --squash --delete-branch`; `gh pr close 384` (403);
+  `git fetch origin main`; `git rev-parse origin/main`.
+
 ## 2026-09-16  -  Morning wake tip + Rose WARN (`docs/morning-wake-briefing-20260916`)
 
 - Tip base `b68aa3da9` (#390). Rose recheck WARN: #384 and #391 both Ready+MERGEABLE; both
   **HOLD** (#385/#388 push-auth; authorize one / close other). Do not merge either. Stale board
   lines claiming "#384 DRAFT" or "EOO local/unpushed" corrected. #357 leave alone; goal incomplete;
-  paste gates unchanged.
+  paste gates unchanged. **Superseded** by post-#391 board refresh after #391 landed.
 - Files: board, `LOOP/checkpoint.md`, overnight handover amend, morning wake briefing + owed twin.
 - Commands: `git fetch origin main`; `gh pr view 384,391 --json isDraft,mergeable,mergeStateStatus`;
   `python3 ~/shinichi-brain/tools/slop_check.py` on briefing/handover paths.
