@@ -2,15 +2,15 @@
 
 STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste.
 
-CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** + docs through **#406** + **[#401](https://github.com/itchyshin/GLLVM.jl/pull/401)** node24 CI **MERGED** @ **`c33745302`**; **#357** bridge receipts **MERGED on `main`** @ **`5ee6dc596`** (Mac lane — do not revert). Tip @ **`ebde07f00`**. DRAFT **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** rebased **MERGEABLE** (still paste-gated); DRAFT **[#402](https://github.com/itchyshin/GLLVM.jl/pull/402)** runbooks — pre-paste scaffolds only; do **not** mark ready / merge / claim ACCEPTED. Cloud does **not** start Stage 1 / S4 / Totoro execution, GP-1, free-ν, Λ raw, or `Project.toml` bump. Open: **#363/#314** CONFLICTING DRAFT skip. Real noon briefing refreshed 12:00 MDT (replaces false #403 ~06:00 wake). Next requires Shinichi pastes only. Goal **not** complete.
+CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** + docs through **#407** + **[#401](https://github.com/itchyshin/GLLVM.jl/pull/401)** node24 CI **MERGED** @ **`c33745302`**; **#357** bridge receipts **MERGED on `main`** @ **`5ee6dc596`** (Mac lane — do not revert). Tip @ **`62d36ca06`** (pre-**#402** merge). **[#402](https://github.com/itchyshin/GLLVM.jl/pull/402)** Stage1/S4/Totoro **runbooks** merge as docs-only (**runbook ready**; paste still required for execution). DRAFT **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** (Delta A engine) stays paste-gated. No Stage 1 / S4 / Totoro **execution**, GP-1, free-ν, Λ raw, or `Project.toml` bump without paste. **#363/#314** CONFLICTING DRAFT skip. Real noon briefing refreshed 12:00 MDT (#407). Goal **not** complete.
 
-Merged SO tranche: #374/#376/#378 + **#391** Tweedie estimated-power SO (shared+species; Rose winner over #384) @ **`c4dba35c4`**. Docs through #398. **#384** **CLOSED** superseded. **Canonical paste table:** [`owed/2026-09-16-post-399-paste-packet.md`](owed/2026-09-16-post-399-paste-packet.md).
+Merged SO tranche: #374/#376/#378 + **#391** @ **`c4dba35c4`**. **Canonical paste table:** [`owed/2026-09-16-post-402-paste-packet.md`](owed/2026-09-16-post-402-paste-packet.md) (post-**#402** merge).
 
-Rehydrate: GLLVM.jl `origin/main` @ **`ebde07f00`** (#406; #401 @ `c33745302`; #357 bridge @ `5ee6dc596`; engine #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. Noon (real): [`handover/2026-09-16-noon-true-parity-wake-briefing.md`](handover/2026-09-16-noon-true-parity-wake-briefing.md).
+Rehydrate: GLLVM.jl `origin/main` @ **`62d36ca06`** (#407 noon briefing; #406; #401 @ `c33745302`; #357 bridge @ `5ee6dc596`; engine #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. Noon (real): [`handover/2026-09-16-noon-true-parity-wake-briefing.md`](handover/2026-09-16-noon-true-parity-wake-briefing.md).
 
 ---
 
-## Named-item scorecard (adversarial, tip `b1c048f2f` + DRAFT #399)
+## Named-item scorecard (adversarial, tip `62d36ca06` + DRAFT #399 / open #402)
 
 | Item | Verdict |
 |------|---------|
@@ -94,7 +94,7 @@ Canonical packet: [`owed/2026-09-16-post-399-paste-packet.md`](owed/2026-09-16-p
 
 ## Agent rules
 
-- Mac owns true-parity (STARTED 2026-09-15). Tip @ **`b1c048f2f`** (#398). DRAFT **#399** waits for paste (not ready / not ACCEPTED). Cloud ungated **exhausted**; Shinichi pastes only for next work. **#384** **CLOSED** superseded.
+- Mac owns true-parity (STARTED 2026-09-15). Tip @ **`62d36ca06`** (#407; pre-**#402** merge). **#357** **MERGED** @ `5ee6dc596` (do not revert). DRAFT **#399** waits for paste (not ready / not ACCEPTED). Cloud ungated **exhausted**; Shinichi pastes only for next work. **#384** **CLOSED** superseded.
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.

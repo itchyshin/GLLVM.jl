@@ -1,5 +1,7 @@
 # True-parity paste packet (post-#399 Delta A DRAFT scaffold)
 
+> **Superseded tip:** use [`2026-09-16-post-402-paste-packet.md`](2026-09-16-post-402-paste-packet.md) (DRAFT #402 Stage1/S4/Totoro runbooks).
+
 <!-- slop-ok: paste-packet field labels (**STATE:** / Tip / Twin) match prior owed packets -->
 
 STATE: **IN PROGRESS**. Do **not** mark the programme or `/goal` complete.
@@ -24,7 +26,7 @@ Tip (2026-09-16): **`b1c048f2f`** (`docs: post-#397 paste packet tip @ 8d74f8007
 | D3 Stage 1 | **PASTE-GATED** | Stage 0 on main (#345); needs `G0 Stage 1` (no pre-paste Stage 1 DRAFT — Stage 1 *is* the G0-gated export) |
 | S4 public-formula probe | **PASTE-GATED** | Needs `S4 probe yes` |
 | Totoro #323 Track A / T4 | **PASTE-GATED** | Needs `ack Totoro D-139 #323 Track A` (or D-139 ack naming T4) |
-| #357 bridge logLik | **FOREIGN** | Leave alone (even if MERGEABLE / CI green) |
+| #357 bridge logLik | **DONE** | MERGED on `main` @ `5ee6dc596` (do not revert) |
 | #363 / #314 | **SKIP** | CONFLICTING DRAFT; not true-parity |
 | GP-1 / free-ν / Λ raw / joint Tweedie power / BB φ pairing | **OUT + cloud-fenced** | No paste string; do not invent from cloud |
 
@@ -34,7 +36,7 @@ Tip (2026-09-16): **`b1c048f2f`** (`docs: post-#397 paste packet tip @ 8d74f8007
 
 ## Cloud fence (verified)
 
-Ungated cloud engine queue **exhausted** after **#391** and docs tips **#393 through #398**. DRAFT **#399** is a pre-paste Option A scaffold only — cloud / this lane **must not** mark it ready, merge it, or claim Delta A accepted. Also **must not** start Stage 1, S4, Totoro, GP-1, free-ν, Λ raw, `Project.toml` bump, or **#357** edits without the exact Shinichi pastes below.
+Ungated cloud engine queue **exhausted** after **#391** and docs through **#407**; **#357** bridge receipts **MERGED** @ `5ee6dc596`. DRAFT **#399** is a pre-paste Option A scaffold only — cloud / this lane **must not** mark it ready, merge it, or claim Delta A accepted. Also **must not** start Stage 1, S4, Totoro, GP-1, free-ν, Λ raw, or `Project.toml` bump without the exact Shinichi pastes below.
 
 **Rose fence:** Docs and SO receipts ≠ ACCEPTED Delta A ≠ D1 pass ≠ true-parity destination ≠ §7 complete ≠ bridge CI lift (#357) ≠ Core070 `FREE=0` as parity.
 
@@ -76,4 +78,4 @@ gh pr view 399 --json state,isDraft,title,url
 gh pr list --state open --limit 15
 ```
 
-Expected tip: **`b1c048f2f`** until this tip merges; then this tip's merge SHA. #399 stays DRAFT until paste; #357 foreign (leave alone); #363/#314 CONFLICTING DRAFT skip; no further ungated cloud slices until a paste above.
+Expected tip: **`62d36ca06`** (pre-**#402** merge); refresh after #402 lands. #399 stays DRAFT until paste; #363/#314 CONFLICTING DRAFT skip; no further ungated cloud slices until a paste above.

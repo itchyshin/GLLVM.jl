@@ -1,3 +1,12 @@
+## 2026-09-16 — Post-#357 rehydrate + #402 hygiene (`docs/paste-gated-scaffolds-20260916`)
+
+- **origin/main** @ **`62d36ca06`** (#407). Confirmed **#357** on `main` @ **`5ee6dc596`**
+  (bridge lognormal + truncated-Poisson logLik receipts). Board/packets: #357 **DONE** (not
+  foreign); stale tip `b1c048f2f` → **`62d36ca06`**; #401 node24 **DONE**. Open: **#402** docs
+  runbooks (merge when Documenter green); DRAFT **#399** paste-gated. Ungated engine slice: **none**.
+  Goal **not** complete.
+- Commands: `git fetch origin main`; `gh pr list --state open`; `gh pr checks 402`.
+
 ## 2026-09-16 — Real noon briefing refresh (`docs/noon-real-briefing-20260916`)
 
 - **origin/main** @ **`ebde07f00`** before edit (#406). Replaced false #403 ~06:00 MDT “noon” wake
@@ -34,6 +43,13 @@
   FAIL (OK per #323). Conflict resolved: `docs/dev-log/check-log.md` only. Board + checkpoint tip;
   paste gates unchanged; goal **IN PROGRESS**.
 - Commands: `git fetch origin`; `gh pr merge 357 --squash`; `gh pr view 357 --json mergeCommit`.
+
+## 2026-09-16 — Paste-gated unlock scaffolds (Stage1 / S4 / Totoro runbook-ready)
+
+- Docs-only paste-gated runbooks under `docs/dev-log/plans/2026-09-16-*-paste-gated*.md`
+  (**#402**; runbook ready; paste still required; no probe / no Totoro / no Stage 1 `src/`).
+  Delta A remains DRAFT **#399**.
+- Goal **not** complete.
 
 ## 2026-09-16 - Adversarial rehydrate post-#397 (`docs/adversarial-rehydrate-20260916`)
 
