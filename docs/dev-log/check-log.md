@@ -52,6 +52,14 @@
   Goal **not** complete.
 - Commands: `git fetch origin main`; `git rev-parse origin/main`; `rg 'leave.*357|487e2cb74|62091750d' docs LOOP AGENTS.md`.
 
+## 2026-09-16 — D3 Stage 1 paste harness DRAFT (paste `G0 Stage 1`)
+
+- Branch `feat/d3-stage1-harness-draft-20260916`: paste-gated driver
+  `tools/loading_profile/run_d3_stage1_scaffold.jl` +
+  `d3_stage1_harness.jl`; test `test/test_loading_profile_stage1_harness.jl`.
+  **No** public `loading_profile` export; **no** ledger rebind; **no** Stage 1 done claim.
+- Commands: `julia --project=. test/test_loading_profile_stage1_harness.jl`
+
 ## 2026-09-16 — Four DRAFT paste harnesses on canonical packet (`docs/four-draft-paste-packet-20260916`)
 
 - **origin/main** @ **`576cd927d`** before merge. Board + [`owed/2026-09-16-post-402-paste-packet.md`](owed/2026-09-16-post-402-paste-packet.md) list DRAFT **#399/#409/#410/#411** (do not merge without paste). Goal **not** complete.
