@@ -1,3 +1,12 @@
+## 2026-09-16 — Post-#376/#377 board + Tweedie local receipt (`docs/post-376-377-tweedie-local-20260916`)
+
+- #376 MERGED @ `47fcb23ee` (six holdout SO cells); #377 MERGED @ `e47430735` (docs tip). Tweedie
+  estimated-power rebased locally on `feat/tweedie-estimated-power-so-20260915` @ `da83a47d8`
+  (unpushed; option A PARTIAL; `eoo_claimed=false`). Board/checkpoint receipt rebased onto main
+  after #378 `#383` docs tip. #357/#363/#314 skipped.
+- After-task: `docs/dev-log/after-task/2026-09-16-post-376-377-tweedie-local.md`.
+- Commands: `git fetch origin`; `git rebase origin/main` on PR #380 branch.
+
 ## 2026-09-16 — Tweedie estimated shared-power SO cell (`feat/tweedie-shared-power-so-20260916`)
 
 - Option A: `cell_tweedie_shared` + `r_fit_se_tweedie_shared` (adapter + sdreport) + smoke.
