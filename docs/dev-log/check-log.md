@@ -1,3 +1,13 @@
+## 2026-09-16  -  Morning wake tip + Rose WARN (`docs/morning-wake-briefing-20260916`)
+
+- Tip base `b68aa3da9` (#390). Rose recheck WARN: #384 and #391 both Ready+MERGEABLE; both
+  **HOLD** (#385/#388 push-auth; authorize one / close other). Do not merge either. Stale board
+  lines claiming "#384 DRAFT" or "EOO local/unpushed" corrected. #357 leave alone; goal incomplete;
+  paste gates unchanged.
+- Files: board, `LOOP/checkpoint.md`, overnight handover amend, morning wake briefing + owed twin.
+- Commands: `git fetch origin main`; `gh pr view 384,391 --json isDraft,mergeable,mergeStateStatus`;
+  `python3 ~/shinichi-brain/tools/slop_check.py` on briefing/handover paths.
+
 ## 2026-09-16 — Post-#387 board + checkpoint (`docs/true-parity-tip-post-387-20260916`)
 
 - Tip `8321d5ce6` (#387 MERGED). Tweedie EOO rebased locally @ `e84824c40` (unpushed). No open
