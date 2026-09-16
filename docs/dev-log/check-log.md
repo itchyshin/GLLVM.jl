@@ -1,8 +1,17 @@
+## 2026-09-16 — Post-#374+#376 board refresh (`cursor/board-refresh-374-376-a0ce`)
+
+- Tip rehydrate after `#374` `eeb7e092` + `#376` `47fcb23e` (+ `#377` which still called #376
+  CONFLICTING). Board + `LOOP/checkpoint.md` corrected; holdouts already current from #376.
+  Mac owns next ungated; cloud babysit-only. #357/#363/#314 untouched; goal **not** complete.
+- After-task: `docs/dev-log/after-task/2026-09-16-board-refresh-374-376.md`.
+- Commands: `git fetch origin main`; `git rev-parse origin/main`; `gh pr list --state open`;
+  `gh pr view 374,376,377 --json state,mergeCommit`.
+
 ## 2026-09-16 — Post-#374 board + checkpoint receipt (`docs/true-parity-post-374-20260916`)
 
 - #374 MERGED @ `eeb7e092` (BB shared-φ SO cell; PARTIAL native Wald, φ unpaired). Board +
   `LOOP/checkpoint.md` tip; #376 six-holdout CONFLICTING noted (not Tweedie EOO). #357 untouched;
-  goal **not** complete.
+  goal **not** complete. **Superseded** by post-#374+#376 board refresh after #376/#377 landed.
 - After-task: `docs/dev-log/after-task/2026-09-16-post-374-merge-receipt.md`.
 - Commands: `git fetch origin`; `git rev-parse origin/main`; `gh pr view 376 --json mergeable,headRefName`.
 
