@@ -1,3 +1,8 @@
+## 2026-09-16 — Four DRAFT paste harnesses on canonical packet (`docs/four-draft-paste-packet-20260916`)
+
+- **origin/main** @ **`576cd927d`** before merge. Board + [`owed/2026-09-16-post-402-paste-packet.md`](owed/2026-09-16-post-402-paste-packet.md) list DRAFT **#399/#409/#410/#411** (do not merge without paste). Goal **not** complete.
+- Commands: `git fetch origin main`; `gh pr view 399 409 410 411 --json isDraft,url`.
+
 ## 2026-09-16 — Post-#402 board tip (`docs/post-402-board-tip-20260916`)
 
 - **origin/main** @ **`08ca9e487`** (#402 MERGED). No non-draft mergeable PRs (#399/#363/#314 DRAFT skip).
