@@ -23,9 +23,9 @@ Tip (2026-09-16): **`62d36ca06`** (pre-**#402** runbook merge; engine #391 @ `c4
 | D3 Stage 1 | **PASTE-GATED** (runbook ready) | **[#402](https://github.com/itchyshin/GLLVM.jl/pull/402)** + [`plans/2026-09-16-d3-loading-profile-stage1-paste-gated-scaffold.md`](../plans/2026-09-16-d3-loading-profile-stage1-paste-gated-scaffold.md); paste `G0 Stage 1` |
 | S4 public-formula probe | **PASTE-GATED** (runbook ready) | **#402** + [`plans/2026-09-16-s4-probe-julia-checklist-paste-gated.md`](../plans/2026-09-16-s4-probe-julia-checklist-paste-gated.md); paste `S4 probe yes` |
 | Totoro #323 Track A | **PASTE-GATED** (runbook ready) | **#402** + [`plans/2026-09-16-totoro-323-track-a-runbook-paste-gated.md`](../plans/2026-09-16-totoro-323-track-a-runbook-paste-gated.md); paste `ack Totoro D-139 #323 Track A` |
-| #357 bridge logLik | **FOREIGN** | Leave alone |
+| #357 bridge logLik | **DONE** | MERGED on `main` @ `5ee6dc596` (lognormal + truncated-Poisson bridge logLik receipts) |
 | #363 / #314 | **SKIP** | CONFLICTING DRAFT |
-| Ungated CI | **#401** node24 | Merge when green (ungated hygiene) |
+| Ungated CI | **#401** node24 | **DONE** @ `c33745302` |
 
 **Ungated implementable engine slice:** **none**. DRAFT **#399** (engine). **#402** lands runbooks only (paste still required for execution).
 

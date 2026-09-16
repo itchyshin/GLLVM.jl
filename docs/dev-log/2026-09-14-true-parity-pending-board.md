@@ -10,7 +10,7 @@ Rehydrate: GLLVM.jl `origin/main` @ **`62d36ca06`** (#407 noon briefing; #406; #
 
 ---
 
-## Named-item scorecard (adversarial, tip `b1c048f2f` + DRAFT #399)
+## Named-item scorecard (adversarial, tip `62d36ca06` + DRAFT #399 / open #402)
 
 | Item | Verdict |
 |------|---------|
@@ -94,7 +94,7 @@ Canonical packet: [`owed/2026-09-16-post-399-paste-packet.md`](owed/2026-09-16-p
 
 ## Agent rules
 
-- Mac owns true-parity (STARTED 2026-09-15). Tip @ **`b1c048f2f`** (#398). DRAFT **#399** waits for paste (not ready / not ACCEPTED). Cloud ungated **exhausted**; Shinichi pastes only for next work. **#384** **CLOSED** superseded.
+- Mac owns true-parity (STARTED 2026-09-15). Tip @ **`62d36ca06`** (#407; pre-**#402** merge). **#357** **MERGED** @ `5ee6dc596` (do not revert). DRAFT **#399** waits for paste (not ready / not ACCEPTED). Cloud ungated **exhausted**; Shinichi pastes only for next work. **#384** **CLOSED** superseded.
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.

@@ -1,3 +1,12 @@
+## 2026-09-16 — Post-#357 rehydrate + #402 hygiene (`docs/paste-gated-scaffolds-20260916`)
+
+- **origin/main** @ **`62d36ca06`** (#407). Confirmed **#357** on `main` @ **`5ee6dc596`**
+  (bridge lognormal + truncated-Poisson logLik receipts). Board/packets: #357 **DONE** (not
+  foreign); stale tip `b1c048f2f` → **`62d36ca06`**; #401 node24 **DONE**. Open: **#402** docs
+  runbooks (merge when Documenter green); DRAFT **#399** paste-gated. Ungated engine slice: **none**.
+  Goal **not** complete.
+- Commands: `git fetch origin main`; `gh pr list --state open`; `gh pr checks 402`.
+
 ## 2026-09-16 — Real noon briefing refresh (`docs/noon-real-briefing-20260916`)
 
 - **origin/main** @ **`ebde07f00`** before edit (#406). Replaced false #403 ~06:00 MDT “noon” wake
