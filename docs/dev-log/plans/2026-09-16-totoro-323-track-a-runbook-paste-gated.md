@@ -1,6 +1,6 @@
-# Totoro #323 Track A — D-139 runbook (paste-gated DRAFT)
+# Totoro #323 Track A — D-139 runbook (paste-gated #402)
 
-**DRAFT:** do **not** SSH Totoro, do **not** launch oracle build, do **not** merge until maintainer paste **`ack Totoro D-139 #323 Track A`**.
+**Runbook:** ready (docs-only merge **#402**). **Execution:** paste **`ack Totoro D-139 #323 Track A`** still required — no SSH / oracle launch until then.
 
 **Issue:** [#323](https://github.com/itchyshin/GLLVM.jl/issues/323) (advisory Frozen R 0.7.0 family smoke).
 

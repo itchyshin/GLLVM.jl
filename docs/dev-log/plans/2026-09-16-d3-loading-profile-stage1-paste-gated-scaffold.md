@@ -1,6 +1,6 @@
-# D3 `loading_profile` Stage 1 — paste-gated scaffold (DRAFT PR)
+# D3 `loading_profile` Stage 1 — paste-gated runbook (#402)
 
-**DRAFT:** do **not** mark ready, do **not** merge, do **not** export API until maintainer paste **`G0 Stage 1`**.
+**Runbook:** ready (docs-only merge **#402**). **Execution:** maintainer paste **`G0 Stage 1`** still required — no `src/` export until then.
 
 **Programme:** true-parity T5 row 8 (`namespace/export/loading_profile` → `BLOCKED_NEEDS_JULIA_SURFACE`).
 

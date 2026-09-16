@@ -1,6 +1,6 @@
-# S4 public-formula probe — Julia-side checklist (paste-gated DRAFT)
+# S4 public-formula probe — Julia-side checklist (paste-gated runbook #402)
 
-**DRAFT:** do **not** run the probe, do **not** merge engine changes, do **not** edit gllvmTMB `src/` until maintainer paste **`S4 probe yes`**.
+**Runbook:** ready (docs-only merge **#402**). **Execution:** paste **`S4 probe yes`** still required — no probe run, no engine merge, no gllvmTMB `src/` until then.
 
 **Goal gate:** [`LOOP/GOAL.md`](../../LOOP/GOAL.md) QS4 (second explicit yes only).
 
