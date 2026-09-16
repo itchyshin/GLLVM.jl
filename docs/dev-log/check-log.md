@@ -20182,3 +20182,10 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 ## 2026-09-15 — SO toy receipts inventory (PARTIAL native Wald)
 
 - Docs-only: bank `docs/dev-log/after-task/2026-09-15-so-toy-receipts-inventory.md` (six holdout families; paired SO toy/R SE Δ missing for all; Student-t fixed-ν Wald still on #367).
+
+## 2026-09-16 - post-#412 stop refresh (`docs/post-412-stop-refresh-20260916`)
+
+- Rehydrated `origin/main` @ `62091750d` after #412. Lane preflight reported a foreign direct-to-main lane; claimed a narrow docs lease before edits.
+- Open GLLVM.jl PRs: #399/#409/#410/#411 paste-gated DRAFTs with Julia shards + Documenter green and Frozen R advisory failing; #363/#314 DRAFT DIRTY and skipped. No non-draft PR was mergeable.
+- gllvmTMB quick scan: no mergeable docs-only leftover suitable for this lane; no gllvmTMB edits.
+- Docs-only tip refresh: board, `LOOP/checkpoint.md`, canonical paste packet, and after-task `docs/dev-log/after-task/2026-09-16-post-412-stop-refresh.md`. No Julia/R tests run.
