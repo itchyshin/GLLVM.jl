@@ -8,11 +8,11 @@ CreateGoal: armed in parent chat (2026-09-14). Do not mark complete.
 
 ARC IN PROGRESS: true-parity tranche. Board: [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md).
 
-Rehydrate (2026-09-16): GLLVM.jl origin/main tip includes `#374` `eeb7e092` + `#376` `47fcb23e` (+ `#377` tip docs, corrected here); gllvmTMB origin/main @ fba20d613.
+Rehydrate (2026-09-16): GLLVM.jl origin/main tip includes `#378` `67247f52` (Tweedie shared-power SO cell, on top of `#374` `eeb7e092` + `#376` `47fcb23e` + `#379`/`#381`/`#382` docs); gllvmTMB origin/main @ fba20d613.
 
 NEXT (ranked):
 
-1. **Mac owns next ungated** engine/Wald slice (cloud babysit-only). Natural candidate: Tweedie estimated-power EOO (fixed-power already PARTIAL; no paste string on board).
+1. **Mac owns next ungated** engine/Wald slice (cloud babysit-only). Natural candidates: species estimated-power `TweediePerTraitPowerFit` Wald (#378's own named follow-up; shared-power fixed-plug-in cell now PARTIAL on main), or FORWARD/TWIN_ALIAS hygiene (#350/#355 tool rows).
 2. #357 bridge receipts: foreign; CONFLICTING (check-log.md only). Do not edit.
 3. T4 realistic-size second-order: Totoro grid; D-139 ack before spend (Mac / paste).
 4. Delta SO dispersion alignment: paste `accept delta dispersion A` (Mac / brain).
@@ -20,14 +20,14 @@ NEXT (ranked):
 6. S4 probe: `S4 probe yes` only.
 7. Project.toml stays 0.3.0.
 
-IN FLIGHT: docs tip post-#374+#376; #357 CONFLICTING (foreign). Skipped #363/#314.
+IN FLIGHT: none open on this lane as of this tip; #357 CONFLICTING (foreign). Skipped #363/#314.
 
-DONE this tranche: ledger gap inventory; Delta SO wiring (#347); §2 Hessian (A); twin-bridge inventory (#353); #359 cloglog @test fix; #360 board; #358/#1284 arcG; #362 OrdinalPerTrait Wald; #356 TweedieGrouped Wald; #361 Lognormal+TruncPois+TruncNB2 Wald; #355 parity_ledger aliases; #364/#365 board tips; **#366 MultinomialFit Wald** (`c1842dd69`); **#369/#370/#371 Mac handover + goal**; **#367 Student-t fixed-ν Wald** (`9d300783c`); **#372/#373 tips**; **#374 BB shared-φ SO** (`eeb7e092`); **#376 six holdout SO cells** (`47fcb23e`); **#377 tip** (stale CONFLICTING note corrected by board-refresh).
+DONE this tranche: ledger gap inventory; Delta SO wiring (#347); §2 Hessian (A); twin-bridge inventory (#353); #359 cloglog @test fix; #360 board; #358/#1284 arcG; #362 OrdinalPerTrait Wald; #356 TweedieGrouped Wald; #361 Lognormal+TruncPois+TruncNB2 Wald; #355 parity_ledger aliases; #364/#365 board tips; **#366 MultinomialFit Wald** (`c1842dd69`); **#369/#370/#371 Mac handover + goal**; **#367 Student-t fixed-ν Wald** (`9d300783c`); **#372/#373 tips**; **#374 BB shared-φ SO** (`eeb7e092`); **#376 six holdout SO cells** (`47fcb23e`); **#377/#379 tips** (stale CONFLICTING note corrected by board-refresh); **#381 overnight handover**; **#382 morning-briefing refresh**; **#378 Tweedie shared-power SO cell** (`67247f52`, option A plug-in power, `b_fix` block only).
 
 DISPOSED: #323 waive; matched-θ C; §2 A; arcG Julia-only ACCOUNTED (#358).
 
 OPEN GATES: QS4; Stage 1; version bump forbidden; foreign #357 (conflict); Delta dispersion paste.
 
-HOLD OUTS (SO): GP-1 / Student-t free ν / Delta species dispersion / BB shared-φ **φ pairing** / Λ raw / Tweedie **estimated power** still OUT or open; Ordinal+Lognormal+Trunc*+Multinomial FE+Student-t fixed-ν+BB shared-φ **cell** PARTIAL (native Wald + paired toy cells; bridge CI waits #357).
+HOLD OUTS (SO): GP-1 / Student-t free ν / Delta species dispersion / BB shared-φ **φ pairing** / Λ raw / Tweedie **estimated (jointly-optimised) power** still OUT or open; Ordinal+Lognormal+Trunc*+Multinomial FE+Student-t fixed-ν+BB shared-φ+Tweedie shared-power **cells** PARTIAL (native Wald + paired toy cells; bridge CI waits #357).
 
 RESUME: Mac owns programme + next ungated slice. Cloud does **not** start GP-1 / free-ν / Λ raw / Delta paste / Stage1 / S4 / Totoro / Project.toml / gllvmTMB engine. No Stage 1 / S4 / Totoro without paste; do not edit #357.
