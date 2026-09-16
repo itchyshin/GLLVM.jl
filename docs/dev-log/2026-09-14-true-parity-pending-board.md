@@ -2,11 +2,11 @@
 
 STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste.
 
-**CLOUD STOP (2026-09-16):** Ungated cloud queue **exhausted** after **#391** (Tweedie estimated-power SO) + **#393** (board refresh). Tip @ **`df852f6b2`** (#393). Cloud does **not** start Stage 1 / S4 / Totoro / Delta / GP-1 / free-ν / Λ raw / `Project.toml` bump. **Next requires Shinichi pastes only** (exact strings below). Goal **not** complete.
+**CLOUD STOP (2026-09-16):** Ungated cloud queue **exhausted** after **#391** (Tweedie estimated-power SO) + **#393–#394** (board + paste-queue STOP). Tip @ **`947656d12`** (#394). Cloud does **not** start Stage 1 / S4 / Totoro / Delta / GP-1 / free-ν / Λ raw / `Project.toml` bump. **Next requires Shinichi pastes only** (exact strings below). Goal **not** complete.
 
-Merged SO tranche: #374/#376/#378 + **#391** Tweedie estimated-power SO (shared+species; Rose winner over #384) @ **`c4dba35c4`**. Docs through #387–#393. **Rose HOLD cleared:** #391 squash-merged; **#384** superseded (close owed — cloud token lacks `pull_requests=write`). Open foreign: **#357** CONFLICTING (leave alone). Unrelated DRAFT skips: **#363/#314**.
+Merged SO tranche: #374/#376/#378 + **#391** Tweedie estimated-power SO (shared+species; Rose winner over #384) @ **`c4dba35c4`**. Docs through #387–#394. **Rose HOLD cleared:** #391 squash-merged; **#384** **CLOSED** superseded (2026-09-16). Open foreign: **#357** CONFLICTING (leave alone). Unrelated DRAFT skips: **#363/#314**.
 
-Rehydrate: GLLVM.jl `origin/main` @ **`df852f6b2`** (#393 tip; engine tip #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. Paste-queue stop after-task: [`after-task/2026-09-16-paste-queue-stop.md`](after-task/2026-09-16-paste-queue-stop.md). Morning wake (pre-#391 HOLD snapshot; tip SHA superseded): [`handover/2026-09-16-morning-wake-briefing.md`](handover/2026-09-16-morning-wake-briefing.md).
+Rehydrate: GLLVM.jl `origin/main` @ **`947656d12`** (#394 tip; engine #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. Receipts: [`after-task/2026-09-16-tweedie-estimated-power-so.md`](after-task/2026-09-16-tweedie-estimated-power-so.md); paste-queue STOP: [`after-task/2026-09-16-paste-queue-stop.md`](after-task/2026-09-16-paste-queue-stop.md). Morning wake (pre-#391 HOLD snapshot): [`handover/2026-09-16-morning-wake-briefing.md`](handover/2026-09-16-morning-wake-briefing.md).
 
 ---
 
@@ -51,7 +51,7 @@ Delta SO species dispersion: still OUT until paste `accept delta dispersion A`.
 BB shared-φ: **PARTIAL** (native Wald + `betabinomial_shared` toy cell; **β block only** - per-trait φ on R not paired in live Δ).  
 Six-family holdout live-Δ: **MERGED** (#376) - Lognormal / OrdinalPerTrait / TruncPois / TruncNB2 / Multinomial FE / Student-t fixed-ν paired toy cells (β[] blocks; TruncNB2 large se_rel documented as shared-`r` vs R per-trait φ).  
 Tweedie shared-power: **MERGED** (#378) - `cell_tweedie_shared`, option A (plug-in power, not jointly estimated); `b_fixed`/β block only.  
-Tweedie estimated-power (`tweedie_shared` / `tweedie_species` EOO): **MERGED** (#391 @ `c4dba35c4`) — Mac shared+species; option A β-block compare; power coordinates not paired as jointly estimated. **#384** superseded (do not merge; close owed).  
+Tweedie estimated-power (`tweedie_shared` / `tweedie_species` EOO): **MERGED** (#391 @ `c4dba35c4`) → **PARTIAL** (native Wald + cells + logLik; option A β-block; `eoo_claimed=false`; not D1). **#384** CLOSED superseded.  
 Still OUT / open: GP-1 ruling / Student-t free ν / Λ raw / Tweedie **jointly-optimised** (not plug-in) power / BB φ pairing / Delta species dispersion paste.
 
 ### Version
