@@ -1,58 +1,54 @@
-# GLLVM.jl morning wake briefing - 2026-09-16 (post-#396 refresh)
+# GLLVM.jl morning wake briefing - 2026-09-16 (post-#397 adversarial rehydrate)
 
 Status: **IN PROGRESS**. Goal **not** complete. Do not claim true-parity done.
 
-Live refresh: **2026-09-16 ~05:00+ MDT** (America/Denver), from `git fetch origin main`,
-`gh pr list`, and board rehydrate. Tip for this note: `origin/main` @ **`d2353b013`**
-(`docs: post-#395 paste packet + tip @ e7f869932 (#396)`). If fetch shows a newer tip after
-this lands, rehydrate SHA before acting.
+Live refresh: **2026-09-16** from `git fetch origin main`, `gh pr list`, and adversarial board rehydrate. Tip: `origin/main` @ **`8d74f8007`** (`docs: post-#396 paste-only STOP tip @ d2353b013 (#397)`).
 
-Canonical overnight narrative: [`2026-09-16-overnight-true-parity-handover.md`](2026-09-16-overnight-true-parity-handover.md).
-Paste packet (canonical): [`../owed/2026-09-16-post-395-paste-packet.md`](../owed/2026-09-16-post-395-paste-packet.md).
+Canonical overnight narrative (historical EOO HOLD superseded): [`2026-09-16-overnight-true-parity-handover.md`](2026-09-16-overnight-true-parity-handover.md).  
+Paste packet (canonical): [`../owed/2026-09-16-post-397-paste-packet.md`](../owed/2026-09-16-post-397-paste-packet.md).
 
-## STOP: ungated queue exhausted (honest)
+## STOP: ungated queue exhausted (adversarial confirm)
 
-- Cloud / this lane: **no further ungated engine or docs invent-work**.
+- Cloud / this lane: **no further ungated engine work**.
 - **#391** MERGED (Tweedie estimated-power SO @ `c4dba35c4`). **#384** CLOSED superseded.
-- Docs tips through **#396**. Tip SHA **`d2353b013`**.
-- **Next requires Shinichi pastes only** (exact strings below). Goal stays incomplete.
+- Docs tips through **#397**. Tip SHA **`8d74f8007`**.
+- Packet tip SHA was stale at `d2353b013` after #397 merge; refreshed in post-#397 packet.
+- **Next requires Shinichi pastes only**. Goal stays incomplete.
+
+## Named-item verdicts
+
+| Item | Verdict |
+|------|---------|
+| Ledger gap | **DONE** (inventory) |
+| §2 A (delta dispersion) | **PASTE-GATED** |
+| #347 | **DONE** (shared-η); species paste-gated |
+| #357 | **FOREIGN** leave alone |
+| Leftover ours green PRs | **none** (#363/#314 DRAFT CONFLICTING) |
 
 ## Paste gates still needed
 
 ```text
 accept delta dispersion A
 ```
+After paste: accept Delta (A); wire `:species` CI + default twin cells; remeasure D1.
 
 ```text
 G0 Stage 1
 ```
+After paste: D3 `loading_profile` Stage 1.
 
 ```text
 S4 probe yes
 ```
+After paste: S4 public-formula probe (no R engine edits).
 
 ```text
 ack Totoro D-139 #323 Track A
 ```
+After paste: optional Totoro #323 Track A under D-139.
 
 ## Foreign / fences
 
 - **#357** OPEN foreign bridge logLik receipts: leave alone (even if MERGEABLE / CI green).
 - Skip unrelated DRAFTs **#363** / **#314** (both CONFLICTING).
 - No Stage 1 / S4 / Totoro / Delta / GP-1 / free-ν / Λ raw / `Project.toml` bump / gllvmTMB engine surgery without the matching paste.
-
-## DONE overnight (accurate through tip `d2353b013`)
-
-- **Student-t fixed-ν** native Wald `_CIFit` (#367) → PARTIAL (native Wald).
-- **BetaBinomial shared-φ** SO cell (#374) → PARTIAL (native Wald; φ unpaired in live Δ).
-- **Six paired SO cells** (#376): lognormal, ordinal-pertrait-probit, truncated-Poisson,
-  truncated-NB2, multinomial-FE, Student-t-fixed-ν → each PARTIAL (β / `b_fixed` block only).
-- **Tweedie shared-power** SO cell (#378) → PARTIAL (option A; power plug-in; β / `b_fixed` only).
-- **Tweedie estimated-power** SO (#391) → PARTIAL (shared+species EOO; Rose winner; #384 closed).
-- Docs tips **#385 through #396** (STOP + paste packet + after-tasks).
-
-## Open PRs at refresh (snapshot)
-
-- #357 lognormal + truncated-Poisson logLik: foreign; leave alone
-- #363 Cloud Agent env: DRAFT CONFLICTING (skip)
-- #314 Codex handover: DRAFT CONFLICTING (skip)
