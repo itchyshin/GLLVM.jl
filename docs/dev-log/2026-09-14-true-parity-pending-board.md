@@ -2,11 +2,11 @@
 
 STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste.
 
-**CLOUD STOP (2026-09-16):** Ungated cloud queue **exhausted** after **#391** (Tweedie estimated-power SO) + **#393–#394** (board + paste-queue STOP). Tip @ **`947656d12`** (#394). Cloud does **not** start Stage 1 / S4 / Totoro / Delta / GP-1 / free-ν / Λ raw / `Project.toml` bump. **Next requires Shinichi pastes only** (exact strings below). Goal **not** complete.
+**CLOUD STOP (2026-09-16):** Ungated cloud queue **exhausted** after **#391** (Tweedie estimated-power SO) + **#393–#395** (board, paste-queue STOP, #391 CI receipt). Tip @ **`e7f869932`** (#395). Cloud does **not** start Stage 1 / S4 / Totoro / Delta / GP-1 / free-ν / Λ raw / `Project.toml` bump. **Next requires Shinichi pastes only** (exact strings below). Goal **not** complete.
 
-Merged SO tranche: #374/#376/#378 + **#391** Tweedie estimated-power SO (shared+species; Rose winner over #384) @ **`c4dba35c4`**. Docs through #387–#394. **Rose HOLD cleared:** #391 squash-merged; **#384** **CLOSED** superseded (2026-09-16). Open foreign: **#357** CONFLICTING (leave alone). Unrelated DRAFT skips: **#363/#314**.
+Merged SO tranche: #374/#376/#378 + **#391** Tweedie estimated-power SO (shared+species; Rose winner over #384) @ **`c4dba35c4`**. Docs through #387–#395 (#387 TWIN_ALIAS; #389/#390 verify; #394 STOP; #395 post-#391 receipt). **Rose HOLD cleared:** #391 squash-merged; **#384** **CLOSED** superseded (2026-09-16). Open foreign: **#357** CONFLICTING (leave alone). Unrelated DRAFT skips: **#363/#314**.
 
-Rehydrate: GLLVM.jl `origin/main` @ **`947656d12`** (#394 tip; engine #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. Receipts: [`after-task/2026-09-16-tweedie-estimated-power-so.md`](after-task/2026-09-16-tweedie-estimated-power-so.md); paste-queue STOP: [`after-task/2026-09-16-paste-queue-stop.md`](after-task/2026-09-16-paste-queue-stop.md). Morning wake (pre-#391 HOLD snapshot): [`handover/2026-09-16-morning-wake-briefing.md`](handover/2026-09-16-morning-wake-briefing.md).
+Rehydrate: GLLVM.jl `origin/main` @ **`e7f869932`** (#395 tip; engine #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. **Canonical paste table:** [`owed/2026-09-16-post-395-paste-packet.md`](owed/2026-09-16-post-395-paste-packet.md). Receipts: [`after-task/2026-09-16-tweedie-estimated-power-so.md`](after-task/2026-09-16-tweedie-estimated-power-so.md); paste-queue STOP: [`after-task/2026-09-16-paste-queue-stop.md`](after-task/2026-09-16-paste-queue-stop.md).
 
 ---
 
@@ -79,13 +79,13 @@ Blocked on D-139 ack before Totoro spend (no separate paste string beyond an exp
 | `S4 probe yes` | S4 public-formula probe |
 | `ack Totoro D-139 #323 Track A` | Optional Totoro #323 Track A under D-139 |
 
-After-task inventory: [`after-task/2026-09-16-paste-queue-stop.md`](after-task/2026-09-16-paste-queue-stop.md).
+After-task inventory: [`after-task/2026-09-16-paste-queue-stop.md`](after-task/2026-09-16-paste-queue-stop.md). Post-#395 paste packet: [`owed/2026-09-16-post-395-paste-packet.md`](owed/2026-09-16-post-395-paste-packet.md).
 
 ---
 
 ## Agent rules
 
-- **Mac owns true-parity (STARTED 2026-09-15).** Tip @ **`df852f6b2`** (#393). Cloud ungated **exhausted** after #391+#393 — **Shinichi pastes only** for next work. **#384** superseded — parent/Mac close without merge if still OPEN.
+- **Mac owns true-parity (STARTED 2026-09-15).** Tip @ **`e7f869932`** (#395). Cloud ungated **exhausted** after #391+#393–#395 — **Shinichi pastes only** for next work. **#384** **CLOSED** superseded.
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.
