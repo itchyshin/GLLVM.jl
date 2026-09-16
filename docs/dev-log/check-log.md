@@ -27,6 +27,7 @@
   check-log, `after-task/2026-09-16-post-399-paste-tip.md`.
 - Commands: `git fetch origin main`; `git rev-parse origin/main`; `gh pr view 399`.
 
+<<<<<<< HEAD
 ## 2026-09-16 — Post-#357 merge board tip (`docs/post-357-merge-tip-20260916`)
 
 - **#357** squash-merged @ **`5ee6dc596`** (lognormal + truncated-Poisson bridge logLik receipts;
@@ -34,6 +35,16 @@
   FAIL (OK per #323). Conflict resolved: `docs/dev-log/check-log.md` only. Board + checkpoint tip;
   paste gates unchanged; goal **IN PROGRESS**.
 - Commands: `git fetch origin`; `gh pr merge 357 --squash`; `gh pr view 357 --json mergeCommit`.
+=======
+## 2026-09-16 — Paste-gated unlock scaffolds (Stage1 / S4 / Totoro DRAFT)
+
+- **origin/main** @ **`6ab636b7f`** (#400). Three docs-only paste-gated runbooks under
+  `docs/dev-log/plans/2026-09-16-*-paste-gated*.md` (DRAFT PR; not ready; no probe / no Totoro /
+  no Stage 1 `src/`). Delta A remains DRAFT **#399**. #357 foreign; #401 node24 CI ungated merge
+  when green (polled separately).
+- Commands: `git fetch origin main`; worktree `~/local-scratch/lanes/GLLVM-adaptive-noon-20260916`.
+- Goal **not** complete.
+>>>>>>> b9b2f3f69 (docs: check-log entry for paste-gated scaffold DRAFT)
 
 ## 2026-09-16 - Adversarial rehydrate post-#397 (`docs/adversarial-rehydrate-20260916`)
 
