@@ -1,8 +1,8 @@
 # After-task: post-#396 paste-only STOP tip
 
-**Date:** 2026-09-16  
-**Branch:** `docs/post-396-paste-only-tip-20260916` (docs-only tip)  
-**Base:** `origin/main` @ `d2353b013` (#396)
+Date: 2026-09-16  
+Branch: `docs/post-396-paste-only-tip-20260916` (docs-only tip)  
+Base: `origin/main` @ `d2353b013` (#396)
 
 ## Scope
 
