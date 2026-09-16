@@ -80,9 +80,10 @@ marginal's log-det is `hessian::Symbol`, generic default `:fisher`
 
 - **Tweedie grouped — ACCEPTED (A), 2026-09-15.** Default **`hessian =
   :observed`** on `fit_tweedie_gllvm_grouped` / grouped marginal
-  (`src/families/grouped_dispersion.jl`). First-order twin receipts stand;
-  **second-order Wald** for `TweedieGroupedFit` remains **OUT** until `_CIFit`
-  dispatch exists (holdout table unchanged).
+  (`src/families/grouped_dispersion.jl`). First-order twin receipts stand.
+  `TweedieGroupedFit` Wald `_CIFit` landed (#356). Estimated-shared SO cell
+  `tweedie_shared` compares the intercept block only (option A). Species
+  estimated-power SO remains unattempted. **≠** programme §7.
 
 Net: **GP-1** remains the only Fisher-retained family on the public Laplace
 path by decision; cloglog and Tweedie-grouped defaults are **signed observed**.

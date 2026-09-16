@@ -210,9 +210,27 @@ function r_fit_se_delta(y::AbstractMatrix, K::Integer; family::Symbol)
     )
 end
 
+# Extract sd_report fixed block after a gllvmTMB fit (or adapter rebuild).
+function _run_r_tweedie_sd_extract!()
+    R"""
+    has_sd  <- !is.null(fit_r$sd_report)
+    nm <- character(0); pf <- numeric(0); cv <- matrix(numeric(0), 0, 0)
+    pdh <- NA; rcond <- NA_real_
+    if (has_sd) {
+        sdr <- fit_r$sd_report
+        pf  <- sdr$par.fixed
+        cv  <- sdr$cov.fixed
+        nm  <- names(pf)
+        pdh <- isTRUE(sdr$pdHess)
+        rcond <- tryCatch(kappa(cv), error = function(e) NA_real_)
+    }
+    """
+    return nothing
+end
+
 # Tweedie fixed-power (parity with Julia `fit_tweedie_gllvm_grouped(...; power=p0)`).
-# Shared/species estimated power stays out of this helper — use the reference
-# adapter in `fit_gllvmtmb_parity_tweedie` for first-order only until a public R knob exists.
+# Estimated shared power: `r_fit_se_tweedie_shared` (adapter + sdreport).
+# Species estimated power stays out until its own SO cell.
 function r_fit_se_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Real)
     (1.0 < p_fixed < 2.0) || throw(ArgumentError(
         "r_fit_se_tweedie: p_fixed must be in (1, 2); got $p_fixed"))
@@ -238,18 +256,8 @@ function r_fit_se_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Real)
     r_logL  <- as.numeric(stats::logLik(fit_r))
     r_obj   <- as.numeric(fit_r$opt$objective)
     r_conv  <- identical(as.integer(fit_r$opt$convergence), 0L)
-    has_sd  <- !is.null(fit_r$sd_report)
-    nm <- character(0); pf <- numeric(0); cv <- matrix(numeric(0), 0, 0)
-    pdh <- NA; rcond <- NA_real_
-    if (has_sd) {
-        sdr <- fit_r$sd_report
-        pf  <- sdr$par.fixed
-        cv  <- sdr$cov.fixed
-        nm  <- names(pf)
-        pdh <- isTRUE(sdr$pdHess)
-        rcond <- tryCatch(kappa(cv), error = function(e) NA_real_)
-    }
     """
+    _run_r_tweedie_sd_extract!()
     return (
         logLik = rcopy(Float64, R"r_logL"),
         objective = rcopy(Float64, R"r_obj"),
@@ -261,6 +269,81 @@ function r_fit_se_tweedie(y::AbstractMatrix, K::Integer; p_fixed::Real)
         pd_hessian = rcopy(Any, R"pdh"),
         r_condition_number = rcopy(Any, R"rcond"),
         wall_fit = rcopy(Float64, R"wall_fit"),
+    )
+end
+
+# Estimated shared Tweedie power — reference constraint adapter + TMB sdreport.
+# Julia-side tools only (same adapter as `fit_gllvmtmb_parity_tweedie`); no R engine change.
+function r_fit_se_tweedie_shared(y::AbstractMatrix, K::Integer)
+    p, n = size(y)
+    _require_gllvmtmb!()
+    @rput y K p n
+    R"""
+    trait_names <- paste0("t", seq_len(p))
+    df_long <- data.frame(
+        site  = factor(rep(seq_len(n), each = p)),
+        trait = factor(rep(trait_names, times = n), levels = trait_names),
+        value = as.vector(y)
+    )
+    fam_obj <- gllvmTMB::tweedie(link = "log")
+    t0 <- Sys.time()
+    fit_r <- gllvmTMB(
+        value ~ 0 + trait + latent(0 + trait | site, d = K, unique = FALSE),
+        data = df_long, unit = "site", trait = "trait", family = fam_obj,
+        control = gllvmTMBcontrol(n_init = 1L, se = FALSE)
+    )
+    if (!identical(fit_r$estimator, "ML") || isTRUE(fit_r$aghq$used) ||
+        !identical(fit_r$random, "z_B") || !all(fit_r$tmb_data$family_id == 6L)) {
+        stop("shared Tweedie power adapter requires an ordinary ML, all-Tweedie, z_B-only Laplace fit", call. = FALSE)
+    }
+    shared_map <- fit_r$tmb_map
+    shared_params <- fit_r$tmb_params
+    fitted_params <- fit_r$tmb_obj$env$parList(fit_r$opt$par)
+    for (nm in intersect(names(shared_params), names(fitted_params))) {
+        shared_params[[nm]] <- fitted_params[[nm]]
+    }
+    length(shared_params$logit_p_tweedie) == p ||
+        stop("shared Tweedie adapter expected one power entry per trait", call. = FALSE)
+    shared_params$logit_p_tweedie[] <- mean(fitted_params$logit_p_tweedie)
+    shared_map$logit_p_tweedie <- factor(rep(1L, p))
+    obj_shared <- TMB::MakeADFun(
+        data = fit_r$tmb_data, parameters = shared_params, map = shared_map,
+        random = fit_r$random, DLL = "gllvmTMB", silent = TRUE
+    )
+    sum(grepl("^logit_p_tweedie", names(obj_shared$par))) == 1L ||
+        stop("shared Tweedie adapter did not produce exactly one free power coordinate", call. = FALSE)
+    opt_shared <- nlminb(start = obj_shared$par, objective = obj_shared$fn,
+                         gradient = obj_shared$gr)
+    fit_r$opt <- opt_shared
+    fit_r$tmb_obj <- obj_shared
+    fit_r$tmb_params <- shared_params
+    fit_r$tmb_map <- shared_map
+    obj_shared$fn(opt_shared$par)
+    fit_r$report <- obj_shared$report(obj_shared$env$last.par.best)
+    p_report <- as.numeric(fit_r$report$p_tweedie)
+    if (!all(is.finite(p_report)) || length(unique(round(p_report, 12))) != 1L) {
+        stop("shared Tweedie adapter report does not carry one common power", call. = FALSE)
+    }
+    fit_r$sd_report <- TMB::sdreport(obj_shared, par.fixed = opt_shared$par, getJointPrecision = FALSE)
+    wall_fit <- as.numeric(Sys.time() - t0, units = "secs")
+    r_logL  <- -as.numeric(fit_r$opt$objective)
+    r_obj   <- as.numeric(fit_r$opt$objective)
+    r_conv  <- identical(as.integer(fit_r$opt$convergence), 0L)
+    """
+    _run_r_tweedie_sd_extract!()
+    return (
+        logLik = rcopy(Float64, R"r_logL"),
+        objective = rcopy(Float64, R"r_obj"),
+        converged = rcopy(Bool, R"r_conv"),
+        has_sd = rcopy(Bool, R"has_sd"),
+        names = has_sd_names(),
+        par_fixed = has_sd_pf(),
+        cov_fixed = has_sd_cv(),
+        pd_hessian = rcopy(Any, R"pdh"),
+        r_condition_number = rcopy(Any, R"rcond"),
+        wall_fit = rcopy(Float64, R"wall_fit"),
+        reference_constraint_adapter = true,
+        n_power_free = 1,
     )
 end
 
