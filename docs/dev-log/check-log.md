@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ## 2026-09-16 — Post-#387 board + checkpoint (`docs/true-parity-tip-post-387-20260916`)
 
 - Tip `8321d5ce6` (#387 MERGED). Tweedie EOO rebased locally @ `e84824c40` (unpushed). No open
@@ -18,8 +17,6 @@
 - Commands: `gh pr view 357,384,363,314 --json mergeable,mergeStateStatus,isDraft`;
   `python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86`.
 
-=======
->>>>>>> 1b17884c6 (feat(second-order): estimated Tweedie power SO cells)
 ## 2026-09-16 — FORWARD/TWIN_ALIAS doc hygiene (#387 MERGED @ `8321d5ce6`)
 
 - Sync public parity page to post-#355 ledger counts (**FORWARD=62**, **REVERSE=91** @ frozen
@@ -27,23 +24,12 @@
   No new `ALIASES`; no capability promote.
 - Commands: `python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86`.
 
-<<<<<<< HEAD
 ## 2026-09-16 — Post-#376/#377 board + Tweedie local receipt (#385 MERGED @ `5e4239b7b`)
 
 - #376 MERGED @ `47fcb23ee` (six holdout SO cells); #377 MERGED @ `e47430735` (docs tip). Tweedie
   estimated-power local branch (unpushed; option A PARTIAL; `eoo_claimed=false`). #357/#363/#314
   skipped.
 - After-task: `docs/dev-log/after-task/2026-09-16-post-376-377-tweedie-local.md`.
-=======
-## 2026-09-16 — Post-#376/#377 board + Tweedie local receipt (`docs/post-376-377-tweedie-local-20260916`)
-
-- #376 MERGED @ `47fcb23ee` (six holdout SO cells); #377 MERGED @ `e47430735` (docs tip). Tweedie
-  estimated-power rebased locally on `feat/tweedie-estimated-power-so-20260915` (unpushed; option A
-  PARTIAL; `eoo_claimed=false`). Board/checkpoint receipt rebased onto main after #378/#387.
-  #357/#363/#314 skipped.
-- After-task: `docs/dev-log/after-task/2026-09-16-post-376-377-tweedie-local.md`.
-- Commands: `git fetch origin`; `git rebase origin/main` on Tweedie branch.
->>>>>>> 1b17884c6 (feat(second-order): estimated Tweedie power SO cells)
 
 ## 2026-09-16 — Tweedie estimated shared-power SO cell (`feat/tweedie-shared-power-so-20260916`)
 
