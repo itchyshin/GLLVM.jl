@@ -82,6 +82,17 @@ None owned by this lane as of this update. One sibling PR is open and **held**, 
   count. Rebasing #384 is the PR owner's/Grace's job, not this lane's scope to expand into; this
   lane did not touch #384's branch. Re-check `gh pr checks 384` and `gh pr view 384 --json
   mergeable,mergeStateStatus` after a rebase before promoting it to ready-for-review.
+  🔴 **Third, more substantive reason found while amending this handover:** PR **#385**
+  (`docs/post-376-377-tweedie-local-20260916`, opened 02:18 MDT — 3 minutes after #384, merged
+  02:22 MDT) records that a **different** lane built the same next step — Tweedie
+  estimated-power — and deliberately kept it on a **local, unpushed** branch
+  (`feat/tweedie-estimated-power-so-20260915` @ `da83a47d8`), with the board note *"no push
+  without explicit maintainer instruction."* #384 is exactly that work (species estimated-power
+  Wald CI), already **pushed and opened as a PR** by a third lane (Grace/Cursor cloud) at
+  02:15 MDT — before #385 merged, so neither lane could have seen the other's decision. This is a
+  genuine three-way race with two opposite calls on the same policy question (push vs. keep
+  local pending authorisation), not just a stale-branch mechanic. Recommend Shinichi decide
+  explicitly whether #384's push was authorised before anyone promotes it to ready-for-review.
 
 ## OWED
 
