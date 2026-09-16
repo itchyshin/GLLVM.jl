@@ -5,7 +5,7 @@
 STATE: **IN PROGRESS**. Do **not** mark the programme or `/goal` complete.
 
 **Rehydrate:** `git fetch origin main && git rev-parse origin/main`  
-Tip (2026-09-16): **`ebde07f00`** (pre-**#402** runbook merge; engine #391 @ `c4dba35c4`).
+Tip (2026-09-16): **`62d36ca06`** (pre-**#402** runbook merge; engine #391 @ `c4dba35c4`).
 
 **Twin:** gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
@@ -14,7 +14,7 @@ Tip (2026-09-16): **`ebde07f00`** (pre-**#402** runbook merge; engine #391 @ `c4
 
 ---
 
-## Adversarial scorecard (2026-09-16 @ `ebde07f00` + #402 runbooks / DRAFT #399)
+## Adversarial scorecard (2026-09-16 @ `62d36ca06` + #402 runbooks / DRAFT #399)
 
 | Named item | Verdict | Evidence |
 |------------|---------|----------|
