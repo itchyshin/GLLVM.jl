@@ -1,3 +1,10 @@
+## 2026-09-16 — Post-#402 board tip (`docs/post-402-board-tip-20260916`)
+
+- **origin/main** @ **`08ca9e487`** (#402 MERGED). No non-draft mergeable PRs (#399/#363/#314 DRAFT skip).
+  Board + [`owed/2026-09-16-post-402-paste-packet.md`](owed/2026-09-16-post-402-paste-packet.md) tip
+  `62d36ca06` → **`08ca9e487`**. Ungated engine slice: **none**. Goal **not** complete.
+- Commands: `git fetch origin main`; `gh pr list --state open`.
+
 ## 2026-09-16 — Post-#357 rehydrate + #402 hygiene (`docs/paste-gated-scaffolds-20260916`)
 
 - **origin/main** @ **`62d36ca06`** (#407). Confirmed **#357** on `main` @ **`5ee6dc596`**
