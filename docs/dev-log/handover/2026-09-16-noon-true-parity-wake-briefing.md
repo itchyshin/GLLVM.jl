@@ -10,7 +10,7 @@ STATE: **IN PROGRESS**. Goal **not** complete. FREE=0 is not true parity.
 
 | Ref | SHA / note |
 |-----|------------|
-| GLLVM.jl `origin/main` | **`6ab636b7f`** (#400 post-#399 paste packet) |
+| GLLVM.jl `origin/main` | **`a86817209`** (#403 noon briefing; prior #400 @ `6ab636b7f`) |
 | Engine anchor | #391 @ `c4dba35c4` (Tweedie estimated-power SO, PARTIAL) |
 | gllvmTMB `origin/main` | `02b46cfc8` |
 | Frozen oracle | `b4d5fee64def88bc768dda1f1f77c29b295edd86` |
@@ -34,7 +34,7 @@ STATE: **IN PROGRESS**. Goal **not** complete. FREE=0 is not true parity.
 
 ## Paste gates (unchanged strings)
 
-Canonical table: [`owed/2026-09-16-post-402-paste-packet.md`](../owed/2026-09-16-post-402-paste-packet.md) (lands with DRAFT #402 merge).
+Canonical table on `main`: [`owed/2026-09-16-post-399-paste-packet.md`](../owed/2026-09-16-post-399-paste-packet.md). Extended table with #402 runbook anchors lands on `main` when DRAFT **[#402](https://github.com/itchyshin/GLLVM.jl/pull/402)** merges (see `owed/2026-09-16-post-402-paste-packet.md` on that branch).
 
 | Paste | Points at |
 |-------|-----------|
