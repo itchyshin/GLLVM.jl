@@ -85,7 +85,7 @@ After-task inventory: [`after-task/2026-09-16-paste-queue-stop.md`](after-task/2
 
 ## Agent rules
 
-- **Mac owns true-parity (STARTED 2026-09-15).** Tip `@ **`df852f6b2`** (#393). Cloud ungated **exhausted** after #391+#393 — **Shinichi pastes only** for next work. **#384** superseded — parent/Mac close without merge if still OPEN.
+- **Mac owns true-parity (STARTED 2026-09-15).** Tip @ **`df852f6b2`** (#393). Cloud ungated **exhausted** after #391+#393 — **Shinichi pastes only** for next work. **#384** superseded — parent/Mac close without merge if still OPEN.
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.
