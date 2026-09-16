@@ -5,7 +5,7 @@
 STATE: **IN PROGRESS**. Do **not** mark the programme or `/goal` complete.
 
 **Rehydrate:** `git fetch origin main && git rev-parse origin/main`  
-Tip (2026-09-16): **`62d36ca06`** (pre-**#402** runbook merge; engine #391 @ `c4dba35c4`).
+Tip (2026-09-16): **`08ca9e487`** (**#402** runbooks MERGED; engine #391 @ `c4dba35c4`).
 
 **Twin:** gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
@@ -14,20 +14,21 @@ Tip (2026-09-16): **`62d36ca06`** (pre-**#402** runbook merge; engine #391 @ `c4
 
 ---
 
-## Adversarial scorecard (2026-09-16 @ `62d36ca06` + #402 runbooks / DRAFT #399)
+## Adversarial scorecard (2026-09-16 @ `08ca9e487` + #402 MERGED / DRAFT #399)
 
 | Named item | Verdict | Evidence |
 |------------|---------|----------|
 | Ledger gap | **DONE** (inventory) | [`after-task/2026-09-15-true-parity-ledger-gap-inventory.md`](../after-task/2026-09-15-true-parity-ledger-gap-inventory.md) |
 | §2 A (delta dispersion) | **PASTE-GATED** | DRAFT **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)**; paste `accept delta dispersion A` |
-| D3 Stage 1 | **PASTE-GATED** (runbook ready) | **[#402](https://github.com/itchyshin/GLLVM.jl/pull/402)** + [`plans/2026-09-16-d3-loading-profile-stage1-paste-gated-scaffold.md`](../plans/2026-09-16-d3-loading-profile-stage1-paste-gated-scaffold.md); paste `G0 Stage 1` |
-| S4 public-formula probe | **PASTE-GATED** (runbook ready) | **#402** + [`plans/2026-09-16-s4-probe-julia-checklist-paste-gated.md`](../plans/2026-09-16-s4-probe-julia-checklist-paste-gated.md); paste `S4 probe yes` |
-| Totoro #323 Track A | **PASTE-GATED** (runbook ready) | **#402** + [`plans/2026-09-16-totoro-323-track-a-runbook-paste-gated.md`](../plans/2026-09-16-totoro-323-track-a-runbook-paste-gated.md); paste `ack Totoro D-139 #323 Track A` |
+| #402 runbooks (Stage1/S4/Totoro) | **DONE** | MERGED @ `08ca9e487` |
+| D3 Stage 1 | **PASTE-GATED** | [`plans/2026-09-16-d3-loading-profile-stage1-paste-gated-scaffold.md`](../plans/2026-09-16-d3-loading-profile-stage1-paste-gated-scaffold.md); paste `G0 Stage 1` |
+| S4 public-formula probe | **PASTE-GATED** | [`plans/2026-09-16-s4-probe-julia-checklist-paste-gated.md`](../plans/2026-09-16-s4-probe-julia-checklist-paste-gated.md); paste `S4 probe yes` |
+| Totoro #323 Track A | **PASTE-GATED** | [`plans/2026-09-16-totoro-323-track-a-runbook-paste-gated.md`](../plans/2026-09-16-totoro-323-track-a-runbook-paste-gated.md); paste `ack Totoro D-139 #323 Track A` |
 | #357 bridge logLik | **DONE** | MERGED on `main` @ `5ee6dc596` (lognormal + truncated-Poisson bridge logLik receipts) |
 | #363 / #314 | **SKIP** | CONFLICTING DRAFT |
 | Ungated CI | **#401** node24 | **DONE** @ `c33745302` |
 
-**Ungated implementable engine slice:** **none**. DRAFT **#399** (engine). **#402** lands runbooks only (paste still required for execution).
+**Ungated implementable engine slice:** **none**. DRAFT **#399** (engine). **#402** runbooks on `main` (paste still required for execution).
 
 ---
 
@@ -52,4 +53,4 @@ gh pr view 402 --json isDraft,url
 gh pr checks 401
 ```
 
-Expected tip after #402 merge: this packet's merge SHA. Goal **not** complete.
+Expected tip: **`08ca9e487`** (#402 MERGED). Goal **not** complete.
