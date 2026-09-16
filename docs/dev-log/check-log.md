@@ -238,6 +238,15 @@
 - Commands: `python3 tools/parity_ledger.py --self-test`; `python3 tools/parity_ledger.py`
   (FORWARD **77→62**, REVERSE 92→91 @ frozen oracle).
 
+## 2026-09-15 — Lognormal + truncated-Poisson bridge logLik receipts (#353 ranks 1–2)
+
+- Branch `feat/lognormal-truncpois-loglik-receipts-20260915` (PR **#357**); rebased onto `origin/main`.
+- Live re-run (`GLLVM_PARITY_TESTS=1`, parity project): lognormal abs Δ **2.239e-8** (seed=52);
+  truncated_poisson abs Δ **2.713e-9** (seed=53) — matches 2026-08-24 receipt.
+- Cleared stale “light RCall Δ still OWED” from `src/bridge.jl` + bridge tests; inventory TSV
+  rows → `live_delta`. After-task:
+  `docs/dev-log/after-task/2026-09-15-lognormal-truncpois-bridge-receipts.md`. **≠** full family parity.
+
 ## 2026-09-15 — Julia-only arcG disposition (rank 7; R CLOSURE)
 
 - Decision ACCEPTED: `docs/dev-log/decisions/2026-09-15-julia-only-arcg-disposition.md`.
