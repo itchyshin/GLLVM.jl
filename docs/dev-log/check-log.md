@@ -1,3 +1,12 @@
+## 2026-09-16 — Cloud babysit STOP → Mac handoff (`cursor/cloud-babysit-handoff-4a16`)
+
+- Cloud babysit lane **STOPPING**; Mac owns true-parity programme. Tip:
+  `docs/dev-log/handover/2026-09-16-cloud-babysit-handoff-to-mac.md`.
+- Cloud merges: #398,#400,#403,#404,#405. Mac merged #357 (left alone). Paste-gated
+  remain #399/#402. #401 Node24 CI: open at tip write (Mac squash-merge when green).
+- Goal **not** complete. No Stage1/S4/Totoro/Delta without paste.
+- Commands: `gh pr view 401 --json state,statusCheckRollup`; `gh pr list --state open`.
+
 ## 2026-09-16 — Post-#399 paste packet tip (`docs/post-399-delta-a-paste-tip-20260916`)
 
 - **origin/main** @ **`b1c048f2f`** (#398). DRAFT **#399** Option A scaffold landed (not ready / not
