@@ -3,7 +3,7 @@
 **STATE:** **IN PROGRESS**. Do **not** mark the programme or `/goal` complete.
 
 **Rehydrate:** `git fetch origin main && git rev-parse origin/main`  
-**Tip (2026-09-16):** **`e7f869932`** — `docs: #391 after-task + tip @ 947656d12 (#384 closed) (#395)`
+**Tip (2026-09-16):** **`d2353b013`** — `docs: post-#395 paste packet + tip @ e7f869932 (#396)` (engine #391 @ `c4dba35c4`; #395 CI receipt @ `e7f869932`)
 
 **Twin:** gllvmTMB `origin/main` @ `02b46cfc`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
@@ -13,7 +13,7 @@
 
 ## Cloud fence (verified)
 
-Ungated cloud engine queue **exhausted** after **#391** (Tweedie estimated-power SO) and docs tips **#393–#395**. Cloud / this lane **must not** start Stage 1, S4, Totoro, Delta implementation, GP-1, free-ν, Λ raw, `Project.toml` bump, or **#357** edits without the exact Shinichi pastes below.
+Ungated cloud engine queue **exhausted** after **#391** (Tweedie estimated-power SO) and docs tips **#393–#396**. Cloud / this lane **must not** start Stage 1, S4, Totoro, Delta implementation, GP-1, free-ν, Λ raw, `Project.toml` bump, or **#357** edits without the exact Shinichi pastes below.
 
 **Rose fence:** Docs and SO receipts ≠ true-parity destination ≠ §7 complete ≠ bridge CI lift (#357) ≠ Core070 `FREE=0` as parity.
 
@@ -30,6 +30,7 @@ Ungated cloud engine queue **exhausted** after **#391** (Tweedie estimated-power
 | Paste-queue STOP + board @ #391 | [#393](https://github.com/itchyshin/GLLVM.jl/pull/393) / [#394](https://github.com/itchyshin/GLLVM.jl/pull/394) | `df852f6b2` / `947656d12` | Cloud STOP recorded |
 | Tweedie estimated-power SO (shared + species) | [#391](https://github.com/itchyshin/GLLVM.jl/pull/391) | `c4dba35c4` | **PARTIAL** (option A; β/`b_fixed`; `eoo_claimed=false`; Rose winner over **#384** **CLOSED**) |
 | #391 CI receipt + after-task | [#395](https://github.com/itchyshin/GLLVM.jl/pull/395) | `e7f869932` | Docs only |
+| Post-#395 paste packet tip | [#396](https://github.com/itchyshin/GLLVM.jl/pull/396) | `d2353b013` | Docs only; tip SHA |
 
 Receipts: [`after-task/2026-09-16-tweedie-estimated-power-so.md`](../after-task/2026-09-16-tweedie-estimated-power-so.md), [`after-task/2026-09-16-six-holdout-so-cells.md`](../after-task/2026-09-16-six-holdout-so-cells.md), [`after-task/2026-09-16-paste-queue-stop.md`](../after-task/2026-09-16-paste-queue-stop.md).
 
@@ -52,9 +53,9 @@ Alternatives for Delta (only if **not** choosing A): `accept delta dispersion B`
 
 ## Foreign: [#357](https://github.com/itchyshin/GLLVM.jl/pull/357)
 
-**Status:** **OPEN**, **CONFLICTING** / **DIRTY** (`mergeStateStatus`). **Do not edit** from the true-parity cloud/Mac paste lane.
+**Status:** **OPEN** foreign. **Do not edit** from the true-parity cloud/Mac paste lane (even if MERGEABLE / CI green).
 
-**Owning lane must:** rebase `feat/lognormal-truncpois-loglik-receipts-20260915` onto current `origin/main` (`e7f869932`), resolve the **append-only** conflict in `docs/dev-log/check-log.md` (merge-tree: only that file blocks), re-push, and re-run CI. Bridge work stays in `src/bridge.jl` + tests; Julia/Documenter were green before the tip drift.
+**Owning lane must:** rebase `feat/lognormal-truncpois-loglik-receipts-20260915` onto current `origin/main` (`d2353b013`), keep `docs/dev-log/check-log.md` append-only clean, re-push, and re-run CI. Bridge work stays in `src/bridge.jl` + tests.
 
 ---
 
@@ -72,4 +73,4 @@ git fetch origin main && git rev-parse origin/main
 gh pr list --state open --limit 15
 ```
 
-Expected tip: **`e7f869932`**; #357 CONFLICTING (leave alone); no further ungated cloud slices until a paste above.
+Expected tip: **`d2353b013`**; #357 foreign (leave alone); #363/#314 CONFLICTING DRAFT skip; no further ungated cloud slices until a paste above.

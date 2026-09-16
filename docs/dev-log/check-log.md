@@ -1,3 +1,14 @@
+## 2026-09-16 — Post-#396 paste-only STOP tip (`docs/post-396-paste-only-tip-20260916`)
+
+- **origin/main** @ **`d2353b013`** (#396). Rehydrate after overnight STOP: #391 MERGED,
+  #384 CLOSED; no mergeable leftover ours PRs (#363/#314 CONFLICTING DRAFT; #357 foreign
+  leave alone). Ungated queue **exhausted**; **Shinichi pastes only** for Delta / Stage 1 /
+  S4 / Totoro. Refreshed board, wake briefing (cleared stale HOLD), paste packet tip SHA,
+  `LOOP/checkpoint.md`. Goal **not** complete.
+- Files: board, wake briefing, paste packet, checkpoint, this check-log,
+  `docs/dev-log/after-task/2026-09-16-post-396-paste-only-tip.md`.
+- Commands: `git fetch origin main`; `git rev-parse origin/main`; `gh pr list --state open`.
+
 ## 2026-09-16 — Post-#395 paste packet + board tip (`docs/post-395-paste-packet-20260916`)
 
 - **origin/main** @ **`e7f869932`** (#395). Cloud STOP unchanged: ungated queue exhausted; **Shinichi
