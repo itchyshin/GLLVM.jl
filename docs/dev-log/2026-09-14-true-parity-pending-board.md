@@ -2,11 +2,11 @@
 
 STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste.
 
-CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** + **#393 through #398**. Tip @ **`b1c048f2f`** (#398). DRAFT **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** is Option A scaffold only; do **not** mark ready / merge / claim ACCEPTED. Cloud does **not** start Stage 1 / S4 / Totoro / GP-1 / free-ν / Λ raw / `Project.toml` bump. Open: **#357** foreign leave alone; **#363/#314** CONFLICTING DRAFT skip. Next requires Shinichi pastes only. Goal **not** complete.
+CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** + docs through **#403**. Tip @ **`a86817209`**. DRAFTs **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** (Delta A engine) and **[#402](https://github.com/itchyshin/GLLVM.jl/pull/402)** (Stage1/S4/Totoro runbooks) are pre-paste scaffolds only; do **not** mark ready / merge / claim ACCEPTED. Ungated CI: **[#401](https://github.com/itchyshin/GLLVM.jl/pull/401)** node24 (merge when green). Cloud does **not** start Stage 1 / S4 / Totoro execution, GP-1, free-ν, Λ raw, or `Project.toml` bump. Open: **#357** foreign leave alone; **#363/#314** CONFLICTING DRAFT skip. Next requires Shinichi pastes only. Goal **not** complete.
 
 Merged SO tranche: #374/#376/#378 + **#391** Tweedie estimated-power SO (shared+species; Rose winner over #384) @ **`c4dba35c4`**. Docs through #398. **#384** **CLOSED** superseded. **Canonical paste table:** [`owed/2026-09-16-post-399-paste-packet.md`](owed/2026-09-16-post-399-paste-packet.md).
 
-Rehydrate: GLLVM.jl `origin/main` @ **`b1c048f2f`** (#398 tip; engine #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
+Rehydrate: GLLVM.jl `origin/main` @ **`a86817209`** (#403 tip; engine #391 @ `c4dba35c4`); gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. Noon wake: [`handover/2026-09-16-noon-true-parity-wake-briefing.md`](handover/2026-09-16-noon-true-parity-wake-briefing.md).
 
 ---
 
