@@ -1,3 +1,11 @@
+## 2026-09-16 — Post-#374 board + checkpoint receipt (`docs/true-parity-post-374-20260916`)
+
+- #374 MERGED @ `eeb7e092` (BB shared-φ SO cell; PARTIAL native Wald, φ unpaired). Board +
+  `LOOP/checkpoint.md` tip; #376 six-holdout CONFLICTING noted (not Tweedie EOO). #357 untouched;
+  goal **not** complete.
+- After-task: `docs/dev-log/after-task/2026-09-16-post-374-merge-receipt.md`.
+- Commands: `git fetch origin`; `git rev-parse origin/main`; `gh pr view 376 --json mergeable,headRefName`.
+
 ## 2026-09-15 — BetaBinomial shared-φ SO cell (`feat/betabinomial-shared-phi-so-20260915`)
 
 - §6 holdout BB shared-φ → PARTIAL: `cell_betabinomial_shared` + native Wald test file; no
