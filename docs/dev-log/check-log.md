@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## 2026-09-16 — Post-#376/#377 board + Tweedie local receipt (`docs/post-376-377-tweedie-local-20260916`)
 
 - #376 MERGED @ `47fcb23ee` (six holdout SO cells); #377 MERGED @ `e47430735` (docs tip). Tweedie
@@ -6,6 +7,14 @@
   after #378 `#383` docs tip. #357/#363/#314 skipped.
 - After-task: `docs/dev-log/after-task/2026-09-16-post-376-377-tweedie-local.md`.
 - Commands: `git fetch origin`; `git rebase origin/main` on PR #380 branch.
+=======
+## 2026-09-16 — FORWARD/TWIN_ALIAS doc hygiene (`chore/forward-twin-alias-doc-hygiene-20260916`)
+
+- Sync public parity page to post-#355 ledger counts (**FORWARD=62**, **REVERSE=91** @ frozen
+  oracle); document three deferred `TWIN_ALIAS` rows in `tools/parity_ledger.py` (#350/#355).
+  No new `ALIASES`; no capability promote.
+- Commands: `python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86`.
+>>>>>>> eab23d339 (docs(tools): sync FORWARD/TWIN_ALIAS counts post-#355)
 
 ## 2026-09-16 — Tweedie estimated shared-power SO cell (`feat/tweedie-shared-power-so-20260916`)
 

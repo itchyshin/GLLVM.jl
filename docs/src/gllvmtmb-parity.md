@@ -70,9 +70,11 @@ The qualification claim itself is **one-directional**: R workflows against
 Julia, at the frozen `gllvmTMB` 0.7.0 oracle
 (`docs/dev-log/decisions/2026-09-02-maintainer-decisions-true-parity.md`).
 **Capabilities are tracked both ways**: what Julia has that R lacks is a
-written, tool-produced list (`tools/parity_ledger.py`; **FORWARD = 77**
-R exports with no Julia twin, **REVERSE = 85** Julia exports with no R
-twin, at the frozen oracle) — a record, not an obligation owed by this repo.
+written, tool-produced list (`tools/parity_ledger.py`; **FORWARD = 62**
+R exports with no Julia twin, **REVERSE = 91** Julia exports with no R
+twin, at the frozen oracle — after #350 disposition and #355 `TWIN_ALIAS`
+`ALIASES` batch; three ambiguous twins remain genuinely owed) — a record, not
+an obligation owed by this repo.
 
 ### Ledger accounting ≠ true parity
 
@@ -103,7 +105,7 @@ From `true-parity-decision-map.md` §Out of scope (plain language):
 - Re-freezing the oracle at 0.7.1 before the second-order contract lands
 - fitted/predict/residuals and recovery-to-truth as parity *gates* (measured separately)
 
-Export-level gap honesty (FORWARD=77 @ frozen oracle): `docs/dev-log/core070/export-gap-honesty-2026-09-04.md`.
+Export-level gap honesty (FORWARD=62 @ frozen oracle after #355 aliases): `docs/dev-log/core070/export-gap-honesty-2026-09-04.md` (historical 77-row inventory) and `docs/dev-log/after-task/2026-09-15-parity-ledger-aliases.md` (Δ −15).
 
 ### Twin capability matrix — six DIFFER rows
 
