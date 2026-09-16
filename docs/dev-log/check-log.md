@@ -1,20 +1,24 @@
-<<<<<<< HEAD
-## 2026-09-16 — Post-#376/#377 board + Tweedie local receipt (`docs/post-376-377-tweedie-local-20260916`)
+## 2026-09-16 — Post-#387 board + checkpoint (`docs/true-parity-tip-post-387-20260916`)
 
-- #376 MERGED @ `47fcb23ee` (six holdout SO cells); #377 MERGED @ `e47430735` (docs tip). Tweedie
-  estimated-power rebased locally on `feat/tweedie-estimated-power-so-20260915` @ `da83a47d8`
-  (unpushed; option A PARTIAL; `eoo_claimed=false`). Board/checkpoint receipt rebased onto main
-  after #378 `#383` docs tip. #357/#363/#314 skipped.
-- After-task: `docs/dev-log/after-task/2026-09-16-post-376-377-tweedie-local.md`.
-- Commands: `git fetch origin`; `git rebase origin/main` on PR #380 branch.
-=======
-## 2026-09-16 — FORWARD/TWIN_ALIAS doc hygiene (`chore/forward-twin-alias-doc-hygiene-20260916`)
+- Tip `8321d5ce6` (#387 MERGED). Tweedie EOO rebased locally @ `e84824c40` (unpushed). No open
+  MERGEABLE PRs (#357/#363/#314/#384 skipped). Ungated queue exhausted; paste inventory unchanged.
+- Fix: resolve stray merge conflict markers at top of this file (from #385/#387 overlap).
+- Commands: `git fetch origin`; `git rebase origin/main` on `feat/tweedie-estimated-power-so-20260915`;
+  `gh pr list --state open`.
+
+## 2026-09-16 — FORWARD/TWIN_ALIAS doc hygiene (#387 MERGED @ `8321d5ce6`)
 
 - Sync public parity page to post-#355 ledger counts (**FORWARD=62**, **REVERSE=91** @ frozen
   oracle); document three deferred `TWIN_ALIAS` rows in `tools/parity_ledger.py` (#350/#355).
   No new `ALIASES`; no capability promote.
 - Commands: `python3 tools/parity_ledger.py --ref b4d5fee64def88bc768dda1f1f77c29b295edd86`.
->>>>>>> eab23d339 (docs(tools): sync FORWARD/TWIN_ALIAS counts post-#355)
+
+## 2026-09-16 — Post-#376/#377 board + Tweedie local receipt (#385 MERGED @ `5e4239b7b`)
+
+- #376 MERGED @ `47fcb23ee` (six holdout SO cells); #377 MERGED @ `e47430735` (docs tip). Tweedie
+  estimated-power local branch (unpushed; option A PARTIAL; `eoo_claimed=false`). #357/#363/#314
+  skipped.
+- After-task: `docs/dev-log/after-task/2026-09-16-post-376-377-tweedie-local.md`.
 
 ## 2026-09-16 — Tweedie estimated shared-power SO cell (`feat/tweedie-shared-power-so-20260916`)
 
