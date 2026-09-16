@@ -1,3 +1,12 @@
+## 2026-09-16 — Tweedie estimated shared-power SO cell (`feat/tweedie-shared-power-so-20260916`)
+
+- Option A: `cell_tweedie_shared` + `r_fit_se_tweedie_shared` (adapter + sdreport) + smoke.
+  Compare `b_fix` / `beta[]` only; Julia Wald keeps the power plug-in. Species SO not in this PR.
+  Rebased onto `origin/main` @ `bf83d5f75` (#379). #357 untouched.
+- After-task: `docs/dev-log/after-task/2026-09-16-tweedie-shared-power-so.md`.
+- Focused **13/0/1** (1 `@test_skip` R cell). Commands:
+  `julia --project=. test/test_second_order_tweedie_grouped_ci.jl`.
+
 ## 2026-09-16 — Post-#374+#376 board refresh (`cursor/board-refresh-374-376-a0ce`)
 
 - Tip rehydrate after `#374` `eeb7e092` + `#376` `47fcb23e` (+ `#377` which still called #376

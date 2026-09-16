@@ -56,18 +56,24 @@ using GLLVM, Test, Random
         @test length(ad.θ) == GLLVM._nparams(fit) - 1  # minus free power coordinate
     end
 
-    @testset "R paired tweedie_fixed cell (live Δ)" begin
+    @testset "R paired tweedie_fixed / tweedie_shared cells (live Δ)" begin
         if get(ENV, "GLLVM_PARITY_TESTS", "0") != "1"
             @test_skip "set GLLVM_PARITY_TESTS=1 with R + gllvmTMB for live second-order Δ"
         else
             using RCall
             include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "common.jl"))
             include(joinpath(@__DIR__, "..", "tools", "core070_second_order", "cells.jl"))
-            d = run_one_cell("tweedie_fixed")
-            @test get(d, "skip_reason", nothing) === nothing
-            @test get(d, "parameterisation_gap", true) == false
-            se_rel = d["se_max_relative_delta"]
-            @test se_rel !== nothing && isfinite(se_rel)
+            for cell_id in ("tweedie_fixed", "tweedie_shared")
+                d = run_one_cell(cell_id)
+                @test get(d, "skip_reason", nothing) === nothing
+                @test get(d, "parameterisation_gap", true) == false
+                se_rel = d["se_max_relative_delta"]
+                @test se_rel !== nothing && isfinite(se_rel)
+                if cell_id == "tweedie_shared"
+                    @test d["reference_constraint_adapter"] === true
+                    @test d["n_power_free"] == 1
+                end
+            end
             # Do not assert contract §4 D1 here — record live Δ; promote only after smoke receipt.
         end
     end
