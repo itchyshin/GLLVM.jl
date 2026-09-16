@@ -8,11 +8,11 @@ CreateGoal: armed in parent chat (2026-09-14). Do not mark complete.
 
 ARC IN PROGRESS: true-parity tranche. Board: [`docs/dev-log/2026-09-14-true-parity-pending-board.md`](../docs/dev-log/2026-09-14-true-parity-pending-board.md).
 Morning wake (pre-#391 HOLD snapshot): [`docs/dev-log/handover/2026-09-16-morning-wake-briefing.md`](../docs/dev-log/handover/2026-09-16-morning-wake-briefing.md).
-Paste-queue STOP: [`docs/dev-log/after-task/2026-09-16-paste-queue-stop.md`](../docs/dev-log/after-task/2026-09-16-paste-queue-stop.md).
+Paste packet (canonical): [`docs/dev-log/owed/2026-09-16-post-395-paste-packet.md`](../docs/dev-log/owed/2026-09-16-post-395-paste-packet.md).
 
-Rehydrate (2026-09-16): GLLVM.jl `origin/main` @ **`947656d12`** (#394 tip; #391 engine @ `c4dba35c4`); gllvmTMB origin/main @ `02b46cfc`.
+Rehydrate (2026-09-16): GLLVM.jl `origin/main` @ **`e7f869932`** (#395 tip; #391 engine @ `c4dba35c4`); gllvmTMB origin/main @ `02b46cfc`.
 
-**CLOUD STOP:** Ungated cloud queue **exhausted** after **#391+#393+#394**. No further ungated cloud engine/docs slices. **Next requires Shinichi pastes only.**
+**CLOUD STOP:** Ungated cloud queue **exhausted** after **#391+#393–#395**. No further ungated cloud engine/docs slices. **Next requires Shinichi pastes only.**
 
 NEXT (ranked):
 
@@ -27,7 +27,7 @@ NEXT (ranked):
 
 IN FLIGHT: #357 CONFLICTING (foreign). Skipped #363/#314 DRAFT. **#384** CLOSED superseded. Cloud: **paste-gated STOP**.
 
-DONE this tranche: (prior SO tranche through #378); **#385–#394**; **#391** Tweedie estimated-power SO (shared+species) @ `c4dba35c4` → **PARTIAL** (after-task `2026-09-16-tweedie-estimated-power-so.md`).
+DONE this tranche: (prior SO tranche through #378); **#385–#395**; **#391** Tweedie estimated-power SO (shared+species) @ `c4dba35c4` → **PARTIAL** (after-task `2026-09-16-tweedie-estimated-power-so.md`; #395 CI receipt @ `e7f869932`).
 
 DISPOSED: #323 waive; matched-θ C; §2 A; arcG Julia-only ACCOUNTED (#358); Rose dual-PR HOLD (#384/#391) → **#391 winner**.
 

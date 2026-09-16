@@ -1,3 +1,11 @@
+## 2026-09-16 — Post-#395 paste packet + board tip (`docs/post-395-paste-packet-20260916`)
+
+- **origin/main** @ **`e7f869932`** (#395). Cloud STOP unchanged: ungated queue exhausted; **Shinichi
+  pastes only** for Delta / Stage 1 / S4 / Totoro. Added canonical
+  `owed/2026-09-16-post-395-paste-packet.md` (paste → unlocks → first action; #357 foreign note).
+  Board + `LOOP/checkpoint.md` tip SHA. No engine, #357, or `Project.toml`.
+- Commands: `git fetch origin main`; `git rev-parse origin/main`; `gh pr list --state open`.
+
 ## 2026-09-16 — Post-#391 CI verify + #384 closed + after-task (`docs/post-391-ci-receipt-20260916`)
 
 - **origin/main** @ **`947656d12`** (#394). Post-#391 CI run **35058263626**: Julia 8/8 success;
