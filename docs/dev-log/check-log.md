@@ -1,3 +1,13 @@
+## 2026-09-16 — Post-#376/#377 board + Tweedie local receipt (`docs/post-376-377-tweedie-local-20260916`)
+
+- #376 MERGED @ `47fcb23ee` (six holdout SO cells); #377 MERGED @ `e47430735` (docs tip — board still
+  stale on `eeb7e092` until this receipt). Tweedie estimated-power rebased locally on
+  `feat/tweedie-estimated-power-so-20260915` @ `da83a47d8` (unpushed; option A PARTIAL;
+  `eoo_claimed=false`). No open MERGEABLE PRs (#357/#363/#314 skipped).
+- After-task: `docs/dev-log/after-task/2026-09-16-post-376-377-tweedie-local.md`.
+- Commands: `git fetch origin`; `git rev-parse origin/main`; `gh pr list --state open`;
+  `git rebase origin/main` on `feat/tweedie-estimated-power-so-20260915`.
+
 ## 2026-09-16 — Post-#374 board + checkpoint receipt (`docs/true-parity-post-374-20260916`)
 
 - #374 MERGED @ `eeb7e092` (BB shared-φ SO cell; PARTIAL native Wald, φ unpaired). Board +
