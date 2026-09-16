@@ -1,8 +1,8 @@
 # True-parity programme: maintainer board (2026-09-14, updated 2026-09-16)
 
-STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`), **#369 Mac handover** (`c00e9345`), **#370 Mac STARTED** (`c459751b`), **#371 goal+ultra-plan** (`9519b3e28`), **#367 Student-t fixed-ν Wald** (`9d300783c`), **#372/#373 SO inventory + post-#367 tips**, **#374 BetaBinomial shared-φ SO cell** (`eeb7e092`) → **PARTIAL (native Wald; φ unpaired)**. Open CONFLICTING: **#376** six-holdout SO cells (rebase onto `eeb7e092`; not Tweedie EOO). Foreign: **#357** (do not edit). Paste-blocked; goal **not** complete.
+STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste. Merged: #362 OrdinalPerTrait Wald (`c1962c5d`), #356 TweedieGrouped Wald (`569cd873`), #361 Lognormal/TruncPois/TruncNB2 Wald (`efc24554`), #355 parity_ledger aliases (`e87a4670`), #364/#365 board tips, **#366 MultinomialFit Wald** (`c1842dd69`), **#369 Mac handover** (`c00e9345`), **#370 Mac STARTED** (`c459751b`), **#371 goal+ultra-plan** (`9519b3e28`), **#367 Student-t fixed-ν Wald** (`9d300783c`), **#372/#373 SO inventory + post-#367 tips**, **#374 BetaBinomial shared-φ SO cell** (`eeb7e092`) → **PARTIAL (native Wald; φ unpaired)**, **#376 six holdout SO cells** (`47fcb23e`) → **PARTIAL (native Wald + paired toy Δ)**, **#377 tip** (corrected by board-refresh). Foreign: **#357** (do not edit). Paste-blocked; goal **not** complete.
 
-Rehydrate: `origin/main` @ `eeb7e092` (#374); gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
+Rehydrate: `origin/main` tip after `#374` `eeb7e092` + `#376` `47fcb23e` (+ `#377` docs); gllvmTMB `origin/main` @ `fba20d613`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
 ---
 
@@ -40,10 +40,11 @@ Inventory: [`2026-09-15-true-parity-ledger-gap-inventory.md`](after-task/2026-09
 
 ### Second-order follow-up
 
-Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **MultinomialFit** native Wald on main (#366); **Student-t fixed-ν** native Wald on main (#367); **BetaBinomial shared-φ** SO cell on main ([#374](after-task/2026-09-15-betabinomial-shared-phi-so.md), `eeb7e092`) → **PARTIAL (native Wald)**. Bridge CI lift still waits on #357.  
+Receipts: Delta shared-η [#347](after-task/2026-09-15-second-order-delta-followup.md); OrdinalPerTrait / TweedieGrouped / Lognormal+Trunc* on main (#362/#356/#361); **MultinomialFit** native Wald on main (#366); **Student-t fixed-ν** native Wald on main (#367); **BetaBinomial shared-φ** SO cell on main ([#374](after-task/2026-09-15-betabinomial-shared-phi-so.md), `eeb7e092`); **six holdout paired SO cells** on main ([#376](after-task/2026-09-16-six-holdout-so-cells.md), `47fcb23e`) → **PARTIAL (native Wald + toy Δ)**. Bridge CI lift still waits on #357.  
 Delta SO species dispersion: still OUT until paste `accept delta dispersion A`.  
-BB shared-φ: **PARTIAL** (native Wald + `betabinomial_shared` toy cell; **β block only** — per-trait φ on R not paired in live Δ). GP-1 ruling / Student-t free ν / Λ raw: still OUT.  
-Six-family holdout live-Δ cells: [#376](https://github.com/itchyshin/GLLVM.jl/pull/376) CONFLICTING (`second-order-holdouts` + `cells.jl` vs #374); rebase lane only — separate from `feat/tweedie-estimated-power-so-20260915`.
+BB shared-φ: **PARTIAL** (native Wald + `betabinomial_shared` toy cell; **β block only** — per-trait φ on R not paired in live Δ).  
+Six-family holdout live-Δ: **MERGED** (#376) — Lognormal / OrdinalPerTrait / TruncPois / TruncNB2 / Multinomial FE / Student-t fixed-ν paired toy cells (β[] blocks; TruncNB2 large se_rel documented as shared-`r` vs R per-trait φ).  
+Still OUT / open: GP-1 ruling / Student-t free ν / Λ raw / Tweedie **estimated** power (fixed-power PARTIAL).
 
 ### Version
 
@@ -63,7 +64,7 @@ Blocked on D-139 ack before Totoro spend (no separate paste string beyond an exp
 
 ## Agent rules
 
-- **Mac owns true-parity (STARTED 2026-09-15).** #374 MERGED; next ungated = land **#376** (rebase) and/or Tweedie estimated-power EOO on `feat/tweedie-estimated-power-so-20260915` (do not duplicate engine edits).
+- **Mac owns true-parity (STARTED 2026-09-15).** #374+#376 MERGED; **Mac owns next ungated** slice (cloud does not start engine/Wald). Natural candidate: Tweedie estimated-power EOO.
 - No Totoro / D-139 without `ack Totoro D-139 #323 Track A|B` (or an explicit D-139 ack naming the T4 grid).
 - Do not run S4 probe without `S4 probe yes`.
 - Do not bump Project.toml or claim full 0.7 / §7 complete.
@@ -71,4 +72,4 @@ Blocked on D-139 ack before Totoro spend (no separate paste string beyond an exp
 - Do not treat arcG/DRAC diagnostics as a coverage certificate or R-owed port.
 - No gllvmTMB engine surgery (TMB/likelihood); tools disposition PRs OK.
 - Do not edit #357 unless Shinichi pastes otherwise.
-- Skipped unrelated opens: #363 env, #314 handover. Do not confuse **#376** (six holdout SO cells) with Tweedie EOO PR work.
+- Skipped unrelated opens: #363 env, #314 handover. Cloud fence: no GP-1 / free-ν / Λ raw / Delta paste / Stage1 / S4 / Totoro / Project.toml from cloud.
