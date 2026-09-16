@@ -13,6 +13,7 @@ Cloud will not start Stage 1 / S4 / Totoro / Delta without Shinichi paste.
 | [#403](https://github.com/itchyshin/GLLVM.jl/pull/403) | noon true-parity wake briefing |
 | [#404](https://github.com/itchyshin/GLLVM.jl/pull/404) | post-#403 board tip + noon link fix |
 | [#405](https://github.com/itchyshin/GLLVM.jl/pull/405) | post-#357 merge board tip |
+| [#401](https://github.com/itchyshin/GLLVM.jl/pull/401) | Node24 Actions bump @ `c33745302` |
 
 ## Merged by Mac (cloud left alone)
 
@@ -31,16 +32,13 @@ Unrelated DRAFTs **#363** / **#314**: leave alone unless Mac owns them.
 
 ## #401 (Node 24 CI chore)
 
-**Status at handoff:** OPEN on `chore/node24-actions-20260916`.
-Documenter green; Frozen R advisory FAIL OK; Julia shards were finishing.
-**Mac:** when Julia 8/8 green → **squash-merge** (or babysit the last shards).
-Do not leave Node 20 Actions past the 23 Sep removal.
+**MERGED** by cloud @ `c33745302` (squash). Frozen R advisory FAIL was OK.
+No Mac babysit owed for #401.
 
 ## Mac next
 
-1. Rehydrate `origin/main` (expect ≥ `998434b14` / #405; refresh if #401 landed).
-2. If #401 still open and green → squash-merge.
-3. Wait for Shinichi pastes before #399 / #402; no invented ungated engine work.
+1. Rehydrate `origin/main` (expect ≥ `c33745302` / #401).
+2. Wait for Shinichi pastes before #399 / #402; no invented ungated engine work.
 
 Canonical programme: `docs/dev-log/plans/2026-09-05-true-parity-ultra-plan.md` (#291).
 Live board: `docs/dev-log/2026-09-14-true-parity-pending-board.md`.

@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-16  
 **Branch:** `cursor/cloud-babysit-handoff-4a16` (docs-only tip)  
-**Base:** `origin/main` @ `998434b14` (#405)
+**Base:** `origin/main` @ `c33745302` (#401 Node24)
 
 ## Scope
 
@@ -15,11 +15,11 @@
 
 ## Live status at tip write
 
-- Open: #401 (Node24 CI; Julia shards finishing), paste DRAFTs #399/#402,
-  unrelated DRAFTs #363/#314.
-- Cloud-merged recently: #398, #400, #403, #404, #405.
+- Cloud squash-merged **#401** @ `c33745302` before close.
+- Paste DRAFTs remain: #399/#402; unrelated DRAFTs #363/#314 left alone.
+- Cloud-merged recently: #398, #400, #403, #404, #405, #401.
 - Mac-merged #357 @ `5ee6dc596` (cloud left alone).
-- Decision: **YES close cloud babysit** (only paste-gated / #401 leftover).
+- Decision: **YES close cloud babysit** (only paste-gated leftovers).
 
 ## Rose
 
@@ -28,4 +28,4 @@ paste gates unchanged.
 
 ## Next
 
-Mac: squash-merge #401 when Julia green; wait for Shinichi pastes on #399/#402.
+Mac: rehydrate ≥ `c33745302`; wait for Shinichi pastes on #399/#402.
