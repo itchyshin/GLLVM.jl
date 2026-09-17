@@ -38,6 +38,10 @@ instead of cancelling main evidence or letting PR previews race.
 - `gh run view 35148351157 --log` and `gh run view 35148337444 --log` confirmed the
   non-fast-forward `gh-pages` push failure.
 - Local docs rebuild not run: this is workflow scheduling only, not docs source or Documenter content.
+- PR #424 CI: Documenter passed and `documenter/deploy` reported the preview URL. CI was rerun once
+  for failed jobs; both Julia shard-1 jobs still failed in Aqua `Persistent tasks` with
+  `Unable to locate ChainRulesCore` under dependencies of `LogExpFunctions` / `SpecialFunctions`.
+  The merge gate refused: `NOT MERGED: #424 has 3 check(s) that settled non-green`.
 
 ## Rose note
 

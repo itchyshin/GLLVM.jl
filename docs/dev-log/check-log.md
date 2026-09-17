@@ -27,6 +27,10 @@
 - Fix: add workflow-level `concurrency: group: documenter-gh-pages`, `cancel-in-progress: false` so
   dev-site and PR-preview pushes serialize instead of racing. DRAFT paste gates **#399/#409/#410/#411**
   untouched; no `Project.toml` version bump; no `gllvmTMB` changes.
+- PR **#424** opened. Documenter PASS; `documenter/deploy` PASS. Rerun of failed CI jobs kept both
+  Julia shard-1 jobs red in Aqua `Persistent tasks` (`Unable to locate ChainRulesCore` under
+  `LogExpFunctions` / `SpecialFunctions` dependencies); Frozen R advisory also FAIL. Merge gate refused:
+  `NOT MERGED: #424 has 3 check(s) that settled non-green`. **Not merged**.
 - Commands: lane preflight; `git fetch --prune origin`; `gh run list --workflow Documenter.yml`;
   `gh run view 35148351157 --log`; `gh run view 35148337444 --log`; `rg 'deploydocs|gh-pages|DOCUMENTER_KEY|docs/make|Documenter'`.
 
