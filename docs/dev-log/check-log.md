@@ -20243,3 +20243,13 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Open GLLVM.jl PRs: #399/#409/#410/#411 paste-gated DRAFTs with Julia shards + Documenter green and Frozen R advisory failing; #363/#314 DRAFT DIRTY and skipped. No non-draft PR was mergeable.
 - gllvmTMB quick scan: no mergeable docs-only leftover suitable for this lane; no gllvmTMB edits.
 - Docs-only tip refresh: board, `LOOP/checkpoint.md`, canonical paste packet, and after-task `docs/dev-log/after-task/2026-09-16-post-412-stop-refresh.md`. No Julia/R tests run.
+
+## 2026-09-17 - PR #424 Aqua 0.8.17 CI drift (`ci/documenter-gh-pages-concurrency-20260917`)
+
+- Lane preflight: `FOREIGN LANE ACTIVE`; took only #424 (`ci/documenter-gh-pages-concurrency-20260917`) and claimed a lease for `test/Project.toml`, this check-log, and `docs/dev-log/after-task/2026-09-17-documenter-gh-pages-concurrency.md`.
+- Verified checkout: #424 head `42cf75fb2689f86551cbd2df115002d2f2bf3c32`; PR diff before fix was `.github/workflows/Documenter.yml` plus dev-log docs. Documenter run `35266715464` was green; CI run `35266715435` failed only Julia shard 1 on Julia 1.10 and Julia 1, plus Frozen R advisory red.
+- Root cause: tip drift in Aqua, not #424. Main CI run `35097722925` was green with `Aqua v0.8.16`, `SpecialFunctions v2.9.0`, and `LogExpFunctions v0.3.29`; #424 run `35266715435` floated to `Aqua v0.8.17` and both shard-1 jobs errored in Aqua `Persistent tasks` with `Unable to locate ChainRulesCore` under `LogExpFunctions` / `SpecialFunctions`.
+- Reproducer: a temp Julia env with floating deps and `Aqua v0.8.17` reproduced the missing-weakdep class; after adding `ChainRulesCore`, Aqua next errored on `ChangesOfVariables`, then `DensityInterface`. A manifest scan found 58 absent weakdeps, so adding weakdeps one by one was rejected as test-env bloat.
+- Fix: exact test-only compat pin in `test/Project.toml`: `Aqua = "=0.8.16"`. No `Project.toml` version bump, no runtime deps, no likelihood code, no gllvmTMB edits, no Aqua subcheck skip.
+- Local validation: temp Julia env with `Aqua v0.8.16`, `SpecialFunctions v2.9.0`, and `LogExpFunctions v0.3.29`; `Aqua.test_all(GLLVM; ambiguities=false)` passed, including `Persistent tasks | 1/1`.
+- Also ran: `git diff --check` passed. Full `Pkg.test()` was not run locally; an accidental all-suite probe was stopped after it started because the focused Aqua reproducer covered the CI failure mode.

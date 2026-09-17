@@ -43,6 +43,27 @@ instead of cancelling main evidence or letting PR previews race.
   `Unable to locate ChainRulesCore` under dependencies of `LogExpFunctions` / `SpecialFunctions`.
   The merge gate refused: `NOT MERGED: #424 has 3 check(s) that settled non-green`.
 
+## Follow-up: Aqua 0.8.17 resolver drift
+
+The shard-1 failures were not caused by the Documenter concurrency change. The PR diff was limited to
+`.github/workflows/Documenter.yml` plus this dev-log note and `check-log.md`, while the failing Julia
+jobs errored inside `test/test_quality.jl` when `Aqua.test_all(GLLVM; ambiguities = false)` reached
+the `Persistent tasks` subcheck.
+
+Main CI run `35097722925` was green with `SpecialFunctions v2.9.0`, `LogExpFunctions v0.3.29`, and
+`Aqua v0.8.16`. PR run `35266715435` resolved the same package versions for
+`SpecialFunctions` / `LogExpFunctions` but floated Aqua to `v0.8.17`; both Julia 1.10 and Julia 1
+shard-1 jobs then errored with `Unable to locate ChainRulesCore`.
+
+Local probe with a floating resolver and `Aqua v0.8.17` reproduced the class of failure: adding the
+first missing weak dependency moved the error from `ChainRulesCore` to `ChangesOfVariables`, then to
+`DensityInterface`. A manifest scan found 58 absent weak dependencies, so adding weakdeps one by one
+would turn a hygiene-tool bug into broad test-environment bloat.
+
+Fix: pin the test-only Aqua dependency to exact `0.8.16` in `test/Project.toml`. This does not change
+the package runtime dependency set, `Project.toml`, the package version, likelihood code, or any
+gllvmTMB reference code, and it keeps the Aqua persistent-task subcheck enabled.
+
 ## Rose note
 
 Narrow CI serialization only. It does not make any paste-gated PR mergeable by itself, and it does
