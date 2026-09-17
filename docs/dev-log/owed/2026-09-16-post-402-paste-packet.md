@@ -5,7 +5,7 @@
 STATE: **IN PROGRESS**. Do **not** mark the programme or `/goal` complete.
 
 **Rehydrate:** `git fetch origin main && git rev-parse origin/main`  
-Tip (2026-09-16): **`487e2cb74`** (#416 docs chain); paste DRAFT harnesses rebased on tip — **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** @ `0736950a4` (Delta A), **[#411](https://github.com/itchyshin/GLLVM.jl/pull/411)** @ `627007faa` (Stage 1), **[#409](https://github.com/itchyshin/GLLVM.jl/pull/409)** @ `fd39c476c` (S4), **[#410](https://github.com/itchyshin/GLLVM.jl/pull/410)** @ `68b78cb4f` (Totoro): **MERGEABLE + Julia green; still DRAFT until paste** (Frozen R advisory may fail).
+Tip (2026-09-17): **`e590eb9ec`** ([#418](https://github.com/itchyshin/GLLVM.jl/pull/418) paste-ready status); paste DRAFT harnesses rebased on tip — **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** @ `0736950a4` (Delta A), **[#411](https://github.com/itchyshin/GLLVM.jl/pull/411)** @ `627007faa` (Stage 1), **[#409](https://github.com/itchyshin/GLLVM.jl/pull/409)** @ `fd39c476c` (S4), **[#410](https://github.com/itchyshin/GLLVM.jl/pull/410)** @ `68b78cb4f` (Totoro): **MERGEABLE + Julia green; still DRAFT until paste** (Frozen R advisory may fail).
 
 **Twin:** gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**.
 
@@ -14,7 +14,7 @@ Tip (2026-09-16): **`487e2cb74`** (#416 docs chain); paste DRAFT harnesses rebas
 
 ---
 
-## Adversarial scorecard (2026-09-16 @ `487e2cb74` + #402 MERGED / DRAFT harnesses tip-aligned)
+## Adversarial scorecard (2026-09-17 @ `e590eb9ec` + #402 MERGED / DRAFT harnesses tip-aligned)
 
 | Named item | Verdict | Evidence |
 |------------|---------|----------|
@@ -52,4 +52,4 @@ gh pr view 399 409 410 411 --json isDraft,url
 gh pr checks 401
 ```
 
-Expected `origin/main`: **`487e2cb74`**. DRAFT heads above after `gh pr update-branch --rebase` onto tip. Goal **not** complete.
+Expected `origin/main`: **`e590eb9ec`**. DRAFT heads above after `gh pr update-branch --rebase` onto tip. Goal **not** complete.

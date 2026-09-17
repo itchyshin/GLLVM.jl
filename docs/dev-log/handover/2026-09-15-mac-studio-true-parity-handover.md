@@ -130,7 +130,7 @@ Holdouts after cloud work (see `second-order-holdouts-2026-09-04.md`): Ordinal /
 | PR / item | State | Rule |
 |-----------|-------|------|
 | [#367](https://github.com/itchyshin/GLLVM.jl/pull/367) Student-t fixed-ν | OPEN · MERGEABLE | **Mac own or cloud babysit:** merge when Julia+Documenter green (Frozen R advisory OK). Then refresh board/checkpoint. |
-| [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge logLik receipts | OPEN · CONFLICTING | **Foreign — leave alone** unless Shinichi pastes otherwise. Bridge CI lift waits here. |
+| [#357](https://github.com/itchyshin/GLLVM.jl/pull/357) bridge logLik receipts | **MERGED** @ `5ee6dc596` | On `main`; **do not revert**. Bridge live Δ receipts merged (Mac lane). |
 | [#363](https://github.com/itchyshin/GLLVM.jl/pull/363) Cloud Agent env | OPEN · CONFLICTING | Unrelated — skip |
 | [#314](https://github.com/itchyshin/GLLVM.jl/pull/314) old D-220 handover | OPEN · CONFLICTING | Unrelated — skip |
 

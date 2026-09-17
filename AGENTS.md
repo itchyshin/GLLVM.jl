@@ -93,14 +93,14 @@ Full responsibility detail lives in §2 of the reference plan.
 
 ## Phase state snapshot
 
-- **True-parity continuation (2026-09-15).** `origin/main` @ `9d300783c` after
-  #362/#356/#361/#355/#364/#365/#366/#368/#369/#370/#371/#367. Multinomial FE
-  Wald `_CIFit` MERGED (#366, `c1842dd6`); Student-t fixed-ν Wald MERGED (#367,
-  `9d300783c`) → PARTIAL (native Wald). Mac Studio owns the programme lane
-  (#369 handover; #370/#371 goal+ultra-plan). #357 foreign CONFLICTING — do not
-  edit. Still paste-gated: S4, D3 Stage 1, Totoro T4, Delta dispersion A;
-  `Project.toml` stays `0.3.0`. Goal **not** complete. Board:
-  `docs/dev-log/2026-09-14-true-parity-pending-board.md`. Handover:
+- **True-parity continuation (2026-09-17).** `origin/main` @ `e590eb9ec` after
+  docs tip chain through **#418** (paste-ready status for four DRAFT harness
+  heads). **#357** bridge logLik receipts **MERGED** (#357, `5ee6dc596`; do not
+  revert). DRAFT **#399/#409/#410/#411** remain **DRAFT until paste** (do not
+  merge without Shinichi paste). Still paste-gated: S4, D3 Stage 1, Totoro T4,
+  Delta dispersion A; `Project.toml` stays `0.3.0`. Goal **not** complete.
+  Board: `docs/dev-log/2026-09-14-true-parity-pending-board.md`. Paste packet:
+  `docs/dev-log/owed/2026-09-16-post-402-paste-packet.md`. Handover:
   `docs/dev-log/handover/2026-09-15-mac-studio-true-parity-handover.md`.
 
 - **HANDED OVER to a single Cursor lane holding BOTH repos (2026-09-04).** GLLVM.jl `main`
