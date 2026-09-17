@@ -17,6 +17,19 @@
 - Added [`decisions/2026-09-17-gllvmodels-rename-g0.md`](decisions/2026-09-17-gllvmodels-rename-g0.md) to the existing docs-only #422: D-269 spelling, in-place GitHub/Pages sequence, unregistered General position, later gllvmTMB/RCall bridge boundary, test/CI migration surface, and the limited old-module alias. **STOP AT G0:** no `src/`, `Project.toml`, protected DRAFT, parity, gllvmTMB, release, merge, or GitHub rename work.
 - Commands: `git fetch origin --prune`; `gh pr view 422 --repo itchyshin/GLLVM.jl`; `graft ask "GLLVModels rename design note documentation decision plan check-log conventions" --source`.
 
+## 2026-09-17 — Documenter gh-pages deploy serialization (`ci/documenter-gh-pages-concurrency-20260917`)
+
+- **origin/main** @ **`1c492486f`** before edit. Root cause confirmed from failed Documenter runs
+  `35148351157` (#411) and `35148337444` (#410): concurrent PR preview deploys both fetched
+  `gh-pages`, built, then lost `git push upstream HEAD:gh-pages` with non-fast-forward `fetch first`
+  after another run updated the branch. `Documenter.yml` had no concurrency guard while
+  `docs/make.jl` deploys PR previews with `push_preview = true`.
+- Fix: add workflow-level `concurrency: group: documenter-gh-pages`, `cancel-in-progress: false` so
+  dev-site and PR-preview pushes serialize instead of racing. DRAFT paste gates **#399/#409/#410/#411**
+  untouched; no `Project.toml` version bump; no `gllvmTMB` changes.
+- Commands: lane preflight; `git fetch --prune origin`; `gh run list --workflow Documenter.yml`;
+  `gh run view 35148351157 --log`; `gh run view 35148337444 --log`; `rg 'deploydocs|gh-pages|DOCUMENTER_KEY|docs/make|Documenter'`.
+
 ## 2026-09-17 — Post-#419 paste packet tip (`docs/post-419-paste-packet-tip-20260917`)
 
 - **origin/main** @ **`8a751b55d`** (#419). Four DRAFT harnesses already rebased on tip
