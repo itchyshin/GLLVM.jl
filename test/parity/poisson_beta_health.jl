@@ -7,9 +7,12 @@ function core070_poisson_beta_required(family::Symbol)
     contract="docs/dev-log/core070/poisson-beta-required-contract.json"
     _core070_sha256_file(joinpath(root,contract))=="8b6016cbedcbdc4d20d66f3a4db74f3e0e5bfb4b0fb7d34e742afa499150642c" || error("required model contract changed")
     fixture="test/parity/test_$(family)_parity.jl"
+    # Whole-file pins changed only because the package/module spelling changed
+    # from GLLVM to GLLVModels. The DGP-region pins below intentionally remain
+    # frozen, so this rename cannot silently alter the historical simulation.
     expected=Dict(
-        :poisson => ("d7ca740f8daa303aae730647af53b1db461ba7c0d44a4341db17e7e3495ed204","404e19e607362e4682f7348dec0fc5dd127d06114fe1f9197f24001ddf537100"),
-        :beta => ("74a045861439b5a6f5a56c2c427c4abd2bfcc1fc143cfe43c392044ca51dbac8","45c31fe9b8e846681bdabb7f4a8284bc8a1f04ada25c685a34687c617669e1ab"))
+        :poisson => ("0faa57a2d346dd85715053c90db35550c614e6f87152956e79d9aaf6f0a296c7","404e19e607362e4682f7348dec0fc5dd127d06114fe1f9197f24001ddf537100"),
+        :beta => ("2fda9fcd23ac2bb435cacd7cf9b03bc25b7ccbadacb291a928ed7ac3d1440fa9","45c31fe9b8e846681bdabb7f4a8284bc8a1f04ada25c685a34687c617669e1ab"))
     _core070_sha256_file(joinpath(root,fixture))==expected[family][1] || error("original fixture changed")
     source=read(joinpath(root,fixture),String)
     first=findfirst("    Random.seed!(",source).start;last=findnext("    jl_fit =",source,first).start
