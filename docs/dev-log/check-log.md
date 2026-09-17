@@ -17,6 +17,23 @@
 - Added [`decisions/2026-09-17-gllvmodels-rename-g0.md`](decisions/2026-09-17-gllvmodels-rename-g0.md) to the existing docs-only #422: D-269 spelling, in-place GitHub/Pages sequence, unregistered General position, later gllvmTMB/RCall bridge boundary, test/CI migration surface, and the limited old-module alias. **STOP AT G0:** no `src/`, `Project.toml`, protected DRAFT, parity, gllvmTMB, release, merge, or GitHub rename work.
 - Commands: `git fetch origin --prune`; `gh pr view 422 --repo itchyshin/GLLVM.jl`; `graft ask "GLLVModels rename design note documentation decision plan check-log conventions" --source`.
 
+## 2026-09-17 — Documenter gh-pages deploy serialization (`ci/documenter-gh-pages-concurrency-20260917`)
+
+- **origin/main** @ **`1c492486f`** before edit. Root cause confirmed from failed Documenter runs
+  `35148351157` (#411) and `35148337444` (#410): concurrent PR preview deploys both fetched
+  `gh-pages`, built, then lost `git push upstream HEAD:gh-pages` with non-fast-forward `fetch first`
+  after another run updated the branch. `Documenter.yml` had no concurrency guard while
+  `docs/make.jl` deploys PR previews with `push_preview = true`.
+- Fix: add workflow-level `concurrency: group: documenter-gh-pages`, `cancel-in-progress: false` so
+  dev-site and PR-preview pushes serialize instead of racing. DRAFT paste gates **#399/#409/#410/#411**
+  untouched; no `Project.toml` version bump; no `gllvmTMB` changes.
+- PR **#424** opened. Documenter PASS; `documenter/deploy` PASS. Rerun of failed CI jobs kept both
+  Julia shard-1 jobs red in Aqua `Persistent tasks` (`Unable to locate ChainRulesCore` under
+  `LogExpFunctions` / `SpecialFunctions` dependencies); Frozen R advisory also FAIL. Merge gate refused:
+  `NOT MERGED: #424 has 3 check(s) that settled non-green`. **Not merged**.
+- Commands: lane preflight; `git fetch --prune origin`; `gh run list --workflow Documenter.yml`;
+  `gh run view 35148351157 --log`; `gh run view 35148337444 --log`; `rg 'deploydocs|gh-pages|DOCUMENTER_KEY|docs/make|Documenter'`.
+
 ## 2026-09-17 — Post-#419 paste packet tip (`docs/post-419-paste-packet-tip-20260917`)
 
 - **origin/main** @ **`8a751b55d`** (#419). Four DRAFT harnesses already rebased on tip
@@ -20226,3 +20243,13 @@ After-task: `docs/dev-log/after-task/2026-09-13-destination-b-close-as-limit.md`
 - Open GLLVM.jl PRs: #399/#409/#410/#411 paste-gated DRAFTs with Julia shards + Documenter green and Frozen R advisory failing; #363/#314 DRAFT DIRTY and skipped. No non-draft PR was mergeable.
 - gllvmTMB quick scan: no mergeable docs-only leftover suitable for this lane; no gllvmTMB edits.
 - Docs-only tip refresh: board, `LOOP/checkpoint.md`, canonical paste packet, and after-task `docs/dev-log/after-task/2026-09-16-post-412-stop-refresh.md`. No Julia/R tests run.
+
+## 2026-09-17 - PR #424 Aqua 0.8.17 CI drift (`ci/documenter-gh-pages-concurrency-20260917`)
+
+- Lane preflight: `FOREIGN LANE ACTIVE`; took only #424 (`ci/documenter-gh-pages-concurrency-20260917`) and claimed a lease for `test/Project.toml`, this check-log, and `docs/dev-log/after-task/2026-09-17-documenter-gh-pages-concurrency.md`.
+- Verified checkout: #424 head `42cf75fb2689f86551cbd2df115002d2f2bf3c32`; PR diff before fix was `.github/workflows/Documenter.yml` plus dev-log docs. Documenter run `35266715464` was green; CI run `35266715435` failed only Julia shard 1 on Julia 1.10 and Julia 1, plus Frozen R advisory red.
+- Root cause: tip drift in Aqua, not #424. Main CI run `35097722925` was green with `Aqua v0.8.16`, `SpecialFunctions v2.9.0`, and `LogExpFunctions v0.3.29`; #424 run `35266715435` floated to `Aqua v0.8.17` and both shard-1 jobs errored in Aqua `Persistent tasks` with `Unable to locate ChainRulesCore` under `LogExpFunctions` / `SpecialFunctions`.
+- Reproducer: a temp Julia env with floating deps and `Aqua v0.8.17` reproduced the missing-weakdep class; after adding `ChainRulesCore`, Aqua next errored on `ChangesOfVariables`, then `DensityInterface`. A manifest scan found 58 absent weakdeps, so adding weakdeps one by one was rejected as test-env bloat.
+- Fix: exact test-only compat pin in `test/Project.toml`: `Aqua = "=0.8.16"`. No `Project.toml` version bump, no runtime deps, no likelihood code, no gllvmTMB edits, no Aqua subcheck skip.
+- Local validation: temp Julia env with `Aqua v0.8.16`, `SpecialFunctions v2.9.0`, and `LogExpFunctions v0.3.29`; `Aqua.test_all(GLLVM; ambiguities=false)` passed, including `Persistent tasks | 1/1`.
+- Also ran: `git diff --check` passed. Full `Pkg.test()` was not run locally; an accidental all-suite probe was stopped after it started because the focused Aqua reproducer covered the CI failure mode.
