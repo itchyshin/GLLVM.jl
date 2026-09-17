@@ -2,15 +2,15 @@
 
 STATE: **IN PROGRESS**. **Mac Studio owns programme (STARTED 2026-09-15).** #323, matched-θ **(C)**, §2 Hessian **(A)** disposed (Ada defaults). Ledger gap inventory done. arcG Julia-only disposition ACCEPTED (#358 + gllvmTMB #1284). Still open: S4 probe, D3 Stage 1, `Project.toml` `0.3.0`, Delta dispersion paste.
 
-CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** + docs through **#407** + **[#401](https://github.com/itchyshin/GLLVM.jl/pull/401)** node24 CI **MERGED** @ **`c33745302`**; **#357** bridge receipts **MERGED on `main`** @ **`5ee6dc596`** (Mac lane - do not revert). Tip @ **`62091750d`** (**[#412](https://github.com/itchyshin/GLLVM.jl/pull/412)** paste packet **MERGED** after **[#402](https://github.com/itchyshin/GLLVM.jl/pull/402)** runbooks @ `08ca9e487`). Four paste rows: DRAFT **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** (Delta A), **[#411](https://github.com/itchyshin/GLLVM.jl/pull/411)** (Stage 1), **[#409](https://github.com/itchyshin/GLLVM.jl/pull/409)** (S4), **[#410](https://github.com/itchyshin/GLLVM.jl/pull/410)** (Totoro) - **do not merge** without Shinichi paste. No execution, GP-1, free-ν, Lambda raw, or `Project.toml` bump without paste. **#363/#314** CONFLICTING DRAFT skip. Goal **not** complete.
+CLOUD STOP (2026-09-16): Ungated cloud queue **exhausted** after **#391** + docs through **#416** + **[#401](https://github.com/itchyshin/GLLVM.jl/pull/401)** node24 CI **MERGED** @ **`c33745302`**; **#357** bridge receipts **MERGED on `main`** @ **`5ee6dc596`** (Mac lane - do not revert). Tip @ **`487e2cb74`**. Four paste rows tip-aligned: DRAFT **[#399](https://github.com/itchyshin/GLLVM.jl/pull/399)** @ `0736950a4`, **[#411](https://github.com/itchyshin/GLLVM.jl/pull/411)** @ `627007faa`, **[#409](https://github.com/itchyshin/GLLVM.jl/pull/409)** @ `fd39c476c`, **[#410](https://github.com/itchyshin/GLLVM.jl/pull/410)** @ `68b78cb4f` — **MERGEABLE + Julia green; still DRAFT until paste** (do not merge without Shinichi paste). No execution, GP-1, free-ν, Lambda raw, or `Project.toml` bump without paste. **#363/#314** CONFLICTING DRAFT skip. Goal **not** complete.
 
 Merged SO tranche: #374/#376/#378 + **#391** @ **`c4dba35c4`**. **Canonical paste table:** [`owed/2026-09-16-post-402-paste-packet.md`](owed/2026-09-16-post-402-paste-packet.md) (post-**#402** merge).
 
-Rehydrate: GLLVM.jl `origin/main` @ **`62091750d`** (#412 paste packet; #408 board tip; #402 runbooks @ `08ca9e487`; DRAFT **#399/#409/#410/#411**); gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. Noon (real): [`handover/2026-09-16-noon-true-parity-wake-briefing.md`](handover/2026-09-16-noon-true-parity-wake-briefing.md).
+Rehydrate: GLLVM.jl `origin/main` @ **`487e2cb74`** (paste packet [`owed/2026-09-16-post-402-paste-packet.md`](owed/2026-09-16-post-402-paste-packet.md); #402 runbooks @ `08ca9e487`; DRAFT **#399/#409/#410/#411** heads above); gllvmTMB `origin/main` @ `02b46cfc8`; frozen oracle `b4d5fee64def88bc768dda1f1f77c29b295edd86`; **`Project.toml` stays `0.3.0`**. Noon (real): [`handover/2026-09-16-noon-true-parity-wake-briefing.md`](handover/2026-09-16-noon-true-parity-wake-briefing.md).
 
 ---
 
-## Named-item scorecard (adversarial, tip `62091750d` + DRAFT #399/#409/#410/#411)
+## Named-item scorecard (adversarial, tip `487e2cb74` + DRAFT #399/#409/#410/#411)
 
 | Item | Verdict |
 |------|---------|
