@@ -4,6 +4,14 @@
 - Found work: **owed decision packet**. Handovers/board/checkpoint list no ungated engine or CI work. The new packet adds exact ruling phrases for GP-1, Student-t free nu, Lambda raw, Tweedie joint power, and BetaBinomial phi pairing.
 - Commands: `~/shinichi-brain/tools/lane_preflight.sh "/Users/z3437171/Dropbox/Github Local/GLLVM.jl"`; `git fetch origin --prune`; `gh pr list --state open`; `gh pr view 420`; `graft ask "GLLVM.jl true parity Cursor lane ungated slice not paste harness" --source`; `rg "GP-1|Student-t|free ν|free nu|Λ raw|Lambda raw|BB shared|phi pairing|φ pairing|Tweedie jointly|jointly-optimised" docs/dev-log/owed`.
 
+## 2026-09-17 — Codex GLLVModels rename handover (`docs/codex-gllvmodels-rename-handover-20260917`)
+
+- **origin/main** @ **`8cc75587e`** (#421). Added
+  [`handover/2026-09-17-codex-gllvmodels-rename.md`](handover/2026-09-17-codex-gllvmodels-rename.md):
+  Codex-owned rename lane; fences paste DRAFT **#399/#411/#409/#410** + skip **#363/#314**; true-parity
+  ungated slice **none**. No rename code; no paste-branch edits. Goal **not** complete.
+- Commands: `git fetch origin main`; `gh pr view 399 411 409 410 --json headRefOid,isDraft`; `python3 ~/shinichi-brain/tools/slop_check.py` on handover.
+
 ## 2026-09-17 — Post-#419 paste packet tip (`docs/post-419-paste-packet-tip-20260917`)
 
 - **origin/main** @ **`8a751b55d`** (#419). Four DRAFT harnesses already rebased on tip
