@@ -1,3 +1,12 @@
+## 2026-09-17 — Post-#419 paste packet tip (`docs/post-419-paste-packet-tip-20260917`)
+
+- **origin/main** @ **`8a751b55d`** (#419). Four DRAFT harnesses already rebased on tip
+  (**#399** `ee1f9a01e`, **#411** `5ce6659d4`, **#409** `69edea4c4`, **#410** `89816d468`);
+  Julia 8/8 green on latest runs (Frozen R advisory fail OK). Board + post-#402 paste packet
+  tip `e590eb9ec` → **`8a751b55d`** + DRAFT head SHAs. No non-draft mergeable PRs; ungated engine
+  slice **none**. Goal **not** complete.
+- Commands: `git fetch origin main`; `gh pr checks 399 409 410 411`; `gh pr list --state open`.
+
 ## 2026-09-17 — Rose tip + #357 coordination (`docs/rose-tip-357-20260917`)
 
 - **origin/main** @ **`e590eb9ec`** (#418) before edit. Rose WARN @ `0f1f8422`: tip SHA drift +
