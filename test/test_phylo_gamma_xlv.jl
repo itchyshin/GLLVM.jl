@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 using Distributions: Gamma
 
 function _dense_leaf_phylo_gamma_xlv_loglik(Y, beta, Lambda, alpha_lv,
@@ -10,7 +10,7 @@ function _dense_leaf_phylo_gamma_xlv_loglik(Y, beta, Lambda, alpha_lv,
     leaf_pos = [(lp = phy.leaf_indices[t]; phy.root_index < lp ? lp - 1 : lp) for t in 1:p]
     Sigma_a = sigma2_phy .* (inv(Qc)[leaf_pos, leaf_pos])
     Pa = inv(Sigma_a)
-    mean_eta = GLLVM._lv_mean_eta(Lambda, X_lv, alpha_lv)
+    mean_eta = GLLVModels._lv_mean_eta(Lambda, X_lv, alpha_lv)
     fam = Gamma(alpha_shape, 1.0)
 
     eps = zeros(n, K)
@@ -37,11 +37,11 @@ function _dense_leaf_phylo_gamma_xlv_loglik(Y, beta, Lambda, alpha_lv,
             for k in 1:K
                 eta_ts += Lambda[t, k] * eps[s, k]
             end
-            eta_c = GLLVM._clamp_eta(eta_ts)
+            eta_c = GLLVModels._clamp_eta(eta_ts)
             mu_ts = exp(eta_c)
-            me_ts = GLLVM.mu_eta(LogLink(), eta_c)
-            score_ts = GLLVM._glm_score(fam, mu_ts, 1, me_ts, Y[t, s])
-            weight_ts = GLLVM._glm_weight(fam, mu_ts, 1, me_ts)
+            me_ts = GLLVModels.mu_eta(LogLink(), eta_c)
+            score_ts = GLLVModels._glm_score(fam, mu_ts, 1, me_ts, Y[t, s])
+            weight_ts = GLLVModels._glm_weight(fam, mu_ts, 1, me_ts)
             aidx = n_z + t
             grad[aidx] += score_ts
             H[aidx, aidx] += weight_ts
@@ -74,8 +74,8 @@ function _dense_leaf_phylo_gamma_xlv_loglik(Y, beta, Lambda, alpha_lv,
         for k in 1:K
             eta_ts += Lambda[t, k] * eps[s, k]
         end
-        mu_ts = exp(GLLVM._clamp_eta(eta_ts))
-        q += GLLVM._glm_logpdf(fam, mu_ts, 1, Y[t, s])
+        mu_ts = exp(GLLVModels._clamp_eta(eta_ts))
+        q += GLLVModels._glm_logpdf(fam, mu_ts, 1, Y[t, s])
     end
     return q + 0.5 * logdet(cholesky(Symmetric(Pa))) -
            0.5 * logdet(cholesky(Symmetric(H)))
@@ -83,7 +83,7 @@ end
 
 @testset "Phylo x Gamma predictor-informed LV S1 likelihood" begin
     Random.seed!(752)
-    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    phy = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p = phy.n_leaves
     n = 7
     K = 1
@@ -96,18 +96,18 @@ end
     eta = beta .+ Lambda * transpose(X_lv * alpha_lv)
     Y = [rand(Gamma(alpha_shape, exp(eta[t, s]) / alpha_shape)) for t in 1:p, s in 1:n]
 
-    ll_joint0 = GLLVM._phylo_gamma_xlv_marginal_loglik(
+    ll_joint0 = GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, alpha_shape, 1e-8, phy, X_lv;
         maxiter = 120, tol = 1e-10)
-    theta_plain = vcat(beta, vec(alpha_lv), GLLVM.pack_lambda(Lambda), log(alpha_shape))
-    ll_plain = -GLLVM.gamma_lv_nll_packed(
+    theta_plain = vcat(beta, vec(alpha_lv), GLLVModels.pack_lambda(Lambda), log(alpha_shape))
+    ll_plain = -GLLVModels.gamma_lv_nll_packed(
         theta_plain, Y, p, K, LogLink(); X_lv = X_lv, q_lv = q_lv,
         maxiter = 120, tol = 1e-10)
     @test isapprox(ll_joint0, ll_plain; atol = 2e-3)
 
     sigma2 = 0.40
     Lambda0 = zeros(p, K)
-    ll_phylo_only = GLLVM._phylo_gamma_xlv_marginal_loglik(
+    ll_phylo_only = GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y, beta, Lambda0, alpha_lv, alpha_shape, sigma2, phy, X_lv;
         maxiter = 120, tol = 1e-10)
     ll_phylo_glm = phylo_glm_marginal_loglik(
@@ -115,7 +115,7 @@ end
         link = LogLink(), maxiter = 120, tol = 1e-10)
     @test isapprox(ll_phylo_only, ll_phylo_glm; atol = 1e-7)
 
-    ll_sparse_aug = GLLVM._phylo_gamma_xlv_marginal_loglik(
+    ll_sparse_aug = GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, alpha_shape, sigma2, phy, X_lv;
         maxiter = 120, tol = 1e-10)
     ll_dense_leaf = _dense_leaf_phylo_gamma_xlv_loglik(
@@ -123,31 +123,31 @@ end
     @test isapprox(ll_sparse_aug, ll_dense_leaf; atol = 1e-6)
     @test isfinite(ll_sparse_aug)
 
-    @test GLLVM._phylo_gamma_xlv_marginal_loglik(
+    @test GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, alpha_shape, 0.0, phy, X_lv) == -Inf
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y[1:5, :], beta, Lambda, alpha_lv, alpha_shape, sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, 0.0, sigma2, phy, X_lv)
     Y_zero = copy(Y)
     Y_zero[1, 1] = 0.0
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y_zero, beta, Lambda, alpha_lv, alpha_shape, sigma2, phy, X_lv)
     Y_nan = copy(Y)
     Y_nan[1, 1] = NaN
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y_nan, beta, Lambda, alpha_lv, alpha_shape, sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, alpha_shape, sigma2, phy, X_lv[1:(end - 1), :])
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y, beta, Lambda, ones(2, K), alpha_shape, sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, alpha_shape, sigma2, phy, X_lv; link = IdentityLink())
 end
 
 @testset "Phylo x Gamma B_eta_realized selected-entry canary" begin
     Random.seed!(753)
-    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    phy = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p = phy.n_leaves
     n = 28
     K = 1
@@ -163,7 +163,7 @@ end
     eta = beta .+ Lambda * transpose(Z_truth)
     Y = [rand(Gamma(alpha_shape, exp(eta[t, s]) / alpha_shape)) for t in 1:p, s in 1:n]
 
-    fit = GLLVM._fit_phylo_gamma_xlv(
+    fit = GLLVModels._fit_phylo_gamma_xlv(
         Y, phy; K = K, X_lv = X_lv,
         beta_init = beta, Lambda_init = Lambda, alpha_lv_init = alpha_lv,
         alpha_shape_init = alpha_shape, sigma2_phy_init = sigma2,
@@ -174,8 +174,8 @@ end
     @test fit.sigma2_phy > 0
     @test 0.5 < fit.alpha_shape < 20.0
 
-    eta_target = vec(GLLVM._eta_realized_lv_effects(X_lv, Z_truth, Lambda))
-    prof = GLLVM._phylo_gamma_xlv_profile_eta_realized(
+    eta_target = vec(GLLVModels._eta_realized_lv_effects(X_lv, Z_truth, Lambda))
+    prof = GLLVModels._phylo_gamma_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [5], eta_target;
         level = 0.95, profile_iterations = 700,
         newton_maxiter = 120, newton_tol = 1e-10)
@@ -194,18 +194,18 @@ end
     @test prof.alpha_shape_ok
     @test prof.pd_hessian
 
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, Int[], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1, 1], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [p + 1], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target[1:(end - 1)])
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target; profile_iterations = 0)
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target; endpoint_step = -0.1)
-    @test_throws ArgumentError GLLVM._phylo_gamma_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_gamma_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target; alpha_shape_bounds = (1.0, 0.5))
 end

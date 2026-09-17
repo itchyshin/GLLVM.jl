@@ -37,14 +37,14 @@
 #     bench/coverage_derived.jl).
 
 using Test
-using GLLVM
+using GLLVModels
 using Random
 using LinearAlgebra
 
 # `_make_correlation_closure` lives in confint_derived_wald.jl which is
-# additive (not in the GLLVM precompiled module). Inject it once.
-if !isdefined(GLLVM, :_make_correlation_closure)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "confint_derived_wald.jl"))
+# additive (not in the GLLVModels precompiled module). Inject it once.
+if !isdefined(GLLVModels, :_make_correlation_closure)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "confint_derived_wald.jl"))
 end
 
 # Build the same fixture as bench/coverage_derived.jl phylo cell.
@@ -58,8 +58,8 @@ function _build_phylo_fixture()
     Λ_B = reshape(0.4 .+ 0.4 .* abs.(randn(rng0, p)), p, K)
     Λ_B[2:2:end] .*= -1.0
 
-    phy = GLLVM.random_balanced_tree(p; branch_length = branch_length)
-    Σ_phy_raw = GLLVM.sigma_phy_dense(phy; σ²_phy = 1.0)
+    phy = GLLVModels.random_balanced_tree(p; branch_length = branch_length)
+    Σ_phy_raw = GLLVModels.sigma_phy_dense(phy; σ²_phy = 1.0)
     Σ_phy = Matrix(Symmetric((Σ_phy_raw .+ Σ_phy_raw) ./ 2))
     L_phy = cholesky(Symmetric(Σ_phy)).L
 
@@ -103,7 +103,7 @@ end
                              Σ_phy = fx.Σ_phy)
     @test fit.converged
 
-    spec = GLLVM._derived_spec(fit)
+    spec = GLLVModels._derived_spec(fit)
 
     # ---------------------------------------------------------------
     # Sub-test 1: the constrained refit at c slightly off g(θ̂) must
@@ -111,7 +111,7 @@ end
     # Pre-fix this is where the LBFGS run went pathological.
     # ---------------------------------------------------------------
     @testset "constrained refit near g_hat is healthy" begin
-        f_c2 = GLLVM._make_communality_closure(spec, fx.t_c2)
+        f_c2 = GLLVModels._make_communality_closure(spec, fx.t_c2)
         g_hat = f_c2(fit.pars.θ_packed)
         @test isfinite(g_hat) && 0 ≤ g_hat ≤ 1
 
@@ -120,7 +120,7 @@ end
         # the escalating-w schedule reaches with w_final = 1e6).
         for δ in (-0.05, 0.05)
             c = g_hat + δ
-            ll_c, ok, _, g_at = GLLVM._derived_refit_with_fixed(
+            ll_c, ok, _, g_at = GLLVModels._derived_refit_with_fixed(
                 fit, f_c2, c, fx.y, nothing, fx.Σ_phy)
             @test ok
             @test isfinite(ll_c)
@@ -135,8 +135,8 @@ end
     # for c²[t_c2]. Pre-fix this produced near-zero-width intervals.
     # ---------------------------------------------------------------
     @testset "c² profile CI is non-degenerate and contains truth" begin
-        f_c2 = GLLVM._make_communality_closure(spec, fx.t_c2)
-        ci = GLLVM.profile_ci_derived(fit, f_c2;
+        f_c2 = GLLVModels._make_communality_closure(spec, fx.t_c2)
+        ci = GLLVModels.profile_ci_derived(fit, f_c2;
                                       y = fx.y, Σ_phy = fx.Σ_phy)
         @test ci.method === :profile
         @test isfinite(ci.lower) && isfinite(ci.upper)
@@ -154,8 +154,8 @@ end
     # Sub-test 3: same for the correlation. Pre-fix coverage was 0.00.
     # ---------------------------------------------------------------
     @testset "ρ profile CI is non-degenerate and contains truth" begin
-        f_ρ = GLLVM._make_correlation_closure(spec, fx.i_ρ, fx.j_ρ)
-        ci = GLLVM.profile_ci_derived(fit, f_ρ;
+        f_ρ = GLLVModels._make_correlation_closure(spec, fx.i_ρ, fx.j_ρ)
+        ci = GLLVModels.profile_ci_derived(fit, f_ρ;
                                       y = fx.y, Σ_phy = fx.Σ_phy)
         @test ci.method === :profile
         @test isfinite(ci.lower) && isfinite(ci.upper)

@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions
 
 function _high_rate_poisson_fixture()
     Random.seed!(7002)
@@ -68,17 +68,17 @@ end
         Y = _high_rate_poisson_fixture()
         p, K = size(Y, 1), 2
         β0, Λ0 = _poisson_warm_start(Y, K)
-        rr = GLLVM.rr_theta_len(p, K)
-        θ0 = vcat(β0, GLLVM.pack_lambda(Λ0))
+        rr = GLLVModels.rr_theta_len(p, K)
+        θ0 = vcat(β0, GLLVModels.pack_lambda(Λ0))
         N = ones(Int, size(Y))
 
         function marginal(θ)
             β = θ[1:p]
-            Λ = GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-            return GLLVM.marginal_loglik_laplace(Poisson(), Y, N, Λ, β, LogLink())
+            Λ = GLLVModels.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+            return GLLVModels.marginal_loglik_laplace(Poisson(), Y, N, Λ, β, LogLink())
         end
 
-        g_analytic = GLLVM.poisson_laplace_grad(Y, Λ0, β0)
+        g_analytic = GLLVModels.poisson_laplace_grad(Y, Λ0, β0)
         g_fd = similar(θ0)
         h = 1e-5
         @inbounds for i in eachindex(θ0)

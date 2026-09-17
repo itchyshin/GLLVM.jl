@@ -18,9 +18,9 @@
 #       dependent; the constant >1000× gap is the load-bearing fact.)
 #
 # Run:  julia --project=bench bench/phylo_branch_re_bench.jl
-# (the new src files are not wired into GLLVM; this file includes them directly).
+# (the new src files are not wired into GLLVModels; this file includes them directly).
 
-using GLLVM, Random, LinearAlgebra, SparseArrays, Statistics, BenchmarkTools
+using GLLVModels, Random, LinearAlgebra, SparseArrays, Statistics, BenchmarkTools
 
 const _PKG = normpath(joinpath(@__DIR__, ".."))
 include(joinpath(_PKG, "src", "edge_incidence.jl"))

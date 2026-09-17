@@ -12,15 +12,15 @@ suppressPackageStartupMessages({
 
 RECEIPT_PATH <- Sys.getenv(
   "WEDGE_A_RECEIPT",
-  "/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904/docs/dev-log/core070/acc-bridge-urbanisation-receipt-2026-09-05.json"
+  "/Users/z3437171/local-scratch/lanes/GLLVModels.jl-gllvm-twin-20260904/docs/dev-log/core070/acc-bridge-urbanisation-receipt-2026-09-05.json"
 )
 LOG_PATH <- Sys.getenv(
   "WEDGE_A_LOG",
-  "/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904/logs/wedge-a-acc-urbanisation-scout-2026-09-05.log"
+  "/Users/z3437171/local-scratch/lanes/GLLVModels.jl-gllvm-twin-20260904/logs/wedge-a-acc-urbanisation-scout-2026-09-05.log"
 )
 GLLVM_JL <- Sys.getenv(
   "GLLVM_JL_PATH",
-  "/Users/z3437171/local-scratch/lanes/GLLVM.jl-gllvm-twin-20260904"
+  "/Users/z3437171/local-scratch/lanes/GLLVModels.jl-gllvm-twin-20260904"
 )
 GLLVMTMB_R <- Sys.getenv(
   "GLLVMTMB_R_PATH",
@@ -99,7 +99,7 @@ if (!dir.exists(GLLVM_JL)) {
     exit_code = 1L,
     failure_class = "ACC-SETUP",
     gate = NA_character_,
-    message = paste("GLLVM.jl path missing:", GLLVM_JL)
+    message = paste("GLLVModels.jl path missing:", GLLVM_JL)
   ))
   quit(save = "no", status = 1L)
 }

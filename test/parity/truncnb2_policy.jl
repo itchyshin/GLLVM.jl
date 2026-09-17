@@ -33,8 +33,8 @@ function parity_truncnb2_public_bfgs(Y, K, native)
         original_data=original_truncnb2_fit$tmb_obj$env$data,final_data=fit_r$tmb_obj$env$data,
         original_map=original_truncnb2_fit$tmb_obj$env$map,final_map=fit_r$tmb_obj$env$map),rawpath)
     """
-    objective(v)=-GLLVM.truncated_nbinom2_pertrait_marginal_loglik_laplace(
-        Y,GLLVM.unpack_lambda(v[p+1:2p],p,K),v[1:p],exp.(v[2p+1:3p]);
+    objective(v)=-GLLVModels.truncated_nbinom2_pertrait_marginal_loglik_laplace(
+        Y,GLLVModels.unpack_lambda(v[p+1:2p],p,K),v[1:p],exp.(v[2p+1:3p]);
         hessian=:observed,maxiter=100,tol=1e-9)
     function fd(v,m)
         [begin

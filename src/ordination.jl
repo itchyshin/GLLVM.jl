@@ -1,4 +1,4 @@
-# Ordination output — the headline ecology-facing summary of a fitted GLLVM.
+# Ordination output — the headline ecology-facing summary of a fitted GLLVModels.
 #
 # An ordination places SITES (samples/rows) and SPECIES (responses/columns) in a
 # shared low-dimensional latent space. The two coordinate sets are:
@@ -18,7 +18,7 @@
 """
     ordination(fit, Y; rotate=true) -> (sites, species, rotation)
 
-Ordination of a fitted GLLVM: site and species coordinates in the shared `K`-
+Ordination of a fitted GLLVModels: site and species coordinates in the shared `K`-
 dimensional latent space, returned as a `NamedTuple` `(sites, species, rotation)`.
 
 - `sites`    — `n×K` matrix of latent SITE scores (ordination point cloud), the
@@ -55,7 +55,7 @@ end
     ordiplot(fit, Y; rotate=true, biplot=true, site_labels=nothing,
              species_labels=nothing)
 
-Tidy, plot-ready ordination DATA for a fitted GLLVM, mirroring R `gllvm`'s
+Tidy, plot-ready ordination DATA for a fitted GLLVModels, mirroring R `gllvm`'s
 `ordiplot` / `getLV` interface but as a pure data layer (no plotting backend, no
 plotting dependency): you feed the returned coordinates into whichever backend you
 like. Returns a `NamedTuple` with fields:

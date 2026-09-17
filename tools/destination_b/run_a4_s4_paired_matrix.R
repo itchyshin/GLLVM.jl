@@ -72,7 +72,7 @@ result <- list(
     julia_executable_sha256 = sha(julia_bin), project_toml_sha256 = sha(project_toml),
     manifest_toml_sha256 = if (file.exists(manifest_toml)) sha(manifest_toml) else "unavailable",
     source_tree_commit = source_tree_commit, source_tree_dirty = source_tree_dirty),
-  route = list(entrypoint = "GLLVM.bridge_fit", phylo_model = "multivariate",
+  route = list(entrypoint = "GLLVModels.bridge_fit", phylo_model = "multivariate",
     private_candidate_only = TRUE, public_formula_admission = "closed"),
   qualification = list(qualified = FALSE, r_public_admission = "closed",
     note = "candidate evidence only; no admission is qualified"),
@@ -104,7 +104,7 @@ raw_interval_target <- function(fit, kind) {
 # The only permitted bridge call.  In particular, there is no gllvmTMB(), no
 # formula object, and no public-admission option in this runner.
 bridge_one <- function(Y, precision, species_id, ci_method) {
-  do.call(JuliaCall::julia_call, list("GLLVM.bridge_fit", y = Y,
+  do.call(JuliaCall::julia_call, list("GLLVModels.bridge_fit", y = Y,
     family = "gaussian", d = 1L, phylo = precision,
     options = list(phylo_model = "multivariate", mode = "barelowrank",
       residual_mode = "shared", species_id = as.integer(species_id),
@@ -115,7 +115,7 @@ tryCatch({
   JuliaCall::julia_setup(JULIA_HOME = dirname(julia_bin), installJulia = FALSE,
     install = FALSE, rebuild = FALSE, verbose = FALSE)
   JuliaCall::julia_command(sprintf(
-    "import Pkg; Pkg.activate(%s); using GLLVM", encodeString(project, quote = '"')))
+    "import Pkg; Pkg.activate(%s); using GLLVModels", encodeString(project, quote = '"')))
 
   for (kind in c("tree", "pedigree", "dense")) {
     payload <- retained_payloads[[kind]]

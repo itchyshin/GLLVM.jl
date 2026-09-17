@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 
 @testset "fit (smoke)" begin
     @testset "function exists and returns the expected struct" begin

@@ -1,6 +1,6 @@
 # Fixed-coordinate Gaussian equality; not fitted-model or recovery evidence.
-using GLLVM, Test, LinearAlgebra, ForwardDiff
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd())
+using GLLVModels, Test, LinearAlgebra, ForwardDiff
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(pwd())
 root=ARGS[1]
 readrows(path)=split.(readlines(path)[2:end],'\t')
 @testset "Frozen Gaussian fixed-point model identity" begin
@@ -20,7 +20,7 @@ readrows(path)=split.(readlines(path)[2:end],'\t')
   end
   function native(t)
    β,Λ,s,d=quantities(t)
-   -GLLVM.gaussian_marginal_loglik(Y.-β,Λ,s;σ²_B=d)
+   -GLLVModels.gaussian_marginal_loglik(Y.-β,Λ,s;σ²_B=d)
   end
   function dense(t)
    β,Λ,s,d=quantities(t);V=Λ*Λ'+Diagonal(d.+s^2);r=Y.-β

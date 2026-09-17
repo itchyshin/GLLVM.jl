@@ -9,7 +9,7 @@ Responses have traits in rows and observations in columns. A grouping term
 selects a covariance; its labels select observations that share an effect.
 
 ```julia
-using GLLVM, StatsModels
+using GLLVModels, StatsModels
 terms = [GroupingTerm(:unit; mode=:latent, rank=1),
          GroupingTerm(:cluster2; mode=:indep)]
 # Y: traits × observations; data: one row per observation.
@@ -44,7 +44,7 @@ For identifiable Gaussian models whose **every** grouping term is
 `mode=:indep, common=false`, request one group variance explicitly:
 
 ```julia
-using GLLVM, Random
+using GLLVModels, Random
 rng = MersenneTwister(20_260_907)
 unit = repeat(1:12; inner=5)
 b = 0.65 .* randn(rng, 12)
@@ -100,7 +100,7 @@ implied.
 For a small, self-contained Gaussian interface check:
 
 ```julia
-using GLLVM
+using GLLVModels
 Y = reshape([1.0, 1.2, 0.9, 1.1, 3.0, 2.8, 3.1, 2.9], 1, :)
 unit = repeat(1:4, inner=2)
 fit = fit_gllvm(Y; grouping=[GroupingTerm(:unit; mode=:indep, common=true)],
@@ -119,7 +119,7 @@ recovery or interval-coverage evidence.
 Use the same terms and labels with a supported family. For example:
 
 ```julia
-using GLLVM, Distributions
+using GLLVModels, Distributions
 Y = [1.0 3 2 4 1 2; 2 1 3 2 4 1]
 unit = repeat([:a, :b, :c], inner=2)
 terms = [GroupingTerm(:unit; mode=:indep, common=true)]

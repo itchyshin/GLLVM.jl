@@ -1,6 +1,6 @@
-# Post-fit API for the SPDE-latent GLLVM (SPDELatentFit).
+# Post-fit API for the SPDE-latent GLLVModels (SPDELatentFit).
 #
-# The spatial GLLVM fits K Matérn-GMRF fields u_1,…,u_K (N×1 each) on a
+# The spatial GLLVModels fits K Matérn-GMRF fields u_1,…,u_K (N×1 each) on a
 # triangular mesh. The site scores at the M training locations are Z = A·U
 # (M×K), where A = spde_projector(nodes, tris, locs) and U is the N×K
 # matrix of field values at the mesh nodes. The linear predictor is

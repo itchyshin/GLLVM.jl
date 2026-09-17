@@ -1,14 +1,14 @@
-using GLLVM
+using GLLVModels
 using Test
 using Random
 
 # Bring the packing helpers and ForwardDiff into scope explicitly. The
 # helpers are defined in src/packing.jl but the module's export list
-# lives in src/GLLVM.jl which is owned by a sibling agent — so we
-# reach in by name here. ForwardDiff is a dep of GLLVM.jl so we get
+# lives in src/GLLVModels.jl which is owned by a sibling agent — so we
+# reach in by name here. ForwardDiff is a dep of GLLVModels.jl so we get
 # it via the parent module.
-using GLLVM: rr_theta_len, pack_lambda, unpack_lambda, init_theta_rr
-const ForwardDiff = GLLVM.ForwardDiff
+using GLLVModels: rr_theta_len, pack_lambda, unpack_lambda, init_theta_rr
+const ForwardDiff = GLLVModels.ForwardDiff
 
 @testset "packing" begin
     @testset "rr_theta_len matches the engine formula" begin

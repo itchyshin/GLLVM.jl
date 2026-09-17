@@ -23,7 +23,7 @@ def verify(e=None,require_bridge=False):
  red=(base/'red-process/00.log').read_text();assert '3     1      4' in red and 'confidence intervals' in red
  log=(base/'final-process/00.log').read_text()
  for token in ['205    205','81     81','66     66','900    900','4      4','144    144','CORE070_BRIDGE_INPUT_ADJACENT_VALIDATION_PASS']:assert token in log,token
- assert 'PACKAGE_PATH '+str(base/'final/src/GLLVM.jl') in log
+ assert 'PACKAGE_PATH '+str(base/'final/src/GLLVModels.jl') in log
  assert 'include("test_bridge_truncated_input.jl")' in (ROOT/'test/runtests.jl').read_text()
  oracle=json.loads((ROOT/'.unlazy/core070-aghq/oracle-source/source.json').read_text())
  assert oracle['reference_commit']==e['reference_commit']=='b4d5fee64def88bc768dda1f1f77c29b295edd86'

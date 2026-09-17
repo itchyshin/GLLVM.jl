@@ -1,15 +1,15 @@
 # Tutorial
 
-A practical, copy-pasteable walkthrough of the modern GLLVM.jl workflow: fit a
+A practical, copy-pasteable walkthrough of the modern GLLVModels.jl workflow: fit a
 community matrix under any of the response families, read off the ordination and
 estimates, build confidence intervals, add covariate / trait / row-effect
 structure, and reach the structured-latent extensions (spatial SPDE fields,
 phylogenetic GLLVMs). Every code block is static — copy it into a REPL with
-GLLVM.jl installed to follow along. The data convention throughout is
+GLLVModels.jl installed to follow along. The data convention throughout is
 **`Y` is `p × n`**: `p` species (rows) by `n` sites (columns).
 
 ```julia
-using GLLVM, Distributions, Random
+using GLLVModels, Distributions, Random
 ```
 
 ## 1. Core families
@@ -157,7 +157,7 @@ fitter's **per-species size** parameters:
 ```julia
 site_data = (site = collect(1:size(Y, 2)),)
 f_formula = gllvm(@formula(y ~ 1), Y, site_data;
-    family = GLLVM.NegativeBinomial(), K = 2, g_tol = 1e-7, iterations = 800)
+    family = GLLVModels.NegativeBinomial(), K = 2, g_tol = 1e-7, iterations = 800)
 ```
 
 The `1` means a separate intercept for each species; `K` gives the latent rank.
@@ -348,7 +348,7 @@ Any extra keywords flow through to `confint`, so `X = X` (covariate fits) and
 
 ## 5. Covariates and structure
 
-Real surveys carry site environment and species traits. GLLVM.jl exposes several
+Real surveys carry site environment and species traits. GLLVModels.jl exposes several
 fixed-effect front ends, all taking the same `family` marker. The `(p, n, q)`
 covariate array `X` follows the engine contract `X[t, s, k]` = covariate `k` for
 species `t` at site `s`:
@@ -449,7 +449,7 @@ the fitted Matérn field to `new_locs`:
 μ_new = predict_spatial(fs, Y, locs, new_locs; type = :response)   # p×M′
 ```
 
-### Phylogenetic GLLVM
+### Phylogenetic GLLVModels
 
 `fit_phylo_glm` fits a per-species phylogenetic random intercept correlated
 across species by a tree, via an augmented-state joint Laplace over the sparse

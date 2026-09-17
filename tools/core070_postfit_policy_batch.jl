@@ -15,7 +15,7 @@
 # writes BEFORE invoking this script -- that R process already has the
 # frozen gllvmTMB library loaded and does 100% of the live R fitting itself
 # -- refits the identical Y natively with fit_gaussian_gllvm, and compares
-# via direct `using GLLVM` module calls only. No RCall, no parity-runner
+# via direct `using GLLVModels` module calls only. No RCall, no parity-runner
 # include, no R of any kind runs in this process.
 #
 # argv:
@@ -30,7 +30,7 @@
 # Invocation:
 #   julia --project=. tools/core070_postfit_policy_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 
 # ---------------------------------------------------------------------------
 # Minimal JSON reader/writer (no external dependency; mirrors the existing
@@ -157,7 +157,7 @@ out_path = ARGS[1]
 isfile(out_path) && error("destination already exists: $out_path")
 mkpath(dirname(out_path))
 
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd()) "must run from the GLLVM.jl package root"
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(pwd()) "must run from the GLLVModels.jl package root"
 
 oracle_path = get(ENV, "CORE070_POSTFIT_POLICY_R_ORACLE", "")
 isempty(oracle_path) &&
@@ -203,19 +203,19 @@ r_ci_error = String(oracle["ci_error"])
 r_empty_coef = Float64.(oracle["empty_coef"])
 
 # ---------------------------------------------------------------------------
-# Native Julia refit + direct GLLVM module accessor calls (no RCall).
+# Native Julia refit + direct GLLVModels module accessor calls (no RCall).
 # ---------------------------------------------------------------------------
 fit = fit_gaussian_gllvm(Y; K = K, X = X)
 
-j_coef = GLLVM.StatsAPI.coef(fit)
+j_coef = GLLVModels.StatsAPI.coef(fit)
 j_loglik = fit.logLik
-j_dof = GLLVM.StatsAPI.dof(fit)
-j_nobs = GLLVM.StatsAPI.nobs(fit, Y)
+j_dof = GLLVModels.StatsAPI.dof(fit)
+j_nobs = GLLVModels.StatsAPI.nobs(fit, Y)
 j_link = predict(fit, Y; type = :link, X = X)
-j_response = GLLVM.StatsAPI.fitted(fit, Y; X = X)
+j_response = GLLVModels.StatsAPI.fitted(fit, Y; X = X)
 j_residual = residuals(fit, Y; X = X)
 j_ci = try
-    GLLVM.confint(fit; y = Y, X = X)
+    GLLVModels.confint(fit; y = Y, X = X)
 catch e
     nothing
 end
@@ -224,14 +224,14 @@ beta_idx = j_ci_ok ? findall(t -> startswith(t, "beta["), j_ci.term) : Int[]
 j_ci_lower = j_ci_ok ? j_ci.lower[beta_idx] : Float64[]
 j_ci_upper = j_ci_ok ? j_ci.upper[beta_idx] : Float64[]
 
-# simulate() keyword introspection: does GLLVM's simulate accept a
+# simulate() keyword introspection: does GLLVModels's simulate accept a
 # condition_on_RE-style keyword at all? (it must not, per the manifest fact)
 # Call-based probe (not Base.kwarg_decl, which is an unstable internal): a
 # MethodError from an unrecognized keyword means the kwarg is absent; any
 # other outcome (success, or an error raised from inside a method that DID
 # accept the keyword) means it exists.
 julia_simulate_has_condition_on_re_kwarg = try
-    GLLVM.simulate(fit, 2; condition_on_RE = true)
+    GLLVModels.simulate(fit, 2; condition_on_RE = true)
     true
 catch err
     !(err isa MethodError)
@@ -243,7 +243,7 @@ end
 # against a synthetic mock object; r_empty_coef comes from the oracle file).
 # ---------------------------------------------------------------------------
 fit_no_x = fit_gaussian_gllvm(Y; K = 1)
-j_empty_coef = GLLVM.StatsAPI.coef(fit_no_x)
+j_empty_coef = GLLVModels.StatsAPI.coef(fit_no_x)
 
 # ---------------------------------------------------------------------------
 # Assemble the 15 case results.

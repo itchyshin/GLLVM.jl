@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using Random
 using Statistics
 using Distributions
@@ -49,7 +49,7 @@ using LinearAlgebra
             Random.seed!(4202)
             β = [-0.6, -0.25, 0.05, 0.35, 0.65]
             η = β .+ Λ * reshape(ztot(Random.default_rng()), 1, n)
-            μ = clamp.(GLLVM.linkinv.(Ref(link), η), 1e-4, 1 - 1e-4)
+            μ = clamp.(GLLVModels.linkinv.(Ref(link), η), 1e-4, 1 - 1e-4)
             N = fill(N0, p, n)
             Y = [rand(Binomial(N[t, s], μ[t, s])) for t in 1:p, s in 1:n]
             fit = fit_binomial_gllvm(Y; K = K, N = N, link = link, X_lv = X_lv,
@@ -188,7 +188,7 @@ using LinearAlgebra
         @testset "binomial" begin
             Random.seed!(11); β = [-0.6, -0.25, 0.05, 0.35, 0.65]
             η = β .+ Λ * reshape(ztot(Random.default_rng()), 1, n)
-            μ = clamp.(GLLVM.linkinv.(Ref(LogitLink()), η), 1e-4, 1 - 1e-4); N = fill(40, p, n)
+            μ = clamp.(GLLVModels.linkinv.(Ref(LogitLink()), η), 1e-4, 1 - 1e-4); N = fill(40, p, n)
             Y = [rand(Binomial(N[t, s], μ[t, s])) for t in 1:p, s in 1:n]
             f = fit_binomial_gllvm(Y; K = 1, N = N, link = LogitLink(), X_lv = X_lv,
                                    β_init = β, Λ_init = Λ, alpha_lv_init = alpha, iterations = 120)
@@ -538,7 +538,7 @@ using LinearAlgebra
         ηc = Lc * reshape(zc, 1, nc)
         Yc = Matrix{Int}(undef, pc, nc)
         for s in 1:nc, t in 1:pc
-            probs = [GLLVM._ord_prob(c, ηc[t, s], τc, LogitLink()) for c in 1:Cc]
+            probs = [GLLVModels._ord_prob(c, ηc[t, s], τc, LogitLink()) for c in 1:Cc]
             Yc[t, s] = rand(Categorical(probs ./ sum(probs)))
         end
         @test all([all(vec(sum(Yc .== c; dims = 2)) .> 0) for c in 1:Cc])

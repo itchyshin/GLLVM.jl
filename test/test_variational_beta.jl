@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 @testset "Variational (VA) marginal — Beta" begin
     @testset "Λ=0 reduces to independent Beta loglik (exact)" begin
@@ -8,7 +8,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         β = 0.3 .* randn(p) .+ 0.2
         μ = [1.0 / (1.0 + exp(-β[t])) for t in 1:p]
         Y = [rand(Beta(μ[t] * φ, (1 - μ[t]) * φ)) for t in 1:p, s in 1:n]
-        va = GLLVM.beta_marginal_loglik_va(Y, zeros(p, K), β, φ)
+        va = GLLVModels.beta_marginal_loglik_va(Y, zeros(p, K), β, φ)
         ref = 0.0
         for t in 1:p, s in 1:n
             ref += logpdf(Beta(μ[t] * φ, (1 - μ[t]) * φ), Y[t, s])
@@ -25,13 +25,13 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         Λ2 = Λ .^ 2
         μ = [1.0 / (1.0 + exp(-β[t])) for t in 1:p]
         y = [rand(Beta(μ[t] * φ, (1 - μ[t]) * φ)) for t in 1:p]   # y ∈ (0,1)
-        x, w = GLLVM._gauss_hermite(20)
-        f(ψ) = -GLLVM._va_site_beta_elbo(ψ, y, Λ, Λ2, β, φ, x, w)
+        x, w = GLLVModels._gauss_hermite(20)
+        f(ψ) = -GLLVModels._va_site_beta_elbo(ψ, y, Λ, Λ2, β, φ, x, w)
         h = 1e-6
         for _ in 1:3
             ψ = 0.5 .* randn(2K)
             G = zeros(2K)
-            GLLVM._va_site_beta_grad!(G, ψ, y, Λ, Λ2, β, φ, x, w)
+            GLLVModels._va_site_beta_grad!(G, ψ, y, Λ, Λ2, β, φ, x, w)
             fd = zeros(2K)
             for i in 1:2K
                 ψp = copy(ψ); ψp[i] += h
@@ -55,7 +55,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
             y[t] = rand(Beta(μt * φ, (1 - μt) * φ))
         end
         Y = reshape(y, p, 1)
-        va = GLLVM.beta_marginal_loglik_va(Y, Λ, β, φ)
+        va = GLLVModels.beta_marginal_loglik_va(Y, Λ, β, φ)
 
         # exact single-site marginal by dense quadrature over the latent z ~ N(0,1)
         zs = range(-10, 10; length = 8001); dz = step(zs)
@@ -88,11 +88,11 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 Y[t, s] = rand(Beta(μ * φ, (1 - μ) * φ))
             end
         end
-        rr = GLLVM.rr_theta_len(p, K)
+        rr = GLLVModels.rr_theta_len(p, K)
 
         # θ near a warm start: empirical logit-mean intercepts + SVD loadings + log φ₀.
-        link = GLLVM.LogitLink()
-        Zemp = [GLLVM.linkfun(link, clamp(Y[t, i], 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
+        link = GLLVModels.LogitLink()
+        Zemp = [GLLVModels.linkfun(link, clamp(Y[t, i], 1e-6, 1 - 1e-6)) for t in 1:p, i in 1:n]
         β0 = vec(sum(Zemp; dims = 2)) ./ n
         Zc = Zemp .- β0
         Fsvd = svd(Zc)
@@ -101,19 +101,19 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         for j in 1:kk
             Λ0[:, j] = Fsvd.U[:, j] .* (Fsvd.S[j] / sqrt(n))
         end
-        θ = vcat(β0, GLLVM.pack_lambda(Λ0), log(10.0))
+        θ = vcat(β0, GLLVModels.pack_lambda(Λ0), log(10.0))
 
-        x, w = GLLVM._gauss_hermite(20)
+        x, w = GLLVModels._gauss_hermite(20)
         β_ = θ[1:p]
-        Λ_ = GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        Λ_ = GLLVModels.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         Λ2_ = Λ_ .^ 2
         φ_ = exp(θ[p + rr + 1])
-        _, M, V = GLLVM._va_beta_solve_all(Y, Λ_, Λ2_, β_, φ_, x, w)
+        _, M, V = GLLVModels._va_beta_solve_all(Y, Λ_, Λ2_, β_, φ_, x, w)
         G = zeros(length(θ))
-        GLLVM._va_beta_outer_grad!(G, Y, Λ_, Λ2_, β_, φ_, M, V, x, w)
+        GLLVModels._va_beta_outer_grad!(G, Y, Λ_, Λ2_, β_, φ_, M, V, x, w)
 
-        f(θv) = -GLLVM.beta_marginal_loglik_va(Y,
-                    GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K),
+        f(θv) = -GLLVModels.beta_marginal_loglik_va(Y,
+                    GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K),
                     θv[1:p], exp(θv[p + rr + 1]))
         h = 1e-5
         fd = zeros(length(θ))

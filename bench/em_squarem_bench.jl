@@ -18,11 +18,11 @@ using Random
 using LinearAlgebra
 using SparseArrays
 using Statistics
-using GLLVM
+using GLLVModels
 
-# em_squarem.jl is not wired into the GLLVM module (hard constraint: do NOT
-# modify src/GLLVM.jl). Pull it in directly; it `include`s em_phylo.jl (guarded)
-# and references the loaded GLLVM module for gaussian_marginal_loglik / ppca_init.
+# em_squarem.jl is not wired into the GLLVModels module (hard constraint: do NOT
+# modify src/GLLVModels.jl). Pull it in directly; it `include`s em_phylo.jl (guarded)
+# and references the loaded GLLVModels module for gaussian_marginal_loglik / ppca_init.
 include(joinpath(@__DIR__, "..", "src", "em_squarem.jl"))
 
 const SEED = 30
@@ -30,8 +30,8 @@ const SEED = 30
 # Identical fixture builder to em_phylo_bench.jl.
 function make_fixture(p; K_B = 1, n = 200, σ_phy_scale = 0.9, σ_eps = 0.5)
     Random.seed!(SEED)
-    phy   = GLLVM.random_balanced_tree(p; branch_length = 0.1)
-    Σ_phy = GLLVM.sigma_phy_dense(phy; σ²_phy = 1.0)
+    phy   = GLLVModels.random_balanced_tree(p; branch_length = 0.1)
+    Σ_phy = GLLVModels.sigma_phy_dense(phy; σ²_phy = 1.0)
     Λ_B   = randn(p, K_B)
     for k in 1:K_B, i in 1:(k - 1)
         Λ_B[i, k] = 0.0

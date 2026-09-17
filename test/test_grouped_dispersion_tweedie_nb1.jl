@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # Grouped / species-specific dispersion for NB1 (linear-variance φ) and Tweedie
 # (dispersion φ, SHARED power), completing the per-species-dispersion set. Anchors:
@@ -26,11 +26,11 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 Y[t, s] = rand(NegativeBinomial(μ[t] / φ, 1 / (1 + φ)))
             end
         end
-        ll_shared  = GLLVM.nb1_marginal_loglik_laplace(Y, Λ, β, φ)
-        ll_grouped = GLLVM.nb1_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p))
+        ll_shared  = GLLVModels.nb1_marginal_loglik_laplace(Y, Λ, β, φ)
+        ll_grouped = GLLVModels.nb1_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p))
         @test ll_grouped ≈ ll_shared atol = 1e-10
         # mixed per-species dispersion also evaluates finitely.
-        @test isfinite(GLLVM.nb1_grouped_marginal_loglik_laplace(Y, Λ, β, [0.5, 1.0, 1.5, 2.0, 3.0]))
+        @test isfinite(GLLVModels.nb1_grouped_marginal_loglik_laplace(Y, Λ, β, [0.5, 1.0, 1.5, 2.0, 3.0]))
     end
 
     @testset "Tweedie: constant φvec == shared-φ marginal (exact)" begin
@@ -65,11 +65,11 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         # reduction now holds against the shared route's `hessian = :fisher`
         # call, not its default — pin that explicitly rather than let this
         # test silently encode the pre-2026-08-28 default.
-        ll_shared  = GLLVM.tweedie_marginal_loglik_laplace(Y, Λ, β, φ, power; hessian = :fisher)
-        ll_grouped = GLLVM.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p), power; hessian = :fisher)
+        ll_shared  = GLLVModels.tweedie_marginal_loglik_laplace(Y, Λ, β, φ, power; hessian = :fisher)
+        ll_grouped = GLLVModels.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p), power; hessian = :fisher)
         @test ll_grouped ≈ ll_shared atol = 1e-10
         # mixed per-species dispersion also evaluates finitely.
-        @test isfinite(GLLVM.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, [0.8, 1.2, 1.5, 2.0], power))
+        @test isfinite(GLLVModels.tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, [0.8, 1.2, 1.5, 2.0], power))
     end
 
     @testset "fit_nb1_gllvm_grouped: per-species smoke (group = 1:p)" begin
@@ -84,7 +84,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         Y = [rand(NegativeBinomial(μ[t, i] / φtrue, 1 / (1 + φtrue))) for t in 1:p, i in 1:n]
 
         fg = fit_nb1_gllvm_grouped(Y; K = K, iterations = 40)  # default group = 1:p
-        @test fg isa GLLVM.NB1GroupedFit
+        @test fg isa GLLVModels.NB1GroupedFit
         @test length(fg.φ) == p
         @test all(fg.φ .> 0)
         @test isfinite(fg.loglik)
@@ -107,7 +107,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         # C2: the per-trait coerce, identical to calling the grouped fitter directly.
         fu = fit_gllvm(Y; family = NB1(), K = K, iterations = 40)
         direct = fit_nb1_gllvm_grouped(Y; K = K, group = collect(1:p), iterations = 40)
-        @test fu isa GLLVM.NB1GroupedFit
+        @test fu isa GLLVModels.NB1GroupedFit
         @test length(fu.φ) == p && all(fu.φ .> 0)
         @test fu.group == collect(1:p)
         @test fu.loglik ≈ direct.loglik atol = 1e-8
@@ -117,7 +117,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
         # C2: shared φ stays reachable only through the named fitter, and differs.
         shared = fit_nb1_gllvm(Y; K = K, iterations = 40)
-        @test shared isa GLLVM.NB1Fit
+        @test shared isa GLLVModels.NB1Fit
         @test shared.φ isa Real
 
         # An explicit group vector routes the same way; :species is the default.
@@ -127,7 +127,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         # The `@formula` no-X surface opens by fall-through to `fit_gllvm`.
         ff = gllvm(@formula(y ~ 1), Y, (; temp = randn(n)); family = NB1(), K = K,
                    iterations = 40)
-        @test ff isa GLLVM.NB1GroupedFit
+        @test ff isa GLLVModels.NB1GroupedFit
         @test ff.loglik ≈ fu.loglik atol = 1e-8
     end
 
@@ -157,7 +157,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
         # ONE small Tweedie fit only — keep CI cheap.
         fg = fit_tweedie_gllvm_grouped(Y; K = K, iterations = 25)  # default group = 1:p
-        @test fg isa GLLVM.TweedieGroupedFit
+        @test fg isa GLLVModels.TweedieGroupedFit
         @test length(fg.φ) == p
         @test all(fg.φ .> 0)
         @test isfinite(fg.loglik)

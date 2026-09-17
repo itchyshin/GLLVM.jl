@@ -2,7 +2,7 @@ using JSON3
 using SHA
 using LinearAlgebra
 using SparseArrays
-using GLLVM
+using GLLVModels
 
 const _DB_PHYLO_SOURCE_PIN = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
 const _DB_PHYLO_SCHEMA_VERSION = "destination-b-phylo-gaussian-marginal-1"
@@ -212,7 +212,7 @@ function _db_validate_precision(precision, mapping, n_tips::Int, m::Int)
         _dbfloat(precision, "scale"), tip_to_aug)
     # Admission independently validates the emitted Q/logdet and takes an
     # owned canonical copy. No inverse or second scale adjustment occurs here.
-    return (phy = GLLVM._validate_precision_fit_input(raw), species_id = species_id)
+    return (phy = GLLVModels._validate_precision_fit_input(raw), species_id = species_id)
 end
 
 function _db_transport_close(actual, expected, label::AbstractString)
@@ -259,11 +259,11 @@ end
 
 function _db_native_nll(Y, phy, parameters, species_id)
     theta = vcat(parameters.beta,
-        GLLVM.pack_lambda(reshape(parameters.loading, length(parameters.loading), 1)),
+        GLLVModels.pack_lambda(reshape(parameters.loading, length(parameters.loading), 1)),
         parameters.log_sigma)
-    value = GLLVM._precision_multivariate_nll(Y, phy, theta;
+    value = GLLVModels._precision_multivariate_nll(Y, phy, theta;
         rank = 1, mode = :barelowrank, residual_mode = :shared, species_id = species_id)
-    GLLVM._pmv_valid_objective(value) || throw(ArgumentError("invalid native marginal NLL"))
+    GLLVModels._pmv_valid_objective(value) || throw(ArgumentError("invalid native marginal NLL"))
     return value
 end
 
@@ -276,8 +276,8 @@ function _db_write_receipt(path, receipt)
 end
 
 function _db_gllvm_source_hash(filename::AbstractString)
-    source_path = joinpath(dirname(pathof(GLLVM)), filename)
-    isfile(source_path) || throw(ArgumentError("loaded GLLVM source is missing `$filename`"))
+    source_path = joinpath(dirname(pathof(GLLVModels)), filename)
+    isfile(source_path) || throw(ArgumentError("loaded GLLVModels source is missing `$filename`"))
     return bytes2hex(sha256(read(source_path)))
 end
 

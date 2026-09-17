@@ -40,7 +40,7 @@ deprecated forwarding call.
 the existing `bootstrap_ci_derived` per entry — no new bootstrap machinery.
 R's `bootstrap_Sigma()` bootstraps `Sigma`, correlation, communality, ICC, and
 cross-correlation across separate unit/unit_obs/phy tiers in one call; this
-driver covers only the `Sigma` entries at GLLVM.jl's single site-level tier.
+driver covers only the `Sigma` entries at GLLVModels.jl's single site-level tier.
 `level` is validated (only `:unit` accepted) rather than silently
 accepted-and-ignored. Cost is `O(p²)` bootstrap runs — fine for small
 fixtures, expensive at large `p`.
@@ -58,7 +58,7 @@ lazy-caching mechanism.
 
 ## Profile curves
 
-`tmbprofile_wrapper` re-walks GLLVM.jl's existing bracket-then-bisect profile
+`tmbprofile_wrapper` re-walks GLLVModels.jl's existing bracket-then-bisect profile
 search, but records every evaluated `(θᵢ, nll)` pair instead of discarding
 them, giving the full profile trace R's `tmbprofile_wrapper()` (backed by
 `TMB::tmbprofile()`) returns. `profile_curve_targets` batches this over
@@ -76,7 +76,7 @@ a naming accident.
 
 R's `profile_targets()` is a *readiness registry* — which parameters could be
 profiled, without running anything, because `TMB::tmbprofile()` needs a live
-checkpoint to run cheaply. GLLVM.jl has no comparable checkpoint step, so
+checkpoint to run cheaply. GLLVModels.jl has no comparable checkpoint step, so
 running is the cheap operation here: `profile_curve_targets` runs every
 target's curve directly rather than reporting a readiness flag. The old name,
 `profile_targets`, is kept only as a deprecated forwarding call to

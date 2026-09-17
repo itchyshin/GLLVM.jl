@@ -1,4 +1,4 @@
-# Fourth-corner / trait–environment GLLVM for the non-Gaussian Laplace families.
+# Fourth-corner / trait–environment GLLVModels for the non-Gaussian Laplace families.
 #
 # The species-specific path (src/families/species_covariates.jl) gives each
 # species t its own free coefficient row B[t, :]. The fourth-corner model instead
@@ -43,7 +43,7 @@ end
 """
     FourthCornerFit
 
-Result of [`fit_fourthcorner_gllvm`](@ref): a GLLVM fit with a **fourth-corner**
+Result of [`fit_fourthcorner_gllvm`](@ref): a GLLVModels fit with a **fourth-corner**
 trait–environment interaction term. Fields: `family` (the Distributions marker),
 per-species intercepts `β` (length p), the fourth-corner coefficient matrix `C`
 (q×r, entry `C[k,l]` couples site covariate `k` to species trait `l`), loadings
@@ -134,7 +134,7 @@ fitted(fit::FourthCornerFit, Y::AbstractMatrix{<:Real},
 """
     fit_fourthcorner_gllvm(Y; family, Xenv, TR, K, link=nothing, N=nothing, …) -> FourthCornerFit
 
-Fit a non-Gaussian **fourth-corner** trait–environment GLLVM by L-BFGS over
+Fit a non-Gaussian **fourth-corner** trait–environment GLLVModels by L-BFGS over
 `[β; vec(C); vec(Λ); (log-dispersion)]` on the offset-augmented Laplace marginal,
 where the linear predictor is
 `η_{ts} = β_t + Σ_{k,l} Xenv[s,k]·TR[t,l]·C[k,l] + (Λ z_s)_t`.

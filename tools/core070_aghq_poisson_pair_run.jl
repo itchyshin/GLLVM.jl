@@ -1,4 +1,4 @@
-using GLLVM,RCall,Test,LinearAlgebra,SHA,TOML
+using GLLVModels,RCall,Test,LinearAlgebra,SHA,TOML
 root=normpath(joinpath(@__DIR__,".."))
 include(joinpath(root,"test/parity/parity_helpers.jl"))
 _parity_require_gllvmtmb!()
@@ -29,10 +29,10 @@ open(io->TOML.print(io,Dict("responses"=>vec(Y),"p"=>p,"n"=>n,"K"=>K,
 println("APP_INPUT_SHA256 ",bytes2hex(sha256(read(out*".fixture.toml"))))
 public_route=get(ENV,"CORE070_AGHQ_PUBLIC_PAIR","0")=="1"
 base=fit_poisson_gllvm(Y;K=K)
-start=vcat(base.β,GLLVM.pack_lambda(base.Λ));alt=copy(start);alt[p+1:end].=.3
-problem=GLLVM.aghq_poisson_problem(Y,K;k=5)
+start=vcat(base.β,GLLVModels.pack_lambda(base.Λ));alt=copy(start);alt[p+1:end].=.3
+problem=GLLVModels.aghq_poisson_problem(Y,K;k=5)
 public_fit=public_route ? fit_poisson_gllvm(Y;K=K,aghq=5) : nothing
-multistart=public_route ? public_fit.integration.result : GLLVM.aghq_multistart_optimize([start,alt],problem.adapt,problem.objective;n_adapt=400)
+multistart=public_route ? public_fit.integration.result : GLLVModels.aghq_multistart_optimize([start,alt],problem.adapt,problem.objective;n_adapt=400)
 multistart.usable || error("no usable Julia AGHQ start")
 runs=multistart.runs;winner=multistart.winner;fit=multistart.selected
 serialize_run(r)=Dict("parameters"=>r.parameters,"objective"=>r.objective,"usable"=>r.usable,
@@ -64,11 +64,11 @@ saveRDS(list(opt=app_fit$opt,aghq=app_fit$aghq,objective=app_fresh_f,gradient=ap
 println("APP_R_SHA256 ",bytes2hex(sha256(read(out*".rds"))))
 r_beta=rcopy(Vector{Float64},R"as.numeric(app_params$b_fix)")
 r_loading=rcopy(Matrix{Float64},R"as.matrix(app_report$Lambda_B)")
-r_theta=vcat(r_beta,GLLVM.pack_lambda(r_loading))
+r_theta=vcat(r_beta,GLLVModels.pack_lambda(r_loading))
 r_mode=rcopy(Matrix{Float64},R"as.matrix(app_obj$env$data$aghq_mode)")
 r_B=rcopy(Matrix{Float64},R"as.matrix(app_obj$env$data$aghq_Lt)")
 r_logjac=rcopy(Vector{Float64},R"as.numeric(app_obj$env$data$aghq_logdet)")
-r_caches=[GLLVM.AGHQAdaptation(vec(r_mode[s,:]),Matrix(reshape(r_B[s,:],K,K)'),r_logjac[s],false,NaN) for s in 1:n]
+r_caches=[GLLVModels.AGHQAdaptation(vec(r_mode[s,:]),Matrix(reshape(r_B[s,:],K,K)'),r_logjac[s],false,NaN) for s in 1:n]
 samepoint=problem.objective(r_theta,r_caches)
 r_objective=rcopy(Float64,R"app_fresh_f")
 r_gradient=rcopy(Vector{Float64},R"app_fresh_g")
@@ -76,11 +76,11 @@ t=fit.parameters
 fresh=x->problem.objective(x,problem.adapt(x))
 fd(h)=[(fresh(t+h*Matrix{Float64}(I,14,14)[:,i])-fresh(t-h*Matrix{Float64}(I,14,14)[:,i]))/(2h) for i in 1:14]
 g1=fd(1e-5);g2=fd(2e-5)
-gf=GLLVM.ForwardDiff.gradient(x->problem.objective(x,fit.adaptation),t)
-L=GLLVM.unpack_lambda(t[p+1:end],p,K)
-refinement=[let q=GLLVM.aghq_poisson_problem(Y,K;k=k);q.objective(t,q.adapt(t));end for k in (5,9,15)]
+gf=GLLVModels.ForwardDiff.gradient(x->problem.objective(x,fit.adaptation),t)
+L=GLLVModels.unpack_lambda(t[p+1:end],p,K)
+refinement=[let q=GLLVModels.aghq_poisson_problem(Y,K;k=k);q.objective(t,q.adapt(t));end for k in (5,9,15)]
 record=Dict("case_id"=>"APP-POISSON-SEED44-K5","scope"=>(public_route ? "PUBLIC_POISSON_AGHQ_SEED44_ONLY" : "INTERNAL_JULIA_PUBLIC_FROZEN_R_AGHQ_NOT_PUBLIC_JULIA_PARITY"),
- "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVM),"winner"=>winner,
+ "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVModels),"winner"=>winner,
  "native_objective"=>fit.objective,"r_objective"=>r_objective,"delta_loglik"=>abs(fit.objective-r_objective),
  "native_converged"=>fit.converged,"r_converged"=>rcopy(Bool,R"isTRUE(app_fit$aghq$converged)"),
  "r_used"=>rcopy(Bool,R"isTRUE(app_fit$aghq$used)"),"r_k"=>rcopy(Int,R"app_fit$aghq$k"),

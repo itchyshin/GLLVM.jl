@@ -1,4 +1,4 @@
-# Beta-hurdle (hurdle-beta) two-part GLLVM family.
+# Beta-hurdle (hurdle-beta) two-part GLLVModels family.
 #
 # A hurdle model on [0,1): the zero/one "absence" process is Bernoulli with
 # occurrence probability π = logistic(η^z), and conditional on presence (y > 0)
@@ -88,7 +88,7 @@ end
 """
     beta_hurdle_marginal_loglik_laplace(Y, Λc, βz, βc, φ; Λz=nothing, kwargs...) -> Float64
 
-Total two-part Laplace log-marginal for a Beta-hurdle GLLVM: occurrence probability
+Total two-part Laplace log-marginal for a Beta-hurdle GLLVModels: occurrence probability
 `π = logistic(β^z + Λ_z z)` (intercept-only by default, `Λ_z = 0`) times a positive
 Beta with mean `μ = logistic(β^c + Λ_c z)` and precision `φ`
 (`Var = μ(1−μ)/(1+φ)`). `Y` is p×n with `0` for absences and values in `(0,1)` for
@@ -223,7 +223,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::BetaHurdleFit)
     p, K = size(fit.Λc)
-    println(io, "Beta-hurdle GLLVM fit (two-part)")
+    println(io, "Beta-hurdle GLLVModels fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", precision φ = ", round(fit.φ; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -238,7 +238,7 @@ end
 """
     fit_beta_hurdle_gllvm(Y; K, …) -> BetaHurdleFit
 
-Fit a Beta-hurdle two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log φ]` on the
+Fit a Beta-hurdle two-part GLLVModels by L-BFGS over `[βz; βc; vec(Λc); log φ]` on the
 two-part Laplace marginal ([`beta_hurdle_marginal_loglik_laplace`](@ref)), with
 `Λz = 0` (per-species occurrence intercept), jointly estimating the precision `φ`.
 `Y` is p×n with `0` for absences and values in `(0,1)` otherwise. Finite-difference

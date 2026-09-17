@@ -4,7 +4,7 @@
 # Usage:
 #   julia --project=. tools/core070_second_order/smoke_poisson_eoo.jl [output.json]
 
-using GLLVM, RCall, Dates, Random, LinearAlgebra, ForwardDiff
+using GLLVModels, RCall, Dates, Random, LinearAlgebra, ForwardDiff
 
 const CONTRACT = joinpath(@__DIR__, "..", "..", "docs", "dev-log", "core070",
     "second-order-parity-contract.md")

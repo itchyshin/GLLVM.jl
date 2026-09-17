@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra, Random
+using Test, GLLVModels, LinearAlgebra, Random
 
 # Structured-covariance bridge route, v1 (design:
 # docs/dev-log/julia-bridge-structured-design-julia-side.md). Gaussian-only,
@@ -22,7 +22,7 @@ using Test, GLLVM, LinearAlgebra, Random
     end
 
     # 1. bridge vs native identity
-    br = GLLVM.bridge_fit(; y = Y, family = "gaussian", d = 1,
+    br = GLLVModels.bridge_fit(; y = Y, family = "gaussian", d = 1,
         sources = [srcdict()], options = Dict{String, Any}("ci_method" => "none"))
     native = fit_gaussian_sources(Y;
         sources = [SourceCovariance(C; groups = groups, mode = :latent, rank = 1,
@@ -47,7 +47,7 @@ using Test, GLLVM, LinearAlgebra, Random
     cross_spec = Dict{String, Any}(
         "name" => "cross", "covariance" => Kcross, "groups" => cross_groups,
         "mode" => "latent", "rank" => 1, "unique" => true, "common" => false)
-    bridge_cross = GLLVM.bridge_fit(; y = Ycross, family = "gaussian", d = 1,
+    bridge_cross = GLLVModels.bridge_fit(; y = Ycross, family = "gaussian", d = 1,
         sources = [cross_spec], options = Dict{String, Any}("ci_method" => "none",
             "g_tol" => 1e-6, "iterations" => 500))
     native_cross = fit_gaussian_sources(Ycross;
@@ -65,37 +65,37 @@ using Test, GLLVM, LinearAlgebra, Random
 
     # 2. groups vs projection equivalence
     P = zeros(n, n); for (i, g) in enumerate(groups) P[i, g] = 1.0 end
-    br2 = GLLVM.bridge_fit(; y = Y, family = "gaussian", d = 1,
+    br2 = GLLVModels.bridge_fit(; y = Y, family = "gaussian", d = 1,
         sources = [srcdict(projection = P, groups = nothing)],
         options = Dict{String, Any}("ci_method" => "none"))
     @test br2.loglik ≈ br.loglik atol = 1e-10
 
     # 3. malformed sources reject loudly
     Cbad = copy(C); Cbad[1, 2] = 0.3   # asymmetric
-    @test_throws ArgumentError GLLVM.bridge_fit(; y = Y, family = "gaussian",
+    @test_throws ArgumentError GLLVModels.bridge_fit(; y = Y, family = "gaussian",
         d = 1, sources = [srcdict(covariance = Cbad)])
-    @test_throws ArgumentError GLLVM.bridge_fit(; y = Y, family = "gaussian",
+    @test_throws ArgumentError GLLVModels.bridge_fit(; y = Y, family = "gaussian",
         d = 1, sources = [srcdict(mode = "bogus")])
-    @test_throws ArgumentError GLLVM.bridge_fit(; y = Y, family = "gaussian",
+    @test_throws ArgumentError GLLVModels.bridge_fit(; y = Y, family = "gaussian",
         d = 1, sources = [srcdict(mode = "indep", rank = 2)])
 
     # 4. unsupported compositions reject loudly
-    @test_throws ArgumentError GLLVM.bridge_fit(; y = Y, family = "poisson",
+    @test_throws ArgumentError GLLVModels.bridge_fit(; y = Y, family = "poisson",
         d = 1, sources = [srcdict()])
-    @test_throws ArgumentError GLLVM.bridge_fit(; y = Y, family = "gaussian",
+    @test_throws ArgumentError GLLVModels.bridge_fit(; y = Y, family = "gaussian",
         d = 1, sources = [srcdict()], X = ones(p, n, 1))
-    @test_throws ArgumentError GLLVM.bridge_fit(; y = Y, family = "gaussian",
+    @test_throws ArgumentError GLLVModels.bridge_fit(; y = Y, family = "gaussian",
         d = 1, sources = [srcdict()], mask = trues(p, n))
-    @test_throws ArgumentError GLLVM.bridge_fit(; y = Y, family = "gaussian",
+    @test_throws ArgumentError GLLVModels.bridge_fit(; y = Y, family = "gaussian",
         d = 1, sources = [srcdict()],
         options = Dict{String, Any}("ci_method" => "wald"))
-    @test_throws ArgumentError GLLVM.bridge_fit(; y = Y, family = "gaussian",
+    @test_throws ArgumentError GLLVModels.bridge_fit(; y = Y, family = "gaussian",
         d = 1, sources = [srcdict(), srcdict(name = "b")])
 
     # 5. frozen COV-ORD-LATENT-BARE reproduction (retained four-route loglik)
     yrow = include(joinpath(@__DIR__, "fixtures", "input_gauss_loadings_y.jl"))
     Yfz = collect(reshape(yrow, 18, 3)')
-    brfz = GLLVM.bridge_fit(; y = Yfz, family = "gaussian", d = 1,
+    brfz = GLLVModels.bridge_fit(; y = Yfz, family = "gaussian", d = 1,
         sources = [Dict{String, Any}(
             "name" => "ordinary_latent",
             "covariance" => Matrix{Float64}(I, 18, 18),

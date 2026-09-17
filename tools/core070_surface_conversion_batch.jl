@@ -16,7 +16,7 @@
 #
 # Usage: julia --project=. tools/core070_surface_conversion_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 
 # ---------------------------------------------------------------------------
 # Minimal JSON reader/writer (no external dependency; mirrors the existing
@@ -194,33 +194,33 @@ function julia_quantity(quantity::AbstractString)
         # quantity across two independently-rotated fits. REPAIR
         # (2026-09-01, wave5-conversion4): L*L', matching the R-side
         # tcrossprod() fix.
-        L = GLLVM.getLoadings(fit_g)
+        L = GLLVModels.getLoadings(fit_g)
         return vec(L * L')
     elseif quantity == "lv_predictor"
         # rotate=false to match fit_g.pars.Λ, which is the model's RAW
-        # (unrotated) internal Λ -- GLLVM.getLV's own default is
+        # (unrotated) internal Λ -- GLLVModels.getLV's own default is
         # rotate=true, which the first attempt left implicit, mixing a
         # rotated Z with a raw Λ and breaking the Λ*Z reconstruction
         # invariance internally (a self-inconsistency bug, not merely a
         # tolerance issue). REPAIR (2026-09-01, wave5-conversion4): both
         # sides now raw, matching R's own getLoadings/getLV default
         # rotate="none".
-        # GLLVM.getLV returns an n x K matrix (postfit.jl: `Zt =
+        # GLLVModels.getLV returns an n x K matrix (postfit.jl: `Zt =
         # permutedims(Z)` from an internal K x n solve) -- Λ (p x K) needs
         # Z TRANSPOSED (K x n) to reconstruct the p x n predictor. The
         # first attempt multiplied Λ * Z directly (p x K times n x K,
         # non-conformable for this fixture's K=2, n=80), which is why the
         # case failed outright rather than merely missing tolerance.
-        Z = GLLVM.getLV(fit_g, Y_g; rotate = false)
+        Z = GLLVModels.getLV(fit_g, Y_g; rotate = false)
         return vec(fit_g.pars.Λ * Z')
     elseif quantity == "sigma_unit_total"
-        return vec(GLLVM.extract_Sigma(fit_g; level = :unit, part = :total).Sigma)
+        return vec(GLLVModels.extract_Sigma(fit_g; level = :unit, part = :total).Sigma)
     elseif quantity == "sigma_table"
-        t = GLLVM.extract_Sigma_table(fit_g; level = :unit, part = :total)
+        t = GLLVModels.extract_Sigma_table(fit_g; level = :unit, part = :total)
         ts = sort(collect(t); by = r -> (r.trait_i, r.trait_j))
         return Float64[r.value for r in ts]
     # communality (postfit/POSTFIT-SURFACE-extract_communality) is NOT
-    # computed here -- deferred (see contract.deferred): GLLVM.jl's
+    # computed here -- deferred (see contract.deferred): GLLVModels.jl's
     # communality(fit) denominator is the FULL total variance incl.
     # sigma_eps^2, while R's extract_communality() is single-tier-scoped
     # and never includes sigma_eps^2 for a Gaussian fit -- a genuine
@@ -228,23 +228,23 @@ function julia_quantity(quantity::AbstractString)
     # correlations (postfit/POSTFIT-SURFACE-extract_correlations) is NOT
     # computed here -- deferred (see contract.deferred, REPAIR 2026-09-01
     # wave5-conversion5): same tier-scoped-vs-total-variance estimand
-    # mismatch as extract_communality (GLLVM.jl's extract_correlations(fit)
+    # mismatch as extract_communality (GLLVModels.jl's extract_correlations(fit)
     # = correlation(fit) standardises by sigma_y_site(fit), the FULL total
     # variance incl. sigma_eps^2; R's route standardises by a single tier
     # that never includes sigma_eps^2 for a Gaussian fit).
     elseif quantity == "cross_correlations"
-        return vec(GLLVM.extract_cross_correlations(fit_g; level = :unit,
+        return vec(GLLVModels.extract_cross_correlations(fit_g; level = :unit,
                                                       traits_i = [1, 2], traits_j = [3, 4, 5]))
     elseif quantity == "residual_cov"
         # REPAIR (2026-09-01, wave5-conversion4: r_len=0). gaussian_small
         # has no unit_obs/W-tier block (K_W=0, unique=FALSE); R's
         # getResidualCov/getResidualCor default (and now this batch's) tier
         # is "unit", matching the R-side fix.
-        return vec(GLLVM.extract_residual_cov(fit_g; level = :unit))
+        return vec(GLLVModels.extract_residual_cov(fit_g; level = :unit))
     elseif quantity == "residual_cor"
-        return vec(GLLVM.extract_residual_cor(fit_g; level = :unit))
+        return vec(GLLVModels.extract_residual_cor(fit_g; level = :unit))
     elseif quantity == "ordination_sites"
-        sites, _, _ = GLLVM.extract_ordination(fit_g, Y_g)
+        sites, _, _ = GLLVModels.extract_ordination(fit_g, Y_g)
         S = Matrix(sites)
         return size(S, 1) == n ? vec(sum(abs2, S; dims = 2)) : vec(sum(abs2, S; dims = 1))
     # proportions (postfit/POSTFIT-SURFACE-extract_proportions) is NOT
@@ -256,7 +256,7 @@ function julia_quantity(quantity::AbstractString)
     # extract_communality's own failure.
     # omega (postfit/POSTFIT-SURFACE-extract_Omega) is NOT computed here --
     # deferred (see contract.deferred, REPAIR 2026-09-01 wave5-conversion6):
-    # GLLVM.jl's extract_Omega(fit::GllvmFit) unconditionally sums
+    # GLLVModels.jl's extract_Omega(fit::GllvmFit) unconditionally sums
     # extract_Sigma(level=:unit,...) .+ extract_Sigma(level=:unit_obs,...),
     # and the :unit_obs total ALWAYS adds sigma_eps^2*I as a baseline term
     # regardless of whether a genuine W-tier exists; R's extract_Omega()
@@ -271,28 +271,28 @@ function julia_quantity(quantity::AbstractString)
         # needs BOTH a "unit" and a "unit_obs" tier; gaussian_small
         # (single-tier) has no unit_obs block, so R returned empty. Fixture
         # reassignment (not a call bug): now computed on fit_tl
-        # (twolevel_small), matching the R-side fix. GLLVM's
+        # (twolevel_small), matching the R-side fix. GLLVModels's
         # extract_ICC_site(fit::TwoLevelFit) is itself defined as
         # `= extract_repeatability(fit)` (src/extractors.jl), so this is
         # numerically the same quantity as repeatability_point on the same
         # fixture -- an intentional consequence of the two engines' own
         # internal equivalence, not redundant test design.
-        return vec(GLLVM.extract_ICC_site(fit_tl))
+        return vec(GLLVModels.extract_ICC_site(fit_tl))
     elseif quantity == "loading_ci_wald_asym"
-        tbl = GLLVM.loading_ci(fit_g, Y_g; method = :wald_asym, conf_level = 0.95)
+        tbl = GLLVModels.loading_ci(fit_g, Y_g; method = :wald_asym, conf_level = 0.95)
         return vcat(Float64[r.lower for r in tbl], Float64[r.upper for r in tbl])
     elseif quantity == "loading_profile"
-        r = GLLVM.loading_profile_exploratory(fit_g, 1, 1; level = 0.95)
+        r = GLLVModels.loading_profile_exploratory(fit_g, 1, 1; level = 0.95)
         return Float64[r.lower, r.upper]
     elseif quantity == "profile_ci_total_variance"
-        r = GLLVM.profile_ci_total_variance(fit_g, 1; level = 0.95)
+        r = GLLVModels.profile_ci_total_variance(fit_g, 1; level = 0.95)
         return Float64[r.lower, r.upper]
     elseif quantity == "standard_errors"
-        return vec(GLLVM.standard_errors(fit_g, Y_g).se)
+        return vec(GLLVModels.standard_errors(fit_g, Y_g).se)
     elseif quantity == "repeatability_point"
-        return vec(GLLVM.extract_repeatability(fit_tl))
+        return vec(GLLVModels.extract_repeatability(fit_tl))
     elseif quantity in ("icc_ci_default", "icc_ci_wald")
-        ci = GLLVM.repeatability_ci(fit_tl, Y_tl, individual; method = :wald)
+        ci = GLLVModels.repeatability_ci(fit_tl, Y_tl, individual; method = :wald)
         return vcat(Float64[r.lower for r in ci], Float64[r.upper for r in ci])
     # icc_ci_bootstrap (CI-ROUTE-011) is NOT computed here -- it is a
     # `kind = "bootstrap_structural"` case, handled in the main case loop
@@ -301,12 +301,12 @@ function julia_quantity(quantity::AbstractString)
     elseif quantity == "cutpoints"
         # R's extract_cutpoints()$tau_estimate reports only the K-2 FREE
         # cutpoints per trait (Hadfield 2015: tau_1 = 0 fixed, never
-        # reported). GLLVM.jl's OrdinalPerTraitFit.τ is p x (C-1) with
+        # reported). GLLVModels.jl's OrdinalPerTraitFit.τ is p x (C-1) with
         # column 1 the FIXED tau_1 = 0.0 (src/families/ordinal.jl:
         # `τ[t, 1] = 0.0`). REPAIR (2026-09-01, wave5-conversion4: r_len=5
         # vs julia_len=10): drop the fixed column so both sides report only
         # the free cutpoints, matching R's convention exactly.
-        τ = GLLVM.extract_cutpoints(fit_o).τ
+        τ = GLLVModels.extract_cutpoints(fit_o).τ
         return vec(Matrix(τ)[:, 2:end])
     else
         error("BOGUS_QUANTITY: no dispatcher entry for '$(quantity)'")
@@ -325,7 +325,7 @@ for cs in cases
         jl_raised = false
         jl_message = ""
         try
-            GLLVM.repeatability_ci(fit_tl, Y_tl, individual; method = :profile)
+            GLLVModels.repeatability_ci(fit_tl, Y_tl, individual; method = :profile)
         catch e
             jl_raised = true
             jl_message = sprint(showerror, e)
@@ -350,10 +350,10 @@ for cs in cases
         r_ok = get(r_val, "finite", false) == true && get(r_val, "ordered", false) == true &&
                get(r_val, "brackets_point", false) == true
         jl_ok, jl_facts, jl_err = try
-            ci = GLLVM.repeatability_ci(fit_tl, Y_tl, individual; method = :bootstrap,
+            ci = GLLVModels.repeatability_ci(fit_tl, Y_tl, individual; method = :bootstrap,
                                          nsim = 200, seed = 11)
             lower = Float64[r.lower for r in ci]; upper = Float64[r.upper for r in ci]
-            point = GLLVM.extract_repeatability(fit_tl)
+            point = GLLVModels.extract_repeatability(fit_tl)
             finite = all(isfinite, lower) && all(isfinite, upper)
             ordered = all(lower .<= upper)
             brackets = all(lower .<= point .<= upper)
@@ -431,7 +431,7 @@ neg_ok = neg_bogus_quantity && (neg_bogus_quantity_r == true) && (neg_wrong_fixt
 report = Dict{String, Any}(
     "status" => (all_ok && neg_ok) ? "PASS" : "FAIL",
     "julia_version" => string(VERSION),
-    "package_root" => Base.pkgdir(GLLVM),
+    "package_root" => Base.pkgdir(GLLVModels),
     "case_count" => length(cases),
     "all_checks" => all_ok,
     "negative_controls_behaved_as_expected" => neg_ok,

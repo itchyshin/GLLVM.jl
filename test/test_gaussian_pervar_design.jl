@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 
 @testset "Per-species Gaussian requested fixed design" begin
     rng = MersenneTwister(7091)
@@ -14,7 +14,7 @@ using GLLVM, Test, Random, LinearAlgebra
     fit = fit_gaussian_pervar_gllvm(Y;K,X,method=:lbfgs)
     @test length(fit.β) == q
     @test fit.converged
-    @test GLLVM._nparams(fit) == q + GLLVM.rr_theta_len(p,K) + p
+    @test GLLVModels._nparams(fit) == q + GLLVModels.rr_theta_len(p,K) + p
     if length(fit.β) == q
         V = fit.Λ*fit.Λ' + Diagonal(fit.φ²)
         C = cholesky(Symmetric(kron(Matrix{Float64}(I,n,n),V)))
@@ -47,7 +47,7 @@ end
     no_mean = fit_gaussian_pervar_gllvm(Y;K,X=zeros(p,n,0))
     @test isempty(no_mean.β)
     @test no_mean.converged
-    @test GLLVM._nparams(no_mean) == GLLVM.rr_theta_len(p,K)+p
+    @test GLLVModels._nparams(no_mean) == GLLVModels.rr_theta_len(p,K)+p
     @test no_mean.loglik ≈ gaussian_pervar_marginal_loglik(Y,no_mean.Λ,no_mean.φ²) atol=1e-8 rtol=0
     intercepts = zeros(p,n,p)
     for j in 1:p; intercepts[j,:,j] .= 1; end

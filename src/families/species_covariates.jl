@@ -38,7 +38,7 @@ end
 """
     GllvmSpeciesCovFit
 
-Result of [`fit_gllvm_speciescov`](@ref): a GLLVM fit with **species-specific**
+Result of [`fit_gllvm_speciescov`](@ref): a GLLVModels fit with **species-specific**
 fixed-effect covariate coefficients. Fields: `family` (the Distributions marker),
 per-species intercepts `β` (length p), the species-specific coefficient matrix `B`
 (p×q, row `t` are species `t`'s slopes), loadings `Λ` (p×K), `dispersion`
@@ -126,7 +126,7 @@ fitted(fit::GllvmSpeciesCovFit, Y::AbstractMatrix{<:Real}, X::AbstractArray{<:Re
 """
     fit_gllvm_speciescov(Y; family, X, K, link=nothing, N=nothing, …) -> GllvmSpeciesCovFit
 
-Fit a non-Gaussian GLLVM with **species-specific** covariate coefficients by
+Fit a non-Gaussian GLLVModels with **species-specific** covariate coefficients by
 L-BFGS over `[β; vec(B); vec(Λ); (log-dispersion)]` on the offset-augmented Laplace
 marginal, where the linear predictor is
 `η_{ts} = β_t + Σ_k X[t,s,k]·B[t,k] + (Λ z_s)_t`.

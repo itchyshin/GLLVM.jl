@@ -1,4 +1,4 @@
-using GLLVM, Test, Random
+using GLLVModels, Test, Random
 
 # Masked analytic-gradient fits for the dispersion families (NB2 / Gamma / Beta).
 # Their *_laplace_grad now accept a response mask (masked-cell score + observed and

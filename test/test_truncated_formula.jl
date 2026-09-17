@@ -1,5 +1,5 @@
 module Core070TruncatedFormulaTests
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 # Exact seed-58 DGP from parity/test_truncated_nbinom2_parity.jl; no RCall dependency.
 const _TNB2_SEED = 58
 function parity_loadings_p5k2()
@@ -32,7 +32,7 @@ for t in 1:p, s in 1:n
     end
 end
 
-parameters(f)=vcat(f.β,GLLVM.pack_lambda(f.Λ),log.(f.r))
+parameters(f)=vcat(f.β,GLLVModels.pack_lambda(f.Λ),log.(f.r))
 @testset "Truncated NB2 explicit per-trait dispatch and formulas" begin
     native=fit_truncated_nbinom2_gllvm_pertrait(Y;K=K)
     unified=fit_gllvm(Y;family=TruncatedNegBin2(),K=K,disp_group=:species)

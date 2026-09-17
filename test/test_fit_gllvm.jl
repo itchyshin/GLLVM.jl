@@ -1,4 +1,4 @@
-using GLLVM, Test, Distributions, Random
+using GLLVModels, Test, Distributions, Random
 
 @testset "fit_gllvm — unified family dispatch" begin
     Random.seed!(7)

@@ -1,7 +1,7 @@
 # Speed roadmap — "speed against myself"
 
 Companion notes to `bench/speed_bench.jl`. This captures the speed work for the
-non-Gaussian (Laplace) GLLVM path: what is already landed, what is bit-exact and
+non-Gaussian (Laplace) GLLVModels path: what is already landed, what is bit-exact and
 ready, and the algorithmic roadmap from the literature. None of this changes the
 maximised likelihood — every item is **exact-preserving** (same optimum, fewer
 or cheaper operations), so the benchmark's `Δloglik` column should stay at noise
@@ -43,7 +43,7 @@ defaults.
 
 ## 3. Exact-preserving algorithmic roadmap
 
-Ordered roughly by expected payoff. "Have" = already in GLLVM.jl; "Need" = to do.
+Ordered roughly by expected payoff. "Have" = already in GLLVModels.jl; "Need" = to do.
 
 - **Reverse-mode / implicit-function adjoint of the Laplace marginal.**
   Differentiate the Laplace objective with the implicit-function theorem at the

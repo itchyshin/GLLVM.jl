@@ -10,7 +10,7 @@
 ```
 
 This vignette demonstrates how to analyze multivariate ecological abundance data
-using **Joint Species Distribution Models (JSDMs)** in `GLLVM.jl`.
+using **Joint Species Distribution Models (JSDMs)** in `GLLVModels.jl`.
 
 We cover:
 1. Handling overdispersed count data with Poisson and Negative Binomial (NB2) GLLVMs.
@@ -21,7 +21,7 @@ We cover:
 ---
 
 !!! warning "Matrix Orientation: $p \times n$ in Julia vs $n \times p$ in R"
-    **GLLVM.jl expects species in rows and sites in columns ($p \times n$).**
+    **GLLVModels.jl expects species in rows and sites in columns ($p \times n$).**
 
     If your abundance matrix is in R's $n \times p$ format (sites in rows, species in columns), pass the transpose `Y'` to the fitting functions. Site covariate matrices $X$ have dimension $n \times q$ ($n$ sites, $q$ predictors).
 
@@ -34,7 +34,7 @@ In community ecology, multispecies abundance surveys typically exhibit three key
 2. **Environmental filtering**: Species respond differentially to measured habitat gradients (e.g., elevation, canopy cover, temperature).
 3. **Biotic interactions & unmeasured gradients**: After controlling for environmental covariates, residual correlations between species reflect biotic interactions (competition, facilitation) or shared responses to unmeasured environmental drivers.
 
-The Generalized Linear Latent Variable Model (GLLVM) integrates these components into a unified hierarchical framework:
+The Generalized Linear Latent Variable Model (GLLVModels) integrates these components into a unified hierarchical framework:
 
 $$\eta_{ij} = \alpha_i + \beta_i^\top x_j + \lambda_i^\top u_j$$
 
@@ -56,7 +56,7 @@ For count data:
 Let us simulate an ecological community of $p = 12$ species sampled across $n = 100$ sites with $q = 2$ environmental predictors (e.g. elevation and moisture) and $K = 2$ latent axes:
 
 ```julia
-using GLLVM, Random, LinearAlgebra, Distributions
+using GLLVModels, Random, LinearAlgebra, Distributions
 
 Random.seed!(42)
 
@@ -107,10 +107,10 @@ println("Simulated abundance matrix size: ", size(Y))  # (12, 100)
 We fit both a Poisson model and a Negative Binomial model to evaluate the impact of accounting for overdispersion:
 
 ```julia
-# Fit Poisson GLLVM (K = 2 latent axes with site covariates X)
+# Fit Poisson GLLVModels (K = 2 latent axes with site covariates X)
 fit_pois = fit_gllvm(Y; family = Poisson(), X = X, K = 2)
 
-# Fit Negative Binomial (NB2) GLLVM
+# Fit Negative Binomial (NB2) GLLVModels
 fit_nb = fit_gllvm(Y; family = NegativeBinomial(), X = X, K = 2)
 
 # Compare model fit using AIC and BIC
@@ -124,7 +124,7 @@ Because the simulated data contains quadratic overdispersion, the Negative Binom
 
 ## 4. Latent Variable Ordination: Site Scores & Species Loadings
 
-One of the primary applications of GLLVMs in community ecology is **model-based unconstrained ordination**. Unlike algorithmic ordination methods (such as PCA, CA, or NMDS), GLLVM ordination directly accounts for the discrete count distribution, mean-variance relationships, and environmental covariates.
+One of the primary applications of GLLVMs in community ecology is **model-based unconstrained ordination**. Unlike algorithmic ordination methods (such as PCA, CA, or NMDS), GLLVModels ordination directly accounts for the discrete count distribution, mean-variance relationships, and environmental covariates.
 
 ### Extracting Coordinates
 
@@ -234,4 +234,4 @@ println(table)
 3. **Model-based ordination**: Extract site scores via `getLV(fit)` and species loadings via `getLoadings(fit)`.
 4. **Residual associations**: Use `correlation(fit)` to infer unmeasured biotic networks and `communality(fit)` for variance decomposition.
 
-For continuous traits and evolutionary questions across phylogenies, proceed to the [Phylogenetic GLLVM Vignette](phylogenetic-gllvm.md).
+For continuous traits and evolutionary questions across phylogenies, proceed to the [Phylogenetic GLLVModels Vignette](phylogenetic-gllvm.md).

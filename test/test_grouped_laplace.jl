@@ -1,20 +1,20 @@
-using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
+using Test, GLLVModels, SparseArrays, LinearAlgebra, Distributions
 
 @testset "joint grouped Laplace" begin
-    @test isdefined(GLLVM, :joint_grouped_laplace_loglik)
+    @test isdefined(GLLVModels, :joint_grouped_laplace_loglik)
 
     @testset "trait-specific dispersion vector contract" begin
         X=ones(2,1); W=spzeros(2,0)
         beta_families=[Beta(4.,1.),Beta(12.,1.)]
-        beta_result=GLLVM.joint_grouped_laplace_loglik(beta_families,[.3,.6],ones(2),X,[0.],W; link=LogitLink())
+        beta_result=GLLVModels.joint_grouped_laplace_loglik(beta_families,[.3,.6],ones(2),X,[0.],W; link=LogitLink())
         @test beta_result.status == :ok
         @test beta_result.loglik ≈ logpdf(Beta(2.,2.),.3)+logpdf(Beta(6.,6.),.6) atol=1e-12
         nb_families=[NegativeBinomial(2.,.5),NegativeBinomial(8.,.5)]
-        nb_result=GLLVM.joint_grouped_laplace_loglik(nb_families,[1.,4.],ones(2),X,[log(3.)],W; link=LogLink())
+        nb_result=GLLVModels.joint_grouped_laplace_loglik(nb_families,[1.,4.],ones(2),X,[log(3.)],W; link=LogLink())
         @test nb_result.status == :ok
         @test nb_result.loglik ≈ logpdf(NegativeBinomial(2.,2/5),1)+logpdf(NegativeBinomial(8.,8/11),4) atol=1e-12
-        @test !GLLVM.joint_grouped_laplace_loglik(beta_families[1:1],[.3,.6],ones(2),X,[0.],W; link=LogitLink()).converged
-        @test !GLLVM.joint_grouped_laplace_loglik([Beta(4.,1.),NegativeBinomial(2.,.5)],[.3,.6],ones(2),X,[0.],W; link=LogitLink()).converged
+        @test !GLLVModels.joint_grouped_laplace_loglik(beta_families[1:1],[.3,.6],ones(2),X,[0.],W; link=LogitLink()).converged
+        @test !GLLVModels.joint_grouped_laplace_loglik([Beta(4.,1.),NegativeBinomial(2.,.5)],[.3,.6],ones(2),X,[0.],W; link=LogitLink()).converged
     end
 
     @testset "family marker and conditional normalization contracts" begin
@@ -25,20 +25,20 @@ using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
             (Beta(8.,1.), [.3,.6], ones(2), 0., LogitLink(), [Beta(4.,4.),Beta(4.,4.)]),
             (NegativeBinomial(2.,.5), [1.,3.], ones(2), log(3.), LogLink(),
              [NegativeBinomial(2.,.4),NegativeBinomial(2.,.4)]))
-            result = GLLVM.joint_grouped_laplace_loglik(family,y,trials,X,[eta],W; link=link)
+            result = GLLVModels.joint_grouped_laplace_loglik(family,y,trials,X,[eta],W; link=link)
             @test result.status == :ok && result.gradient_norm == 0.0
             @test result.loglik ≈ sum(logpdf.(distributions,y)) atol=1e-12
         end
-        @test GLLVM.joint_grouped_laplace_loglik(Beta(8.,2.), [.3,.6],ones(2),X,[0.],W;
+        @test GLLVModels.joint_grouped_laplace_loglik(Beta(8.,2.), [.3,.6],ones(2),X,[0.],W;
             link=LogitLink()).status == :invalid_family
-        @test GLLVM.joint_grouped_laplace_loglik(NegativeBinomial(2.,.2), [1.,3.],ones(2),X,[0.],W;
+        @test GLLVModels.joint_grouped_laplace_loglik(NegativeBinomial(2.,.2), [1.,3.],ones(2),X,[0.],W;
             link=LogLink()).status == :invalid_family
     end
 
     @testset "incidence times trait factors preserves vec ordering" begin
         A = sparse([1.0 0.0; 1.0 1.0; 0.0 1.0])
         L = [1.0 2.0; 3.0 4.0]
-        W = GLLVM.grouped_trait_design(A, L)
+        W = GLLVModels.grouped_trait_design(A, L)
         @test W == sparse(kron(A, L))
         # Second unit, second trait: both group columns are active, in the same
         # row of the one global design — the crossed-effect contract.
@@ -50,7 +50,7 @@ using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
         n = ones(2)
         X = ones(2, 1)
         beta = [log(2.5)]
-        result = GLLVM.joint_grouped_laplace_loglik(
+        result = GLLVModels.joint_grouped_laplace_loglik(
             Poisson(), y, n, X, beta, spzeros(2, 0); link = LogLink())
         exact = sum(logpdf(Poisson(exp(beta[1])), Int(v)) for v in y)
         @test result.status === :ok
@@ -66,7 +66,7 @@ using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
         X = ones(2, 1)
         beta = [log(3.0)]
         W = sparse(ones(2, 1))
-        result = GLLVM.joint_grouped_laplace_loglik(
+        result = GLLVModels.joint_grouped_laplace_loglik(
             Poisson(), y, n, X, beta, W; link = LogLink())
         grid = range(-8.0, 8.0; length = 4001)
         dz = step(grid)
@@ -78,9 +78,9 @@ using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
 
     @testset "each admitted family has a finite joint objective" begin
         common = (ones(1, 1), [0.0], sparse(ones(1, 1)))
-        binomial = GLLVM.joint_grouped_laplace_loglik(
+        binomial = GLLVModels.joint_grouped_laplace_loglik(
             Binomial(), [3.0], [5.0], common...; link = LogitLink())
-        beta = GLLVM.joint_grouped_laplace_loglik(
+        beta = GLLVModels.joint_grouped_laplace_loglik(
             Beta(8.0, 1.0), [0.7], [1.0], common...; link = LogitLink())
         @test binomial.status === :ok
         @test beta.status === :ok
@@ -104,11 +104,11 @@ using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
             b = [0.0]
             reference_logpost = z -> begin
                 eta = beta0 + z
-                mu = GLLVM.linkinv(link, eta)
-                GLLVM._glm_logpdf(family, mu, n[1], y[1]) - 0.5 * z^2
+                mu = GLLVModels.linkinv(link, eta)
+                GLLVModels._glm_logpdf(family, mu, n[1], y[1]) - 0.5 * z^2
             end
-            state = GLLVM._joint_grouped_state(family, X, beta, W, link, b)
-            score, _, observed_precision = GLLVM._joint_grouped_components(
+            state = GLLVModels._joint_grouped_state(family, X, beta, W, link, b)
+            score, _, observed_precision = GLLVModels._joint_grouped_components(
                 family, y, n, X, beta, W, link, b; state = state)
             qminus, qzero, qplus = reference_logpost(-h), reference_logpost(0.0), reference_logpost(h)
             grad_fd = (qplus - qminus) / (2h)
@@ -121,8 +121,8 @@ using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
 
     @testset "crossed incidence produces one coupled global precision" begin
         A = sparse([1.0 1.0; 1.0 0.0; 0.0 1.0])
-        W = GLLVM.grouped_trait_design(A, ones(1, 1))
-        result = GLLVM.joint_grouped_laplace_loglik(
+        W = GLLVModels.grouped_trait_design(A, ones(1, 1))
+        result = GLLVModels.joint_grouped_laplace_loglik(
             Poisson(), [3.0, 4.0, 2.0], ones(3), ones(3, 1), [log(2.0)], W;
             link = LogLink())
         @test result.status === :ok
@@ -134,9 +134,9 @@ using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
         y = [8.0]
         beta = [log(2.0)]
         family = NegativeBinomial(2.0, 0.5)
-        result = GLLVM.joint_grouped_laplace_loglik(
+        result = GLLVModels.joint_grouped_laplace_loglik(
             family, y, ones(1), ones(1, 1), beta, sparse(ones(1, 1)); link = LogLink())
-        eta = GLLVM._clamp_eta(beta[1] + result.mode[1])
+        eta = GLLVModels._clamp_eta(beta[1] + result.mode[1])
         mu = exp(eta)
         observed = mu * (1 + y[1] / family.r) / (1 + mu / family.r)^2
         fisher = mu * family.r / (family.r + mu)
@@ -146,11 +146,11 @@ using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
     end
 
     @testset "bad input and exhausted Newton return diagnostics" begin
-        bad_y = GLLVM.joint_grouped_laplace_loglik(
+        bad_y = GLLVModels.joint_grouped_laplace_loglik(
             Poisson(), [-1.0], [1.0], ones(1, 1), [0.0], sparse(ones(1, 1)); link = LogLink())
-        bad_n = GLLVM.joint_grouped_laplace_loglik(
+        bad_n = GLLVModels.joint_grouped_laplace_loglik(
             Binomial(), [0.0], [0.0], ones(1, 1), [0.0], sparse(ones(1, 1)); link = LogitLink())
-        stalled = GLLVM.joint_grouped_laplace_loglik(
+        stalled = GLLVModels.joint_grouped_laplace_loglik(
             Poisson(), [3.0], [1.0], ones(1, 1), [0.0], sparse(ones(1, 1));
             link = LogLink(), maxiter = 0)
         @test (!bad_y.converged && bad_y.status === :invalid_data && bad_y.loglik == -Inf)
@@ -166,13 +166,13 @@ using Test, GLLVM, SparseArrays, LinearAlgebra, Distributions
             (NegativeBinomial(2.0, 0.5), [8.0], [1.0], LogLink()),
         )
         for (family, y, n, link) in specs
-            saturated = GLLVM.joint_grouped_laplace_loglik(
+            saturated = GLLVModels.joint_grouped_laplace_loglik(
                 family, y, n, ones(1, 1), [40.0], sparse(ones(1, 1)); link = link)
             @test !saturated.converged
             @test saturated.status === :saturated_domain
             @test saturated.loglik == -Inf
         end
-        bad_tol = GLLVM.joint_grouped_laplace_loglik(
+        bad_tol = GLLVModels.joint_grouped_laplace_loglik(
             Poisson(), [3.0], [1.0], ones(1, 1), [0.0], sparse(ones(1, 1));
             link = LogLink(), tol = Inf)
         @test !bad_tol.converged && bad_tol.status === :invalid_control

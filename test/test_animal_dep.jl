@@ -1,10 +1,10 @@
-using GLLVM
+using GLLVModels
 using Test
 using Random
 using LinearAlgebra
 using Distributions
 
-using GLLVM: pack_lambda
+using GLLVModels: pack_lambda
 
 # Small NRM: four individuals; siblings (3,4) share half-sibs.
 const _ANIMAL_DEP_A = Float64[

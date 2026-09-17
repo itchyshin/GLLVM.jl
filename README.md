@@ -1,4 +1,4 @@
-# GLLVM.jl
+# GLLVModels.jl
 
 Development grouping route: `fit_gllvm(Y; grouping=[GroupingTerm(:unit;
 mode=:indep)], unit=labels)` jointly fits shared effects for Gaussian and the
@@ -9,7 +9,7 @@ qualification remains in progress. The explicit Gaussian `phylo=PrecisionPhy`
 route supports precision-only fits and a bounded joint independent-grouping
 model; source-specific covariance and full-marginal interval diagnostics remain
 separate from frozen-R admission and recovery evidence.
-GLLVM.jl remains an experimental partial R-to-Julia bridge, not 0.7 parity.
+GLLVModels.jl remains an experimental partial R-to-Julia bridge, not 0.7 parity.
 Precision-only fitting offers `residual_mode=:shared` alongside the unchanged
 trait-specific default; the joint grouping route remains trait-specific.
 Eligible independent Gaussian grouping models also have an explicit
@@ -19,8 +19,8 @@ The explicit Julia multivariate precision route is documented in the
 [development bridge guide](docs/src/precision-bridge-development.md);
 public R `phylo_rr` admission is still closed.
 
-[![Build Status](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/itchyshin/GLLVM.jl/actions/workflows/CI.yml)
-[![Coverage](https://codecov.io/gh/itchyshin/GLLVM.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/itchyshin/GLLVM.jl)
+[![Build Status](https://github.com/itchyshin/GLLVModels.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/itchyshin/GLLVModels.jl/actions/workflows/CI.yml)
+[![Coverage](https://codecov.io/gh/itchyshin/GLLVModels.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/itchyshin/GLLVModels.jl)
 
 Fast Generalised Linear Latent Variable Models (GLLVMs) in Julia, with a broad,
 status-tracked GLM response-family surface.
@@ -53,7 +53,7 @@ y[t, s] = X[t, s, :]'β + Λ_B η_B[s][t] + ε[t, s]
 
 with η_B i.i.d. standard Gaussian, ε i.i.d. Gaussian with variance σ_eps².
 
-`GLLVM.jl` exploits the closed-form Gaussian marginal:
+`GLLVModels.jl` exploits the closed-form Gaussian marginal:
 
 ```
 y_s ~ N(X_s β, Λ_B Λ_B' + diag(d_total))
@@ -67,9 +67,9 @@ Cholesky). On our published Gaussian closed-form profile grid that path runs
 same problem, with answers agreeing to at
 least six significant digits (worst case across our benchmark grid:
 `|Δ logLik| = 2.3e-07`, `Σ_y` relative Frobenius `4.4e-05`; see
-[Benchmarks](https://itchyshin.github.io/GLLVM.jl/dev/benchmarks)).
+[Benchmarks](https://itchyshin.github.io/GLLVModels.jl/dev/benchmarks)).
 
-That range describes the **Gaussian closed-form path only**, where GLLVM.jl
+That range describes the **Gaussian closed-form path only**, where GLLVModels.jl
 uses a closed-form marginal and R uses a TMB Laplace approximation — an
 algorithmic difference, not a language one. Non-Gaussian families use a dense
 Laplace on both sides and the measured factors are far smaller (Gamma ≈ 1.6×,
@@ -91,8 +91,8 @@ bounds and left the neighbouring clause untouched.
 
 ```julia
 using Pkg
-Pkg.add(url = "https://github.com/itchyshin/GLLVM.jl")
-using GLLVM
+Pkg.add(url = "https://github.com/itchyshin/GLLVModels.jl")
+using GLLVModels
 
 # Simulate the per-response-residual Gaussian model used for the R comparison
 using Random
@@ -135,26 +135,26 @@ Three methods, matching the surface of R's `confint()` from the
 `gllvmTMB` package (PR #307):
 
 ```julia
-GLLVM.confint(fit)                                    # Wald (default)
-GLLVM.profile_ci(fit, "sigma_eps")                    # profile likelihood
-GLLVM.bootstrap_ci(fit; n_boot = 1000, seed = 42)     # parametric bootstrap
+GLLVModels.confint(fit)                                    # Wald (default)
+GLLVModels.profile_ci(fit, "sigma_eps")                    # profile likelihood
+GLLVModels.bootstrap_ci(fit; n_boot = 1000, seed = 42)     # parametric bootstrap
 ```
 
 ## Comparison to MixedModels.jl
 
-> **Loading both in one session breaks six verbs.** GLLVM.jl and MixedModels.jl each
+> **Loading both in one session breaks six verbs.** GLLVModels.jl and MixedModels.jl each
 > export `confint`, `aic`, `bic`, `predict`, `fitted` and `residuals` as unrelated generics,
-> so the bare names become ambiguous. Qualify the call (`GLLVM.confint(...)`) — see
-> [Common pitfalls](https://itchyshin.github.io/GLLVM.jl/dev/pitfalls).
+> so the bare names become ambiguous. Qualify the call (`GLLVModels.confint(...)`) — see
+> [Common pitfalls](https://itchyshin.github.io/GLLVModels.jl/dev/pitfalls).
 
 `MixedModels.jl` is the canonical Julia engine for linear mixed models
-with sparse random-effect design matrices. `GLLVM.jl` solves a
+with sparse random-effect design matrices. `GLLVModels.jl` solves a
 *different* model class — reduced-rank latent factors. Use:
 
 | Model | Engine |
 |-------|--------|
 | `(1 | site)` random intercept, no latent factors | MixedModels.jl |
-| GLLVM with K ≥ 1 latent factors | GLLVM.jl |
+| GLLVModels with K ≥ 1 latent factors | GLLVModels.jl |
 
 ## Features
 
@@ -227,10 +227,10 @@ inexactly representable counts before fitting; it never rounds the response.
 
 ## Citation
 
-If you use `GLLVM.jl` in published work, please cite:
+If you use `GLLVModels.jl` in published work, please cite:
 
-> Nakagawa, S. (2026). GLLVM.jl: Generalised Linear Latent Variable Models in
-> Julia. <https://github.com/itchyshin/GLLVM.jl>
+> Nakagawa, S. (2026). GLLVModels.jl: Generalised Linear Latent Variable Models in
+> Julia. <https://github.com/itchyshin/GLLVModels.jl>
 
 ## License
 

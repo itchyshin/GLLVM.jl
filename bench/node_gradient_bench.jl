@@ -10,7 +10,7 @@
 
 using BenchmarkTools
 using Random
-using GLLVM
+using GLLVModels
 
 # Self-contained balanced-newick builder (avoids depending on internal helpers).
 bnw(l, bl) = length(l) == 1 ? l[1] * ":" * string(bl) :
@@ -27,14 +27,14 @@ println(rpad("p", 8), rpad("build (ms)", 14), rpad("grad (ms)", 14), "grad/p (µ
 build_t = Float64[]
 grad_t  = Float64[]
 for p in PS
-    phy = GLLVM.augmented_phy(balanced(p))
+    phy = GLLVModels.augmented_phy(balanced(p))
     σ_phy = abs.(randn(p)) .+ 0.3
     μ = 0.1
     y = randn(p)
-    tb = @belapsed GLLVM.build_node_perspecies($phy, $σ_phy, 0.5)
-    stn = GLLVM.build_node_perspecies(phy, σ_phy, 0.5)
-    GLLVM.grad_node_perspecies(stn, y, μ)              # warm-up
-    tg = @belapsed GLLVM.grad_node_perspecies($stn, $y, $μ)
+    tb = @belapsed GLLVModels.build_node_perspecies($phy, $σ_phy, 0.5)
+    stn = GLLVModels.build_node_perspecies(phy, σ_phy, 0.5)
+    GLLVModels.grad_node_perspecies(stn, y, μ)              # warm-up
+    tg = @belapsed GLLVModels.grad_node_perspecies($stn, $y, $μ)
     push!(build_t, tb); push!(grad_t, tg)
     println(rpad(p, 8), rpad(round(tb * 1e3, digits = 3), 14),
             rpad(round(tg * 1e3, digits = 4), 14), round(tg / p * 1e6, digits = 4))

@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 using Distributions: Poisson
 
 @testset "Poisson grouped random slopes (non-Gaussian random regression)" begin
@@ -20,10 +20,10 @@ using Distributions: Poisson
         Z = ones(n, 1)
         gi_singleton = [[i] for i in 1:n]                 # each group = one site
         Lb = fill(σ_u, 1, 1)                              # Σ_b = [σ_u²]
-        ll_group = GLLVM.random_slope_marginal_loglik_laplace(
-            Poisson(), Y, N, Z, Λ, β, Lb, gi_singleton; link = GLLVM.LogLink())
-        ll_row = GLLVM.row_random_marginal_loglik_laplace(
-            Poisson(), Y, N, Λ, β, σ_u; link = GLLVM.LogLink())
+        ll_group = GLLVModels.random_slope_marginal_loglik_laplace(
+            Poisson(), Y, N, Z, Λ, β, Lb, gi_singleton; link = GLLVModels.LogLink())
+        ll_row = GLLVModels.row_random_marginal_loglik_laplace(
+            Poisson(), Y, N, Λ, β, σ_u; link = GLLVModels.LogLink())
         @test isapprox(ll_group, ll_row; atol = 1e-9)
     end
 
@@ -90,18 +90,18 @@ using Distributions: Poisson
         Λt = 0.4 .* randn(p, K); βt = 0.2 .* randn(p)
         x = randn(n); grouping = vcat(collect(1:L), rand(1:L, n - L))
         Z = hcat(ones(n), x)
-        codes, _ = GLLVM._code_grouping(grouping)
+        codes, _ = GLLVModels._code_grouping(grouping)
         gi = [findall(==(g), codes) for g in 1:maximum(codes)]
         Y = float.(rand(0:5, p, n)); N = ones(Int, p, n)
-        rr = GLLVM.rr_theta_len(p, K); nc = GLLVM._chol_cov_npar(2)
+        rr = GLLVModels.rr_theta_len(p, K); nc = GLLVModels._chol_cov_npar(2)
         f = θ -> begin
             β = θ[1:p]
-            Λ = GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-            _, Lb = GLLVM._unpack_chol_cov(θ[(p + rr + 1):(p + rr + nc)], 2)
-            -GLLVM.random_slope_marginal_loglik_laplace(
-                Poisson(), Y, N, Z, Λ, β, Lb, gi; link = GLLVM.LogLink())
+            Λ = GLLVModels.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+            _, Lb = GLLVModels._unpack_chol_cov(θ[(p + rr + 1):(p + rr + nc)], 2)
+            -GLLVModels.random_slope_marginal_loglik_laplace(
+                Poisson(), Y, N, Z, Λ, β, Lb, gi; link = GLLVModels.LogLink())
         end
-        θ = vcat(βt, GLLVM.pack_lambda(Λt), [log(0.5), 0.1, log(0.4)])
+        θ = vcat(βt, GLLVModels.pack_lambda(Λt), [log(0.5), 0.1, log(0.4)])
         # central (2nd-order) FD — what the fitter's autodiff=:finite consumes
         gc = similar(θ); hc = 1e-6
         for i in eachindex(θ)

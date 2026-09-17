@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 # Hand reference for the three-branch ordered-beta log-density log p(y|η).
 function _ref_ob_logp(y, η, c0, c1, φ)
@@ -33,7 +33,7 @@ end
             end
         end
 
-        ll = GLLVM.ordered_beta_marginal_loglik_laplace(Y, zeros(p, K), β, c0, c1, φ)
+        ll = GLLVModels.ordered_beta_marginal_loglik_laplace(Y, zeros(p, K), β, c0, c1, φ)
         ll_indep = sum(_ref_ob_logp(Y[t, i], β[t], c0, c1, φ) for t in 1:p, i in 1:n)
         @test ll ≈ ll_indep atol = 1e-8
     end
@@ -60,7 +60,7 @@ end
         end
         Y = reshape(y, p, 1)
 
-        ll_lap = GLLVM.ordered_beta_marginal_loglik_laplace(Y, Λ, β, c0, c1, φ)
+        ll_lap = GLLVModels.ordered_beta_marginal_loglik_laplace(Y, Λ, β, c0, c1, φ)
 
         zs = range(-8, 8; length = 4001); dz = step(zs)
         marg = 0.0

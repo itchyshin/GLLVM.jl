@@ -5,7 +5,7 @@ if Base.find_package("StableRNGs") === nothing
         @test_broken false
     end
 else
-    using GLLVM
+    using GLLVModels
     using LinearAlgebra
     using Random
     using SHA
@@ -47,7 +47,7 @@ function _destination_b_joint_nb2_replication_fixture()
         for observation in 1:nblock, trait in 1:p
             size_value = size_truth[trait]
             mean_value = exp(eta[trait, observation])
-            response[trait, observation] = rand(rng, GLLVM.NegativeBinomial(
+            response[trait, observation] = rand(rng, GLLVModels.NegativeBinomial(
                 size_value, size_value / (size_value + mean_value)))
         end
         response
@@ -55,10 +55,10 @@ function _destination_b_joint_nb2_replication_fixture()
     original = draw_block()
     response = hcat(original, draw_block(), draw_block(), draw_block())
     terms = [
-        GLLVM.GroupingTerm(:unit; mode = :indep, common = true),
-        GLLVM.GroupingTerm(:unit_obs; mode = :indep, common = true),
-        GLLVM.GroupingTerm(:cluster; mode = :indep, common = true),
-        GLLVM.GroupingTerm(:cluster2; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:unit; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:unit_obs; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:cluster; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:cluster2; mode = :indep, common = true),
     ]
     return (; original, response, terms,
         unit=repeat(unit, 4), unit_obs=repeat(unit_obs, 4),
@@ -76,18 +76,18 @@ end
     @test fixture.unit[1:96] == fixture.unit[97:192] == fixture.unit[193:288] == fixture.unit[289:384]
     @test fixture.unit_obs[1:96] == fixture.unit_obs[97:192] == fixture.unit_obs[193:288] == fixture.unit_obs[289:384]
     @test all(count(==(level), fixture.unit_obs) == 8 for level in 1:48)
-    @test all(GLLVM._grouping_term_nparams(term, 2) == 1 for term in fixture.terms)
+    @test all(GLLVModels._grouping_term_nparams(term, 2) == 1 for term in fixture.terms)
 
     elapsed = @elapsed begin
         fit = fit_gllvm(fixture.response;
-            family=GLLVM.NegativeBinomial(1.5, 0.5), grouping=fixture.terms,
+            family=GLLVModels.NegativeBinomial(1.5, 0.5), grouping=fixture.terms,
             unit=fixture.unit, unit_obs=fixture.unit_obs,
             cluster=fixture.cluster, cluster2=fixture.cluster2,
             iterations=250, g_tol=1e-4)
-        intervals = GLLVM.grouped_nongaussian_intervals(fixture.response, fit;
+        intervals = GLLVModels.grouped_nongaussian_intervals(fixture.response, fit;
             unit=fixture.unit, unit_obs=fixture.unit_obs,
             cluster=fixture.cluster, cluster2=fixture.cluster2)
-        @test fit isa GLLVM.GroupedNonGaussianFit
+        @test fit isa GLLVModels.GroupedNonGaussianFit
         @test fit.converged
         @test fit.stopping_reason === :converged
         @test fit.inner_status === :ok
@@ -98,7 +98,7 @@ end
         @test fit.dispersion isa Vector{Float64} && length(fit.dispersion) == 2
         @test getfield.(fit.terms, :name) == [:unit, :unit_obs, :cluster, :cluster2]
         for (term_index, source) in enumerate((:unit, :unit_obs, :cluster, :cluster2))
-            Sigma = GLLVM.extract_Sigma(fit; level=source).Sigma
+            Sigma = GLLVModels.extract_Sigma(fit; level=source).Sigma
             @test Sigma == fit.term_covariances[term_index]
             @test all(isfinite, Sigma) && all(diag(Sigma) .> 1e-4)
             @test Sigma ≈ Diagonal(diag(Sigma)) atol=1e-12

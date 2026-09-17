@@ -1,7 +1,7 @@
 # Formula equivalence inherits R health only at identical native coordinates.
 # Registry dependencies require the native case in this same required run.
 module Core070FamilyFormulas
-using GLLVM, Test, Random, SHA, TOML
+using GLLVModels, Test, Random, SHA, TOML
 import Distributions
 using Main: _core070_receipt_dir, _core070_sha256_file, parity_loadings_p5k2
 
@@ -30,15 +30,15 @@ function run(family::Symbol)
         marker = TruncatedNegBin2()
         controls = (; disp_group=:species, hessian=:observed)
         native = fit_truncated_nbinom2_gllvm_pertrait(Y; K=K, hessian=:observed)
-        theta = f -> vcat(f.β, GLLVM.pack_lambda(f.Λ), log.(f.r))
+        theta = f -> vcat(f.β, GLLVModels.pack_lambda(f.Λ), log.(f.r))
     else
         data = TOML.parsefile(joinpath(dir, string(family) * "-fixture.toml"))
         (data["p"], data["n"], data["K"]) == (p, n, K) || error("original shape changed")
         Y = reshape(data["Y_column_major"], p, n)
-        marker = family == :poisson ? GLLVM.Poisson() : GLLVM.Beta()
+        marker = family == :poisson ? GLLVModels.Poisson() : GLLVModels.Beta()
         controls = family == :poisson ? (;) : (; g_tol=1e-7, iterations=800)
         native = fit_gllvm(Y; family=marker, K=K, controls...)
-        theta = f -> vcat(f.β, GLLVM.pack_lambda(f.Λ), family == :beta ? log.(f.φ) : Float64[])
+        theta = f -> vcat(f.β, GLLVModels.pack_lambda(f.Λ), family == :beta ? log.(f.φ) : Float64[])
     end
     curvature = f -> family == :truncnb2 ? controls.hessian : f.hessian
     curvature_provenance = family == :truncnb2 ? "explicit_keyword_not_stored_in_fit" : "fitted_object"

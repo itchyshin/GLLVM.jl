@@ -1,6 +1,6 @@
 # Structure-aware factorisation for M = Λ Λ' + D with D = Diagonal(d).
 #
-# The Gaussian GLLVM marginal covariance has the form
+# The Gaussian GLLVModels marginal covariance has the form
 #     M = Λ Λ' + diag(d)            (p × p, rank-K dense plus diagonal)
 # with K ≪ p. Generic `cholesky(Symmetric(M))` is O(p³). Exploiting the
 # rank-K structure via Woodbury (Golub & Van Loan §4.2):

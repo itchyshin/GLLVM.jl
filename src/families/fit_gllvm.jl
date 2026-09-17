@@ -1,10 +1,10 @@
-# Unified GLLVM fit entry point — dispatches on the response family.
+# Unified GLLVModels fit entry point — dispatches on the response family.
 
 """
     fit_gllvm(Y; family = Normal(), K, num_lv = nothing,
               row_eff = :none, disp_group = nothing, pervar = false, kwargs...)
 
-Fit a GLLVM, dispatching on the response `family` — a Distributions.jl
+Fit a GLLVModels, dispatching on the response `family` — a Distributions.jl
 distribution used as a marker (the GLM.jl convention):
 
 - `Normal()`   → [`fit_gaussian_gllvm`](@ref) — closed-form Gaussian marginal
@@ -89,7 +89,7 @@ the plain-call behaviour when they are at their defaults (regression safe):
   - `NB1`              → [`fit_nb1_gllvm_grouped`](@ref) (per-species linear-variance `φ`)
   - `BetaBinom`        → [`fit_beta_binomial_gllvm_grouped`](@ref) (per-group Beta
     precision `φ`; the p×n `N` keyword is required)
-  - `GLLVM.TweedieED`  → [`fit_tweedie_gllvm_grouped`](@ref) (per-species `φ`, shared power)
+  - `GLLVModels.TweedieED`  → [`fit_tweedie_gllvm_grouped`](@ref) (per-species `φ`, shared power)
   - `TruncatedNegBin2` → [`fit_truncated_nbinom2_gllvm_pertrait`](@ref) with explicit
     `:species` or distinct positive group IDs; partial grouping is unsupported.
     Omitting `disp_group` preserves the shared-`r` default for this family.

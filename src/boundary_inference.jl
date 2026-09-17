@@ -5,7 +5,7 @@
 # boundary. Self & Liang (1987) / Stram & Lee (1994): the null LRT follows a χ̄²
 # MIXTURE of χ² distributions, not a single χ²_q.
 #
-# Use cases in GLLVM.jl: K-selection / over-factoring ("is the K-th latent factor real?"),
+# Use cases in GLLVModels.jl: K-selection / over-factoring ("is the K-th latent factor real?"),
 # and the RE variances (σ_row, the grouped/structured σ_u, the random-slope Σ_b diagonals,
 # the Poisson OLRE ψ_t) — all are variances tested against 0. Methods-sharing with DRM
 # (MIT/GPL clean).

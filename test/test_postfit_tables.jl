@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Statistics
 using Distributions: Normal, quantile
 
 # src/postfit_tables.jl — final missing-surface cluster (core070 spec §1),
@@ -23,7 +23,7 @@ using Distributions: Normal, quantile
         r = collect(-1.0:0.1:1.0)
         dd = a .* (r .- r0) .^ 2
         level = 0.95
-        thresh = quantile(GLLVM.Chisq(1), level)
+        thresh = quantile(GLLVModels.Chisq(1), level)
 
         out = profile_cross_rho_ci(r, dd; level = level)
         @test out.threshold ≈ thresh
@@ -506,7 +506,7 @@ using Distributions: Normal, quantile
         @test fit.converged
 
         s = summary(fit, y; X = X)
-        @test s isa GLLVM.GllvmSummary
+        @test s isa GLLVModels.GllvmSummary
         @test s.p == p
         @test s.K_B == K
         @test s.logLik ≈ fit.logLik
@@ -529,10 +529,10 @@ using Distributions: Normal, quantile
         # se_status three-way classification, unit-tested directly on the
         # underlying rule (a real degenerate-Hessian fixture is not a
         # reliable trigger to construct from a converged fit).
-        @test GLLVM._gllvm_se_status_from_se(Float64[]) === :ok
-        @test GLLVM._gllvm_se_status_from_se([1.0, NaN, 2.0]) === :ok  # one NA does not trip it
-        @test GLLVM._gllvm_se_status_from_se([NaN, NaN]) === :sdreport_nonfinite
-        @test GLLVM._gllvm_se_status_from_se([Inf, NaN]) === :sdreport_nonfinite
+        @test GLLVModels._gllvm_se_status_from_se(Float64[]) === :ok
+        @test GLLVModels._gllvm_se_status_from_se([1.0, NaN, 2.0]) === :ok  # one NA does not trip it
+        @test GLLVModels._gllvm_se_status_from_se([NaN, NaN]) === :sdreport_nonfinite
+        @test GLLVModels._gllvm_se_status_from_se([Inf, NaN]) === :sdreport_nonfinite
 
         # Base.show does not error.
         io = IOBuffer()

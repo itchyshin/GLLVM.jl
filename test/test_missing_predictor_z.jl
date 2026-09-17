@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics
+using GLLVModels, Test, LinearAlgebra, Random, Statistics
 
 # mi() covariate-model regressors: the site-level missing predictor x can carry
 # an explicit covariate model x_s ~ N(μ_x + Z_s·γ, σ_x²) (auxiliary site

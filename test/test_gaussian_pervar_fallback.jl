@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "Gaussian unique-effect AGHQ fallback" begin
     rng=MersenneTwister(8103103)
@@ -22,7 +22,7 @@ using GLLVM, Test, Random, Distributions
         @test isnan(f.integration.mode_gradient_max)
         @test f.loglik==base.loglik && f.β==base.β && f.Λ==base.Λ && f.ψ²==base.ψ²
         @test f.converged==base.converged && f.iterations==base.iterations
-        @test GLLVM._nparams(f)==GLLVM._nparams(base)
+        @test GLLVModels._nparams(f)==GLLVModels._nparams(base)
         @test occursin("other_random_blocks",sprint(show,f))
         @test occursin("Laplace",summary(f))
     end

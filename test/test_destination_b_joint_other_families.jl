@@ -5,7 +5,7 @@ if Base.find_package("StableRNGs") === nothing
         @test_broken false
     end
 else
-    using GLLVM
+    using GLLVModels
     using LinearAlgebra
     using Random
     using StableRNGs
@@ -24,10 +24,10 @@ function _destination_b_joint_other_geometry()
     index = collect(0:(n - 1))
     cluster2 = mod1.(3 .* index .+ (index .÷ per_unit), 11)
     terms = [
-        GLLVM.GroupingTerm(:unit; mode = :indep, common = true),
-        GLLVM.GroupingTerm(:unit_obs; mode = :indep, common = true),
-        GLLVM.GroupingTerm(:cluster; mode = :indep, common = true),
-        GLLVM.GroupingTerm(:cluster2; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:unit; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:unit_obs; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:cluster; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:cluster2; mode = :indep, common = true),
     ]
     return (; p=2, n, unit, unit_obs, cluster, cluster2, terms)
 end
@@ -58,7 +58,7 @@ function _destination_b_joint_binomial_fixture()
     Y = Matrix{Int}(undef, geometry.p, geometry.n)
     for observation in 1:geometry.n, trait in 1:geometry.p
         probability = inv(1 + exp(-eta[trait, observation]))
-        Y[trait, observation] = rand(rng, GLLVM.Binomial(trials[trait, observation], probability))
+        Y[trait, observation] = rand(rng, GLLVModels.Binomial(trials[trait, observation], probability))
     end
     return (; geometry..., Y, trials, mean_truth, scales)
 end
@@ -74,7 +74,7 @@ function _destination_b_joint_beta_fixture()
     for observation in 1:geometry.n, trait in 1:geometry.p
         mean_value = inv(1 + exp(-eta[trait, observation]))
         phi = precision_truth[trait]
-        Y[trait, observation] = rand(rng, GLLVM.Beta(mean_value * phi, (1 - mean_value) * phi))
+        Y[trait, observation] = rand(rng, GLLVModels.Beta(mean_value * phi, (1 - mean_value) * phi))
     end
     return (; geometry..., Y, mean_truth, scales, precision_truth)
 end
@@ -90,7 +90,7 @@ function _destination_b_joint_nb2_fixture()
     for observation in 1:geometry.n, trait in 1:geometry.p
         size_value = size_truth[trait]
         mean_value = exp(eta[trait, observation])
-        Y[trait, observation] = rand(rng, GLLVM.NegativeBinomial(
+        Y[trait, observation] = rand(rng, GLLVModels.NegativeBinomial(
             size_value, size_value / (size_value + mean_value)))
     end
     return (; geometry..., Y, mean_truth, scales, size_truth)
@@ -98,7 +98,7 @@ end
 
 function _assert_destination_b_joint_other_result(fit, intervals;
         require_source_intervals::Bool=true, require_hessian_pd::Bool=true)
-    @test fit isa GLLVM.GroupedNonGaussianFit
+    @test fit isa GLLVModels.GroupedNonGaussianFit
     @test fit.converged
     @test fit.stopping_reason === :converged
     @test fit.inner_status === :ok
@@ -121,7 +121,7 @@ function _assert_destination_b_joint_other_result(fit, intervals;
     end
     @test getfield.(fit.terms, :name) == collect(_DESTINATION_B_JOINT_SOURCES)
     for (term_index, source) in enumerate(_DESTINATION_B_JOINT_SOURCES)
-        Sigma = GLLVM.extract_Sigma(fit; level = source).Sigma
+        Sigma = GLLVModels.extract_Sigma(fit; level = source).Sigma
         @test Sigma == fit.term_covariances[term_index]
         @test all(isfinite, Sigma) && all(diag(Sigma) .>= 0.0)
         @test Sigma ≈ Diagonal(diag(Sigma)) atol = 1e-12
@@ -146,13 +146,13 @@ end
     fixture = _destination_b_joint_binomial_fixture()
     @test size(fixture.Y) == (2, 96)
     @test all(0 .<= fixture.Y .<= fixture.trials)
-    @test all(GLLVM._grouping_term_nparams(term, 2) == 1 for term in fixture.terms)
+    @test all(GLLVModels._grouping_term_nparams(term, 2) == 1 for term in fixture.terms)
     elapsed = @elapsed begin
-        fit = fit_gllvm(fixture.Y; family=GLLVM.Binomial(), N=fixture.trials,
+        fit = fit_gllvm(fixture.Y; family=GLLVModels.Binomial(), N=fixture.trials,
             grouping=fixture.terms, unit=fixture.unit, unit_obs=fixture.unit_obs,
             cluster=fixture.cluster, cluster2=fixture.cluster2,
             iterations=250, g_tol=1e-4)
-        intervals = GLLVM.grouped_nongaussian_intervals(fixture.Y, fit; N=fixture.trials,
+        intervals = GLLVModels.grouped_nongaussian_intervals(fixture.Y, fit; N=fixture.trials,
             unit=fixture.unit, unit_obs=fixture.unit_obs,
             cluster=fixture.cluster, cluster2=fixture.cluster2)
         _assert_destination_b_joint_other_result(fit, intervals)
@@ -166,11 +166,11 @@ end
     @test size(fixture.Y) == (2, 96)
     @test all(0 .< fixture.Y .< 1)
     elapsed = @elapsed begin
-        fit = fit_gllvm(fixture.Y; family=GLLVM.Beta(12.0, 1.0),
+        fit = fit_gllvm(fixture.Y; family=GLLVModels.Beta(12.0, 1.0),
             grouping=fixture.terms, unit=fixture.unit, unit_obs=fixture.unit_obs,
             cluster=fixture.cluster, cluster2=fixture.cluster2,
             iterations=250, g_tol=1e-4)
-        intervals = GLLVM.grouped_nongaussian_intervals(fixture.Y, fit;
+        intervals = GLLVModels.grouped_nongaussian_intervals(fixture.Y, fit;
             unit=fixture.unit, unit_obs=fixture.unit_obs,
             cluster=fixture.cluster, cluster2=fixture.cluster2)
         _assert_destination_b_joint_other_result(fit, intervals)
@@ -191,18 +191,18 @@ end
     @test size(fixture.Y) == (2, 96)
     @test all(>=(0), fixture.Y)
     elapsed = @elapsed begin
-        fit = fit_gllvm(fixture.Y; family=GLLVM.NegativeBinomial(1.5, 0.5),
+        fit = fit_gllvm(fixture.Y; family=GLLVModels.NegativeBinomial(1.5, 0.5),
             grouping=fixture.terms, unit=fixture.unit, unit_obs=fixture.unit_obs,
             cluster=fixture.cluster, cluster2=fixture.cluster2,
             iterations=250, g_tol=1e-4)
-        intervals = GLLVM.grouped_nongaussian_intervals(fixture.Y, fit;
+        intervals = GLLVModels.grouped_nongaussian_intervals(fixture.Y, fit;
             unit=fixture.unit, unit_obs=fixture.unit_obs,
             cluster=fixture.cluster, cluster2=fixture.cluster2)
         _assert_destination_b_joint_other_result(fit, intervals;
             require_source_intervals=false, require_hessian_pd=false)
         @test fit.dispersion_mode === :trait
         @test fit.dispersion isa Vector{Float64} && length(fit.dispersion) == 2
-        fitted = Dict(source => GLLVM.extract_Sigma(fit; level = source).Sigma[1, 1]
+        fitted = Dict(source => GLLVModels.extract_Sigma(fit; level = source).Sigma[1, 1]
             for source in _DESTINATION_B_JOINT_SOURCES)
         @test fitted[:unit] > 1e-4
         @test fitted[:unit_obs] < 1e-4

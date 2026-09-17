@@ -17,7 +17,7 @@
 # Usage:
 #   Rscript --vanilla tools/core070_inference_batch.R <repo-root> <destination>
 #
-# argv[1] <repo-root>   the GLLVM.jl checkout containing the pinned artifacts
+# argv[1] <repo-root>   the GLLVModels.jl checkout containing the pinned artifacts
 #                        (docs/dev-log/core070/inference-batch-contract.json,
 #                        docs/dev-log/core070/inference-routing-subset.json,
 #                        and the retained .unlazy/core070-aghq/inference-routing/

@@ -13,7 +13,7 @@
 # RCall dependency at all.
 #
 # No model fit anywhere in this batch: .gllvmTMB_normalize_aghq and
-# GLLVM._aghq_request are pure scalar-argument normalizers with no data
+# GLLVModels._aghq_request are pure scalar-argument normalizers with no data
 # dependency, so this whole batch runs in well under a minute.
 #
 # argv (matches the contract's runner.outer_argv and the --self-test local

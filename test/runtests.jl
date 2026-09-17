@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 
 # --- Deterministic Julia-suite sharding (GLLVM_TEST_SHARD="k/N") -----------
 # Splits the `include("test_*.jl")` calls below across N shards by file
@@ -38,16 +38,17 @@ _n_selected = _SHARD === nothing ? _n_test_files :
 _n_reported = _n_selected + (_RUN_QUALITY ? 1 : 0)
 
 println(_SHARD === nothing ?
-    "GLLVM tests: all files ($_n_reported files)" :
-    "GLLVM tests: shard $(_SHARD[1])/$(_SHARD[2]) — $_n_reported files")
+    "GLLVModels tests: all files ($_n_reported files)" :
+    "GLLVModels tests: shard $(_SHARD[1])/$(_SHARD[2]) — $_n_reported files")
 
 # All suites run under one outer testset so that a failure in any included file
 # does not abort the run before later files execute: included `@testset`s nest
 # (Test uses dynamic scoping), accumulate, and only this root throws at the end —
 # so one CI run reports every failure across all files, not just the first.
-@testset "GLLVM.jl" begin
+@testset "GLLVModels.jl" begin
     @testset "smoke" begin
         @test 1 + 1 == 2
+        @test GLLVModels.GLLVM === GLLVModels
     end
 
     _shard_include("test_shard_selection.jl")
@@ -142,7 +143,7 @@ println(_SHARD === nothing ?
 
     # Wired in 2026-08-25. These five were ORPHANED — present in test/, absent
     # from this file, and therefore never run in CI — while their sources
-    # (src/phylo_*_xlv.jl) ARE shipped, included at src/GLLVM.jl:103-107. That
+    # (src/phylo_*_xlv.jl) ARE shipped, included at src/GLLVModels.jl:103-107. That
     # is untested shipped code. All five pass; each was run individually first.
     #
     # test_phylo_gamma_xlv.jl is deliberately NOT wired in yet: its :123

@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 using SparseArrays
 
@@ -12,8 +12,8 @@ function _jpg_alias_public_fixture()
         terms=[GroupingTerm(:unit; mode=:indep, common=false)])
 end
 
-function _jpg_alias_as_stationary(fit::GLLVM.JointPhyloGroupedGaussianFit)
-    return GLLVM.JointPhyloGroupedGaussianFit(fit.beta, fit.loading,
+function _jpg_alias_as_stationary(fit::GLLVModels.JointPhyloGroupedGaussianFit)
+    return GLLVModels.JointPhyloGroupedGaussianFit(fit.beta, fit.loading,
         fit.phylo_unique_variance, fit.phylo_covariance, fit.residual_variance,
         fit.ordinary_covariances, fit.terms, fit.phy, fit.species_id,
         fit.parameters, fit.parameter_labels, fit.loglik, true, 0.0,
@@ -28,9 +28,9 @@ end
     fit = fit_gllvm(fixture.Y; phylo=fixture.phy, phylo_rank=1,
         phylo_mode=:barelowrank, species_id=fixture.species_id,
         grouping=fixture.terms, unit=fixture.unit, iterations=0, g_tol=1e-4)
-    @test fit isa GLLVM.JointPhyloGroupedGaussianFit
+    @test fit isa GLLVModels.JointPhyloGroupedGaussianFit
     @test isfinite(fit.loglik)
-    diagnostic = GLLVM._joint_covariance_identification(fit.phy, fit.species_id,
+    diagnostic = GLLVModels._joint_covariance_identification(fit.phy, fit.species_id,
         fit.terms, fit.incidences, fit.loading;
         phylo_unique_variance=fit.phylo_unique_variance)
     @test diagnostic.reason === :nonidentifiable
@@ -40,15 +40,15 @@ end
     # The point is deliberately zero-iteration, but the exact algebraic alias
     # must take priority over ordinary stationarity/curvature inference gates.
     stationary = _jpg_alias_as_stationary(fit)
-    @test GLLVM.joint_phylo_grouped_intervals(fit).status === :nonidentifiable
+    @test GLLVModels.joint_phylo_grouped_intervals(fit).status === :nonidentifiable
     @test summary(fit, fixture.Y).inference_status === :nonidentifiable
-    intervals = GLLVM.joint_phylo_grouped_intervals(stationary)
+    intervals = GLLVModels.joint_phylo_grouped_intervals(stationary)
     @test intervals.status === :nonidentifiable
     @test all(row -> row.status === :nonidentifiable, intervals.intervals)
-    @test_throws ArgumentError GLLVM.joint_phylo_grouped_intervals(stationary; level=1.0)
-    @test_throws ArgumentError GLLVM.joint_phylo_grouped_intervals(stationary;
+    @test_throws ArgumentError GLLVModels.joint_phylo_grouped_intervals(stationary; level=1.0)
+    @test_throws ArgumentError GLLVModels.joint_phylo_grouped_intervals(stationary;
         gradient_tolerance=0.0)
-    covariance_error = @test_throws ArgumentError GLLVM.StatsAPI.vcov(stationary)
+    covariance_error = @test_throws ArgumentError GLLVModels.StatsAPI.vcov(stationary)
     @test occursin("nonidentifiable", covariance_error.value.msg)
     report = summary(stationary, fixture.Y)
     @test report.inference_status === :nonidentifiable

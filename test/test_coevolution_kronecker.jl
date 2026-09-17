@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
+using GLLVModels, Test, LinearAlgebra, Random, Statistics, ForwardDiff
 
 # Faithful cross-lineage coevolution recovery via the Kronecker (matrix-normal)
 # fitter: Y (T × n) ~ MN(0, Λ Λᵀ + σ² I, K*), trait loadings Λ (T×d), species
@@ -31,9 +31,9 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
         cf = cholesky(Σf)
         v = vec(Y)
         brute = -0.5 * (T * n * log(2π) + logdet(cf) + dot(v, cf \ v))
-        V, dv = GLLVM._coevolution_kron_precompute(K)
+        V, dv = GLLVModels._coevolution_kron_precompute(K)
         θ = vcat(vec(Λ), log(σ))
-        nll = GLLVM._coevolution_kron_nll(θ, Y, V, dv, T, n, d)
+        nll = GLLVModels._coevolution_kron_nll(θ, Y, V, dv, T, n, d)
         @test -nll ≈ brute atol = 1e-7
     end
 
@@ -71,8 +71,8 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
         σ = 0.4
         Σ_T = Λ * Λ' + σ^2 * I
         Y = cholesky(Symmetric(Σ_T)).L * randn(T, n) * cholesky(Symmetric(K)).U
-        V, dv = GLLVM._coevolution_kron_precompute(K)
-        f(θ) = GLLVM._coevolution_kron_nll(θ, Y, V, dv, T, n, d)
+        V, dv = GLLVModels._coevolution_kron_precompute(K)
+        f(θ) = GLLVModels._coevolution_kron_nll(θ, Y, V, dv, T, n, d)
         θ = vcat(vec(Λ), log(σ))
         g_ad = ForwardDiff.gradient(f, θ)
         h = 1e-6

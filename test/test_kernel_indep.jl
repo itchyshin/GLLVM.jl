@@ -1,4 +1,4 @@
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 using Test
 using Random

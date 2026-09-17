@@ -2,7 +2,7 @@
 # core070_latent_bare_model.R through JuliaCall; it does not write evidence or
 # decide the cross-interface acceptance verdict.
 
-using GLLVM
+using GLLVModels
 using Distributions
 using LinearAlgebra
 using SHA
@@ -28,7 +28,7 @@ function _core070_latent_route(fit, source, data_sha256; route)
         "available" => true,
         "error" => "",
         "warnings" => String[],
-        "engine" => "GLLVM.jl",
+        "engine" => "GLLVModels.jl",
         "class" => string(typeof(fit)),
         "route" => route,
         "converged" => fit.converged,
@@ -76,10 +76,10 @@ function _core070_latent_bare_controls(Y, source)
     lambda = [0.4, -0.2, 0.3]
     Dict{String, Any}(
         "unique_true_is_distinct" => Dict(
-            "passed" => GLLVM._source_nparams(unique_source, p) !=
-                GLLVM._source_nparams(source, p),
-            "latent_free_coordinates" => GLLVM._source_nparams(source, p),
-            "latent_unique_free_coordinates" => GLLVM._source_nparams(unique_source, p),
+            "passed" => GLLVModels._source_nparams(unique_source, p) !=
+                GLLVModels._source_nparams(source, p),
+            "latent_free_coordinates" => GLLVModels._source_nparams(source, p),
+            "latent_unique_free_coordinates" => GLLVModels._source_nparams(unique_source, p),
             "reason" => "unique=true adds trait-specific diagonal coordinates",
         ),
         "rank_exceeds_traits" => _core070_error(() ->

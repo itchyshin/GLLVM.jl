@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions, ForwardDiff
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions, ForwardDiff
 
 # Track T4 — cross-family (non-Gaussian) coevolution. Drive the cross-lineage
 # kernel K* through a non-Gaussian Laplace so coevolution works for the GLM
@@ -81,7 +81,7 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions, ForwardDiff
         Y = float.(rand(0:5, T, n))
         N = ones(T, n)
 
-        ℓ_indep = sum(GLLVM._glm_logpdf(Poisson(), exp(β[t]), 1, Y[t, j])
+        ℓ_indep = sum(GLLVModels._glm_logpdf(Poisson(), exp(β[t]), 1, Y[t, j])
                       for t in 1:T, j in 1:n)
         ℓ_phy0 = coevolution_glm_marginal_loglik(Poisson(), Y, N, β, Λ, 1e-10, K;
                                                  link = LogLink())

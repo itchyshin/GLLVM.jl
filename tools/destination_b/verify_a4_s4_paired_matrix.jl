@@ -394,7 +394,7 @@ function verify_a4_s4_paired_matrix(document)
         "runner_recorded_unverified" ||
         _a4fail("Julia source hash cannot claim authentication or binding")
     route = _a4dict(_a4get(document, "route", "document"), "route")
-    _a4string(route, "entrypoint", "route") == "GLLVM.bridge_fit" || _a4fail("wrong Julia entrypoint")
+    _a4string(route, "entrypoint", "route") == "GLLVModels.bridge_fit" || _a4fail("wrong Julia entrypoint")
     _a4string(route, "phylo_model", "route") == "multivariate" || _a4fail("wrong phylo model")
     _a4bool(route, "private_candidate_only", "route") || _a4fail("route is not private")
     _a4string(route, "public_formula_admission", "route") == "closed" || _a4fail("public formula gate is not closed")

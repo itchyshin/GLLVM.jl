@@ -47,7 +47,7 @@ class AdmissionEvidence(unittest.TestCase):
                 elif defect=='stale-plan':(state/'plan.json').write_text('{}')
                 elif defect=='changed-archive':
                     archive=state/'source.tar'
-                    raw=archive.read_bytes();archive.write_bytes(raw.replace(b'using GLLVM',b'using FAULT',1))
+                    raw=archive.read_bytes();archive.write_bytes(raw.replace(b'using GLLVModels',b'using FAULT',1))
                     self.assertNotEqual(raw,archive.read_bytes())
                 elif defect=='forged-output':
                     record=state/'attempt1/admission.toml';record.write_text(record.read_text()+'\n# forged\n')

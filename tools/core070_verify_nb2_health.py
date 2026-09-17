@@ -7,7 +7,7 @@ def read(p):return tomllib.loads(p.read_text())
 def checks(r):
     assert r['fixture_sha256']==sha(ROOT/'test/parity/test_negbin_parity.jl')
     source=(ROOT/'test/parity/test_negbin_parity.jl').read_text()
-    helpers=source[source.index('function _rand_poisson'):source.index('@testset "NB2 GLLVM')]
+    helpers=source[source.index('function _rand_poisson'):source.index('@testset "NB2 GLLVModels')]
     dgp=source[source.index('    Random.seed!(45)'):source.index('    jl_fit =')]
     assert r['dgp_sha256']==hashlib.sha256((helpers+dgp).encode()).hexdigest()
     for k in ['native_parameters','native_gradient','native_gradient_double_step','r_parameters','r_native_parameters','r_gradient']:

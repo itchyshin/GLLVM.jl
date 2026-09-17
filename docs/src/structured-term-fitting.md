@@ -1,7 +1,7 @@
 # Structured-term fitting
 
 `fit_gaussian_structured` is a public entry point (maintainer decision
-round2-3 #6) for GLLVM.jl's structured-covariance source grammar — the same
+round2-3 #6) for GLLVModels.jl's structured-covariance source grammar — the same
 `indep`/`dep`/`scalar`/`kernel_indep`/`kernel_dep`/`kernel_scalar`/
 `kernel_latent` term vocabulary that `fit_gaussian_sources` already fits, now
 reachable without hand-assembling `SourceCovariance` objects yourself.
@@ -11,9 +11,9 @@ reachable without hand-assembling `SourceCovariance` objects yourself.
 StatsModels' `@formula` macro parses its right-hand side into `Term`s at
 macro-expansion time, and it has no hook for the `lhs | group`-headed call
 syntax these structured terms use (`indep(0 + trait | g)`, `kernel_latent(g,
-K = K, d = 2)`, ...) — the bar is a parse error before any GLLVM code runs.
+K = K, d = 2)`, ...) — the bar is a parse error before any GLLVModels code runs.
 `structure=` sidesteps this: each term is a raw, unevaluated `Expr` the caller
-quotes with `:(...)`, and GLLVM's own recognizer walks the `Expr` tree. A
+quotes with `:(...)`, and GLLVModels's own recognizer walks the `Expr` tree. A
 macro front door that lets you write `structure(indep(0 + trait | g))`
 directly, without quoting, is a separate, later, maintainer-approved grammar
 decision — this wrapper does not attempt it.

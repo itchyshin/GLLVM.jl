@@ -16,7 +16,7 @@ using Printf: @sprintf
 """
     GllvmCoefTable
 
-Tidy coefficient table for a non-Gaussian family GLLVM fit, as produced by
+Tidy coefficient table for a non-Gaussian family GLLVModels fit, as produced by
 [`coef_table`](@ref). One row per parameter, with the columns a regression
 summary conventionally reports:
 
@@ -46,7 +46,7 @@ end
 """
     coef_table(fit, Y; level = 0.95, kwargs...) -> GllvmCoefTable
 
-Tidy inference table for a non-Gaussian family GLLVM fit — the headline summary
+Tidy inference table for a non-Gaussian family GLLVModels fit — the headline summary
 of a fitted model. Internally calls `confint(fit, Y; method = :wald,
 level = level, kwargs...)` (see [`confint`](@ref)) for the estimates, standard
 errors, and confidence bounds, then adds the two standard regression columns:

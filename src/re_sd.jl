@@ -67,7 +67,7 @@ using LinearAlgebra
     latent_score_sd(fit::GllvmFit, y; X=nothing, rotate=true) -> Matrix{Float64}
 
 Posterior (conditional-on-θ̂) standard deviations of the latent factor scores
-for a Gaussian GLLVM fit. Returns an `n_sites × K` matrix. The Gaussian
+for a Gaussian GLLVModels fit. Returns an `n_sites × K` matrix. The Gaussian
 conditional covariance `M = I_K + Λ' Ψ⁻¹ Λ` (`Ψ = Σ_y − ΛΛ'`) does not
 depend on the site, so every row is identical.
 

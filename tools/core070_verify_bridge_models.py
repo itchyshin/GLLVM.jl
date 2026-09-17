@@ -101,7 +101,7 @@ def verify(self_test=False):
     need('BRIDGE_MODEL_RESULTS_SHA256 '+sha(path)+'  bridge-model-results.json' in log,'unbound result')
     need(log.count('CORE070_PUBLIC_BRIDGE_MODELS_PASS')==1,'missing success marker')
     runtime=json.loads((folder/'bridge-runtime.json').read_text())
-    need(runtime['GLLVM_source']==plan['cwd']+'/src/GLLVM.jl' and
+    need(runtime['GLLVM_source']==plan['cwd']+'/src/GLLVModels.jl' and
          runtime['julia_threads']==runtime['blas_threads']==1,'wrong runtime')
     for phase in ['before','after']:
         dependency=folder/f'bridge-runtime-dependencies-{phase}.json'

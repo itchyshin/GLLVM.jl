@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
 
 # Louis (1982) / Supplemented EM (Meng & Rubin 1991) observed information at
 # the EM MLE — see `em_observed_information` in `src/em_phylo.jl`. The function
@@ -7,17 +7,17 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistic
 # σ_ε's SE via the delta method (the only non-identity link in the packing).
 #
 # This test pulls in the EM file directly (matches `test_em_phylo.jl`'s
-# convention: em_phylo.jl is NOT wired into the GLLVM module). Guard the
+# convention: em_phylo.jl is NOT wired into the GLLVModels module). Guard the
 # include so that when the full suite runs (test_em_phylo.jl already pulled
 # em_phylo.jl into Main), we reuse the existing definitions rather than
 # re-`include`-ing — a second include rebinds the file's types in Main and
-# breaks `GLLVM.AugmentedPhy` method dispatch.
+# breaks `GLLVModels.AugmentedPhy` method dispatch.
 isdefined(Main, :em_observed_information) ||
     include(joinpath(@__DIR__, "..", "src", "em_phylo.jl"))
 
 function _sim_phylo_unique_louis(tree, Λ_B, σ_phy, σ_eps, n; seed = 0)
     Random.seed!(seed)
-    Σ_phy = GLLVM.sigma_phy_dense(tree; σ²_phy = 1.0)
+    Σ_phy = GLLVModels.sigma_phy_dense(tree; σ²_phy = 1.0)
     p, K_B = size(Λ_B)
     η_B = randn(K_B, n)
     φ   = cholesky(Symmetric(Σ_phy)).L * randn(p)
@@ -35,7 +35,7 @@ end
     # with 28% of components negative. Starting from the truth converges to the same
     # point, so it is not a basin artefact. See docs/dev-log/check-log.md 2026-08-26
     # and docs/dev-log/pending/sigma-phy-recovery-ademp.jl.
-    tree1   = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    tree1   = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p1      = tree1.n_leaves
     Λ_B1    = reshape([0.8, 0.6, 0.4, -0.3, 0.5, -0.2], p1, 1)
     σ_phy1  = fill(0.9, p1)
@@ -98,7 +98,7 @@ end
     end
 
     # -- p = 10 fixture (larger) -----------------------------------------------
-    tree2  = GLLVM.augmented_phy("(((((A:0.2,B:0.2):0.2,C:0.4):0.2,(D:0.3,E:0.3):0.3):0.1," *
+    tree2  = GLLVModels.augmented_phy("(((((A:0.2,B:0.2):0.2,C:0.4):0.2,(D:0.3,E:0.3):0.3):0.1," *
                            "((F:0.2,G:0.2):0.3,H:0.5):0.1):0.1,(I:0.4,J:0.4):0.2);")
     p2     = tree2.n_leaves
     Λ_B2   = reshape([0.7, 0.5, -0.4, 0.3, 0.6, -0.5, 0.4, 0.2, 0.8, -0.3], p2, 1)

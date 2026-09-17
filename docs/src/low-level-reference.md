@@ -9,32 +9,32 @@ inference for every combination.
 ## Additional interfaces
 
 ```@docs
-GLLVM.init_theta_rr
-GLLVM.profile_nparams
-GLLVM.ordinal_loglik_site
-GLLVM.quadratic_loglik_site
-GLLVM.default_link(::GLLVM.Distributions.Normal)
-Base.summary(::GLLVM.GllvmFit)
-GLLVM.vcov(::Union{GLLVM.GroupedGaussianFit,GLLVM.GroupedNonGaussianFit,GLLVM.PrecisionMultivariateFit})
-GLLVM.stderror(::Union{GLLVM.GroupedGaussianFit,GLLVM.GroupedNonGaussianFit,GLLVM.PrecisionMultivariateFit})
-Base.summary(::Union{GLLVM.GroupedGaussianFit,GLLVM.GroupedNonGaussianFit,GLLVM.PrecisionMultivariateFit}, ::AbstractMatrix)
-Base.summary(::GLLVM.JointPhyloGroupedGaussianFit, ::AbstractMatrix)
-GLLVM.ldiv!(::AbstractVector, ::GLLVM.LowRankPlusDiagChol, ::AbstractVector)
+GLLVModels.init_theta_rr
+GLLVModels.profile_nparams
+GLLVModels.ordinal_loglik_site
+GLLVModels.quadratic_loglik_site
+GLLVModels.default_link(::GLLVModels.Distributions.Normal)
+Base.summary(::GLLVModels.GllvmFit)
+GLLVModels.vcov(::Union{GLLVModels.GroupedGaussianFit,GLLVModels.GroupedNonGaussianFit,GLLVModels.PrecisionMultivariateFit})
+GLLVModels.stderror(::Union{GLLVModels.GroupedGaussianFit,GLLVModels.GroupedNonGaussianFit,GLLVModels.PrecisionMultivariateFit})
+Base.summary(::Union{GLLVModels.GroupedGaussianFit,GLLVModels.GroupedNonGaussianFit,GLLVModels.PrecisionMultivariateFit}, ::AbstractMatrix)
+Base.summary(::GLLVModels.JointPhyloGroupedGaussianFit, ::AbstractMatrix)
+GLLVModels.ldiv!(::AbstractVector, ::GLLVModels.LowRankPlusDiagChol, ::AbstractVector)
 ```
 
 ## Internal implementation notes
 
 ```@docs
-GLLVM._grouped_indep_variance_basis_gram
-GLLVM._grouped_indep_variance_profile_objective
-GLLVM._grouped_profile_refitter
-GLLVM._profile_invert_callback
-GLLVM._grouped_gaussian_variance_profile
-GLLVM.joint_phylo_grouped_gaussian_loglik
-GLLVM.fit_joint_phylo_grouped_gaussian
-GLLVM._joint_covariance_identification
-GLLVM._validate_precision_fit_input
-GLLVM.joint_phylo_grouped_population_predict
+GLLVModels._grouped_indep_variance_basis_gram
+GLLVModels._grouped_indep_variance_profile_objective
+GLLVModels._grouped_profile_refitter
+GLLVModels._profile_invert_callback
+GLLVModels._grouped_gaussian_variance_profile
+GLLVModels.joint_phylo_grouped_gaussian_loglik
+GLLVModels.fit_joint_phylo_grouped_gaussian
+GLLVModels._joint_covariance_identification
+GLLVModels._validate_precision_fit_input
+GLLVModels.joint_phylo_grouped_population_predict
 ```
 
 Names beginning with an underscore are internal. They can change without the
@@ -43,36 +43,36 @@ are not the public Stage 1a AGHQ estimator. Source covariance evaluation is not 
 complete source-model fitter.
 
 ```@docs
-GLLVM._mixed_family_layout
-GLLVM._phylo_beta_xlv_marginal_loglik
-GLLVM._phylo_binomial_xlv_marginal_loglik
-GLLVM._fit_phylo_poisson_xlv
-GLLVM._laplace_saturation_health
-GLLVM._default_hessian
-GLLVM._glm_obs_weight
-GLLVM._aghq_kd_bound
-GLLVM._fit_phylo_binomial_xlv
-GLLVM._phylo_gamma_xlv_marginal_loglik
-GLLVM._fit_phylo_nb_xlv
-GLLVM._phylo_poisson_xlv_marginal_loglik
-GLLVM._eta_realized_lv_effects
-GLLVM._glm_weight_matches_observed
-GLLVM._gaussian_gls
-GLLVM._phylo_nb_xlv_marginal_loglik
-GLLVM._em_map_phylo
-GLLVM._node_depths
-GLLVM._spde_latent_mode
-GLLVM._fit_phylo_ordinal_xlv
-GLLVM._fit_phylo_gamma_xlv
-GLLVM._fit_verdict
-GLLVM._aghq_gh_normal
-GLLVM._tweedie_verdict
-GLLVM._mixed_unpack
-GLLVM._phylo_ordinal_xlv_marginal_loglik
-GLLVM._gauss_hermite
-GLLVM._fit_phylo_beta_xlv
-GLLVM._gaussian_source_loglik
-GLLVM._source_fixed_sigma
+GLLVModels._mixed_family_layout
+GLLVModels._phylo_beta_xlv_marginal_loglik
+GLLVModels._phylo_binomial_xlv_marginal_loglik
+GLLVModels._fit_phylo_poisson_xlv
+GLLVModels._laplace_saturation_health
+GLLVModels._default_hessian
+GLLVModels._glm_obs_weight
+GLLVModels._aghq_kd_bound
+GLLVModels._fit_phylo_binomial_xlv
+GLLVModels._phylo_gamma_xlv_marginal_loglik
+GLLVModels._fit_phylo_nb_xlv
+GLLVModels._phylo_poisson_xlv_marginal_loglik
+GLLVModels._eta_realized_lv_effects
+GLLVModels._glm_weight_matches_observed
+GLLVModels._gaussian_gls
+GLLVModels._phylo_nb_xlv_marginal_loglik
+GLLVModels._em_map_phylo
+GLLVModels._node_depths
+GLLVModels._spde_latent_mode
+GLLVModels._fit_phylo_ordinal_xlv
+GLLVModels._fit_phylo_gamma_xlv
+GLLVModels._fit_verdict
+GLLVModels._aghq_gh_normal
+GLLVModels._tweedie_verdict
+GLLVModels._mixed_unpack
+GLLVModels._phylo_ordinal_xlv_marginal_loglik
+GLLVModels._gauss_hermite
+GLLVModels._fit_phylo_beta_xlv
+GLLVModels._gaussian_source_loglik
+GLLVModels._source_fixed_sigma
 ```
 
 ## Internal AGHQ adaptation and optimization
@@ -82,17 +82,17 @@ Poisson, binomial and Gaussian candidates. They are internal implementation inte
 checks alone does not establish public parity for other response families.
 
 ```@docs
-GLLVM.AGHQAdaptation
-GLLVM.aghq_adaptation
-GLLVM.aghq_frozen_logintegral
-GLLVM.aghq_poisson_problem
-GLLVM.aghq_binomial_problem
-GLLVM.aghq_gaussian_problem
-GLLVM.aghq_outer_optimize
-GLLVM.aghq_multistart_optimize
-GLLVM._fit_poisson_gllvm_laplace
-GLLVM._fit_binomial_gllvm_laplace
-GLLVM._fit_gaussian_gllvm_exact
+GLLVModels.AGHQAdaptation
+GLLVModels.aghq_adaptation
+GLLVModels.aghq_frozen_logintegral
+GLLVModels.aghq_poisson_problem
+GLLVModels.aghq_binomial_problem
+GLLVModels.aghq_gaussian_problem
+GLLVModels.aghq_outer_optimize
+GLLVModels.aghq_multistart_optimize
+GLLVModels._fit_poisson_gllvm_laplace
+GLLVModels._fit_binomial_gllvm_laplace
+GLLVModels._fit_gaussian_gllvm_exact
 ```
 
 ## Structured-term grammar recognizer
@@ -105,21 +105,21 @@ syntax these terms use, so this recognizer is not built on `@formula`).
 Not exported; can change without notice.
 
 ```@docs
-GLLVM.SourceTermSpec
-GLLVM._recognize_source_term
-GLLVM._source_term_covariance
-GLLVM._check_source_term_exclusions
-GLLVM._read_literal_flag
-GLLVM._assert_no_augmented_lhs
-GLLVM._resolve_kernel
-GLLVM._fit_gaussian_structured_sources
+GLLVModels.SourceTermSpec
+GLLVModels._recognize_source_term
+GLLVModels._source_term_covariance
+GLLVModels._check_source_term_exclusions
+GLLVModels._read_literal_flag
+GLLVModels._assert_no_augmented_lhs
+GLLVModels._resolve_kernel
+GLLVModels._fit_gaussian_structured_sources
 ```
 
 ## Other internal helpers
 
 ```@docs
-GLLVM._psd_sqrt_factor
-GLLVM.LaplaceModeWorkspace
+GLLVModels._psd_sqrt_factor
+GLLVModels.LaplaceModeWorkspace
 ```
 
 ## Cross-referenced internal helpers without a docstring
@@ -133,7 +133,7 @@ file directly for their implementation.
 ### `_laplace_mode`
 
 The inner-loop dense-Laplace mode finder for the non-Gaussian families
-(`src/families/laplace.jl`, `src/families/binomial.jl`). [`GLLVM.LaplaceModeWorkspace`](@ref)
+(`src/families/laplace.jl`, `src/families/binomial.jl`). [`GLLVModels.LaplaceModeWorkspace`](@ref)
 holds its reusable buffers.
 
 ### `_profile_ci_bounded`
@@ -165,23 +165,23 @@ Use the documented unified Gaussian route in [Joint named grouping models](group
 for the currently exposed workflow. Unexported functions remain internal.
 
 ```@docs
-GLLVM._precision_multivariate_nll
-GLLVM.joint_grouped_laplace_loglik
-GLLVM._pmv_phylogenetic_signal
-GLLVM.fit_grouped_gaussian
-GLLVM._grouped_gaussian_nll
-GLLVM.fit_precision_multivariate
-GLLVM._grouped_gaussian_factor_nll
-GLLVM._precision_multivariate_unpack
-GLLVM.multivariate_phylo_precision_loglik
-GLLVM._marginal_target_intervals
-GLLVM.fit_grouped_nongaussian
-GLLVM.grouped_nongaussian_zero_effect_predict
-GLLVM.destination_b_population_predict
-GLLVM.grouped_trait_design
-GLLVM._grouped_laplace_design
-GLLVM._grouped_gaussian_objective
-GLLVM.JointGroupedLaplaceResult
-GLLVM._joint_grouped_state
-GLLVM._bridge_fit_precision_multivariate
+GLLVModels._precision_multivariate_nll
+GLLVModels.joint_grouped_laplace_loglik
+GLLVModels._pmv_phylogenetic_signal
+GLLVModels.fit_grouped_gaussian
+GLLVModels._grouped_gaussian_nll
+GLLVModels.fit_precision_multivariate
+GLLVModels._grouped_gaussian_factor_nll
+GLLVModels._precision_multivariate_unpack
+GLLVModels.multivariate_phylo_precision_loglik
+GLLVModels._marginal_target_intervals
+GLLVModels.fit_grouped_nongaussian
+GLLVModels.grouped_nongaussian_zero_effect_predict
+GLLVModels.destination_b_population_predict
+GLLVModels.grouped_trait_design
+GLLVModels._grouped_laplace_design
+GLLVModels._grouped_gaussian_objective
+GLLVModels.JointGroupedLaplaceResult
+GLLVModels._joint_grouped_state
+GLLVModels._bridge_fit_precision_multivariate
 ```

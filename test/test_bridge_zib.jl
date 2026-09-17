@@ -19,7 +19,7 @@ using Test
 using Random
 using LinearAlgebra
 using Distributions
-using GLLVM
+using GLLVModels
 
 # Zero-inflated binomial draw with a shared scalar trials count.
 function _bzib_sim(p, n, K, N; seed = 1)
@@ -55,34 +55,34 @@ end
     @testset "family key + list membership" begin
         for alias in ("zib", "zibinomial", "zero_inflated_binomial", "zi_binomial",
                       "ZIB", "  Zero_Inflated_Binomial  ")
-            @test GLLVM._bridge_family_key(alias) == "zib"
+            @test GLLVModels._bridge_family_key(alias) == "zib"
         end
-        @test "zib" in GLLVM._BRIDGE_ONEPART_FAMILIES
+        @test "zib" in GLLVModels._BRIDGE_ONEPART_FAMILIES
         # No-X only: the X arm is a separate arc gated on a +X CI engine.
-        @test !("zib" in GLLVM._BRIDGE_X_FAMILIES)
+        @test !("zib" in GLLVModels._BRIDGE_X_FAMILIES)
         # ZIB's N is one shared scalar, NOT the per-observation cbind contract.
-        @test !("zib" in GLLVM._BRIDGE_TRIALS_FAMILIES)
+        @test !("zib" in GLLVModels._BRIDGE_TRIALS_FAMILIES)
         # fit_zib_gllvm has no `mask` kwarg.
-        @test !("zib" in GLLVM._BRIDGE_MASK_FAMILIES)
-        @test !("zib" in GLLVM._BRIDGE_MASK_CI_FAMILIES)
+        @test !("zib" in GLLVModels._BRIDGE_MASK_FAMILIES)
+        @test !("zib" in GLLVModels._BRIDGE_MASK_CI_FAMILIES)
         # No-X CI is real, so zib must NOT be fenced out of the CI columns.
-        @test !("zib" in GLLVM._BRIDGE_NO_CI_FAMILIES)
+        @test !("zib" in GLLVModels._BRIDGE_NO_CI_FAMILIES)
         # No simulate(::ZIBFit) method exists — shared with zip/zinb.
-        @test "zib" in GLLVM._BRIDGE_NO_SIMULATE_FAMILIES
-        @test !hasmethod(GLLVM.simulate, Tuple{GLLVM.ZIBFit, Int})
+        @test "zib" in GLLVModels._BRIDGE_NO_SIMULATE_FAMILIES
+        @test !hasmethod(GLLVModels.simulate, Tuple{GLLVModels.ZIBFit, Int})
     end
 
     # -- B2: trials normalisation, without running a fit ------------------------
     @testset "shared scalar trials contract" begin
-        @test GLLVM._bridge_zib_trials(6, 3, 5) == 6
-        @test GLLVM._bridge_zib_trials(6.0, 3, 5) == 6
-        @test GLLVM._bridge_zib_trials(fill(6, 3, 5), 3, 5) == 6
-        @test GLLVM._bridge_zib_trials(fill(6.0, 3, 5), 3, 5) == 6
+        @test GLLVModels._bridge_zib_trials(6, 3, 5) == 6
+        @test GLLVModels._bridge_zib_trials(6.0, 3, 5) == 6
+        @test GLLVModels._bridge_zib_trials(fill(6, 3, 5), 3, 5) == 6
+        @test GLLVModels._bridge_zib_trials(fill(6.0, 3, 5), 3, 5) == 6
 
         # N is REQUIRED: the binomial `nothing → 1` default would silently select
         # the zero-inflated Bernoulli, where (βz, βc) is exactly aliased.
         err = try
-            GLLVM._bridge_zib_trials(nothing, 3, 5); nothing
+            GLLVModels._bridge_zib_trials(nothing, 3, 5); nothing
         catch e
             e
         end
@@ -93,7 +93,7 @@ end
         # Unequal entries error rather than collapsing to N[1, 1].
         Nbad = fill(6, 3, 5); Nbad[2, 3] = 7
         err2 = try
-            GLLVM._bridge_zib_trials(Nbad, 3, 5); nothing
+            GLLVModels._bridge_zib_trials(Nbad, 3, 5); nothing
         catch e
             e
         end
@@ -101,8 +101,8 @@ end
         @test occursin("ONE shared scalar trials count N", err2.msg)
         @test occursin("not the ZIB contract", err2.msg)
 
-        @test_throws ArgumentError GLLVM._bridge_zib_trials(0, 3, 5)
-        @test_throws ArgumentError GLLVM._bridge_zib_trials(fill(6, 2, 5), 3, 5)
+        @test_throws ArgumentError GLLVModels._bridge_zib_trials(0, 3, 5)
+        @test_throws ArgumentError GLLVModels._bridge_zib_trials(fill(6, 2, 5), 3, 5)
     end
 
     # -- B1/B2: live no-X route vs the native fitter ----------------------------
@@ -123,9 +123,9 @@ end
         @test br.trials == Ntr
         @test br.alpha ≈ oracle.βc atol = 1e-8
         @test br.beta_zero ≈ oracle.βz atol = 1e-8
-        @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+        @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
         @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
-        @test br.df == GLLVM._nparams(oracle)
+        @test br.df == GLLVModels._nparams(oracle)
         @test all(isnan, br.dispersion)      # ZIB carries no dispersion parameter
         @test isnan(br.sigma_eps)
         @test br.link == fill("LogitLink", 3)
@@ -191,7 +191,7 @@ end
     @testset "no-X Wald CI matches native confint" begin
         Ys, _, _, _ = _bzib_sim(3, 35, 1, Ntr; seed = 9402)
         oracle = fit_zib_gllvm(Ys; K = 1, N = Ntr)
-        nat = GLLVM.confint(oracle, Float64.(Ys); method = :wald)
+        nat = GLLVModels.confint(oracle, Float64.(Ys); method = :wald)
         br = bridge_fit(; y = Float64.(Ys), family = "zib", d = 1, N = Ntr,
                         options = Dict("ci_method" => "wald"))
         @test br.ci_method == "wald"

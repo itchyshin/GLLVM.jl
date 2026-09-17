@@ -1,13 +1,13 @@
-using GLLVM,Test,Random,LinearAlgebra,Distributions
+using GLLVModels,Test,Random,LinearAlgebra,Distributions
 @testset "GU public Gaussian AGHQ" begin
-    @test hasfield(GLLVM.GllvmFit,:integration)
-    if hasfield(GLLVM.GllvmFit,:integration)
+    @test hasfield(GLLVModels.GllvmFit,:integration)
+    if hasfield(GLLVModels.GllvmFit,:integration)
         rng=MersenneTwister(714);p=3;n=36;K=1
         L=reshape([.8,.4,-.3],3,1)
         Y=L*randn(rng,K,n)+.7randn(rng,p,n)
         base=fit_gaussian_gllvm(Y;K=K)
         @test base.integration===nothing
-        old=GLLVM.GllvmFit(base.model,base.pars,base.logLik,base.n_iter,base.converged,base.optim_result,base.cputime)
+        old=GLLVModels.GllvmFit(base.model,base.pars,base.logLik,base.n_iter,base.converged,base.optim_result,base.cputime)
         @test old.integration===nothing
         one=fit_gaussian_gllvm(Y;K=K,aghq=1)
         @test one.integration.actual==:laplace && one.integration.reason==:laplace_rule
@@ -17,7 +17,7 @@ using GLLVM,Test,Random,LinearAlgebra,Distributions
         @test f.converged && f.integration.mode_gradient_max<1e-7
         @test isempty(f.pars.β)
         exact_record=fit_gaussian_gllvm(Y;K=K,mask=trues(p,n),aghq=false)
-        replay=GLLVM._gaussian_record_refit(exact_record,simulate(exact_record,n;rng=MersenneTwister(97)))
+        replay=GLLVModels._gaussian_record_refit(exact_record,simulate(exact_record,n;rng=MersenneTwister(97)))
         @test replay!==nothing
         if replay!==nothing
             @test replay.integration.requested===:off && replay.integration.actual===:laplace
@@ -27,16 +27,16 @@ using GLLVM,Test,Random,LinearAlgebra,Distributions
         @test abs(allfixed.logLik-f.logLik)<1e-6
         @test abs(f.logLik-base.logLik)<1e-6
         @test length(f.integration.result.starts)==2
-        @test isdefined(GLLVM,:_gaussian_record_ci)
-        if isdefined(GLLVM,:_gaussian_record_ci)
+        @test isdefined(GLLVModels,:_gaussian_record_ci)
+        if isdefined(GLLVModels,:_gaussian_record_ci)
             ci=confint(f,Y)
             @test ci.objective==:aghq && ci.gradient_kind==:frozen_surrogate
             @test ci.pd_hessian && all(isfinite,ci.se)
-            ad=GLLVM._gaussian_record_ci(f,Y)
+            ad=GLLVModels._gaussian_record_ci(f,Y)
             probe=copy(ad.θ);probe[1]+=.2
-            @test GLLVM._confint_reconstruct_nll(f,Y,nothing,nothing)(probe)==ad.nll(probe)
-            H=GLLVM.ForwardDiff.hessian(ad.nll,ad.θ)
-            @test maximum(abs.(H-GLLVM._fd_hessian(ad.nll,ad.θ)))<1e-3
+            @test GLLVModels._confint_reconstruct_nll(f,Y,nothing,nothing)(probe)==ad.nll(probe)
+            H=GLLVModels.ForwardDiff.hessian(ad.nll,ad.θ)
+            @test maximum(abs.(H-GLLVModels._fd_hessian(ad.nll,ad.θ)))<1e-3
             @test Matrix(vcov(f,Y)) ≈ inv(H) atol=1e-6
             @test_throws ArgumentError confint(f,Y;objective=:laplace)
             @test_throws ArgumentError confint(f,Y.+.1)
@@ -50,18 +50,18 @@ using GLLVM,Test,Random,LinearAlgebra,Distributions
             println("GU_BOOTSTRAP_ATTEMPTS ",repr((converged=boot.converged,replicates=boot.replicates)))
             @test all(b->boot.converged[b] || all(isnan,boot.replicates[b,:]),1:2)
             @test all(isnan,boot.lower) # functional smoke cannot support calibrated intervals
-            bd=GLLVM.bootstrap_ci_derived(f,fb->fb.integration.actual===:aghq ? fb.pars.σ_eps : NaN;y=Y,n_boot=2,seed=13)
+            bd=GLLVModels.bootstrap_ci_derived(f,fb->fb.integration.actual===:aghq ? fb.pars.σ_eps : NaN;y=Y,n_boot=2,seed=13)
             @test bd.n_valid>=1 && length(bd.replicates)==2
-            packed=GLLVM.bootstrap_ci_derived(f,t->exp(t[1]);y=Y,n_boot=2,seed=13)
+            packed=GLLVModels.bootstrap_ci_derived(f,t->exp(t[1]);y=Y,n_boot=2,seed=13)
             @test packed.replicates≈bd.replicates
-            ll,ok,tc,_=GLLVM._derived_refit_with_fixed(f,t->exp(t[1]),.9f.pars.σ_eps,Y,nothing,nothing)
+            ll,ok,tc,_=GLLVModels._derived_refit_with_fixed(f,t->exp(t[1]),.9f.pars.σ_eps,Y,nothing,nothing)
             @test ok && abs(ll+ad.nll(tc))<1e-8
-            @test GLLVM._tw_sigma_from_hessian(f,Y,nothing,nothing)[1]≈vcov(f,Y)
+            @test GLLVModels._tw_sigma_from_hessian(f,Y,nothing,nothing)[1]≈vcov(f,Y)
             nb=bootstrap_ci(f;y=Y,n_boot=2,seed=13,parms="sigma_eps")
             @test size(nb.replicates)==(2,1) && nb.estimate==f.pars.θ_packed[1:1]
             @test_throws ArgumentError bootstrap_ci(f;y=Y,n_sites=n+1,n_boot=2)
         end
-        @test f.integration.input_digest==GLLVM._aghq_data_digest(f.integration.data)
+        @test f.integration.input_digest==GLLVModels._aghq_data_digest(f.integration.data)
         @test getLV(f,Y;rotate=false) ≈ getLV(base,Y;rotate=false) atol=1e-5
         @test predict(f,Y) ≈ predict(base,Y) atol=1e-5
         @test all(iszero,getLV(f,Y;component=:mean))
@@ -90,7 +90,7 @@ using GLLVM,Test,Random,LinearAlgebra,Distributions
         fx=fit_gaussian_gllvm(Yx;K=K,aghq=3,X=X,β_fixed=[false,true],offset=off)
         @test fx.pars.β[2]==0 && length(fx.pars.θ_packed)==5
         @test length(coef(fx))==2
-        @test GLLVM._communality_packed(fx.pars.θ_packed,GLLVM._derived_spec(fx),1)≈communality(fx)[1]
+        @test GLLVModels._communality_packed(fx.pars.θ_packed,GLLVModels._derived_spec(fx),1)≈communality(fx)[1]
         @test size(predict(fx,Yx))==size(Y)
         @test size(simulate(fx,n;rng=MersenneTwister(2)))==size(Y)
         @test_throws ArgumentError simulate(fx,n+1)
@@ -101,10 +101,10 @@ using GLLVM,Test,Random,LinearAlgebra,Distributions
         @test fm.integration.data.mask[1,2]==false && fm.integration.data.mask[2,3]==false
         @test size(predict(fm,ym))==size(Y)
         @test isnan(residuals(fm,ym)[1,2]) && isnan(residuals(fm,ym)[2,3])
-        q,same=GLLVM._gaussian_record_problem(fm,ym;require_identity=true)
+        q,same=GLLVModels._gaussian_record_problem(fm,ym;require_identity=true)
         @test same && abs(q.objective(fm.pars.θ_packed,fm.integration.caches)+fm.logLik)<1e-9
         changed=copy(ym);changed[1,1]+=1
-        @test_throws ArgumentError GLLVM._gaussian_record_problem(fm,changed;require_identity=true)
+        @test_throws ArgumentError GLLVModels._gaussian_record_problem(fm,changed;require_identity=true)
         @test_throws ArgumentError predict(fm,changed)
         @test size(predict(fm,changed;X=X,offset=off))==size(Y)
         @test_throws ArgumentError fit_gaussian_gllvm(Y;K=K,aghq=3,X=fill(NaN,p,n,1))

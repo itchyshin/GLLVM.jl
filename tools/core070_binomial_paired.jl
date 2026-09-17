@@ -1,5 +1,5 @@
 #!/usr/bin/env julia
-# Exactly one predeclared paired case. --check ID never loads RCall or GLLVM.
+# Exactly one predeclared paired case. --check ID never loads RCall or GLLVModels.
 using SHA, TOML
 root=normpath(joinpath(@__DIR__,".."))
 include(joinpath(root,"test/parity/binomial_case_contract.jl"))
@@ -13,7 +13,7 @@ get(ENV,"CORE070_PARITY_REQUIRED","")=="1" || error("required parity mode missin
 get(ENV,"GLLVM_PARITY_TESTS","")=="1" || error("parity opt-in missing")
 startswith(lowercase(readchomp(`hostname`)),"totoro") || error("this bounded fit packet targets Totoro only")
 # All checks above precede loading the fitting toolchain.
-using GLLVM, RCall, Test, LinearAlgebra
+using GLLVModels, RCall, Test, LinearAlgebra
 include(joinpath(root,"test/parity/parity_helpers.jl"))
 cd(root)
 _parity_require_gllvmtmb!()
@@ -60,9 +60,9 @@ try
     r_nfree=rcopy(Int,R"length(fit_r$opt$par)")
     r_counts=rcopy(Vector{Float64},R"as.numeric(fit_r$tmb_obj$env$data$n_trials)")
     r_finite=rcopy(Bool,R"all(is.finite(fit_r$opt$par)) && is.finite(fit_r$opt$objective)")
-    theta=vcat(native.β,GLLVM.pack_lambda(native.Λ));rr=GLLVM.rr_theta_len(p,K)
-    objective(v)=-GLLVM.binomial_marginal_loglik_laplace(Y,N,
-        GLLVM.unpack_lambda(v[p+1:p+rr],p,K),v[1:p],link;hessian=:observed,maxiter=200,tol=1e-10)
+    theta=vcat(native.β,GLLVModels.pack_lambda(native.Λ));rr=GLLVModels.rr_theta_len(p,K)
+    objective(v)=-GLLVModels.binomial_marginal_loglik_laplace(Y,N,
+        GLLVModels.unpack_lambda(v[p+1:p+rr],p,K),v[1:p],link;hessian=:observed,maxiter=200,tol=1e-10)
     function fd(v,scale)
         [begin
             h=scale*max(1,abs(v[j]));a=copy(v);b=copy(v);a[j]+=h;b[j]-=h

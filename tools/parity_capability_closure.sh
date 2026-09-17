@@ -8,7 +8,7 @@
 #
 # Usage:
 #   tools/parity_capability_closure.sh
-#   GLLVMTMB=/path/to/gllvmTMB JULIA_REPO=/path/to/GLLVM.jl tools/parity_capability_closure.sh
+#   GLLVMTMB=/path/to/gllvmTMB JULIA_REPO=/path/to/GLLVModels.jl tools/parity_capability_closure.sh
 
 set -euo pipefail
 

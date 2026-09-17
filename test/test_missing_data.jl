@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random
+using GLLVModels, Test, LinearAlgebra, Random
 
 @testset "Missing data (NA) handling" begin
     Random.seed!(2024)
@@ -14,8 +14,8 @@ using GLLVM, Test, LinearAlgebra, Random
     end
 
     # ---- Anchor 1: all-observed mask == no mask (backward compat) ----------
-    ℓ_full = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β, LogLink())
-    ℓ_truemask = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β,
+    ℓ_full = GLLVModels.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β, LogLink())
+    ℓ_truemask = GLLVModels.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β,
                                                LogLink(); mask = trues(p, n))
     @test isapprox(ℓ_full, ℓ_truemask; atol = 1e-10)
 
@@ -26,8 +26,8 @@ using GLLVM, Test, LinearAlgebra, Random
     for (t, s) in missing_cells
         Yg[t, s] = 9999
     end
-    ℓ_a = GLLVM.marginal_loglik_laplace(Poisson(), Y,  ones(Int, p, n), Λ, β, LogLink(); mask = mask)
-    ℓ_b = GLLVM.marginal_loglik_laplace(Poisson(), Yg, ones(Int, p, n), Λ, β, LogLink(); mask = mask)
+    ℓ_a = GLLVModels.marginal_loglik_laplace(Poisson(), Y,  ones(Int, p, n), Λ, β, LogLink(); mask = mask)
+    ℓ_b = GLLVModels.marginal_loglik_laplace(Poisson(), Yg, ones(Int, p, n), Λ, β, LogLink(); mask = mask)
     @test isapprox(ℓ_a, ℓ_b; atol = 1e-10)
     @test ℓ_a != ℓ_full             # masking changes the marginal (sanity: mask is active)
 
@@ -35,9 +35,9 @@ using GLLVM, Test, LinearAlgebra, Random
     maskcol = trues(p, 2)
     maskcol[:, 2] .= false          # second site entirely unobserved
     Y2 = Y[:, 1:2]
-    ℓ_2 = GLLVM.marginal_loglik_laplace(Poisson(), Y2, ones(Int, p, 2), Λ, β,
+    ℓ_2 = GLLVModels.marginal_loglik_laplace(Poisson(), Y2, ones(Int, p, 2), Λ, β,
                                         LogLink(); mask = maskcol)
-    ℓ_1 = GLLVM.laplace_loglik_site(Poisson(), view(Y2, :, 1), ones(Int, p), Λ, β, LogLink())
+    ℓ_1 = GLLVModels.laplace_loglik_site(Poisson(), view(Y2, :, 1), ones(Int, p), Λ, β, LogLink())
     @test isapprox(ℓ_2, ℓ_1; atol = 1e-10)   # masked site adds 0 ⇒ equals the lone observed site
 
     # ---- observed_mask derives the mask from `missing` ---------------------
@@ -45,7 +45,7 @@ using GLLVM, Test, LinearAlgebra, Random
     for (t, s) in missing_cells
         Ym[t, s] = missing
     end
-    @test GLLVM.observed_mask(Ym) == mask
+    @test GLLVModels.observed_mask(Ym) == mask
 
     # ---- Anchor 4: the FIT is invariant to masked-cell values --------------
     fitA = fit_poisson_gllvm(Y;  K = K, mask = mask, iterations = 40)
@@ -117,8 +117,8 @@ using GLLVM, Test, LinearAlgebra, Random
         Ye = 0.1 .+ randexp(pe, ne)
 
         # (1) complete-data equivalence: no mask == an all-true mask (marginal).
-        ℓ_full = GLLVM.exponential_marginal_loglik_laplace(Ye, Λe, βe)
-        ℓ_mask = GLLVM.exponential_marginal_loglik_laplace(Ye, Λe, βe; mask = trues(pe, ne))
+        ℓ_full = GLLVModels.exponential_marginal_loglik_laplace(Ye, Λe, βe)
+        ℓ_mask = GLLVModels.exponential_marginal_loglik_laplace(Ye, Λe, βe; mask = trues(pe, ne))
         @test isapprox(ℓ_full, ℓ_mask; atol = 1e-10)
 
         # complete-data equivalence at the fit level: default call == all-true mask.
@@ -134,8 +134,8 @@ using GLLVM, Test, LinearAlgebra, Random
             mske[t, s] = false
         end
         Yeg = copy(Ye); for I in findall(.!mske); Yeg[I] = 9999.0; end
-        ℓ_a = GLLVM.exponential_marginal_loglik_laplace(Ye,  Λe, βe; mask = mske)
-        ℓ_b = GLLVM.exponential_marginal_loglik_laplace(Yeg, Λe, βe; mask = mske)
+        ℓ_a = GLLVModels.exponential_marginal_loglik_laplace(Ye,  Λe, βe; mask = mske)
+        ℓ_b = GLLVModels.exponential_marginal_loglik_laplace(Yeg, Λe, βe; mask = mske)
         @test isapprox(ℓ_a, ℓ_b; atol = 1e-10)
         @test ℓ_a != ℓ_full
 
@@ -168,17 +168,17 @@ using GLLVM, Test, LinearAlgebra, Random
         Yog = copy(Yo); for (t, s) in misso; Yog[t, s] = 9999; end
 
         # complete-data equivalence: no mask == an all-true mask (marginal)
-        @test isapprox(GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe),
-                       GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe; mask = trues(po, no));
+        @test isapprox(GLLVModels.ordinal_marginal_loglik_laplace(Yo, Λe, τe),
+                       GLLVModels.ordinal_marginal_loglik_laplace(Yo, Λe, τe; mask = trues(po, no));
                        atol = 1e-10)
         # marginal invariant to garbage in masked cells; mask is active
-        ℓo = GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe; mask = msko)
-        @test isapprox(ℓo, GLLVM.ordinal_marginal_loglik_laplace(Yog, Λe, τe; mask = msko); atol = 1e-10)
-        @test ℓo != GLLVM.ordinal_marginal_loglik_laplace(Yo, Λe, τe)
+        ℓo = GLLVModels.ordinal_marginal_loglik_laplace(Yo, Λe, τe; mask = msko)
+        @test isapprox(ℓo, GLLVModels.ordinal_marginal_loglik_laplace(Yog, Λe, τe; mask = msko); atol = 1e-10)
+        @test ℓo != GLLVModels.ordinal_marginal_loglik_laplace(Yo, Λe, τe)
         # a fully-masked site contributes exactly 0
         mc = trues(po, 2); mc[:, 2] .= false
-        @test isapprox(GLLVM.ordinal_marginal_loglik_laplace(Yo[:, 1:2], Λe, τe; mask = mc),
-                       GLLVM.ordinal_loglik_site(view(Yo, :, 1), Λe, τe, GLLVM.LogitLink());
+        @test isapprox(GLLVModels.ordinal_marginal_loglik_laplace(Yo[:, 1:2], Λe, τe; mask = mc),
+                       GLLVModels.ordinal_loglik_site(view(Yo, :, 1), Λe, τe, GLLVModels.LogitLink());
                        atol = 1e-10)
         # the FIT is invariant to masked-cell values (sentinel-invariance)
         foA = fit_ordinal_gllvm(Yo;  K = Ko, mask = msko, iterations = 80)

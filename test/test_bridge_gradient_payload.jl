@@ -6,7 +6,7 @@
 # converged-scale-small Float64, never silently absent.
 
 using Test
-using GLLVM
+using GLLVModels
 using Random
 
 function _grad_bridge_latent(p, n, K, seed)
@@ -30,7 +30,7 @@ function _grad_sim_binomial(p, n, K, Ntrial; seed = 402)
     Y = Matrix{Int}(undef, p, n)
     for i in eachindex(η)
         pr = 1 / (1 + exp(-η[i]))
-        Y[i] = rand(rng, GLLVM.Binomial(Ntrial, pr))
+        Y[i] = rand(rng, GLLVModels.Binomial(Ntrial, pr))
     end
     return Y
 end

@@ -1,6 +1,6 @@
 """
 Validate the S4 public-R-formula paired-receipt structure without loading R,
-gllvmTMB, or GLLVM.  This is a fail-closed artifact check only: a valid receipt
+gllvmTMB, or GLLVModels.  This is a fail-closed artifact check only: a valid receipt
 is deliberately *not* a public parity promotion.
 """
 

@@ -1,4 +1,4 @@
-# simulate(fit, …) — draw a fresh response matrix from a fitted non-Gaussian GLLVM.
+# simulate(fit, …) — draw a fresh response matrix from a fitted non-Gaussian GLLVModels.
 # Reuses the per-family samplers (`_cov_sample`, `families/covariates.jl`): draws a
 # new per-site latent `z_s ~ N(0, I_K)`, forms `η`, and samples each response. The
 # shared `laplace.jl` core is untouched.
@@ -21,7 +21,7 @@ _sim_eltype(fam) = fam isa Union{Beta, Gamma, Exponential} ? Float64 : Int
     simulate(fit, n; rng=Random.default_rng()) -> p×n matrix
 
 Simulate a fresh response matrix (`p` species × `n` sites) from a fitted
-non-Gaussian GLLVM (`PoissonFit`, `NBFit`, `BetaFit`, `GammaFit`,
+non-Gaussian GLLVModels (`PoissonFit`, `NBFit`, `BetaFit`, `GammaFit`,
 `ExponentialFit`). A new latent `z_s ~ N(0, I_K)` is drawn per site, `η = β + Λ z`,
 and each response sampled from the fitted family at `μ = linkinv(link, η)`. Pass a
 fixed `rng` to reproduce. (For `BinomialFit` pass `N`; for a covariate
@@ -272,7 +272,7 @@ end
 """
     simulate(fit::StudentTFit, n; rng=Random.default_rng()) -> p×n matrix
 
-Simulate from a fitted Student-t GLLVM (heavy-tailed continuous, fixed `ν`,
+Simulate from a fitted Student-t GLLVModels (heavy-tailed continuous, fixed `ν`,
 identity link): a new latent `z_s ~ N(0, I_K)` per site, `η = β + Λ z`, location
 `μ = η` (identity link), and each response drawn as `μ + σ · t`, `t ~ TDist(ν)` —
 the exact sampling inverse of the location–scale t density. Pass a fixed `rng` to
@@ -309,7 +309,7 @@ end
 """
     simulate(fit::TweedieFit, n; rng=Random.default_rng()) -> p×n matrix
 
-Simulate a fresh response matrix from a fitted Tweedie GLLVM (compound Poisson–
+Simulate a fresh response matrix from a fitted Tweedie GLLVModels (compound Poisson–
 Gamma, power `1 < p < 2`): a new latent `z_s ~ N(0, I_K)` per site, `η = β + Λ z`,
 `μ = linkinv(link, η)`, and each response drawn from the compound Poisson–Gamma at
 `(μ, φ, p)` — a point mass at `0` plus a positive continuous part. Pass a fixed

@@ -1,10 +1,10 @@
-using GLLVM
+using GLLVModels
 using Test
 using Random
 using LinearAlgebra
 using Distributions
 
-using GLLVM: pack_lambda
+using GLLVModels: pack_lambda
 
 const _ANIMAL_LAT_A = Float64[
     1.0  0.0  0.0  0.0

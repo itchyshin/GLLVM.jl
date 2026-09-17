@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays
+using GLLVModels, Test, LinearAlgebra, SparseArrays
 
 @testset "branch RE equivalent marginal representation" begin
     phy = edge_phy("((A:0.1,B:0.2):0.3,(C:0.4,D:0.5):0.1);")

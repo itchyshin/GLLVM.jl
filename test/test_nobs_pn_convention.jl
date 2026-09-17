@@ -14,13 +14,13 @@
 # values `nobs` reads are exercised, so this is a fast, deterministic check of
 # the formula, independent of optimizer convergence.
 
-using GLLVM, Test, Distributions, LinearAlgebra
-using GLLVM: StatsAPI
+using GLLVModels, Test, Distributions, LinearAlgebra
+using GLLVModels: StatsAPI
 
 @testset "nobs(fit) — p·n cell-count convention (struct-count fits)" begin
     @testset "TwoLevelFit" begin
         p, K_B, K_W, nindiv = 5, 2, 1, 37
-        fit = GLLVM.TwoLevelFit(
+        fit = GLLVModels.TwoLevelFit(
             randn(p, K_B), rand(p) .+ 0.1, randn(p, K_W), rand(p) .+ 0.1,
             Matrix{Float64}(I, p, p), Matrix{Float64}(I, p, p),
             nindiv, -123.4, true, 10)
@@ -30,7 +30,7 @@ using GLLVM: StatsAPI
 
     @testset "GaussianRandomSlopeFit" begin
         p, K, q, nlevels = 4, 1, 2, 21
-        fit = GLLVM.GaussianRandomSlopeFit(
+        fit = GLLVModels.GaussianRandomSlopeFit(
             randn(p, K), 0.5, Matrix{Float64}(I, q, q), nlevels, q,
             -50.0, true, 5)
         @test StatsAPI.nobs(fit) == p * nlevels
@@ -39,26 +39,26 @@ using GLLVM: StatsAPI
 
     @testset "PoissonRandomSlopeFit" begin
         p, K, q, nlevels = 3, 1, 2, 15
-        fit = GLLVM.PoissonRandomSlopeFit(
+        fit = GLLVModels.PoissonRandomSlopeFit(
             zeros(p), randn(p, K), Matrix{Float64}(I, q, q), nlevels, q,
-            GLLVM.LogLink(), -80.0, true, 5)
+            GLLVModels.LogLink(), -80.0, true, 5)
         @test StatsAPI.nobs(fit) == p * nlevels
         @test StatsAPI.nobs(fit) != nlevels
     end
 
     @testset "RowEffectFit" begin
         p, K, nsite = 6, 1, 40
-        fit = GLLVM.RowEffectFit(
+        fit = GLLVModels.RowEffectFit(
             Poisson(), zeros(p), zeros(nsite), randn(p, K), NaN,
-            GLLVM.LogLink(), -200.0, true, 5)
+            GLLVModels.LogLink(), -200.0, true, 5)
         @test StatsAPI.nobs(fit) == p * nsite
         @test StatsAPI.nobs(fit) != nsite
     end
 
     @testset "SPDELatentFit" begin
         p, K, nnodes = 3, 1, 25
-        fit = GLLVM.SPDELatentFit(
-            zeros(p), randn(p, K), 1.0, 1.0, NaN, GLLVM.LogLink(), Poisson(),
+        fit = GLLVModels.SPDELatentFit(
+            zeros(p), randn(p, K), 1.0, 1.0, NaN, GLLVModels.LogLink(), Poisson(),
             -90.0, true, 5, zeros(nnodes, 2), zeros(Int, 1, 3))
         @test StatsAPI.nobs(fit) == p * nnodes
         @test StatsAPI.nobs(fit) != nnodes
@@ -66,7 +66,7 @@ using GLLVM: StatsAPI
 
     @testset "SPDEGaussianFit — univariate (p = 1), unchanged" begin
         nnodes = 12
-        fit = GLLVM.SPDEGaussianFit(
+        fit = GLLVModels.SPDEGaussianFit(
             1.0, 1.0, 0.5, 0.0, -30.0, true, 5, zeros(nnodes, 2), zeros(Int, 1, 3))
         @test StatsAPI.nobs(fit) == nnodes   # p = 1, so unchanged from before
     end

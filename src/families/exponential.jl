@@ -43,7 +43,7 @@ _default_hessian(::Exponential, ::LogLink) = :observed
     exponential_marginal_loglik_laplace(Y, Λ, β; link=LogLink(), hessian=:observed,
                                         kwargs...) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of an Exponential GLLVM —
+Total Laplace log-marginal over the `n` sites (columns) of an Exponential GLLVModels —
 responses `Y > 0`, mean `μ = exp(η)` (log link), per-observation `Exponential(μ)`
 (`Var = μ²`).
 
@@ -132,7 +132,7 @@ end
 """
     fit_exponential_gllvm(Y; K, link=LogLink(), mask=nothing, offset=nothing, …) -> ExponentialFit
 
-Fit an Exponential GLLVM by L-BFGS over `[β; vec(Λ)]` on the Laplace marginal
+Fit an Exponential GLLVModels by L-BFGS over `[β; vec(Λ)]` on the Laplace marginal
 (`exponential_marginal_loglik_laplace`). `Y` is a p×n matrix of positive reals;
 `K` the latent dimension. Finite-difference gradient; warm start = log row-means
 as intercepts + SVD of row-centred log-Y as loadings.

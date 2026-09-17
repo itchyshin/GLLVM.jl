@@ -5,7 +5,7 @@
 # Usage:
 #   julia --project=. tools/d220_paired_gaussian_cell.jl [output.json]
 
-using GLLVM, RCall, Random, LinearAlgebra, Statistics, Dates
+using GLLVModels, RCall, Random, LinearAlgebra, Statistics, Dates
 
 const ORACLE_REF = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
 const OUT_DEFAULT = joinpath(@__DIR__, "..", "docs", "dev-log", "core070",

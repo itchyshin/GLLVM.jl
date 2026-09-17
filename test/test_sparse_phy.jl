@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays
+using GLLVModels, Test, Random, LinearAlgebra, Distributions, SparseArrays
 
 @testset "sparse phy precision" begin
 
@@ -76,7 +76,7 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays
         Λ_phy = reshape(randn(p), p, K_phy)
         σ_eps = 0.5
         y     = randn(p, n)
-        ll_dense  = GLLVM.gaussian_marginal_loglik(y, Λ_B, σ_eps;
+        ll_dense  = GLLVModels.gaussian_marginal_loglik(y, Λ_B, σ_eps;
                         Λ_phy = Λ_phy, Σ_phy = Σ_phy)
         ll_sparse = gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
                         Λ_phy = Λ_phy, phy = phy, σ²_phy = σ²_phy_test)
@@ -94,7 +94,7 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays
         σ_phy = abs.(randn(p)) .+ 0.1
         σ_eps = 0.3
         y     = randn(p, n)
-        ll_dense  = GLLVM.gaussian_marginal_loglik(y, Λ_B, σ_eps;
+        ll_dense  = GLLVModels.gaussian_marginal_loglik(y, Λ_B, σ_eps;
                         σ_phy = σ_phy, Σ_phy = Σ_phy)
         ll_sparse = gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
                         σ_phy = σ_phy, phy = phy, σ²_phy = σ²_phy_test)
@@ -113,7 +113,7 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays
         σ_phy = abs.(randn(p)) .+ 0.1
         σ_eps = 0.4
         y     = randn(p, n)
-        ll_dense  = GLLVM.gaussian_marginal_loglik(y, Λ_B, σ_eps;
+        ll_dense  = GLLVModels.gaussian_marginal_loglik(y, Λ_B, σ_eps;
                         Λ_phy = Λ_phy, σ_phy = σ_phy, Σ_phy = Σ_phy)
         ll_sparse = gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
                         Λ_phy = Λ_phy, σ_phy = σ_phy, phy = phy,
@@ -138,7 +138,7 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays
         X     = randn(p, n, q)
         β     = randn(q)
         y     = randn(p, n)
-        ll_dense = GLLVM.gaussian_marginal_loglik(y, Λ_B, σ_eps;
+        ll_dense = GLLVModels.gaussian_marginal_loglik(y, Λ_B, σ_eps;
                         X = X, β = β,
                         Λ_W = Λ_W, σ²_B = σ²_B, σ²_W = σ²_W,
                         Λ_phy = Λ_phy, σ_phy = σ_phy, Σ_phy = Σ_phy)

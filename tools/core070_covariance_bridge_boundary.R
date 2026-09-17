@@ -8,8 +8,8 @@ if (file.exists(output)) stop("output already exists", call. = FALSE)
 
 suppressPackageStartupMessages(library(gllvmTMB))
 source("test/parity/fixtures/core070_covariance_modes.R", local = environment())
-poisoned_julia_path <- "/CORE070/POISONED/NO-GLLVM-JL"
-options(gllvmTMB.GLLVM.jl.path = poisoned_julia_path)
+poisoned_julia_path <- "/CORE070/POISONED/NO-GLLVModels-JL"
+options(gllvmTMB.GLLVModels.jl.path = poisoned_julia_path)
 Sys.setenv(GLLVM_JL_PATH = poisoned_julia_path)
 
 hex_text <- function(x) paste(sprintf("%02x", as.integer(charToRaw(enc2utf8(x)))), collapse = "")

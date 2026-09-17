@@ -10,7 +10,7 @@ DOCS=ROOT/'.unlazy/core070-aghq/aghq-public-gaussian-docs-02'
 
 def kernel():
     _,_,red=process(ROOT/'.unlazy/core070-aghq/aghq-public-gaussian-red-01',False,1)
-    assert 'hasfield(GLLVM.GllvmFit, :integration)' in red
+    assert 'hasfield(GLLVModels.GllvmFit, :integration)' in red
     _,_,bad=process(ROOT/'.unlazy/core070-aghq/aghq-public-gaussian-derived-red-02',False,1)
     assert re.search(r'GU public Gaussian AGHQ\s*\|\s*58\s+2\s+60',bad)
     assert '130.72497639167437 == 130.77170306546276' in bad

@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, ForwardDiff
+using GLLVModels, Test, Random, Distributions, ForwardDiff
 
 # Draw zero-truncated Poisson(μ): reject zeros.
 function _rtruncpois(μ)
@@ -15,7 +15,7 @@ end
         p, K, n = 4, 2, 50
         β = log.([2.0, 3.5, 1.5, 4.0])
         Y = [_rtruncpois(exp(β[t])) for t in 1:p, s in 1:n]
-        ll = GLLVM.truncated_poisson_marginal_loglik_laplace(Y, zeros(p, K), β)
+        ll = GLLVModels.truncated_poisson_marginal_loglik_laplace(Y, zeros(p, K), β)
         ll_indep = sum(
             logpdf(Poisson(exp(β[t])), Y[t, s]) - log1p(-exp(-exp(β[t])))
             for t in 1:p, s in 1:n)
@@ -25,8 +25,8 @@ end
     @testset "score/weight at log link match hurdle positive-block formulas" begin
         μ, y = 2.5, 3
         me = μ  # LogLink
-        s = GLLVM._glm_score(TruncatedPoisson(), μ, 1, me, y)
-        W = GLLVM._glm_weight(TruncatedPoisson(), μ, 1, me)
+        s = GLLVModels._glm_score(TruncatedPoisson(), μ, 1, me, y)
+        W = GLLVModels._glm_weight(TruncatedPoisson(), μ, 1, me)
         p0 = exp(-μ)
         μtr = μ / (1 - p0)
         @test s ≈ y - μtr atol = 1e-12
@@ -80,13 +80,13 @@ end
         p, n, K = 3, 30, 1
         β = randn(p) .* 0.2 .+ 0.8
         Y = [_rtruncpois(exp(β[t])) for t in 1:p, s in 1:n]
-        rr = GLLVM.rr_theta_len(p, K)
-        θ = vcat(β, GLLVM.pack_lambda(0.3 .* randn(p, K)))
+        rr = GLLVModels.rr_theta_len(p, K)
+        θ = vcat(β, GLLVModels.pack_lambda(0.3 .* randn(p, K)))
         N1 = ones(Int, size(Y))
         nll = θv -> begin
             βv = θv[1:p]
-            Λv = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
-            -GLLVM.marginal_loglik_laplace(TruncatedPoisson(), Y, N1, Λv, βv, LogLink())
+            Λv = GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            -GLLVModels.marginal_loglik_laplace(TruncatedPoisson(), Y, N1, Λv, βv, LogLink())
         end
         g_ad = ForwardDiff.gradient(nll, θ)
         h = 1e-6

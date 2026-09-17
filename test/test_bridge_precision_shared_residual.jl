@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays
+using GLLVModels, Test, LinearAlgebra, SparseArrays
 
 function _pmvshared_fixture()
     Q = sparse([4.0 -1.0 -1.0 0.0;
@@ -17,9 +17,9 @@ function _pmvshared_fixture()
     unique = [0.15, 0.10, 0.2]
     trait_residual = [0.5, 0.7, 0.4]
     shared_residual = 0.5
-    trait_start = vcat(beta, GLLVM.pack_lambda(loading),
+    trait_start = vcat(beta, GLLVModels.pack_lambda(loading),
         log.(sqrt.(unique)), log.(sqrt.(trait_residual)))
-    shared_start = vcat(beta, GLLVM.pack_lambda(loading),
+    shared_start = vcat(beta, GLLVModels.pack_lambda(loading),
         log.(sqrt.(unique)), log(sqrt(shared_residual)))
     return (; Y, phy, species_id, beta, loading, unique, trait_residual,
         shared_residual, trait_start, shared_start)
@@ -43,11 +43,11 @@ end
     fixture = _pmvshared_fixture()
 
     @testset "shared bridge route matches native objective and packed coordinates" begin
-        native = GLLVM.fit_precision_multivariate(fixture.Y, fixture.phy;
+        native = GLLVModels.fit_precision_multivariate(fixture.Y, fixture.phy;
             rank = 1, mode = :explicitunique, residual_mode = :shared,
             species_id = fixture.species_id, start = fixture.shared_start,
             iterations = 0, g_tol = 1e-4)
-        bridged = GLLVM._bridge_fit_precision_multivariate(fixture.Y, fixture.phy;
+        bridged = GLLVModels._bridge_fit_precision_multivariate(fixture.Y, fixture.phy;
             family = "gaussian", d = 1,
             options = _pmvshared_options(fixture; residual_mode = "shared",
                 start = fixture.shared_start))
@@ -55,10 +55,10 @@ end
             family = "gaussian", d = 1,
             options = _pmvshared_options(fixture; residual_mode = "shared",
                 start = fixture.shared_start))
-        expected_nll = GLLVM._precision_multivariate_nll(fixture.Y, fixture.phy,
+        expected_nll = GLLVModels._precision_multivariate_nll(fixture.Y, fixture.phy,
             fixture.shared_start; rank = 1, mode = :explicitunique,
             residual_mode = :shared, species_id = fixture.species_id)
-        unpacked = GLLVM._precision_multivariate_unpack(fixture.shared_start, 3, 1,
+        unpacked = GLLVModels._precision_multivariate_unpack(fixture.shared_start, 3, 1,
             :explicitunique, 3; residual_mode = :shared)
 
         @test bridged.parameters == fixture.shared_start == native.parameters
@@ -81,10 +81,10 @@ end
     end
 
     @testset "trait default remains backward-compatible" begin
-        native = GLLVM.fit_precision_multivariate(fixture.Y, fixture.phy;
+        native = GLLVModels.fit_precision_multivariate(fixture.Y, fixture.phy;
             rank = 1, mode = :explicitunique, species_id = fixture.species_id,
             start = fixture.trait_start, iterations = 0, g_tol = 1e-4)
-        bridged = GLLVM._bridge_fit_precision_multivariate(fixture.Y, fixture.phy;
+        bridged = GLLVModels._bridge_fit_precision_multivariate(fixture.Y, fixture.phy;
             family = "gaussian", d = 1,
             options = _pmvshared_options(fixture; start = fixture.trait_start))
         public = bridge_fit(y = fixture.Y, phylo = fixture.phy,
@@ -104,7 +104,7 @@ end
     end
 
     @testset "invalid residual mode is rejected rather than ignored" begin
-        @test_throws ArgumentError GLLVM._bridge_fit_precision_multivariate(
+        @test_throws ArgumentError GLLVModels._bridge_fit_precision_multivariate(
             fixture.Y, fixture.phy; family = "gaussian", d = 1,
             options = _pmvshared_options(fixture; residual_mode = "diagonal",
                 start = fixture.trait_start))

@@ -4,7 +4,7 @@
 # GLM.jl convention: `family = Normal()` (Gaussian, the default) or `Binomial()`
 # (binary), `Poisson()`, … The marginal log-likelihood dispatches on the family
 # type via Julia multiple dispatch (Gaussian → closed-form marginal;
-# non-Gaussian → Laplace), with no hardcoded family switch. GLLVM defines only
+# non-Gaussian → Laplace), with no hardcoded family switch. GLLVModels defines only
 # the link types below — Distributions provides the distributions, not the links.
 
 abstract type Link end

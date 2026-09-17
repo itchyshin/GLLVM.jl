@@ -1,10 +1,10 @@
 # Renders docs/src/assets/ordination_biplot.png — a model-based ordination
 # biplot (site scores + species loadings in latent space) from a two-factor
-# Gaussian GLLVM fit. Not part of the docs build; run in the throwaway
+# Gaussian GLLVModels fit. Not part of the docs build; run in the throwaway
 # CairoMakie env (reuse /tmp/landingfig):
 #   julia --project=/tmp/landingfig docs/scripts/make_biplot_figure.jl
 
-using GLLVM, CairoMakie, Random
+using GLLVModels, CairoMakie, Random
 
 Random.seed!(11)
 n, p, K = 150, 8, 2

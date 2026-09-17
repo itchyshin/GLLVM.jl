@@ -1,4 +1,4 @@
-# Gradient-free EM for the Gaussian phylogenetic GLLVM (phylo_unique config).
+# Gradient-free EM for the Gaussian phylogenetic GLLVModels (phylo_unique config).
 #
 # This is the phylo extension of `em_fa.jl`. It fits the SAME model that
 # `fit_gaussian_gllvm(y; K, has_phy_unique = true, Σ_phy = Σ_phy)` fits via
@@ -87,7 +87,7 @@ Reuses the saddle-point factorisation strategy of
 `gaussian_marginal_loglik_sparse_phy` (`likelihood_sparse_phy.jl`).
 """
 struct AnBSparseSolver
-    phy::GLLVM.AugmentedPhy{Float64}
+    phy::GLLVModels.AugmentedPhy{Float64}
     n_block::Int
     leaf_pos::Vector{Int}
     d_total::Vector{Float64}
@@ -110,7 +110,7 @@ phylo_unique model. `phy::AugmentedPhy` supplies the sparse Σ_phy precision;
 `σ²_phy` scales it (Σ_phy = σ²_phy · S Q_cond⁻¹ S').
 """
 function build_AnB_sparse(Λ_B::AbstractMatrix, σ_eps::Real,
-                          σ_phy::AbstractVector, phy::GLLVM.AugmentedPhy,
+                          σ_phy::AbstractVector, phy::GLLVModels.AugmentedPhy,
                           n::Integer; σ²_phy::Real = 1.0)
     p   = phy.n_leaves
     K_B = size(Λ_B, 2)
@@ -212,7 +212,7 @@ augmented-state solve (no dense Σ_phy). `B v = Λ_φ Σ_phy Λ_φ v` is applied
 through the same augmented machinery.
 """
 function blup_phylo_sparse(y::AbstractMatrix, Λ_B::AbstractMatrix, σ_eps::Real,
-                           σ_phy::AbstractVector, phy::GLLVM.AugmentedPhy;
+                           σ_phy::AbstractVector, phy::GLLVModels.AugmentedPhy;
                            σ²_phy::Real = 1.0)
     p, n = size(y)
     s = build_AnB_sparse(Λ_B, σ_eps, σ_phy, phy, n; σ²_phy = σ²_phy)
@@ -321,7 +321,7 @@ end
 # ---------------------------------------------------------------------------
 function _estep_sparse(y::AbstractMatrix, Λ_B::AbstractMatrix, σ_eps::Real,
                       σ_phy::AbstractVector,
-                      phy::GLLVM.AugmentedPhy{Float64};
+                      phy::GLLVModels.AugmentedPhy{Float64};
                       σ²_phy::Real = 1.0)
     p, n = size(y)
     p == phy.n_leaves ||
@@ -680,7 +680,7 @@ end
                  tol=1e-9, max_iter=1000, assert_monotone=true,
                  phy=nothing, force_dense_estep=false) -> EMPhyloFit
 
-Gradient-free EM fit of the Gaussian phylo_unique GLLVM: `K_B` site latent
+Gradient-free EM fit of the Gaussian phylo_unique GLLVModels: `K_B` site latent
 factors plus one per-trait phylogenetic random effect with covariance
 `(σ_phy σ_phy') ∘ Σ_phy`. Matches `fit_gaussian_gllvm(y; K = K_B,
 has_phy_unique = true, Σ_phy = Σ_phy)`.
@@ -711,7 +711,7 @@ function em_fit_phylo(y::AbstractMatrix, K_B::Integer, Σ_phy::AbstractMatrix;
                       λ_init = nothing, σ_eps_init = nothing,
                       σ_phy_init = nothing,
                       tol = 1e-9, max_iter = 1000, assert_monotone = true,
-                      phy::Union{Nothing,GLLVM.AugmentedPhy{Float64}} = nothing,
+                      phy::Union{Nothing,GLLVModels.AugmentedPhy{Float64}} = nothing,
                       force_dense_estep::Bool = false)
     p, n = size(y)
     K_B ≥ 1 || throw(ArgumentError("K_B must be ≥ 1"))
@@ -736,7 +736,7 @@ function em_fit_phylo(y::AbstractMatrix, K_B::Integer, Σ_phy::AbstractMatrix;
 
     # ----- Warm start (PPCA for Λ_B, σ_eps; small phylo SD to start) -----
     if λ_init === nothing || σ_eps_init === nothing
-        Λ0, σ0 = GLLVM.ppca_init(yf, K_B)
+        Λ0, σ0 = GLLVModels.ppca_init(yf, K_B)
         Λ_B   = λ_init === nothing ? Matrix{Float64}(Λ0) : Matrix{Float64}(λ_init)
         σ_eps = σ_eps_init === nothing ? float(σ0) : float(σ_eps_init)
     else
@@ -761,7 +761,7 @@ function em_fit_phylo(y::AbstractMatrix, K_B::Integer, Σ_phy::AbstractMatrix;
         iters_run = iter
         # Marginal log-lik at the CURRENT parameters (dense closed form), i.e.
         # at the output of the previous M-step ⇒ sequence is monotone.
-        ll = GLLVM.gaussian_marginal_loglik(yf, Λ_B, σ_eps;
+        ll = GLLVModels.gaussian_marginal_loglik(yf, Λ_B, σ_eps;
                                             σ_phy = σ_phy, Σ_phy = Σ_phy)
         push!(loglik_trace, ll)
 
@@ -786,7 +786,7 @@ function em_fit_phylo(y::AbstractMatrix, K_B::Integer, Σ_phy::AbstractMatrix;
         Λ_B, σ_eps, σ_phy = _mstep_dense(yf, ss)
     end
 
-    ll_final = GLLVM.gaussian_marginal_loglik(yf, Λ_B, σ_eps;
+    ll_final = GLLVModels.gaussian_marginal_loglik(yf, Λ_B, σ_eps;
                                               σ_phy = σ_phy, Σ_phy = Σ_phy)
     if !isempty(loglik_trace) && ll_final > loglik_trace[end]
         push!(loglik_trace, ll_final)

@@ -1,7 +1,7 @@
 #!/usr/bin/env julia
 # Delta-lognormal each-own-optimum 2SO smoke (follow-up batch, contract §6).
 
-using GLLVM, RCall, Dates, Random, LinearAlgebra, ForwardDiff
+using GLLVModels, RCall, Dates, Random, LinearAlgebra, ForwardDiff
 const CONTRACT = joinpath(@__DIR__, "..", "..", "docs", "dev-log", "core070",
     "second-order-parity-contract.md")
 const OUT_DEFAULT = joinpath(@__DIR__, "..", "..", "docs", "dev-log", "core070",

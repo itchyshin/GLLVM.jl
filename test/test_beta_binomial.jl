@@ -1,8 +1,8 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # Direct (latent-free) beta-binomial loglik over all (t,s): the Λ=0 reference.
 _indep_betabinom_loglik(Y, N, β, φ, link) = sum(
-    GLLVM.betabinomial_logp(Y[t, s], β[t], N[t, s], φ; link = link)
+    GLLVModels.betabinomial_logp(Y[t, s], β[t], N[t, s], φ; link = link)
     for t in axes(Y, 1), s in axes(Y, 2))
 
 @testset "Beta-binomial family" begin
@@ -19,8 +19,8 @@ _indep_betabinom_loglik(Y, N, β, φ, link) = sum(
         link = LogitLink()
         # large φ ⇒ Beta collapses to a point mass ⇒ Binomial(N, μ).
         φ_big = 1e6
-        bb  = GLLVM.betabinomial_marginal_loglik_laplace(Y, N, Λ, β, φ_big; link = link)
-        bin = GLLVM.marginal_loglik_laplace(Binomial(), Y, N, Λ, β, link)
+        bb  = GLLVModels.betabinomial_marginal_loglik_laplace(Y, N, Λ, β, φ_big; link = link)
+        bin = GLLVModels.marginal_loglik_laplace(Binomial(), Y, N, Λ, β, link)
         @test isfinite(bb)
         @test abs(bb - bin) ≤ 1e-2
     end
@@ -33,7 +33,7 @@ _indep_betabinom_loglik(Y, N, β, φ, link) = sum(
         N = rand(4:10, p, n)
         Y = [rand(0:N[t, s]) for t in 1:p, s in 1:n]
         for (link, φ) in ((LogitLink(), 8.0), (ProbitLink(), 5.0), (CLogLogLink(), 12.0))
-            lap = GLLVM.betabinomial_marginal_loglik_laplace(Y, N, Λ0, β, φ; link = link)
+            lap = GLLVModels.betabinomial_marginal_loglik_laplace(Y, N, Λ0, β, φ; link = link)
             direct = _indep_betabinom_loglik(Y, N, β, φ, link)
             @test lap ≈ direct atol = 1e-8
         end
@@ -50,14 +50,14 @@ _indep_betabinom_loglik(Y, N, β, φ, link) = sum(
         Y = Matrix{Int}(undef, p, n)
         for s in 1:n, t in 1:p
             η = β_true[t] + dot(Λ_true[t, :], z[:, s])
-            μ = GLLVM._bb_logistic(η)
+            μ = GLLVModels._bb_logistic(η)
             a = clamp(μ, 1e-9, 1 - 1e-9) * φ_true
             b = (1 - clamp(μ, 1e-9, 1 - 1e-9)) * φ_true
             p_draw = rand(Beta(a, b))
             Y[t, s] = rand(Binomial(N[t, s], p_draw))
         end
 
-        fit = GLLVM.fit_beta_binomial_gllvm(Y; K = K, N = N, iterations = 40)
+        fit = GLLVModels.fit_beta_binomial_gllvm(Y; K = K, N = N, iterations = 40)
         @test isfinite(fit.loglik)
         @test fit.φ > 0
         @test size(fit.Λ) == (p, K)

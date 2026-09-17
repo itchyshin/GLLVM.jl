@@ -1,4 +1,4 @@
-using GLLVM
+using GLLVModels
 using Test
 using Random
 using LinearAlgebra
@@ -193,7 +193,7 @@ using StableRNGs
         buf = IOBuffer()
         show(buf, MIME("text/plain"), res)
         str = String(take!(buf))
-        @test occursin("GLLVM 3-Fold Cross-Validation", str)
+        @test occursin("GLLVModels 3-Fold Cross-Validation", str)
         @test occursin("Out-of-sample logLik", str)
         @test occursin("Out-of-sample MSE", str)
         @test occursin("Residual Mean", str)

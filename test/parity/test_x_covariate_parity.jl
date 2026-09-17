@@ -19,7 +19,7 @@
 # docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md).
 # Fence: X_lv, shared-φ-Julia-vs-per-trait-R, shared-cutpoint Option B.
 
-using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics, Distributions
+using GLLVModels, RCall, Test, Random, LinearAlgebra, Statistics, Distributions
 
 # Knuth sampler — matches test_poisson_parity.jl (no Distributions dep).
 function _rand_poisson_x(λ::Float64)
@@ -75,7 +75,7 @@ function _rand_beta_x(a::Float64, b::Float64)
     end
 end
 
-@testset "Shared site-X light logLik: GLLVM.jl vs gllvmTMB" begin
+@testset "Shared site-X light logLik: GLLVModels.jl vs gllvmTMB" begin
 
     @testset "Gaussian + shared X (q=1)" begin
         Random.seed!(420)
@@ -126,7 +126,7 @@ end
         η = β .+ γ .* x' .+ Λ * Z
         Y = [rand() < 1 / (1 + exp(-η[t, s])) ? 1 : 0 for t in 1:p, s in 1:n]
 
-        jl_fit = fit_gllvm_cov(Y; family = GLLVM.Binomial(), X = X, K = K)
+        jl_fit = fit_gllvm_cov(Y; family = GLLVModels.Binomial(), X = X, K = K)
         @test jl_fit.converged
         @test isfinite(jl_fit.loglik)
         jl_logL = jl_fit.loglik
@@ -158,7 +158,7 @@ end
         η = β .+ γ .* x' .+ Λ * Z
         Y = [_rand_poisson_x(exp(clamp(η[t, s], -8.0, 8.0))) for t in 1:p, s in 1:n]
 
-        jl_fit = fit_gllvm_cov(Y; family = GLLVM.Poisson(), X = X, K = K)
+        jl_fit = fit_gllvm_cov(Y; family = GLLVModels.Poisson(), X = X, K = K)
         @test jl_fit.converged
         @test isfinite(jl_fit.loglik)
         jl_logL = jl_fit.loglik
@@ -384,8 +384,8 @@ end
         Y = Matrix{Int}(undef, p, n)
         for s in 1:n, t in 1:p
             u = rand()
-            Y[t, s] = u < GLLVM._ord_F(τ[1] - η[t, s], ProbitLink()) ? 1 :
-                      u < GLLVM._ord_F(τ[2] - η[t, s], ProbitLink()) ? 2 : 3
+            Y[t, s] = u < GLLVModels._ord_F(τ[1] - η[t, s], ProbitLink()) ? 1 :
+                      u < GLLVModels._ord_F(τ[2] - η[t, s], ProbitLink()) ? 2 : 3
         end
 
         jl_fit = fit_ordinal_gllvm_pertrait_cov(

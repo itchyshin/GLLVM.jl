@@ -10,7 +10,7 @@
 # relative to a Gaussian latent of comparable variance and the implied cross-
 # trait correlations are inflated.
 #
-# This is the GLLVM.jl twin of gllvmTMB's `link_residual_per_trait()`
+# This is the GLLVModels.jl twin of gllvmTMB's `link_residual_per_trait()`
 # (gllvmTMB/R/extract-sigma.R) — the `link_residual = "auto"` convention. Each
 # per-family formula below is confirmed against that R source.
 #
@@ -35,7 +35,7 @@
 #     model: a standard logistic latent residual has variance π²/3).
 #
 # NOTE ON ORDINAL: gllvmTMB ships an ordinal_*probit* family (latent residual = 1
-# by the standard-normal threshold construction). GLLVM.jl's `OrdinalFit` supports
+# by the standard-normal threshold construction). GLLVModels.jl's `OrdinalFit` supports
 # BOTH links: the cumulative-*logit* model (`LogitLink()`, the default), whose
 # latent residual is standard-logistic with variance π²/3, and the cumulative-
 # *probit* model (`ProbitLink()`, matching gllvmTMB), whose standard-normal latent
@@ -87,7 +87,7 @@ _link_residual_one(::NegativeBinomial, ::LogLink, μ̂::Real, dispersion::Real) 
     trigamma(max(dispersion, 1e-12))
 
 # Gamma-log: trigamma(shape). extract-sigma.R 182–183 (nu_hat = 1/σ², the shape).
-# GLLVM.jl carries the shape α directly (Var = μ²/α), so dispersion == α.
+# GLLVModels.jl carries the shape α directly (Var = μ²/α), so dispersion == α.
 _link_residual_one(::Gamma, ::LogLink, μ̂::Real, dispersion::Real) =
     trigamma(max(dispersion, 1e-12))
 
@@ -231,7 +231,7 @@ Per-trait link-implicit residual variance σ²_d on the latent (link) scale for 
 single trait, given the response `family` marker, the `link`, the trait's mean
 fitted mean `μ̂` (response scale), and the family's scalar `dispersion` (the NB2
 dispersion `r`, the Gamma shape `α`, or the Beta precision `φ`; pass `nothing`
-for families without one). This is the GLLVM.jl twin of gllvmTMB's
+for families without one). This is the GLLVModels.jl twin of gllvmTMB's
 `link_residual_per_trait` (`link_residual = "auto"`).
 
 Per-family forms (each confirmed against gllvmTMB/R/extract-sigma.R):
@@ -258,7 +258,7 @@ link_residual(family, link::Link, μ̂::Real, dispersion) =
     link_residual(fit, Y; N=nothing) -> Vector{Float64}
 
 Per-trait link-implicit residual variance σ²_d (length `p`) for a fitted
-non-Gaussian GLLVM (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
+non-Gaussian GLLVModels (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
 or `OrdinalFit`). `Y` is the response matrix the fit was computed on (the fits do
 not store the data); `N` (Binomial only) the trial counts.
 
@@ -360,7 +360,7 @@ end
     sigma_y_site(fit, Y; N=nothing) -> Matrix
 
 Latent-scale trait covariance `Σ_latent = Λ Λᵀ + diag(σ²_d)` for a fitted
-non-Gaussian GLLVM (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
+non-Gaussian GLLVModels (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
 `OrdinalFit`). The loadings `Λ Λᵀ` are on the LINK scale; the per-trait
 link-implicit residual `σ²_d` (see [`link_residual`](@ref)) puts all traits on a
 common latent scale. `Y` is the response matrix the fit was computed on; `N`
@@ -386,7 +386,7 @@ end
     communality(fit, Y; N=nothing) -> Vector
 
 Per-trait communality `c²[t] = (Λ Λᵀ)[t,t] / Σ_latent[t,t]` on the latent scale
-for a fitted non-Gaussian GLLVM — the share of the latent-scale trait variance
+for a fitted non-Gaussian GLLVModels — the share of the latent-scale trait variance
 carried by the shared loadings, with `Σ_latent = Λ Λᵀ + diag(σ²_d)` (see
 [`sigma_y_site`](@ref)). Values are in [0, 1]. `Y` is the response matrix the fit
 was computed on; `N` (Binomial only) the trial counts.
@@ -421,7 +421,7 @@ end
     correlation(fit, Y; N=nothing) -> Matrix
 
 Latent-scale cross-trait correlation `R = D^{-1/2} Σ_latent D^{-1/2}` for a
-fitted non-Gaussian GLLVM, with `Σ_latent = Λ Λᵀ + diag(σ²_d)` (see
+fitted non-Gaussian GLLVModels, with `Σ_latent = Λ Λᵀ + diag(σ²_d)` (see
 [`sigma_y_site`](@ref)). Diagonal entries are exactly 1.0; off-diagonals are in
 [-1, 1] and driven by the shared loadings on the common latent (link) scale. The
 construction is rotation-invariant and family-agnostic (matches gllvmTMB

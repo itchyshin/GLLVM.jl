@@ -12,7 +12,7 @@
 #
 # Usage: julia --project=. tools/core070_wave6_conversion_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 
 # ---------------------------------------------------------------------------
 # Minimal JSON reader/writer (no external dependency).
@@ -201,7 +201,7 @@ data_sk = (site = collect(1:n_site), species = species_symbols)
 kernel_env_sk = (C = C, K2 = K2)
 
 function fit_structured(term_exprs::Vector{Expr})
-    GLLVM._fit_gaussian_structured_sources(Y_sk, data_sk, term_exprs; kernel_env = kernel_env_sk)
+    GLLVModels._fit_gaussian_structured_sources(Y_sk, data_sk, term_exprs; kernel_env = kernel_env_sk)
 end
 
 _structured_cache = Dict{String, Any}()
@@ -218,11 +218,11 @@ function structured_quantity(fit, level_name::Symbol)
     # GaussianSourcesFit the paired comparand is that source's fitted trait
     # covariance; this batch's fixtures put the compared source (the lone
     # term, or the kernel named "k1") FIRST in the term list, so index 1.
-    Σ = if fit isa GLLVM.GaussianSourcesFit
+    Σ = if fit isa GLLVModels.GaussianSourcesFit
         Matrix(fit.trait_covariances[1])
     else
         try
-            Matrix(GLLVM.extract_Sigma(fit; level = level_name, part = :total).Sigma)
+            Matrix(GLLVModels.extract_Sigma(fit; level = level_name, part = :total).Sigma)
         catch
             fill(NaN, n_species, n_species)
         end
@@ -316,7 +316,7 @@ for cs in cases
         end
         r_ok = get(r_val, "matches_own_formula", false) == true
         jl_ok, jl_nobs, jl_err = try
-            jn = Float64(GLLVM.nobs(fit_g, Y_g))
+            jn = Float64(GLLVModels.nobs(fit_g, Y_g))
             (jn == Float64(n), jn, "")
         catch e
             (false, NaN, sprint(showerror, e))
@@ -351,9 +351,9 @@ for cs in cases
     ok = false
     try
         if quantity == "loglik_scalar"
-            jl_vec = [GLLVM.loglikelihood(fit_g)]
+            jl_vec = [GLLVModels.loglikelihood(fit_g)]
         elseif quantity == "confint_sigma_eps_bounds"
-            ci = GLLVM.confint(fit_g, Y_g; parm = "sigma_eps", level = 0.95)
+            ci = GLLVModels.confint(fit_g, Y_g; parm = "sigma_eps", level = 0.95)
             # confint returns a NamedTuple of columns (term/estimate/lower/upper)
             jl_vec = vcat(Float64.(ci.lower), Float64.(ci.upper))
         else
@@ -417,7 +417,7 @@ catch
     true
 end
 neg_bogus_term_kind = try
-    GLLVM._recognize_source_term(:(this_is_not_a_real_keyword(species, K = C)))
+    GLLVModels._recognize_source_term(:(this_is_not_a_real_keyword(species, K = C)))
     false
 catch
     true
@@ -432,7 +432,7 @@ neg_ok = neg_bogus_quantity && neg_bogus_term_kind &&
 report = Dict{String, Any}(
     "status" => (all_ok && rejection_ok && neg_ok) ? "PASS" : "FAIL",
     "julia_version" => string(VERSION),
-    "package_root" => Base.pkgdir(GLLVM),
+    "package_root" => Base.pkgdir(GLLVModels),
     "case_count" => length(cases),
     "all_checks" => all_ok,
     "rejection_checks_ok" => rejection_ok,

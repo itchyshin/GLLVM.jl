@@ -24,7 +24,7 @@
 # weight α·y/μ(ẑ) is mode-sensitive, so the default 1e-9 leaves a ~1e-10
 # residual between kernels. Measured: 1e-9 → 7e-11, 1e-13 → exactly 0.
 
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "Gamma curvature: every kernel agrees" begin
     Random.seed!(20260825)
@@ -33,29 +33,29 @@ using GLLVM, Test, Random, Distributions
     Λ = reshape(0.3 .* randn(p), p, K)
     Y = [rand(Gamma(α, exp(β[t]) / α)) for t in 1:p, _ in 1:n]
     N = ones(Int, p, n)
-    link = GLLVM.LogLink()
+    link = GLLVModels.LogLink()
     fam  = Gamma(α, 1.0)
     MODE_TOL = 1e-13
 
     # The reference: the generic core, which carries the selector and whose
     # Gamma default is now :observed.
-    ref = GLLVM.gamma_marginal_loglik_laplace(Y, Λ, β, α; tol = MODE_TOL)
+    ref = GLLVModels.gamma_marginal_loglik_laplace(Y, Λ, β, α; tol = MODE_TOL)
 
     @testset "the core is genuinely on the observed curvature" begin
-        @test GLLVM._default_hessian(fam, link) === :observed
-        fisher = GLLVM.gamma_marginal_loglik_laplace(Y, Λ, β, α; tol = MODE_TOL, hessian = :fisher)
+        @test GLLVModels._default_hessian(fam, link) === :observed
+        fisher = GLLVModels.gamma_marginal_loglik_laplace(Y, Λ, β, α; tol = MODE_TOL, hessian = :fisher)
         @test ref != fisher          # the flip actually changed something
         @test isfinite(ref)
     end
 
     @testset "grouped-dispersion kernel agrees" begin
-        got = GLLVM.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, fill(α, p); tol = MODE_TOL)
+        got = GLLVModels.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, fill(α, p); tol = MODE_TOL)
         @test got ≈ ref atol = 1e-10
     end
 
     @testset "covariates kernel agrees (zero offset ⇒ same model)" begin
         O = zeros(p, n)
-        got = GLLVM._marginal_loglik_offset(fam, Y, N, Λ, β, O, link; tol = MODE_TOL)
+        got = GLLVModels._marginal_loglik_offset(fam, Y, N, Λ, β, O, link; tol = MODE_TOL)
         @test got ≈ ref atol = 1e-10
     end
 
@@ -64,13 +64,13 @@ using GLLVM, Test, Random, Distributions
     @testset "mixed-family kernel agrees (the bridge two-route case)" begin
         fams  = fill(fam, p)
         links = fill(link, p)
-        got = GLLVM.mixed_marginal_loglik_laplace(fams, links, Y, N, Λ, β; tol = MODE_TOL)
+        got = GLLVModels.mixed_marginal_loglik_laplace(fams, links, Y, N, Λ, β; tol = MODE_TOL)
         @test got ≈ ref atol = 1e-10
     end
 
     @testset "quadratic kernel agrees (D = 0 ⇒ reduces to the core)" begin
         D = zeros(p, K)
-        got = sum(GLLVM.quadratic_loglik_site(fam, view(Y, :, s), view(N, :, s),
+        got = sum(GLLVModels.quadratic_loglik_site(fam, view(Y, :, s), view(N, :, s),
                                               Λ, D, β, link; tol = MODE_TOL)
                   for s in 1:n)
         @test got ≈ ref atol = 1e-10
@@ -81,10 +81,10 @@ using GLLVM, Test, Random, Distributions
     # kernels would be inconsistent for reasons unrelated to the flip, and the
     # agreements above would be coincidental rather than meaningful.
     @testset "negative control: all kernels also agree under :fisher" begin
-        ref_f = GLLVM.gamma_marginal_loglik_laplace(Y, Λ, β, α; tol = MODE_TOL, hessian = :fisher)
-        @test GLLVM.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, fill(α, p);
+        ref_f = GLLVModels.gamma_marginal_loglik_laplace(Y, Λ, β, α; tol = MODE_TOL, hessian = :fisher)
+        @test GLLVModels.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, fill(α, p);
                   tol = MODE_TOL, hessian = :fisher) ≈ ref_f atol = 1e-10
-        @test GLLVM._marginal_loglik_offset(fam, Y, N, Λ, β, zeros(p, n), link;
+        @test GLLVModels._marginal_loglik_offset(fam, Y, N, Λ, β, zeros(p, n), link;
                   tol = MODE_TOL, hessian = :fisher) ≈ ref_f atol = 1e-10
         @test ref_f != ref
     end
@@ -107,20 +107,20 @@ using GLLVM, Test, Random, Distributions
         Lt = reshape(0.3 .* randn(pt), pt, Kt)
         Yt = [max(1, rand(NegativeBinomial(rr, rr / (rr + exp(bt[t]))))) for t in 1:pt, _ in 1:nt]
         Nt = ones(Int, pt, nt)
-        ft = GLLVM.TruncatedNegBin2(rr)
-        lk = GLLVM.LogLink()
+        ft = GLLVModels.TruncatedNegBin2(rr)
+        lk = GLLVModels.LogLink()
 
-        @test GLLVM._default_hessian(ft, lk) === :observed
+        @test GLLVModels._default_hessian(ft, lk) === :observed
 
-        core = GLLVM.marginal_loglik_laplace(ft, Yt, Nt, Lt, bt, lk)
-        own  = GLLVM.truncated_nbinom2_marginal_loglik_laplace(Yt, Lt, bt, rr)
+        core = GLLVModels.marginal_loglik_laplace(ft, Yt, Nt, Lt, bt, lk)
+        own  = GLLVModels.truncated_nbinom2_marginal_loglik_laplace(Yt, Lt, bt, rr)
         @test core ≈ own atol = 1e-10
 
         # …and the negative control: forced to :fisher BOTH routes must also
         # agree, at a different value. Without this, two routes wrong together
         # would be indistinguishable from two routes right together.
-        core_f = GLLVM.marginal_loglik_laplace(ft, Yt, Nt, Lt, bt, lk; hessian = :fisher)
-        own_f  = GLLVM.truncated_nbinom2_marginal_loglik_laplace(Yt, Lt, bt, rr; hessian = :fisher)
+        core_f = GLLVModels.marginal_loglik_laplace(ft, Yt, Nt, Lt, bt, lk; hessian = :fisher)
+        own_f  = GLLVModels.truncated_nbinom2_marginal_loglik_laplace(Yt, Lt, bt, rr; hessian = :fisher)
         @test core_f ≈ own_f atol = 1e-10
         @test !isapprox(core_f, core; rtol = 1e-6)
     end

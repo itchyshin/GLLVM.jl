@@ -10,9 +10,9 @@ export ExecutionRun, abort_run!, execution_inventory, finish_run!, record_case!,
 """Reject evidence produced by a package loaded from a different checkout."""
 function verify_loaded_source(expected_root, loaded_root, loaded_entry)
     root = realpath(expected_root)
-    realpath(loaded_root) == root || throw(ArgumentError("loaded GLLVM root differs from the evidence checkout"))
-    realpath(loaded_entry) == realpath(joinpath(root, "src", "GLLVM.jl")) ||
-        throw(ArgumentError("loaded GLLVM entry point differs from the evidence checkout"))
+    realpath(loaded_root) == root || throw(ArgumentError("loaded GLLVModels root differs from the evidence checkout"))
+    realpath(loaded_entry) == realpath(joinpath(root, "src", "GLLVModels.jl")) ||
+        throw(ArgumentError("loaded GLLVModels entry point differs from the evidence checkout"))
     return true
 end
 

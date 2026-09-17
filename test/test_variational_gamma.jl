@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Variational (VA) marginal — Gamma" begin
     @testset "Λ=0 reduces to independent Gamma loglik (exact)" begin
@@ -7,7 +7,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         α = 3.0
         β = 0.3 .* randn(p) .+ 0.5
         Y = [rand(Gamma(α, exp(β[t]) / α)) for t in 1:p, s in 1:n]
-        va = GLLVM.gamma_marginal_loglik_va(Y, zeros(p, K), β, α)
+        va = GLLVModels.gamma_marginal_loglik_va(Y, zeros(p, K), β, α)
         ref = 0.0
         for t in 1:p, s in 1:n
             ref += logpdf(Gamma(α, exp(β[t]) / α), Y[t, s])
@@ -24,7 +24,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         ztrue = randn()
         y = [rand(Gamma(α, exp(β[t] + Λ[t, 1] * ztrue) / α)) for t in 1:p]
         Y = reshape(y, p, 1)
-        va = GLLVM.gamma_marginal_loglik_va(Y, Λ, β, α)
+        va = GLLVModels.gamma_marginal_loglik_va(Y, Λ, β, α)
 
         zs = range(-10, 10; length = 8001); dz = step(zs)
         marg = 0.0
@@ -50,12 +50,12 @@ using GLLVM, Test, Random, Distributions, Statistics
         Λ = 0.4 .* randn(p, K)
         Λ2 = Λ .^ 2
         y = [rand(Gamma(α, exp(β[t]) / α)) for t in 1:p]
-        negelbo(ψ) = -GLLVM._va_site_gamma_elbo(ψ, y, Λ, Λ2, β, α)
+        negelbo(ψ) = -GLLVModels._va_site_gamma_elbo(ψ, y, Λ, Λ2, β, α)
         h = 1e-6
         for _ in 1:3
             ψ = randn(2K)
             G = zeros(2K)
-            GLLVM._va_site_gamma_grad!(G, ψ, y, Λ, Λ2, β, α)
+            GLLVModels._va_site_gamma_grad!(G, ψ, y, Λ, Λ2, β, α)
             for i in 1:(2K)
                 ψp = copy(ψ); ψp[i] += h
                 ψm = copy(ψ); ψm[i] -= h

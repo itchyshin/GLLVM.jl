@@ -1,7 +1,7 @@
-using Test, GLLVM, LinearAlgebra, TOML
+using Test, GLLVModels, LinearAlgebra, TOML
 
 # Known-answer gate for the cross-objective identity tool (panel 2026-09-01):
-# on the frozen COV-ORD-LATENT-BARE case, GLLVM.jl's objective evaluated at the
+# on the frozen COV-ORD-LATENT-BARE case, GLLVModels.jl's objective evaluated at the
 # RETAINED fitted coordinates of (a) its own native route and (b) the frozen R
 # reference must reproduce each route's retained log-likelihood. (b) is the
 # likelihood-function identity claim itself, at the R optimum.

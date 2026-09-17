@@ -2,7 +2,7 @@
 
 using Test
 using Random
-using GLLVM
+using GLLVModels
 using Distributions: NegativeBinomial
 
 @testset "TruncatedNegBin2Fit second-order Wald CI" begin

@@ -1,14 +1,14 @@
 # Response families
 
-A GLLVM links its latent factors to the responses through a **response family**
-and a **link**. GLLVM.jl follows the Julia convention (as in GLM.jl): the family
+A GLLVModels links its latent factors to the responses through a **response family**
+and a **link**. GLLVModels.jl follows the Julia convention (as in GLM.jl): the family
 is a `Distributions.jl` distribution, chosen with the `family =` keyword to
 `fit_gllvm`.
 
 ## The unified entry point
 
 ```julia
-using GLLVM, Distributions
+using GLLVModels, Distributions
 
 # Gaussian responses (continuous) — exact closed-form marginal
 fit_gllvm(Y;  family = Normal(),   K = 2)
@@ -74,7 +74,7 @@ supports `LogitLink()` (default), `ProbitLink()`, and `CLogLogLink()`.
 | `TruncatedNegBin2()` | ✅ available | log | Laplace | dispersion `r` (Var = μ + μ²/r) | zero-truncated NB2 (`y ≥ 1`); shared `r`, or per-trait `r_t` via `fit_truncated_nbinom2_gllvm_pertrait` (twin `log_phi_truncnb2`) |
 | `Beta()` | ✅ available | logit | Laplace | precision `φ` (Var = μ(1−μ)/(1+φ)) | proportions in (0,1); `φ` jointly estimated |
 | `Ordinal()` | ✅ available | cumulative logit / probit | Laplace | cutpoints `τ` | ordered categories `1:C`; `fit_ordinal_gllvm()` uses shared cutpoints, `fit_ordinal_gllvm_pertrait()` uses trait-specific cutpoints for R-bridge parity |
-| `GLLVM.Multinomial()` | ✅ available | baseline-category softmax (`η₁ ≡ 0`) | fixed effects only — **no latent variables** | — | one *unordered* categorical trait per fit (`1×n` row, length-`n` vector, or `K×n` one-hot); categories `1:K` with `K ≥ 3`; qualify the marker — the bare name clashes with `Distributions.Multinomial` |
+| `GLLVModels.Multinomial()` | ✅ available | baseline-category softmax (`η₁ ≡ 0`) | fixed effects only — **no latent variables** | — | one *unordered* categorical trait per fit (`1×n` row, length-`n` vector, or `K×n` one-hot); categories `1:K` with `K ≥ 3`; qualify the marker — the bare name clashes with `Distributions.Multinomial` |
 | `Gamma()` | ✅ available | log | Laplace | shape `α` (Var = μ²/α) | positive continuous; `α` jointly estimated |
 | `Lognormal()` | ✅ available | log | **closed form** (Gaussian on `log y`) | log-SD `σ` | one-part positive continuous, `log y ~ Normal(η, σ²)`; reuses the closed-form Gaussian fitter on `log(Y)`, not a Laplace approximation; `loglik` is reported on the *y* scale; distinct from the two-part `DeltaLogNormal()` |
 | `Exponential()` | ✅ available | log | Laplace | — | positive continuous, `Var = μ²` (Gamma with α=1) |
@@ -119,7 +119,7 @@ the dispersion families) over the sparse phylogenetic precision.
 fit = fit_gllvm(Y; family = Normal(), K = 2)
 ```
 
-The Gaussian GLLVM admits a **closed-form marginal** (no Laplace approximation).
+The Gaussian GLLVModels admits a **closed-form marginal** (no Laplace approximation).
 The latent integral is conjugate, so the optimiser works directly on the exact
 log-likelihood. This is the fastest and most accurate path. The response matrix
 `Y` is `p × n` (responses × sites).
@@ -258,7 +258,7 @@ fit = fit_gllvm(Yc; family = NB1(), K = 2)   # per-species φ (default)
 ```
 
 The NB1 variance function is linear in the mean, Var = μ(1+φ) — quasi-Poisson-like
-overdispersion, the alternative to NB2's quadratic tail. `NB1` is GLLVM.jl's own
+overdispersion, the alternative to NB2's quadratic tail. `NB1` is GLLVModels.jl's own
 exported marker (there is no `Distributions` counterpart) and matches R gllvm's
 `negative.binomial1` with the same `φ`. The public `fit_gllvm` default estimates
 **per-species** dispersion (returns `NB1GroupedFit`; vector `fit.φ`), matching
@@ -308,7 +308,7 @@ which estimates a single **shared** `r` across species and packs
 also selects this per-trait model; repeated IDs and partial grouping are unsupported.
 
 ```@setup truncated_nb2_dispatch
-using GLLVM, Random, Distributions
+using GLLVModels, Random, Distributions
 _TNB2_SEED = 58
 function parity_loadings_p5k2()
     return [
@@ -449,14 +449,14 @@ confint_lv_effects(fit_xlv, Yo, X_lv; method = :profile,
 Those intervals target the native Julia `B_lv = Λ * alpha_lv'` product. They do
 not promote per-trait ordinal bridge CI parity.
 
-### Multinomial — `GLLVM.Multinomial()`
+### Multinomial — `GLLVModels.Multinomial()`
 
 
 ```julia
 Y = reshape(y, 1, n)                                    # y::Vector{Int}, values in 1:K, K ≥ 3
 
 fit = fit_multinomial_gllvm(Y; n_categories = K)        # 1×n matrix, or a length-n vector
-fit = fit_gllvm(Y; family = GLLVM.Multinomial())        # same route; Y must be a MATRIX here
+fit = fit_gllvm(Y; family = GLLVModels.Multinomial())        # same route; Y must be a MATRIX here
 fit = fit_multinomial_gllvm(Y; X = X, n_categories = K) # + site covariates (n×p, no intercept column)
 ```
 
@@ -495,13 +495,13 @@ returned `MultinomialFit` carries `β` (length `K−1`), `γ` (`(K−1)×p`),
 `theta_packed`; there are no loadings in v1. Multinomial fits have no Wald
 confidence-interval dispatch and no R-bridge route.
 
-The marker is `GLLVM.Multinomial`, not `Distributions.Multinomial` (the
-count-vector law). GLLVM.jl deliberately excludes `Multinomial` from its
+The marker is `GLLVModels.Multinomial`, not `Distributions.Multinomial` (the
+count-vector law). GLLVModels.jl deliberately excludes `Multinomial` from its
 `using Distributions` list so the identity marker can bind unqualified
 *inside* the package — but both packages **export** the name, so in user code
-that does `using GLLVM, Distributions` the bare name `Multinomial` is
+that does `using GLLVModels, Distributions` the bare name `Multinomial` is
 undefined rather than resolving to either one. Always write
-`GLLVM.Multinomial()` (and `Distributions.Multinomial(...)` for the count
+`GLLVModels.Multinomial()` (and `Distributions.Multinomial(...)` for the count
 law). Because v1 has no latent variables, `Multinomial` is **not a completed
 capability in the same sense as the families above**: its row in the
 capability ledger is deliberately `missing`, not "available".
@@ -616,9 +616,9 @@ fit = fit_gllvm(Y; family = Lognormal(), K = 2)   # Y > 0; log link on E[log y] 
 fit = fit_lognormal_gllvm(Y; K = 2)               # same route, called directly
 ```
 
-A one-part lognormal GLLVM (twin `lognormal()`, family_id 3): `log(y) ~
+A one-part lognormal GLLVModels (twin `lognormal()`, family_id 3): `log(y) ~
 Normal(η, σ²)` with `η = β + Λz`. On the log scale this is exactly the
-Gaussian GLLVM, so `fit_lognormal_gllvm` **reuses the closed-form Gaussian
+Gaussian GLLVModels, so `fit_lognormal_gllvm` **reuses the closed-form Gaussian
 fitter** on `log(Y)` rather than a Laplace approximation: per-trait intercepts
 `β_t = mean_s log(Y[t,s])` are removed first, then `fit_gaussian_gllvm`
 estimates `(Λ, σ)` on the centred log scale. The reported `loglik` is on the
@@ -845,7 +845,7 @@ counts. The Beta precision `φ` (the shape-sum `a + b`) is jointly estimated and
 available as `fit.φ`; as `φ → ∞` the family collapses to `Binomial(N, μ)`. Links:
 `LogitLink()` (default), `ProbitLink()`, `CLogLogLink()`.
 
-`BetaBinom` is GLLVM.jl's own exported marker, named to avoid colliding with
+`BetaBinom` is GLLVModels.jl's own exported marker, named to avoid colliding with
 `Distributions.BetaBinomial`. The public `fit_gllvm` default estimates
 **per-species** `φ` (returns `BetaBinomialGroupedFit`; vector `fit.φ`), matching
 gllvmTMB's length-`p` `log_phi_betabinom` and the estimand already used with shared
@@ -903,7 +903,7 @@ same call, and unsupported families fail with an `ArgumentError`.
 fit = fit_gaussian_pervar_gllvm(Y; K = 2)   # heteroscedastic Gaussian
 ```
 
-A heteroscedastic Gaussian GLLVM with a **separate residual variance per species**
+A heteroscedastic Gaussian GLLVModels with a **separate residual variance per species**
 (gllvm's heteroscedastic default), in contrast to the single shared `σ_eps` of
 `fit_gaussian_gllvm`. With `X=nothing`, trait intercepts are profiled as row means of the `p × n`
 response matrix. Supply `X` of shape `(p, n, q)` to fit a complete fixed-effect
@@ -925,7 +925,7 @@ choose R's data-dependent small scale. The formula route is available with
 remain unverified.
 
 ```@example pervar_design
-using GLLVM, Random
+using GLLVModels, Random
 rng = MersenneTwister(7093)
 p, n = 4, 80
 site_x = collect(range(-1, 1; length=n))
@@ -964,7 +964,7 @@ categorical contrast choices use the same per-variance route.
 
 ```@example pervar_design
 fit_formula = gllvm(@formula(y ~ 1 + site_x), Y, (site_x=site_x,);
-    family=GLLVM.Normal(), K=1, pervar=true, fixed_residual_sd=0.2)
+    family=GLLVModels.Normal(), K=1, pervar=true, fixed_residual_sd=0.2)
 @assert fit_formula.converged # hide
 @assert isapprox(fit_formula.loglik, fit_fixed.loglik; atol=1e-7) # hide
 @assert isapprox(fit_formula.β, fit_fixed.β; atol=1e-6) # hide
@@ -981,7 +981,7 @@ fit reports which method actually ran:
 
 ```@example pervar_design
 fallback = gllvm(@formula(y ~ 1 + site_x), Y, (site_x=site_x,);
-    family=GLLVM.Normal(), K=1, pervar=true, fixed_residual_sd=0.2, aghq=3)
+    family=GLLVModels.Normal(), K=1, pervar=true, fixed_residual_sd=0.2, aghq=3)
 @assert fallback.loglik == fit_formula.loglik # hide
 @assert fallback.ψ² == fit_formula.ψ² # hide
 println("Requested nodes: ", fallback.integration.requested_k)
@@ -1001,7 +1001,7 @@ reporting, not recovery or interval calibration.
 
 
 ```julia
-using GLLVM, Distributions   # the family markers come from Distributions, not GLLVM
+using GLLVModels, Distributions   # the family markers come from Distributions, not GLLVModels
 
 families = [Normal(), Poisson(), Binomial()]
 links    = [IdentityLink(), LogLink(), LogitLink()]
@@ -1036,9 +1036,9 @@ taken straight through the per-site Laplace mode solve, not a hand-coded
 analytic kernel. There is no `X`-covariate keyword on this route.
 
 Note that the family markers (`Normal`, `Poisson`, …) are `Distributions` types
-that GLLVM.jl uses internally but does not re-export, so a mixed-family script
-needs `using Distributions` alongside `using GLLVM`; the links
-(`IdentityLink`, `LogLink`, `LogitLink`, …) are exported by GLLVM.jl.
+that GLLVModels.jl uses internally but does not re-export, so a mixed-family script
+needs `using Distributions` alongside `using GLLVModels`; the links
+(`IdentityLink`, `LogLink`, `LogitLink`, …) are exported by GLLVModels.jl.
 
 Unlike the single-family extractors elsewhere on this page, the mixed
 extractors — `correlation`, `sigma_y_site`, `communality`, `getLV`, `predict`,

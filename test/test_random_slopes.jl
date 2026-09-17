@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, ForwardDiff
+using GLLVModels, Test, Random, LinearAlgebra, ForwardDiff
 
 @testset "Gaussian grouped random slopes (random regression)" begin
     # ------------------------------------------------------------------
@@ -11,13 +11,13 @@ using GLLVM, Test, Random, LinearAlgebra, ForwardDiff
         p, K, n = 5, 1, 60
         Λ = 0.6 .* randn(p, K); σ_eps, σ_u = 0.5, 0.7
         grouping = rand(1:6, n); y = randn(p, n)
-        codes, _ = GLLVM._code_grouping(grouping); L = maximum(codes)
+        codes, _ = GLLVModels._code_grouping(grouping); L = maximum(codes)
         gi = [findall(==(g), codes) for g in 1:L]
-        ll_slope = GLLVM._grouped_slope_loglik(y, gi, ones(n, 1), Λ, σ_eps, fill(σ_u^2, 1, 1))
-        ll_int   = GLLVM._grouped_intercept_loglik(y, gi, Λ, σ_eps, σ_u)
+        ll_slope = GLLVModels._grouped_slope_loglik(y, gi, ones(n, 1), Λ, σ_eps, fill(σ_u^2, 1, 1))
+        ll_int   = GLLVModels._grouped_intercept_loglik(y, gi, Λ, σ_eps, σ_u)
         @test isapprox(ll_slope, ll_int; rtol = 1e-8)
         # public intercept-loglik entry point matches too
-        ll_int_pub = GLLVM.gaussian_grouped_intercept_loglik(y, grouping, Λ, σ_eps, σ_u)
+        ll_int_pub = GLLVModels.gaussian_grouped_intercept_loglik(y, grouping, Λ, σ_eps, σ_u)
         @test isapprox(ll_slope, ll_int_pub; rtol = 1e-8)
     end
 
@@ -61,14 +61,14 @@ using GLLVM, Test, Random, LinearAlgebra, ForwardDiff
         Λ0 = 0.5 .* randn(p, K)
         grouping = vcat(collect(1:L), rand(1:L, n - L))
         Z = hcat(ones(n), randn(n)); y = randn(p, n)
-        codes, _ = GLLVM._code_grouping(grouping)
+        codes, _ = GLLVModels._code_grouping(grouping)
         gi = [findall(==(g), codes) for g in 1:maximum(codes)]
-        rr = GLLVM.rr_theta_len(p, K); nc = GLLVM._chol_cov_npar(2)
+        rr = GLLVModels.rr_theta_len(p, K); nc = GLLVModels._chol_cov_npar(2)
         f = θ -> begin
-            Σ_b, _ = GLLVM._unpack_chol_cov(θ[(rr + 2):(rr + 1 + nc)], 2)
-            -GLLVM._grouped_slope_loglik(y, gi, Z, GLLVM.unpack_lambda(θ[1:rr], p, K), exp(θ[rr + 1]), Σ_b)
+            Σ_b, _ = GLLVModels._unpack_chol_cov(θ[(rr + 2):(rr + 1 + nc)], 2)
+            -GLLVModels._grouped_slope_loglik(y, gi, Z, GLLVModels.unpack_lambda(θ[1:rr], p, K), exp(θ[rr + 1]), Σ_b)
         end
-        θ = vcat(GLLVM.pack_lambda(Λ0), log(0.5), [log(0.5), 0.1, log(0.4)])
+        θ = vcat(GLLVModels.pack_lambda(Λ0), log(0.5), [log(0.5), 0.1, log(0.4)])
         gad = ForwardDiff.gradient(f, θ); h = 1e-6; gfd = similar(θ)
         for i in eachindex(θ)
             s = h * max(1.0, abs(θ[i])); tp = copy(θ); tp[i] += s; tm = copy(θ); tm[i] -= s

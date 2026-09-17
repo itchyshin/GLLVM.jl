@@ -1,7 +1,7 @@
 # Qualify the unchanged required Gaussian fixture plus bounded postfit fields.
-using GLLVM, Test, RCall, TOML
+using GLLVModels, Test, RCall, TOML
 all(arg -> arg == "--tight-r", ARGS) || error("unexpected qualification argument")
-@assert realpath(Base.pkgdir(GLLVM))==realpath(pwd())
+@assert realpath(Base.pkgdir(GLLVModels))==realpath(pwd())
 @assert ENV["CORE070_PARITY_CASE_IDS"]=="NATIVE-01-GAUSSIAN"
 include(joinpath(pwd(),"test/parity/runparity.jl"))
 # Original fixture leaves its exact Y and R fit in R's namespace. Refit that
@@ -42,7 +42,7 @@ pred=predict(fit,Y;type=:link,X=X); response=fitted(fit,Y;X=X); resid=residuals(
 pred_delta=maximum(abs.(pred-rpred)); response_delta=maximum(abs.(response-rresponse)); residual_delta=maximum(abs.(resid-rresid))
 rloglik=rcopy(Float64,R"as.numeric(logLik(fit_r))")
 rcoef=rcopy(Vector{Float64},R"as.numeric(coef(fit_r))")
-report=Dict("coefficient_delta"=>maximum(abs.(fit.pars.β-rcoef)),"native_nparams"=>GLLVM._nparams(fit),"r_nparams"=>rcopy(Int,R"attr(logLik(fit_r),'df')"),"tight_public_r_control"=>tight,"original_r_gradient_max"=>rcopy(Float64,R".core070_original_gradient"),"loglik_delta"=>abs(fit.logLik-rloglik),"scope"=>"REQUIRED_GAUSSIAN_LOADINGS_ONLY_FITTED_POSTFIT", "r_gradient_max"=>maximum(abs,grad),"prediction_delta"=>pred_delta,"response_delta"=>response_delta,"residual_delta"=>residual_delta,"native_converged"=>fit.converged,"r_convergence"=>rcopy(Int,R".core070_gauss_post$convergence"),"r_nobs"=>rcopy(Int,R".core070_gauss_post$nobs"))
+report=Dict("coefficient_delta"=>maximum(abs.(fit.pars.β-rcoef)),"native_nparams"=>GLLVModels._nparams(fit),"r_nparams"=>rcopy(Int,R"attr(logLik(fit_r),'df')"),"tight_public_r_control"=>tight,"original_r_gradient_max"=>rcopy(Float64,R".core070_original_gradient"),"loglik_delta"=>abs(fit.logLik-rloglik),"scope"=>"REQUIRED_GAUSSIAN_LOADINGS_ONLY_FITTED_POSTFIT", "r_gradient_max"=>maximum(abs,grad),"prediction_delta"=>pred_delta,"response_delta"=>response_delta,"residual_delta"=>residual_delta,"native_converged"=>fit.converged,"r_convergence"=>rcopy(Int,R".core070_gauss_post$convergence"),"r_nobs"=>rcopy(Int,R".core070_gauss_post$nobs"))
 mkpath("postfit")
 open("postfit/result.toml","w") do io;TOML.print(io,report);end
 @testset "Required Gaussian conditional postfit" begin

@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "Gamma Laplace marginal" begin
     @testset "Λ = 0 reduces to independent Gamma-regression loglik (exact)" begin
@@ -8,7 +8,7 @@ using GLLVM, Test, Random, Distributions
         α = 6.0                                        # shape
         μ = exp.(β)
         Y = [rand(Gamma(α, μ[t] / α)) for t in 1:p, s in 1:n]
-        ll = GLLVM.gamma_marginal_loglik_laplace(Y, zeros(p, K), β, α)
+        ll = GLLVModels.gamma_marginal_loglik_laplace(Y, zeros(p, K), β, α)
         ll_indep = sum(logpdf(Gamma(α, μ[t] / α), Y[t, s]) for t in 1:p, s in 1:n)
         @test ll ≈ ll_indep atol = 1e-8
     end
@@ -23,7 +23,7 @@ using GLLVM, Test, Random, Distributions
         μt = exp.(β .+ Λ[:, 1] .* ztrue)
         y = [rand(Gamma(α, μt[t] / α)) for t in 1:p]
         Y = reshape(y, p, 1)
-        ll_lap = GLLVM.gamma_marginal_loglik_laplace(Y, Λ, β, α)
+        ll_lap = GLLVModels.gamma_marginal_loglik_laplace(Y, Λ, β, α)
         zs = range(-8, 8; length = 4001); dz = step(zs)
         marg = 0.0
         for z in zs

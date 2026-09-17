@@ -1,7 +1,7 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # ============================================================================
-# Beta-hurdle GLLVM — deterministic anchor tests
+# Beta-hurdle GLLVModels — deterministic anchor tests
 #
 # Two-part model on [0,1):
 #   y = 0   →  log(1 − π),           π = logistic(β^z)
@@ -13,7 +13,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 # sum of independent per-cell two-part log-likelihoods to machine precision.
 # ============================================================================
 
-@testset "beta-hurdle GLLVM" begin
+@testset "beta-hurdle GLLVModels" begin
 
     # -----------------------------------------------------------------------
     # 1. Λ = 0 ⇒ exact independent two-part loglik  (machine-precision anchor)
@@ -36,7 +36,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         end
 
         # Laplace marginal with Λ = 0 (zero loadings → exact marginalisation).
-        ll = GLLVM.beta_hurdle_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, φ)
+        ll = GLLVModels.beta_hurdle_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, φ)
 
         # Direct (independent) two-part log-likelihood — the reference value.
         ref = 0.0
@@ -68,7 +68,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
         Y = zeros(Float64, p, n)          # all absences (all columns zero)
 
-        ll  = GLLVM.beta_hurdle_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, φ)
+        ll  = GLLVModels.beta_hurdle_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, φ)
         ref = sum(t -> n * log(1 - inv(1 + exp(-βz[t]))), 1:p)
 
         @test ll ≈ ref atol = 1e-8
@@ -93,7 +93,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         end
         @assert all(>(0), Y)              # sanity: no zeros generated
 
-        ll = GLLVM.beta_hurdle_marginal_loglik_laplace(Y, zeros(p, K), βz_large, βc, φ)
+        ll = GLLVModels.beta_hurdle_marginal_loglik_laplace(Y, zeros(p, K), βz_large, βc, φ)
 
         # Reference: pure Beta loglik + n·log(π) ≈ pure Beta loglik since π≈1.
         ref_beta = 0.0
@@ -117,18 +117,18 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
     # -----------------------------------------------------------------------
     @testset "_tp_pieces: score/weight sanity" begin
         φ = 8.0
-        fam = GLLVM.BetaHurdle(φ)
+        fam = GLLVModels.BetaHurdle(φ)
         # Interior point: y in (0,1), logistic-scale predictor η^c = 0 (μ=0.5)
         y_pos = 0.3
         ηz = 0.5; ηc = 0.0
-        sz, sc, Wz, Wc, logf = GLLVM._tp_pieces(fam, y_pos, ηz, ηc)
+        sz, sc, Wz, Wc, logf = GLLVModels._tp_pieces(fam, y_pos, ηz, ηc)
         @test Wc ≥ 0
         @test Wz ≥ 0
         @test isfinite(sc)
         @test isfinite(logf)
 
         # Absence: y = 0
-        sz0, sc0, Wz0, Wc0, logf0 = GLLVM._tp_pieces(fam, 0.0, ηz, ηc)
+        sz0, sc0, Wz0, Wc0, logf0 = GLLVModels._tp_pieces(fam, 0.0, ηz, ηc)
         @test sc0 == 0.0
         @test Wc0 == 0.0
         @test isfinite(logf0)
@@ -154,7 +154,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                                                (1 - inv(1 + exp(-βc[t]))) * φ)))
         end
         Y = reshape(y, p, 1)
-        ll_lap = GLLVM.beta_hurdle_marginal_loglik_laplace(Y, Λc, βz, βc, φ)
+        ll_lap = GLLVModels.beta_hurdle_marginal_loglik_laplace(Y, Λc, βz, βc, φ)
 
         # Numerical integral over z ~ N(0,1) on a fine grid.
         zs = range(-10, 10; length = 8001); dz = step(zs)
@@ -215,8 +215,8 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
 
         # _nparams, aic, bic
         k = 2p + (p * K - div(K * (K - 1), 2)) + 1
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.loglik
 
         # show methods (text/plain and compact)
         s_plain   = sprint(show, MIME("text/plain"), fit)
@@ -226,24 +226,24 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         @test occursin(string(p), s_plain)
 
         # getLV
-        LV = GLLVM.getLV(fit, Y; rotate = false)
+        LV = GLLVModels.getLV(fit, Y; rotate = false)
         @test size(LV) == (n, K)
         @test all(isfinite, LV)
 
         # predict
-        Ppred = GLLVM.predict(fit, Y; type = :response)
+        Ppred = GLLVModels.predict(fit, Y; type = :response)
         @test size(Ppred) == (p, n)
         @test all(Ppred .>= 0)
         @test all(Ppred .<= 1)
 
-        occ = GLLVM.predict(fit, Y; type = :occurrence)
+        occ = GLLVModels.predict(fit, Y; type = :occurrence)
         @test all(0 .< occ .< 1)
 
-        pos = GLLVM.predict(fit, Y; type = :positive)
+        pos = GLLVModels.predict(fit, Y; type = :positive)
         @test all(0 .< pos .< 1)
 
         # residuals
-        R = GLLVM.residuals(fit, Y; rng = MersenneTwister(5))
+        R = GLLVModels.residuals(fit, Y; rng = MersenneTwister(5))
         @test size(R) == (p, n)
         @test all(isfinite, R)
     end
@@ -327,4 +327,4 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         @test ff.loglik ≈ direct.loglik atol = 1e-8
     end
 
-end  # @testset "beta-hurdle GLLVM"
+end  # @testset "beta-hurdle GLLVModels"

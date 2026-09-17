@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # Engine-health gates for `fit_tweedie_gllvm_grouped` — the same three defects
 # #236 closed on the scalar fitter (Identity §T6 / PR note OWED #1):
@@ -53,9 +53,9 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
             @test isapprox(f.loglik, ref.loglik; rtol = 1e-6)
             @test isfinite(f.loglik)
             @test f.loglik > -1e4
-            @test f.loglik != -GLLVM._TWEEDIE_FAIL_PENALTY
+            @test f.loglik != -GLLVModels._TWEEDIE_FAIL_PENALTY
             @test 1 < f.power < 2
-            @test abs(log((f.power - 1) / (2 - f.power))) <= GLLVM._TWEEDIE_XI_MAX
+            @test abs(log((f.power - 1) / (2 - f.power))) <= GLLVModels._TWEEDIE_XI_MAX
         end
 
         # Same repair bar as the scalar G-a pin: beat the pre-repair best start.
@@ -118,7 +118,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
             @test isapprox(f.loglik, ref.loglik; rtol = 1e-5)
             @test isfinite(f.loglik)
             @test f.loglik > -1e4
-            @test f.loglik != -GLLVM._TWEEDIE_FAIL_PENALTY
+            @test f.loglik != -GLLVModels._TWEEDIE_FAIL_PENALTY
             @test 1 < f.power < 2
             @test all(>(0), f.φ)
         end

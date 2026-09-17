@@ -7,7 +7,7 @@
 #     docs/dev-log/core070/poisson-perf-repair-notes.md, not asserted here (wall
 #     time is not a reproducible CI assertion).
 
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 using Distributions: Poisson as _PoissonDist
 
 @testset "Poisson perf repair — gradient + logLik gates (core070)" begin
@@ -18,13 +18,13 @@ using Distributions: Poisson as _PoissonDist
         Λ = randn(p, K) .* 0.4
         Y = rand(0:8, p, n)
 
-        rr = GLLVM.rr_theta_len(p, K)
-        θ = vcat(β, GLLVM.pack_lambda(Λ))
+        rr = GLLVModels.rr_theta_len(p, K)
+        θ = vcat(β, GLLVModels.pack_lambda(Λ))
 
         f = function (θv)
             b = θv[1:p]
-            L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
-            return GLLVM.poisson_marginal_loglik_laplace(Y, L, b, LogLink();
+            L = GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            return GLLVModels.poisson_marginal_loglik_laplace(Y, L, b, LogLink();
                                                          maxiter = 200, tol = 1e-12)
         end
 
@@ -37,7 +37,7 @@ using Distributions: Poisson as _PoissonDist
             g_fd[i] = (f(θp) - f(θm)) / (2h)
         end
 
-        g_an = GLLVM.poisson_laplace_grad(Y, Λ, β)
+        g_an = GLLVModels.poisson_laplace_grad(Y, Λ, β)
 
         @test length(g_an) == m
         @test all(isfinite, g_an)
@@ -50,7 +50,7 @@ using Distributions: Poisson as _PoissonDist
         # using this exact fixture (MersenneTwister(20260901), Poisson via
         # Distributions.jl), via `fit_poisson_gllvm(Y; K=2)` with default settings
         # (no optimizer tolerance changes made anywhere in the repair). Captured
-        # 2026-09-01, GLLVM.jl branch codex/core070-aghq-20260830, commit b1e704e4.
+        # 2026-09-01, GLLVModels.jl branch codex/core070-aghq-20260830, commit b1e704e4.
         # If this test ever needs to change, the cause must be a genuine numerical
         # fix, never a repair-induced drift — re-derive the number by hand, do not
         # copy the post-repair value back in.
@@ -65,7 +65,7 @@ using Distributions: Poisson as _PoissonDist
         μ = exp.(clamp.(η, -5, 5))
         Y = [rand(rng, _PoissonDist(μ[t, s])) for t in 1:p, s in 1:n]
 
-        fit = GLLVM.fit_poisson_gllvm(Y; K = 2)
+        fit = GLLVModels.fit_poisson_gllvm(Y; K = 2)
         @test fit.converged
         @test isapprox(fit.loglik, BASELINE_LOGLIK; atol = 1e-8, rtol = 0)
     end

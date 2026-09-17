@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Delta-Gamma family" begin
     @testset "Λ = 0 reduces to independent two-part loglik (exact)" begin
@@ -16,7 +16,7 @@ using GLLVM, Test, Random, Distributions, Statistics
             end                                     # else stays 0 (absence)
         end
 
-        ll = GLLVM.delta_gamma_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, α)
+        ll = GLLVModels.delta_gamma_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, α)
         ref = 0.0
         for t in 1:p, s in 1:n
             ref += Y[t, s] > 0 ? (log(π[t]) + logpdf(Gamma(α, exp(βc[t]) / α), Y[t, s])) :
@@ -42,7 +42,7 @@ using GLLVM, Test, Random, Distributions, Statistics
             end
         end
         Y = reshape(y, p, 1)
-        ll_lap = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α)
+        ll_lap = GLLVModels.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α)
 
         zs = range(-10, 10; length = 8001); dz = step(zs)
         marg = 0.0
@@ -184,7 +184,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         # `_tp_pieces(::DeltaGamma)` returns the Fisher weight Wc = alpha, a CONSTANT.
         # TMB uses the observed joint Hessian, which for the Gamma/log positive part is
         # alpha*y/mu. TMB never faces this choice: MakeADFun(..., random=) differentiates
-        # the coded nll, so it gets observed curvature structurally. GLLVM.jl hand-codes
+        # the coded nll, so it gets observed curvature structurally. GLLVModels.jl hand-codes
         # the weight and so must choose -- and used the same W for two different roles
         # (mode search AND log-det). Only the log-det needs observed curvature.
         Random.seed!(73)
@@ -211,8 +211,8 @@ using GLLVM, Test, Random, Distributions, Statistics
         # The observed weight is taken from the already-verified Gamma implementation
         # in grouped_dispersion.jl rather than re-derived here.
         for (mu, y) in ((0.5, 4.0), (2.0, 0.3), (7.0, 9.0))
-            @test GLLVM._gamma_grouped_laplace_weight(:observed, GLLVM.Gamma(al, 1.0),
-                                                      mu, mu, y, GLLVM.LogLink()) ≈ al * y / mu
+            @test GLLVModels._gamma_grouped_laplace_weight(:observed, GLLVModels.Gamma(al, 1.0),
+                                                      mu, mu, y, GLLVModels.LogLink()) ≈ al * y / mu
         end
 
         # Fits converge under both and neither degenerates.

@@ -111,8 +111,8 @@ result <- list(
   ),
   routes=list(
     r_reference=empty_route("r_reference", "gllvmTMB"),
-    native_julia=empty_route("native_julia", "GLLVM.jl"),
-    julia_formula=empty_route("julia_formula", "GLLVM.jl"),
+    native_julia=empty_route("native_julia", "GLLVModels.jl"),
+    julia_formula=empty_route("julia_formula", "GLLVModels.jl"),
     public_r_bridge=empty_route("public_r_bridge", "gllvmTMB engine=julia")
   ),
   comparisons=list(), negative_controls=list(), checks=list(), all_checks=FALSE
@@ -249,7 +249,7 @@ julia_payload <- tryCatch({
 }, error=function(e) { julia_error <<- e; NULL })
 if (is.null(julia_payload)) {
   for (route in c("native_julia", "julia_formula")) {
-    result$routes[[route]] <- empty_route(route, "GLLVM.jl")
+    result$routes[[route]] <- empty_route(route, "GLLVModels.jl")
     result$routes[[route]]$error <- error_text(julia_error)
     result$routes[[route]]$class <- class(julia_error)[[1L]]
   }
@@ -266,9 +266,9 @@ if (is.null(julia_payload)) {
   }, logical(1L)))
   result$process_receipt$julia_version <- JuliaCall::julia_eval("string(VERSION)")
   result$process_receipt$julia_project <- JuliaCall::julia_eval("Base.active_project()")
-  result$process_receipt$julia_source <- JuliaCall::julia_eval("pathof(GLLVM)")
+  result$process_receipt$julia_source <- JuliaCall::julia_eval("pathof(GLLVModels)")
   result$process_receipt$julia_threads <- JuliaCall::julia_eval("Threads.nthreads()")
-  result$process_receipt$blas_threads <- JuliaCall::julia_eval("GLLVM.LinearAlgebra.BLAS.get_num_threads()")
+  result$process_receipt$blas_threads <- JuliaCall::julia_eval("GLLVModels.LinearAlgebra.BLAS.get_num_threads()")
 }
 write_attempt()
 

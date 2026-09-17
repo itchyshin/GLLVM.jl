@@ -1,7 +1,7 @@
-using GLLVM, Test, LinearAlgebra
+using GLLVModels, Test, LinearAlgebra
 
 # Cross-lineage coevolution estimand Γ = Λ_phy Λ_phy' (phase C2), Julia mirror
-# of gllvmTMB::extract_Gamma. In GLLVM.jl the phylo loadings Λ_phy (p × K_phy)
+# of gllvmTMB::extract_Gamma. In GLLVModels.jl the phylo loadings Λ_phy (p × K_phy)
 # sit on the stacked two-lineage entity index p; the host block is rows 1:n_H
 # and the partner block rows n_H+1:p (the make_cross_kernel ordering). Trait
 # indexing is POSITIONAL (integer rows), unlike the name-based R API.

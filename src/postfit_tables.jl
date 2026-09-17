@@ -133,7 +133,7 @@ Returns a `NamedTuple` of equal-length vectors with fields
 `row_level, col_level, row_trait, col_trait, kernel_value, gamma_shape,
 covariance` — the positional analogue of R's table (R's `rho` /
 `kernel_includes_rho` metadata columns are deferred to the `CrossKernel`
-metadata wrapper, core070 spec §2.6, since GLLVM.jl's kernel is presently an
+metadata wrapper, core070 spec §2.6, since GLLVModels.jl's kernel is presently an
 unnamed matrix with no stored `rho`).
 
 Throws `ArgumentError` if any level index falls outside `axes(K)` (mirroring
@@ -195,13 +195,13 @@ Predicted values at the MASKED (unobserved) cells only. Mirrors
 (`methods-gllvmTMB.R:3948-4085`).
 
 `mask` is a `p × n` `Bool` matrix (`true` = observed, `false` = masked —
-`GLLVM.jl`'s existing mask convention, `src/families/laplace.jl:96-133`);
+`GLLVModels.jl`'s existing mask convention, `src/families/laplace.jl:96-133`);
 `mask = nothing` (default) means every cell is observed, giving a zero-row
 result (R's complete-data behaviour). `type` is forwarded to `predict`
 (`:link` or `:response`; `src/postfit.jl:174-242`). `fit` (and hence
 `predict`) must support the `mask` keyword for the masked call to succeed —
 currently the AGHQ Gaussian route and the dense-Laplace non-Gaussian
-families (e.g. Binomial). GLLVM.jl's `GllvmFit`/`Y` do not store their own
+families (e.g. Binomial). GLLVModels.jl's `GllvmFit`/`Y` do not store their own
 mask, so it is re-supplied by the caller here (the fit-stored mask, R's
 zero-argument `predict_missing(fit)` shape, needs a `GllvmFit` mask field —
 core070 spec §2.5, not built).
@@ -265,7 +265,7 @@ measurement-error term, so `σ²_eps` is folded into `ψ_W`, matching R's own
 `Lambda_B`/`Lambda_W` default to `0.7 .* randn(rng, n_traits, K_B)` /
 `0.5 .* randn(rng, n_traits, K_W)` when not supplied.
 
-Output shape is GLLVM.jl-native (core070 spec §3.4: NamedTuple/matrix, no
+Output shape is GLLVModels.jl-native (core070 spec §3.4: NamedTuple/matrix, no
 DataFrame dependency), not R's long-format `(data, truth)` data frame:
 returns `(Y, individual, truth)` — `Y` is `n_traits × (n_units*n_obs_per_unit)`,
 `individual` is the length-matching grouping vector `fit_twolevel_gaussian`
@@ -486,7 +486,7 @@ end
                     order_axes = true, sign_anchor = :auto,
                     anchor_traits = nothing) -> NamedTuple
 
-Rotate a fitted GLLVM's loadings, mirroring `gllvmTMB::rotate_loadings`
+Rotate a fitted GLLVModels's loadings, mirroring `gllvmTMB::rotate_loadings`
 (`rotate-loadings.R:90-217`). `method`: `:varimax` (orthogonal, Kaiser-
 normalized), `:promax` (oblique, `m = 4`), or `:none` (identity — also the
 automatic short-circuit at `d = 1`). `order_axes = true` reorders axes by
@@ -501,7 +501,7 @@ skips sign-fixing. Permutation and sign are folded into the returned `T` so
 Scope reduction (this slice): `fit::GllvmFit` at `level = :unit` only — the
 R contract's `TwoLevelFit`-level mapping (`:unit`/`:unit_obs`) is not built.
 `Y` must match what was passed to the fit (as everywhere else in
-`GLLVM.jl` — the fit does not store its data).
+`GLLVModels.jl` — the fit does not store its data).
 
 Returns `(Lambda, scores, T, method, axis_variance, axis_order, axis_sign,
 anchor_traits)`: `axis_variance` is `colSums(Λ_rotated²)` in the RETURNED
@@ -889,7 +889,7 @@ false` (default) reports `NaN` for both.
 `X` is forwarded to `coef_table`/`confint` — REQUIRED (matching what was
 passed to `fit_gaussian_gllvm`) whenever the fit has fixed effects, since
 `GllvmFit` does not store its own design (as everywhere else in
-`GLLVM.jl`); omitting it silently mismatches the Hessian reconstruction and
+`GLLVModels.jl`); omitting it silently mismatches the Hessian reconstruction and
 returns `NaN` standard errors for the `:fixed` tier.
 
 Returns a `Vector{NamedTuple}`, ROW-UNIFIED across tiers: `(effect, term,
@@ -922,7 +922,7 @@ end
 # mspl / likelihood-weights / AGHQ-penalised-MAP annotations have no Julia
 # engine counterpart — omitted per core070 spec §3.10 (no stub fields
 # without a maintainer yes). The `$missing` block (masked/dropped counts)
-# waits on §2.5 (fit-stored mask). Communality is reported as GLLVM.jl's
+# waits on §2.5 (fit-stored mask). Communality is reported as GLLVModels.jl's
 # single combined `extract_communality(fit)` vector, NOT R's separate
 # `communality_B`/`communality_W` split — `communality_B`/`communality_W`
 # exist in this checkout only for `TwoLevelFit`, and `GllvmFit`'s single-tier
@@ -947,7 +947,7 @@ Classed post-fit summary of a `GllvmFit`, as produced by
 holder, formatting happens only in `Base.show`.
 
 Fields: `p, K_B, K_W, has_diag, K_phy, has_phy_unique` (dims, from
-`fit.model`), `estimator` (always `:ML` — `GLLVM.jl`'s Gaussian path has no
+`fit.model`), `estimator` (always `:ML` — `GLLVModels.jl`'s Gaussian path has no
 REML variance-component-only estimator distinct from `fit_gaussian_reml`),
 `logLik`, `converged`, `n_iter`, `fixef` (`Vector{NamedTuple}`, the `:fixed`
 tier of [`tidy`](@ref)), `Sigma_B`/`Sigma_W` (`extract_Sigma` at
@@ -997,7 +997,7 @@ Post-fit summary, mirroring `gllvmTMB::summary.gllvmTMB_multi`
 (`methods-gllvmTMB.R:744-863`) — see the scope-reduction note above
 `GllvmSummary` for what is (and is not) covered in this slice. `Y` must
 match what was passed to `fit_gaussian_gllvm` (the fit does not store its
-data — as everywhere else in `GLLVM.jl`). `X` is REQUIRED (matching what
+data — as everywhere else in `GLLVModels.jl`). `X` is REQUIRED (matching what
 was passed to `fit_gaussian_gllvm`) whenever the fit has fixed effects —
 see [`tidy`](@ref)'s equivalent note; omitting it silently degrades
 `fixef`'s standard errors and `se_status` to all-`NaN`.
@@ -1024,7 +1024,7 @@ function Base.summary(fit::GllvmFit, Y::AbstractMatrix;
 end
 
 function Base.show(io::IO, s::GllvmSummary)
-    println(io, "GllvmSummary — Gaussian GLLVM (p=$(s.p), K_B=$(s.K_B), K_W=$(s.K_W))")
+    println(io, "GllvmSummary — Gaussian GLLVModels (p=$(s.p), K_B=$(s.K_B), K_W=$(s.K_W))")
     println(io, "  estimator: $(s.estimator)   logLik: $(round(s.logLik; sigdigits = 6))" *
                 "   converged: $(s.converged) ($(s.n_iter) iters)   se_status: $(s.se_status)")
     println(io, "  fixef: $(length(s.fixef)) coefficient(s)")

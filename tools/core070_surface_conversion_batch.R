@@ -228,7 +228,7 @@ r_quantity <- function(quantity) {
     # correlations (postfit/POSTFIT-SURFACE-extract_correlations) is NOT
     # computed here -- deferred (see contract.deferred, REPAIR
     # 2026-09-01 wave5-conversion5): traced both definitions to source like
-    # extract_communality. GLLVM.jl's extract_correlations(fit) =
+    # extract_communality. GLLVModels.jl's extract_correlations(fit) =
     # correlation(fit) (src/confint_derived.jl) standardises by
     # sigma_y_site(fit), the FULL total variance INCLUDING sigma_eps^2. R's
     # extract_Sigma(fit, level="unit", part="total")$R (the route this
@@ -273,7 +273,7 @@ r_quantity <- function(quantity) {
     # gaussian_small has no diag_B/W/link_residual) -- sigma_eps^2 is not
     # one of them, so on this fixture proportion == shared_unit/shared_unit
     # == 1.0 for every trait, degenerate for the same reason
-    # extract_communality degenerates. GLLVM.jl's
+    # extract_communality degenerates. GLLVModels.jl's
     # extract_proportions(fit; component=:shared) IS mathematically
     # identical to communality(fit) (both ΛΛ^T[t,t] / sigma_y_site(fit)[t,t],
     # the FULL total-variance denominator) -- confirming this is the exact
@@ -289,7 +289,7 @@ r_quantity <- function(quantity) {
     # Lambda_B Lambda_B^T exactly, sigma_eps^2 never enters (it is not one
     # of the B/W/phy tiers R's system tracks; the Gaussian family's
     # link_residual_per_trait() contributes 0 to the diagonal separately).
-    # GLLVM.jl's extract_Omega(fit::GllvmFit) UNCONDITIONALLY sums
+    # GLLVModels.jl's extract_Omega(fit::GllvmFit) UNCONDITIONALLY sums
     # extract_Sigma(level=:unit,...).Sigma .+ extract_Sigma(level=:unit_obs,...).Sigma
     # (src/extractors.jl) -- and extract_Sigma(level=:unit_obs, part=:total)
     # ALWAYS adds sigma_eps^2*I as a baseline term (src/extractors.jl's

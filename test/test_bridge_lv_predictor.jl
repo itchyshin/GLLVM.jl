@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using Random
 using Statistics
 using Distributions
@@ -15,7 +15,7 @@ using Distributions
         z_innov = randn(n)
         z_total = vec(X_lv * alpha_lv) .+ z_innov
         η = β .+ Λ * reshape(z_total, 1, n)
-        μ = clamp.(GLLVM.linkinv.(Ref(link), η), 1e-4, 1 - 1e-4)
+        μ = clamp.(GLLVModels.linkinv.(Ref(link), η), 1e-4, 1 - 1e-4)
         N = fill(40, p, n)
         Y = [rand(Binomial(N[t, s], μ[t, s])) for t in 1:p, s in 1:n]
         return Y, N, X_lv, β, Λ, alpha_lv
@@ -51,7 +51,7 @@ using Distributions
         @test br.lv_effects ≈ extract_lv_effects(oracle) atol = 1e-10
         @test br.alpha_lv ≈ extract_lv_effects(oracle; type = :axis_effect) atol = 1e-10
         @test br.sigma_eps ≈ oracle.pars.σ_eps atol = 0
-        @test br.df == p + GLLVM._nparams(oracle)
+        @test br.df == p + GLLVModels._nparams(oracle)
         @test occursin("predictor-informed latent-score", br.note)
         @test occursin("Confidence intervals", br.note)
     end
@@ -64,12 +64,12 @@ using Distributions
         alpha_lv = reshape([0.7], q_lv, K)
         N = fill(12, p, n)
         Y = [mod(t + 2s, 8) for t in 1:p, s in 1:n]
-        params = vcat(β, vec(alpha_lv), GLLVM.pack_lambda(Λ))
+        params = vcat(β, vec(alpha_lv), GLLVModels.pack_lambda(Λ))
         for link in (LogitLink(), ProbitLink(), CLogLogLink())
-            lv_offset = GLLVM._lv_mean_eta(Λ, X_lv, alpha_lv)
-            nll_xlv = GLLVM.binomial_lv_nll_packed(
+            lv_offset = GLLVModels._lv_mean_eta(Λ, X_lv, alpha_lv)
+            nll_xlv = GLLVModels.binomial_lv_nll_packed(
                 params, Y, N, p, K, link; X_lv = X_lv, q_lv = q_lv)
-            nll_offset = -GLLVM.binomial_marginal_loglik_laplace(
+            nll_offset = -GLLVModels.binomial_marginal_loglik_laplace(
                 Y, N, Λ, β, link; offset = lv_offset)
             @test nll_xlv ≈ nll_offset atol = 1e-10
         end
@@ -116,7 +116,7 @@ using Distributions
                             N = N, X_lv = X_lv)
             @test br.family == family_key
             @test br.model == "$(family_key)_xlv_rr"
-            @test all(==(GLLVM._bridge_link_name(link)), br.link)
+            @test all(==(GLLVModels._bridge_link_name(link)), br.link)
             @test size(br.lv_effects) == (size(Y, 1), size(X_lv, 2))
             @test size(br.alpha_lv) == size(alpha_true)
             @test br.scores ≈ br.scores_mean .+ br.scores_innovation atol = 1e-10
@@ -146,11 +146,11 @@ using Distributions
         Λ = reshape([0.45, -0.3, 0.2], p, K)
         alpha_lv = reshape([0.6], q_lv, K)
         Y = [mod(t + 2s, 6) for t in 1:p, s in 1:n]
-        params = vcat(β, vec(alpha_lv), GLLVM.pack_lambda(Λ))
-        lv_offset = GLLVM._lv_mean_eta(Λ, X_lv, alpha_lv)
-        nll_xlv = GLLVM.poisson_lv_nll_packed(
+        params = vcat(β, vec(alpha_lv), GLLVModels.pack_lambda(Λ))
+        lv_offset = GLLVModels._lv_mean_eta(Λ, X_lv, alpha_lv)
+        nll_xlv = GLLVModels.poisson_lv_nll_packed(
             params, Y, p, K, LogLink(); X_lv = X_lv, q_lv = q_lv)
-        nll_offset = -GLLVM.poisson_marginal_loglik_laplace(
+        nll_offset = -GLLVModels.poisson_marginal_loglik_laplace(
             Y, Λ, β, LogLink(); offset = lv_offset)
         @test nll_xlv ≈ nll_offset atol = 1e-10
     end
@@ -222,11 +222,11 @@ using Distributions
         alpha_lv = reshape([0.6], q_lv, K)
         r = 8.0
         Y = [mod(t + 2s, 6) for t in 1:p, s in 1:n]
-        params = vcat(β, vec(alpha_lv), GLLVM.pack_lambda(Λ), log(r))
-        lv_offset = GLLVM._lv_mean_eta(Λ, X_lv, alpha_lv)
-        nll_xlv = GLLVM.nb_lv_nll_packed(
+        params = vcat(β, vec(alpha_lv), GLLVModels.pack_lambda(Λ), log(r))
+        lv_offset = GLLVModels._lv_mean_eta(Λ, X_lv, alpha_lv)
+        nll_xlv = GLLVModels.nb_lv_nll_packed(
             params, Y, p, K, LogLink(); X_lv = X_lv, q_lv = q_lv)
-        nll_offset = -GLLVM.nb_marginal_loglik_laplace(Y, Λ, β, r; offset = lv_offset)
+        nll_offset = -GLLVModels.nb_marginal_loglik_laplace(Y, Λ, β, r; offset = lv_offset)
         @test nll_xlv ≈ nll_offset atol = 1e-10
     end
 
@@ -300,11 +300,11 @@ using Distributions
         alpha_lv = reshape([0.6], q_lv, K)
         α = 5.0
         Y = [0.5 + 0.3 * mod(t + 2s, 5) for t in 1:p, s in 1:n]
-        params = vcat(β, vec(alpha_lv), GLLVM.pack_lambda(Λ), log(α))
-        lv_offset = GLLVM._lv_mean_eta(Λ, X_lv, alpha_lv)
-        nll_xlv = GLLVM.gamma_lv_nll_packed(
+        params = vcat(β, vec(alpha_lv), GLLVModels.pack_lambda(Λ), log(α))
+        lv_offset = GLLVModels._lv_mean_eta(Λ, X_lv, alpha_lv)
+        nll_xlv = GLLVModels.gamma_lv_nll_packed(
             params, Y, p, K, LogLink(); X_lv = X_lv, q_lv = q_lv)
-        nll_offset = -GLLVM.gamma_marginal_loglik_laplace(Y, Λ, β, α; offset = lv_offset)
+        nll_offset = -GLLVModels.gamma_marginal_loglik_laplace(Y, Λ, β, α; offset = lv_offset)
         @test nll_xlv ≈ nll_offset atol = 1e-10
     end
 
@@ -374,11 +374,11 @@ using Distributions
         alpha_lv = reshape([0.6], q_lv, K)
         φ = 12.0
         Y = [0.2 + 0.12 * mod(t + 2s, 5) for t in 1:p, s in 1:n]
-        params = vcat(β, vec(alpha_lv), GLLVM.pack_lambda(Λ), log(φ))
-        lv_offset = GLLVM._lv_mean_eta(Λ, X_lv, alpha_lv)
-        nll_xlv = GLLVM.beta_lv_nll_packed(
+        params = vcat(β, vec(alpha_lv), GLLVModels.pack_lambda(Λ), log(φ))
+        lv_offset = GLLVModels._lv_mean_eta(Λ, X_lv, alpha_lv)
+        nll_xlv = GLLVModels.beta_lv_nll_packed(
             params, Y, p, K, LogitLink(); X_lv = X_lv, q_lv = q_lv)
-        nll_offset = -GLLVM.beta_marginal_loglik_laplace(Y, Λ, β, φ; offset = lv_offset)
+        nll_offset = -GLLVModels.beta_marginal_loglik_laplace(Y, Λ, β, φ; offset = lv_offset)
         @test nll_xlv ≈ nll_offset atol = 1e-10
     end
 

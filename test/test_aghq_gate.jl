@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, LinearAlgebra
 
 # A4(3): `_aghq_stage1a_reject_extra` fail-loud IS the gate.
 # No public `aghq=`. No TMB min-fill / treewidth port.
@@ -8,21 +8,21 @@ using GLLVM, Test, Random, Distributions, LinearAlgebra
 function _reject_extra(family = Poisson(); row_effects = nothing,
         phylo = nothing, mi = nothing, unique_latent = nothing,
         s_B = nothing, use_lv_B = nothing, multinomial = nothing)
-    GLLVM._aghq_stage1a_reject_extra(family, row_effects, phylo, mi,
+    GLLVModels._aghq_stage1a_reject_extra(family, row_effects, phylo, mi,
                                      unique_latent, s_B, use_lv_B, multinomial)
 end
 
 function _ineligible_site(; k::Integer = 3, kwargs...)
     p, K = 3, 1
-    GLLVM.aghq_stage1a_loglik_site(Poisson(), ones(Int, p), ones(Int, p),
-                                   ones(p, K), zeros(p), GLLVM.LogLink();
+    GLLVModels.aghq_stage1a_loglik_site(Poisson(), ones(Int, p), ones(Int, p),
+                                   ones(p, K), zeros(p), GLLVModels.LogLink();
                                    k = k, kwargs...)
 end
 
 @testset "AGHQ A4(3) fail-loud gate" begin
 
     @testset "_aghq_stage1a_reject_extra is the named gate" begin
-        @test isdefined(GLLVM, :_aghq_stage1a_reject_extra)
+        @test isdefined(GLLVModels, :_aghq_stage1a_reject_extra)
         @test _reject_extra() === nothing
         @test _reject_extra(; unique_latent = false, use_lv_B = false,
                             multinomial = false) === nothing
@@ -43,7 +43,7 @@ end
         @test occursin("use_lv_B", err.value.msg)
         err = @test_throws ArgumentError _reject_extra(; multinomial = true)
         @test occursin("multinomial", err.value.msg)
-        # Qualify: GLLVM now exports Multinomial (fid 16 marker). Bare
+        # Qualify: GLLVModels now exports Multinomial (fid 16 marker). Bare
         # Multinomial is an ambiguous import against Distributions.
         err = @test_throws ArgumentError _reject_extra(Distributions.Multinomial(2, [0.5, 0.5]))
         @test occursin("multinomial", err.value.msg)
@@ -60,9 +60,9 @@ end
         # Gate fires before the mode / Cholesky path: ineligible kwargs throw
         # ArgumentError even when the site payload cannot be evaluated.
         err = try
-            GLLVM.aghq_stage1a_loglik_site(
+            GLLVModels.aghq_stage1a_loglik_site(
                 Poisson(), Int[], Int[], zeros(0, 1), Float64[],
-                GLLVM.LogLink(); k = 3, phylo = true)
+                GLLVModels.LogLink(); k = 3, phylo = true)
             nothing
         catch e
             e
@@ -78,10 +78,10 @@ end
         Λ = 0.5 .* randn(p, K)
         y = [rand(Poisson(exp(β[t]))) for t in 1:p]
         n = ones(Int, p)
-        link = GLLVM.LogLink()
+        link = GLLVModels.LogLink()
         fam = Poisson()
-        lap = GLLVM.laplace_loglik_site(fam, y, n, Λ, β, link)
-        aghq = GLLVM.aghq_stage1a_loglik_site(fam, y, n, Λ, β, link; k = 1)
+        lap = GLLVModels.laplace_loglik_site(fam, y, n, Λ, β, link)
+        aghq = GLLVModels.aghq_stage1a_loglik_site(fam, y, n, Λ, β, link; k = 1)
         @test isfinite(lap) && isfinite(aghq)
         @test aghq ≈ lap atol = 1e-12
     end

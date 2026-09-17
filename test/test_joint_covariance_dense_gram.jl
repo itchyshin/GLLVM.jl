@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra, SparseArrays
+using Test, GLLVModels, LinearAlgebra, SparseArrays
 
 function _joint_dense_gram_fixture()
     Q = sparse([4.0 -1.0 -1.0 0.0;
@@ -12,8 +12,8 @@ function _joint_dense_gram_fixture()
     unit = [:u1, :u1, :u2, :u2, :u3]
     cluster = [:c1, :c2, :c1, :c2, :c1]
     terms = [GroupingTerm(:unit; mode=:indep), GroupingTerm(:cluster; mode=:indep)]
-    incidences = [GLLVM._grouped_incidence(unit, length(species)),
-        GLLVM._grouped_incidence(cluster, length(species))]
+    incidences = [GLLVModels._grouped_incidence(unit, length(species)),
+        GLLVModels._grouped_incidence(cluster, length(species))]
     return (; phy, species, unit, cluster, terms, incidences,
         loading=reshape([0.60, -0.35, 0.45], 3, 1), unique=[0.20, 0.15, 0.25])
 end
@@ -56,7 +56,7 @@ end
     fixture = _joint_dense_gram_fixture()
     dense = _joint_dense_tangent_gram(fixture.phy, fixture.species,
         fixture.incidences, fixture.loading, fixture.unique)
-    sparse = GLLVM._joint_covariance_identification(fixture.phy, fixture.species,
+    sparse = GLLVModels._joint_covariance_identification(fixture.phy, fixture.species,
         fixture.terms, fixture.incidences, fixture.loading;
         phylo_unique_variance=fixture.unique)
     @test size(dense.gram) == (15, 15)
@@ -68,10 +68,10 @@ end
 
     order = [5, 3, 1, 4, 2]
     labels = [fixture.unit[order], fixture.cluster[order]]
-    permuted_incidence = [GLLVM._grouped_incidence(values, length(order)) for values in labels]
+    permuted_incidence = [GLLVModels._grouped_incidence(values, length(order)) for values in labels]
     permuted_dense = _joint_dense_tangent_gram(fixture.phy, fixture.species[order],
         permuted_incidence, fixture.loading, fixture.unique)
-    permuted_sparse = GLLVM._joint_covariance_identification(fixture.phy,
+    permuted_sparse = GLLVModels._joint_covariance_identification(fixture.phy,
         fixture.species[order], fixture.terms, permuted_incidence, fixture.loading;
         phylo_unique_variance=fixture.unique)
     @test permuted_dense.gram ≈ dense.gram atol=1e-11

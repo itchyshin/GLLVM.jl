@@ -116,7 +116,7 @@ end
 """
     studentt_marginal_loglik_laplace(Y, Λ, β, σ; ν=4.0, link=IdentityLink(), kwargs...) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of a Student-t GLLVM with
+Total Laplace log-marginal over the `n` sites (columns) of a Student-t GLLVModels with
 degrees of freedom `ν` and scale `σ` (`(y − η)/σ ~ t_ν`, identity link) — a
 thin wrapper over the family-generic `marginal_loglik_laplace` or grouped site
 evaluator. `Y` is the p×n response matrix; `Λ` p×K; `β` length-p. `σ` and `ν`
@@ -321,7 +321,7 @@ _default_hessian(::StudentTFamily, ::IdentityLink) = :observed
 """
     fit_studentt_gllvm(Y; K, nu=nothing, link=IdentityLink(), σ_init=nothing, nu_init=nothing, …) -> StudentTFit
 
-Fit a Student-t GLLVM by L-BFGS over `[β; vec(Λ); log σ; log(ν-1)]` on the Laplace
+Fit a Student-t GLLVModels by L-BFGS over `[β; vec(Λ); log σ; log(ν-1)]` on the Laplace
 marginal (`studentt_marginal_loglik_laplace`). When `nu === nothing` (default),
 the degrees of freedom `ν` are estimated jointly per-trait (`ν_j = 1 + exp(θ_{ν,j}) > 1`),
 matching `gllvmTMB`. A finite positive number (e.g. `nu = 4.0`) or a length-`p`

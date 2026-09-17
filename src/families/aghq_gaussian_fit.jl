@@ -2,7 +2,7 @@
     fit_gaussian_gllvm(Y; K, aghq=false, aghq_control=(;), mask=nothing,
                        offset=nothing, hessian=:observed, kwargs...) -> GllvmFit
 
-Fit a Gaussian GLLVM with shared residual SD. Default `aghq=false` retains the
+Fit a Gaussian GLLVModels with shared residual SD. Default `aghq=false` retains the
 closed-form Gaussian fitter and its existing keywords. In particular `X=nothing`
 means **zero mean**; a complete `X[p,n,q]` defines all fixed effects. `β_fixed`
 retains the existing fixed-zero coefficient convention.

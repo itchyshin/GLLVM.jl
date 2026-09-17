@@ -1,4 +1,4 @@
-using Test, GLLVM, Random, LinearAlgebra
+using Test, GLLVModels, Random, LinearAlgebra
 
 # A6 wiring (maintainer round2-3 #11): a Student-t fit whose estimated ν has run to
 # the flat Gaussian-limit boundary (`nu_boundary = true`, `_studentt_nu_boundary`,
@@ -20,14 +20,14 @@ using Test, GLLVM, Random, LinearAlgebra
 
     @testset "unit: boundary forces converged=false even when Optim itself agrees" begin
         # Direct unit check on the verdict-composition rule (mirrors
-        # `GLLVM._tweedie_verdict`'s unit-level convergence-contract tests):
+        # `GLLVModels._tweedie_verdict`'s unit-level convergence-contract tests):
         # an Optim-converged=true result at an estimated, boundary ν must not
         # survive as `converged = true`.
-        @test GLLVM._studentt_nu_boundary(true, 2e6)               # scalar, estimated
-        @test !(true && !GLLVM._studentt_nu_boundary(true, 2e6))   # `conv && !boundary` collapses to false
-        @test GLLVM._studentt_nu_boundary(true, [4.0, 2e6])        # per-trait, one boundary trait
-        @test !GLLVM._studentt_nu_boundary(true, 5.0)              # interior ν: no boundary
-        @test !GLLVM._studentt_nu_boundary(false, 2e6)             # fixed (not estimated) ν: never flagged
+        @test GLLVModels._studentt_nu_boundary(true, 2e6)               # scalar, estimated
+        @test !(true && !GLLVModels._studentt_nu_boundary(true, 2e6))   # `conv && !boundary` collapses to false
+        @test GLLVModels._studentt_nu_boundary(true, [4.0, 2e6])        # per-trait, one boundary trait
+        @test !GLLVModels._studentt_nu_boundary(true, 5.0)              # interior ν: no boundary
+        @test !GLLVModels._studentt_nu_boundary(false, 2e6)             # fixed (not estimated) ν: never flagged
     end
 
     @testset "red-first: near-Gaussian data walks estimated ν to the boundary" begin
@@ -46,10 +46,10 @@ using Test, GLLVM, Random, LinearAlgebra
             # THE WIRING: a boundary fit must not present as converged=true, so it
             # fails the GENERIC (family-agnostic) fit-health gate.
             @test fit.converged == false
-            s = GLLVM.sanity_multi(fit)
+            s = GLLVModels.sanity_multi(fit)
             @test s.converged == false
             @test s.pass == false
-            d = GLLVM.gllvmTMB_diagnose(fit)
+            d = GLLVModels.gllvmTMB_diagnose(fit)
             @test d.pass == false
             @test occursin("optimizer did not report convergence", join(s.messages, "; "))
         else
@@ -71,7 +71,7 @@ using Test, GLLVM, Random, LinearAlgebra
         # A non-boundary fit's converged flag is untouched by this wiring: since
         # `_studentt_nu_boundary` is false here, `conv && !boundary === conv`.
         @test fixed.converged isa Bool
-        s = GLLVM.sanity_multi(fixed)
+        s = GLLVModels.sanity_multi(fixed)
         @test s.converged == fixed.converged
     end
 end

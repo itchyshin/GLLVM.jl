@@ -9,7 +9,7 @@
 </div>
 ```
 
-The Gaussian GLLVM that this package implements decomposes the response
+The Gaussian GLLVModels that this package implements decomposes the response
 of species `s` (a length-`p` vector across the `p` species at site `s`)
 into a fixed linear predictor plus a sequence of latent contributions:
 

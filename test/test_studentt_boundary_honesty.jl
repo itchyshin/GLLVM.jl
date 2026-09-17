@@ -1,4 +1,4 @@
-using Test, GLLVM, Random, LinearAlgebra
+using Test, GLLVModels, Random, LinearAlgebra
 
 # Panel finding 4 (docs/dev-log/core070/parity-panel-2026-09-01.md): a
 # Student-t fit whose estimated ν reaches the flat Gaussian-limit boundary

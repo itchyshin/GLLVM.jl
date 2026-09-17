@@ -23,7 +23,7 @@ equivalent.
 
 Let `y` be a p × n matrix of continuous traits (or outcomes) measured on
 `p` entities (species, individuals, sites) at `n` occasions (sites, visits).
-The Gaussian GLLVM with a structured random effect is:
+The Gaussian GLLVModels with a structured random effect is:
 
 ```
 y[:, s] = Λ_B η_s + u + ε[:, s]
@@ -56,7 +56,7 @@ Build `Σ_phy` from a phylogenetic tree using `PhyloNetworks`, `Phylo`, or any
 package that returns a variance-covariance matrix on the tips.
 
 ```julia
-using GLLVM, PhyloNetworks     # PhyloNetworks not in GLLVM.jl deps; install separately
+using GLLVModels, PhyloNetworks     # PhyloNetworks not in GLLVModels.jl deps; install separately
 
 tree    = readTopology("my_tree.tre")
 Σ_phy   = vcv(tree)            # p × p tip covariance
@@ -82,7 +82,7 @@ using external tools (e.g. `kinship2`, `nadiv`, `rrBLUP`, PLINK `--make-grm`,
 `AGHmatrix`), then pass it through `relatedness_cov` for validation.
 
 ```julia
-using GLLVM
+using GLLVModels
 
 # A is a precomputed p × p relatedness / GRM matrix (from your pedigree tool)
 A      = ...
@@ -123,7 +123,7 @@ kernel families are supported:
 | `:matern`     | Matérn with smoothness ν (default ν = 1.5)  | ν = 0.5 → exponential (verified) |
 
 ```julia
-using GLLVM
+using GLLVModels
 
 # coords is a p × 2 (or p × d) matrix of spatial coordinates
 coords  = ...
@@ -198,7 +198,7 @@ or loading ridge is added. Mean coefficients and covariance coordinates are
 optimized jointly; the default mean has one intercept per trait.
 
 ```@example fixed_sources
-using GLLVM, LinearAlgebra
+using GLLVModels, LinearAlgebra
 groups = repeat(1:4; inner=3)
 group_means = [-1.5, -0.5, 0.5, 1.5]
 within = [-0.2, 0.0, 0.2]

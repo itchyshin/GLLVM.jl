@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Statistics, LinearAlgebra
 
 @testset "Gaussian per-species (heteroscedastic) variance" begin
 
@@ -9,20 +9,20 @@ using GLLVM, Test, Random, Statistics, LinearAlgebra
     @testset "exact reduction to scalar-σ marginal" begin
         Random.seed!(11)
         p, K, n = 6, 2, 40
-        Λ = GLLVM.unpack_lambda(GLLVM.init_theta_rr(p, K) .+ 0.3 .* randn(GLLVM.rr_theta_len(p, K)), p, K)
+        Λ = GLLVModels.unpack_lambda(GLLVModels.init_theta_rr(p, K) .+ 0.3 .* randn(GLLVModels.rr_theta_len(p, K)), p, K)
         σ² = 0.7
         y = Λ * randn(K, n) .+ sqrt(σ²) .* randn(p, n)
 
-        ll_pervar = GLLVM.gaussian_pervar_marginal_loglik(y, Λ, fill(σ², p))
-        ll_scalar = GLLVM.gaussian_marginal_loglik(y, Λ, sqrt(σ²))
+        ll_pervar = GLLVModels.gaussian_pervar_marginal_loglik(y, Λ, fill(σ², p))
+        ll_scalar = GLLVModels.gaussian_marginal_loglik(y, Λ, sqrt(σ²))
         @test isapprox(ll_pervar, ll_scalar; atol = 1e-9)
 
         # With fixed effects X / β: same reduction must hold.
         q = 2
         X = randn(p, n, q)
         β = [0.5, -0.8]
-        ll_pervar_X = GLLVM.gaussian_pervar_marginal_loglik(y, Λ, fill(σ², p); X = X, β = β)
-        ll_scalar_X = GLLVM.gaussian_marginal_loglik(y, Λ, sqrt(σ²); X = X, β = β)
+        ll_pervar_X = GLLVModels.gaussian_pervar_marginal_loglik(y, Λ, fill(σ², p); X = X, β = β)
+        ll_scalar_X = GLLVModels.gaussian_marginal_loglik(y, Λ, sqrt(σ²); X = X, β = β)
         @test isapprox(ll_pervar_X, ll_scalar_X; atol = 1e-9)
     end
 
@@ -43,7 +43,7 @@ using GLLVM, Test, Random, Statistics, LinearAlgebra
             Y[t, :] .+= sqrt(φ²_true[t]) .* randn(n)
         end
 
-        fit = GLLVM.fit_gaussian_pervar_gllvm(Y; K = K, iterations = 150)
+        fit = GLLVModels.fit_gaussian_pervar_gllvm(Y; K = K, iterations = 150)
 
         @test isfinite(fit.loglik)
         @test length(fit.φ²) == p
@@ -67,7 +67,7 @@ using GLLVM, Test, Random, Statistics, LinearAlgebra
         σ²_true = 0.6
         Y = Λ_true * randn(K, n) .+ sqrt(σ²_true) .* randn(p, n)
 
-        fit = GLLVM.fit_gaussian_pervar_gllvm(Y; K = K, iterations = 150)
+        fit = GLLVModels.fit_gaussian_pervar_gllvm(Y; K = K, iterations = 150)
         @test isfinite(fit.loglik)
         @test all(fit.φ² .> 0)
         # Loose homogeneity: spread of φ̂² should not be wild.
@@ -84,8 +84,8 @@ using GLLVM, Test, Random, Statistics, LinearAlgebra
         φ_true = 0.3 .+ 0.9 .* rand(p)
         Y = Λ_true * randn(K, n) .+ (φ_true .* randn(p, n))
 
-        f_em = GLLVM.fit_gaussian_pervar_gllvm(Y; K = K, method = :em)
-        f_lb = GLLVM.fit_gaussian_pervar_gllvm(Y; K = K, method = :lbfgs)
+        f_em = GLLVModels.fit_gaussian_pervar_gllvm(Y; K = K, method = :em)
+        f_lb = GLLVModels.fit_gaussian_pervar_gllvm(Y; K = K, method = :lbfgs)
 
         # Same ML log-likelihood (the EM path is not an approximation).
         @test isapprox(f_em.loglik, f_lb.loglik; atol = 1e-4)

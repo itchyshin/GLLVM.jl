@@ -12,7 +12,7 @@
 # Seeds 710-715 — fresh, outside test_studentt.jl's 701-709 and
 # test_delta_disp_group.jl's 180-186.
 
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Student-t family: disp_group mode (:shared / :species)" begin
 
@@ -54,7 +54,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         end
 
         f = fit_studentt_gllvm(Y; K = K, nu = ν_true, disp_group = :species, iterations = 400)
-        @test f isa GLLVM.StudentTFit
+        @test f isa GLLVModels.StudentTFit
         @test f.disp_group == :species
         @test f.σ isa Vector{Float64}
         @test length(f.σ) == p
@@ -105,7 +105,7 @@ using GLLVM, Test, Random, Distributions, Statistics
 
         f = fit_studentt_gllvm(Y; K = K, nu = ν_true, disp_group = :species,
                                hessian = :fisher, iterations = 400)
-        @test f isa GLLVM.StudentTFit
+        @test f isa GLLVModels.StudentTFit
         @test f.hessian == :fisher
         @test f.disp_group == :species
         @test f.σ isa Vector{Float64}
@@ -129,7 +129,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         end
 
         f = fit_studentt_gllvm(Y; K = K, nu = ν_true, disp_group = :species, iterations = 400)
-        ll_direct = GLLVM.studentt_marginal_loglik_laplace(Y, f.Λ, f.β, f.σ;
+        ll_direct = GLLVModels.studentt_marginal_loglik_laplace(Y, f.Λ, f.β, f.σ;
                                                             ν = f.ν, hessian = f.hessian)
         @test ll_direct ≈ f.loglik atol = 1e-8
     end

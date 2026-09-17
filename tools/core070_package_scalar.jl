@@ -1,8 +1,8 @@
 # Load the complete package through Julia's loader, then run the unchanged regression.
-using GLLVM, Test, SpecialFunctions, ForwardDiff
+using GLLVModels, Test, SpecialFunctions, ForwardDiff
 using Pkg
-@assert realpath(pathof(GLLVM)) == realpath(joinpath(@__DIR__, "..", "src", "GLLVM.jl"))
-println("PACKAGE_PATH ", pathof(GLLVM))
+@assert realpath(pathof(GLLVModels)) == realpath(joinpath(@__DIR__, "..", "src", "GLLVModels.jl"))
+println("PACKAGE_PATH ", pathof(GLLVModels))
 println("JULIA_VERSION ", VERSION)
 for name in ("Optim", "ForwardDiff", "StatsModels", "Distributions")
     rows = filter(p -> p.second.name == name, collect(Pkg.dependencies()))

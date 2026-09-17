@@ -6,11 +6,11 @@ for (label,request,rname) in (("k1",1,"r1"),("k3",3,"r3"),("auto",:auto,"ra"))
  R"rr<-get(rname); rp<-as.numeric(rr$fit$opt$par); rg<-as.numeric(rr$fit$tmb_obj$gr(rp)); rv<-as.numeric(rr$fit$tmb_obj$fn(rp))"
  logger=Test.TestLogger()
  f=Base.CoreLogging.with_logger(logger) do
-  gllvm(@formula(y~0),Y,NamedTuple();family=GLLVM.Normal(),pervar=true,K=K,
+  gllvm(@formula(y~0),Y,NamedTuple();family=GLLVModels.Normal(),pervar=true,K=K,
     fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000,aghq=request)
  end
- theta=copy(rtheta);theta[lambda_idx]=GLLVM.pack_lambda(f.Λ);theta[unique_idx]=log.(f.ψ²)./2
- grad=GLLVM.ForwardDiff.gradient(objective,theta)
+ theta=copy(rtheta);theta[lambda_idx]=GLLVModels.pack_lambda(f.Λ);theta[unique_idx]=log.(f.ψ²)./2
+ grad=GLLVModels.ForwardDiff.gradient(objective,theta)
  value=rcopy(Float64,R"rv");rgmax=maximum(abs,rcopy(Vector{Float64},R"rg"))
  record=Dict("request"=>label,"native_actual"=>string(f.integration.actual),
   "native_reason"=>string(f.integration.reason),"native_k"=>f.integration.k,

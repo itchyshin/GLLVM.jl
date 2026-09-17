@@ -1,4 +1,4 @@
-# Random-effects fitters for the Gaussian GLLVM — grouped random SLOPES (random
+# Random-effects fitters for the Gaussian GLLVModels — grouped random SLOPES (random
 # regression / behavioural-syndromes model).
 #
 # A grouped random slope `(Z | g)` adds a per-group coefficient vector b_g ~ N(0, Σ_b)
@@ -66,7 +66,7 @@ end
 """
     gaussian_grouped_intercept_loglik(y, grouping, Λ_B, σ_eps, σ_u) -> Real
 
-Marginal log-likelihood of a Gaussian GLLVM with a grouped random intercept: a shared
+Marginal log-likelihood of a Gaussian GLLVModels with a grouped random intercept: a shared
 effect r_g ~ N(0, σ_u²) for every site in group g (cross-site correlation within a
 group). `y` is p×n; `grouping` a length-n vector assigning each site to a group. Solved
 per group by the rotation trick + a rank-1 Sherman-Morrison on one shared chol(ΛΛ'+σ²I).
@@ -168,7 +168,7 @@ end
 """
     fit_gaussian_random_slope(y, grouping, Z; K, σ_b_init=0.3, …) -> GaussianRandomSlopeFit
 
-Fit a Gaussian GLLVM with grouped random slopes `(Z | grouping)` — a per-group coefficient
+Fit a Gaussian GLLVModels with grouped random slopes `(Z | grouping)` — a per-group coefficient
 vector `b_g ~ N(0, Σ_b)` with an UNSTRUCTURED (correlated) q×q `Σ_b` (the behavioural-
 syndromes random-regression model: a correlated random intercept + slopes per group). `Z`
 is the `n×q` site design (col 1 conventionally all-ones for the random intercept; further

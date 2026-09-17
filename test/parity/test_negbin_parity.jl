@@ -1,4 +1,4 @@
-# test_negbin_parity.jl — NB2 GLLVM logLik vs gllvmTMB
+# test_negbin_parity.jl — NB2 GLLVModels logLik vs gllvmTMB
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
 # Same-model bar: per-trait intercepts + latent unique=FALSE (no Ψ) +
@@ -8,7 +8,7 @@
 # to per-trait φ (disp_group=:species → NBGroupedFit). Shared-r remains
 # fit_nb_gllvm (named). Inventory #132 / default-route-phi-20260801.
 
-using GLLVM, RCall, Test, Random, LinearAlgebra
+using GLLVModels, RCall, Test, Random, LinearAlgebra
 include(joinpath(@__DIR__, "nb2_health.jl"))
 
 # parity_helpers.jl is included once by runparity.jl
@@ -49,7 +49,7 @@ function _rand_nb2(μ::Float64, r::Float64)
     return _rand_poisson(λ)
 end
 
-@testset "NB2 GLLVM parity: GLLVM.jl vs gllvmTMB" begin
+@testset "NB2 GLLVModels parity: GLLVModels.jl vs gllvmTMB" begin
     Random.seed!(45)
     p, K, n = 5, 2, 80
     β = log.([2.5, 3.0, 2.0, 2.8, 2.2])
@@ -66,7 +66,7 @@ end
     end
 
     # Public default route — twin-aligned with gllvmTMB default nbinom2().
-    jl_fit = fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = K,
+    jl_fit = fit_gllvm(Y; family = GLLVModels.NegativeBinomial(), K = K,
                        g_tol = 1e-7, iterations = 800)
     @test jl_fit isa NBGroupedFit
     @test jl_fit.converged

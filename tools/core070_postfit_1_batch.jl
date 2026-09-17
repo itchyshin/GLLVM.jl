@@ -1,7 +1,7 @@
 # Retained evidence runner, Julia side, for the "postfit-1" manifest-area
 # batch's one EXECUTABLE_NOW case (CORE070-POSTFIT-COEF-MULTI-READBACK; see
 # docs/dev-log/core070/postfit-1-batch-contract.json for the other 50 cases'
-# NEEDS_NEW_JULIA_SURFACE bucketing). Fits GLLVM.jl's closed-form Gaussian
+# NEEDS_NEW_JULIA_SURFACE bucketing). Fits GLLVModels.jl's closed-form Gaussian
 # marginal on the contract's frozen fixture with an explicit per-species
 # dummy design (matching R's `value ~ 0 + trait + latent(0 + trait | site,
 # d = K)`), calls the public `coef(fit)` accessor (StatsAPI.coef, wired at
@@ -15,7 +15,7 @@
 # <destination> must not exist; it is created and populated with
 # postfit-1-julia-results.json.
 
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 
 const ROOT = normpath(joinpath(@__DIR__, ".."))

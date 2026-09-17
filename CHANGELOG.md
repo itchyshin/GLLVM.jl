@@ -1,5 +1,14 @@
 # Changelog
 
+## Development
+
+- **Package renamed to GLLVModels.jl.** Install and load it as
+  `GLLVModels`; modelling functions such as `gllvm`, `fit_gllvm`, and `bf`
+  retain their existing API. `GLLVModels.GLLVM` is a temporary source-level
+  alias, but `using GLLVM` cannot remain available after a Julia package rename.
+  The GitHub repository rename and Pages migration remain separate maintainer
+  gates; historical development records retain their original spelling.
+
 All notable changes to GLLVM.jl are documented here.
 
 ## Unreleased

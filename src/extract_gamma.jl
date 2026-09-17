@@ -6,13 +6,13 @@
 # rotation, but Λ_phy Q (Λ_phy Q)ᵀ = Λ_phy Λ_phyᵀ), so the cross block is a
 # well-defined coevolution summary.
 #
-# Orientation note: GLLVM.jl stores phylo loadings on the *stacked entity*
+# Orientation note: GLLVModels.jl stores phylo loadings on the *stacked entity*
 # index p (the rows of Y), correlation-structured by Σ_phy = K*. So
 # `row_traits`/`col_traits` are POSITIONAL integer indices into the stacked
 # two-lineage response — host block 1:n_H, partner block n_H+1:p, matching the
 # host-first/partner-second ordering that `make_cross_kernel` enforces. This
 # differs from the name-based trait subsetting in the R twin (Julia is
-# positional), and it is the species-level-loading orientation of the GLLVM.jl
+# positional), and it is the species-level-loading orientation of the GLLVModels.jl
 # Hadamard marginal `B = (Λ_phy Λ_phyᵀ) .* Σ_phy`, not R's trait⊗species
 # Kronecker form.
 
@@ -20,7 +20,7 @@
     extract_Gamma(fit::GllvmFit; row_traits, col_traits) -> Matrix{Float64}
 
 Cross-lineage coevolution block `Γ = (Λ_phy Λ_phyᵀ)[row_traits, col_traits]`
-from a Gaussian GLLVM fit that carries a phylo-latent tier (`K_phy > 0`) with a
+from a Gaussian GLLVModels fit that carries a phylo-latent tier (`K_phy > 0`) with a
 cross kernel `Σ_phy = K*` (see `make_cross_kernel`). `row_traits` and
 `col_traits` are integer index vectors into the stacked two-lineage entity set
 (host first, partner second), e.g. `row_traits = 1:n_H`,

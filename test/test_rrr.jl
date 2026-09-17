@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "RRR / constrained ordination" begin
     # ----------------------------------------------------------------------
@@ -18,14 +18,14 @@ using GLLVM, Test, Random, Distributions, Statistics
         X = randn(rng, n, q)
         Y = [rand(rng, Poisson(exp(β[t]))) for t in 1:p, _ in 1:n]
 
-        ll_rrr = GLLVM.rrr_marginal_loglik(
+        ll_rrr = GLLVModels.rrr_marginal_loglik(
             Poisson(), Y, ones(Int, p, n), Λ, zeros(q, K), β, X, LogLink())
         ll_indep = sum(logpdf(Poisson(exp(β[t])), Y[t, s]) for t in 1:p, s in 1:n)
         @test ll_rrr ≈ ll_indep atol = 1e-8
 
         # Hand-checked single η entry for a nonzero B: η[t,s] = β[t] + (Λ B' X')[t,s].
         B = randn(rng, q, K)
-        η = GLLVM._rrr_eta(β, Λ, B, X)
+        η = GLLVModels._rrr_eta(β, Λ, B, X)
         @test size(η) == (p, n)
         ΛBX = Λ * (B' * X')
         t0, s0 = 3, 5
@@ -67,7 +67,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test all(isfinite, μhat)
 
         # model-selection criteria (β + Λ + vec(B); Poisson has no dispersion)
-        @test GLLVM._nparams(fit) == p + (p * K - div(K * (K - 1), 2)) + q * K
+        @test GLLVModels._nparams(fit) == p + (p * K - div(K * (K - 1), 2)) + q * K
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
         # fitted(fit, X) resolves via the generic predict(::, X; type=:response) fallback

@@ -9,7 +9,7 @@
 </div>
 ```
 
-GLLVM.jl is a from-scratch Julia twin of R's `gllvmTMB`, built for fitting speed
+GLLVModels.jl is a from-scratch Julia twin of R's `gllvmTMB`, built for fitting speed
 at moderate-to-large species counts while reproducing point estimates and
 likelihoods to **at least six significant digits** on the shared Gaussian +
 phylogenetic path (worst case across the benchmark grid:
@@ -21,11 +21,11 @@ phylogenetic path (worst case across the benchmark grid:
     orders of magnitude larger. The Benchmarks page (linked below) always
     reported the honest figure and its gates; this summary did not.
 
-page is the live **catch-up scoreboard** — where GLLVM.jl stands against the
+page is the live **catch-up scoreboard** — where GLLVModels.jl stands against the
 `gllvmTMB` feature set. For *speed* comparisons see
 [Comparison](comparison.md) and [Benchmarks](benchmarks.md).
 
-Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVM.jl advantage.
+Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVModels.jl advantage.
 
 ## What parity does NOT mean
 
@@ -121,7 +121,7 @@ remains `planned`; that is transport only, not row promotion. Enumerated fences:
 
 ## Response families
 
-| Family | GLLVM.jl | Notes |
+| Family | GLLVModels.jl | Notes |
 |--------|:---:|-------|
 | Gaussian | ✅ | closed-form marginal |
 | Binomial (Bernoulli / counts) | ✅ | logit / probit / cloglog |
@@ -144,7 +144,7 @@ remains `planned`; that is transport only, not row promotion. Enumerated fences:
 
 ## Model structure
 
-| Capability | GLLVM.jl | Notes |
+| Capability | GLLVModels.jl | Notes |
 |-----------|:---:|-------|
 | Latent-variable ordination (loadings) | ✅ | any `K`; canonical SVD rotation |
 | Fixed-effect covariates (`Xβ`) | ✅ Gaussian · ✅ non-Gaussian (GLM families) | Shared site-X: Poisson/Binomial via `fit_gllvm_cov`; NB2/NB1/Beta/Gamma public/bridge default via `fit_*_gllvm_grouped_cov` (per-trait φ/α + shared `γ`; twin API B; NB1 = `fit_nb1_gllvm_grouped_cov`); Ordinal via `fit_ordinal_gllvm_pertrait_cov` (per-trait cutpoints τ₁=0 / K−2 + shared `γ`; light RCall vs `ordinal_probit`). Shared-dispersion + X remains `fit_gllvm_cov` where that path exists (incl. shared-φ NB1 opt-in). Gaussian `β_fixed` / non-Gaussian `γ_fixed` zero masks supported. |
@@ -152,14 +152,14 @@ remains `planned`; that is transport only, not row promotion. Enumerated fences:
 | Phylogenetic random effect | ✅ ⚡ | fast **O(p)** sparse path, benchmarked to p = 10⁴ |
 | Animal model (relatedness / GRM) | ✅ Gaussian | `relatedness_cov`, via the `Σ_phy` input |
 | Spatial (Matérn / exponential) | ✅ Gaussian | `spatial_cov`, via the `Σ_phy` input |
-| Structured dependence × non-Gaussian | ✅ phylo · 🔨 spatial-latent / animal | phylogenetic GLM landed (`fit_phylo_glm`, augmented-state joint Laplace); SPDE / Matérn spatial latent field (`fit_spde_latent_gllvm`) for the non-Gaussian GLLVM |
+| Structured dependence × non-Gaussian | ✅ phylo · 🔨 spatial-latent / animal | phylogenetic GLM landed (`fit_phylo_glm`, augmented-state joint Laplace); SPDE / Matérn spatial latent field (`fit_spde_latent_gllvm`) for the non-Gaussian GLLVModels |
 | Random slopes `(1 + x \| g)` | 🔨 | formula front-end (c) |
 | Per-species / grouped dispersion (`disp.group`) | ✅ all 5 dispersion families | `fit_{nb,beta,gamma,nb1,tweedie}_gllvm_grouped(Y; K, group)` give each species (or group) its own dispersion; reduces exactly to the shared fit at `G=1`. **gllvm's default is per-species** dispersion, so for parity route Julia through a grouped fitter with `group = 1:p` (or set gllvm `disp.formula = ~1` for the shared model) |
 | Row effects (fixed **and random**) | ✅ | fixed per-site intercepts (`fit_roweffect_gllvm`) **and** random `ρ_s ~ N(0, σ_row²)` (`fit_row_random_gllvm`, gllvmTMB `row.eff="random"`); `σ_row→0` reduces exactly to no-row-effect |
 
 ## Post-fit & inference
 
-| Capability | GLLVM.jl | Notes |
+| Capability | GLLVModels.jl | Notes |
 |-----------|:---:|-------|
 | `getLV` / `getLoadings` / `rotation` | ✅ | all families |
 | `predict` / `fitted` | ✅ | all families (ordinal adds `:prob` / `:class`) |
@@ -172,7 +172,7 @@ remains `planned`; that is transport only, not row promotion. Enumerated fences:
 
 ## Interface
 
-| Capability | GLLVM.jl | Notes |
+| Capability | GLLVModels.jl | Notes |
 |-----------|:---:|-------|
 | Matrix-level fit API | ✅ | `fit_gllvm(Y; family, K, …)` |
 | `@formula` front-end | ✅ fixed effects (wide + long) · 🔨 rest | `gllvm(@formula(y ~ 1 + x), Y, data; …)` and `gllvm(@formula(y ~ 1 + x), long; species, site, …)`; random slopes, `traits()`/`phylo()`, categoricals deferred |
@@ -207,13 +207,13 @@ further fit-time gains.
 
 ## R bridge: parameterization map
 
-R `gllvmTMB` can call GLLVM.jl as its default Julia fitting path through the
+R `gllvmTMB` can call GLLVModels.jl as its default Julia fitting path through the
 R-side bridge. For results to agree, the bridge must reconcile a few
 **convention differences** — the underlying models are the same, but the
 parameter scales/structures differ. These are translation rules for the bridge,
 not bugs on either side.
 
-| Quantity | gllvm (R) | GLLVM.jl | Bridge rule |
+| Quantity | gllvm (R) | GLLVModels.jl | Bridge rule |
 |----------|-----------|----------|-------------|
 | NB2 dispersion | `φ` (dispersion), `Var = μ + μ²φ`; larger `φ` ⇒ more overdispersion | `r` (size), `Var = μ + μ²/r` | **`r = 1/φ`** (invert in both directions). Also propagates to ZINB / Hurdle-NB / grouped-NB |
 | NB1 dispersion | `φ`, `Var = μ + μφ` | `φ`, `Var = μ(1+φ)` | identity (maps 1:1) |
@@ -241,7 +241,7 @@ covariates (`X`) are admitted for complete, balanced one-part Gaussian, Poisson,
 Binomial, NB2, NB1, Beta, and Gamma fits (NB1 via per-trait
 `fit_nb1_gllvm_grouped_cov`; light RCall `nbinom1`+X cell abs Δ ≈1.53e-9 @
 rtol 1e-6, seed=48).
-`GLLVM.bridge_capabilities()` exposes the current Julia bridge surface as a flat,
+`GLLVModels.bridge_capabilities()` exposes the current Julia bridge surface as a flat,
 JuliaCall-friendly ledger so the R side can enforce a one-way drift guard: every
 R-admitted row must have a Julia route with explicit status metadata, while
 Julia-only rows must remain explicitly planned or rejected in `gllvmTMB`.
@@ -263,7 +263,7 @@ shared-dispersion/shape/precision fitter, not the per-trait grouped route).
 Native shared-cutpoint Ordinal `X_lv` is Julia-side only for now; it does not
 promote the per-trait ordinal R bridge. These routes return total latent scores
 in `scores` and add `scores_mean`, `scores_innovation`, `alpha_lv`, and
-rotation-stable `lv_effects = Lambda * alpha_lv'`. Native GLLVM.jl can compute
+rotation-stable `lv_effects = Lambda * alpha_lv'`. Native GLLVModels.jl can compute
 uncertainty for the ordinary `B_lv` product, including selected-entry
 profile-likelihood canaries, but the R bridge still transports only the Wald
 `X_lv` payload for promoted rows. Response masks, simultaneous fixed-effect `X`,
@@ -309,7 +309,7 @@ public through the R bridge yet:
   likelihood needs upstream confirmation before building to it.
 - **corAR1 / corExp / corCS structured row effects, and `lvCor` correlated latent
   variables** — these are `gllvm` features, **not in gllvmTMB**, so they are out of
-  scope for this bridge. (GLLVM.jl does carry more general SPDE/Matérn-spatial and
+  scope for this bridge. (GLLVModels.jl does carry more general SPDE/Matérn-spatial and
   phylogenetic substrates, which gllvm/gllvmTMB lack.)
 - **Per-trait nuisance-parameter intervals** — grouped NB2/NB1/Beta/Gamma CIs
   are routed; grouped Tweedie and per-trait ordinal-cutpoint CI endpoints remain
@@ -322,7 +322,7 @@ public through the R bridge yet:
 `gllvmTMB` is built on TMB, whose `MakeADFun(..., random = ...)` differentiates
 the coded joint negative log-likelihood. Its Laplace log-determinant therefore
 uses the **observed** joint Hessian, structurally and without ever making a
-choice about it. GLLVM.jl hand-codes its Laplace kernels, and several of them
+choice about it. GLLVModels.jl hand-codes its Laplace kernels, and several of them
 used the **Fisher (expected)** information in that role instead.
 
 The two coincide at canonical links — Poisson/log and Binomial/logit, where the
@@ -384,7 +384,7 @@ be built *with* validation rather than shipped unverified:
 
 - **Structured dependence × non-Gaussian (animal / spatial extensions)** — the
   phylogenetic GLM has landed (`fit_phylo_glm`, an augmented-state joint Laplace),
-  and the SPDE / Matérn spatial latent field is wired into the non-Gaussian GLLVM
+  and the SPDE / Matérn spatial latent field is wired into the non-Gaussian GLLVModels
   (`fit_spde_latent_gllvm`). The remaining work is the general dense-`S_u`
   species random effect `u ~ N(0, σ²Σ)` shared across sites and the scalable
   large-`p` determinant. Spec:

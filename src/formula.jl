@@ -20,7 +20,7 @@
 # and interaction terms across site-level variables.
 #
 # StatsModels is imported SELECTIVELY so it does not bring StatsAPI's
-# `predict`/`residuals`/`fit` into the module and clash with GLLVM's own post-fit generics.
+# `predict`/`residuals`/`fit` into the module and clash with GLLVModels's own post-fit generics.
 
 import StatsModels
 using StatsModels: @formula, FormulaTerm, Term, ConstantTerm, FunctionTerm, InteractionTerm, schema, apply_schema, modelmatrix, coefnames
@@ -123,12 +123,12 @@ end
     gllvm(formula, Y, data; family = Normal(), K, sources = nothing,
           contrasts = Dict(), kwargs...)
 
-Fit a GLLVM from an R-`gllvmTMB`-style `@formula` over a wide species×site response
+Fit a GLLVModels from an R-`gllvmTMB`-style `@formula` over a wide species×site response
 matrix `Y` (`p × n`) and a `Tables`-compatible `data` of **site-level** covariates
 (one row per site = per column of `Y`).
 
 ```julia
-using GLLVM, Distributions, StatsModels
+using GLLVModels, Distributions, StatsModels
 gllvm(@formula(y ~ 1 + temp + depth), Y, site_data; family = Normal(),  K = 2)
 gllvm(@formula(y ~ 1 + temp + habitat), Y, site_data; family = Poisson(), K = 2,
       contrasts = Dict(:habitat => DummyCoding()))
@@ -391,7 +391,7 @@ const _STRUCTURED_TERM_KINDS = (:dep, :indep, :scalar,
     SourceTermSpec
 
 Parsed, not-yet-materialized structured source term recognized from a raw
-formula `Expr` by [`GLLVM._recognize_source_term`](@ref). `kind` is one of
+formula `Expr` by [`GLLVModels._recognize_source_term`](@ref). `kind` is one of
 `:dep, :indep, :scalar, :kernel_indep, :kernel_dep, :kernel_scalar,
 :kernel_latent, :kernel_unique`. `group` names the grouping column (the bar
 RHS). `common`/`unique` are literal booleans, `nothing` when not applicable
@@ -593,7 +593,7 @@ function _check_source_term_exclusions(specs::Vector{SourceTermSpec})
 end
 
 """Resolve a recognized `K=` reference (a bare `Symbol`/`QuoteNode` captured
-by [`GLLVM._recognize_source_term`](@ref)) against `kernel_env` — a
+by [`GLLVModels._recognize_source_term`](@ref)) against `kernel_env` — a
 `NamedTuple`/`Dict`-like environment supplied by the caller, mirroring R's
 calling-environment lookup for `K=A`. Lane-internal."""
 function _resolve_kernel(K, kernel_env)
@@ -699,10 +699,10 @@ unchanged through this wrapper.
 StatsModels' `@formula` macro parses its right-hand side into `Term`s at
 macro-expansion time and rejects the `lhs | group` bar syntax these structured
 terms use (`indep(0 + trait | g)`, `dep(1 | grp)`, `kernel_latent(g, K=K, d=2)`,
-...) before any GLLVM code ever runs — the macro has no hook to recognize a
+...) before any GLLVModels code ever runs — the macro has no hook to recognize a
 `|`-headed call as anything but a parse error. Passing raw, unevaluated `Expr`s
 via `structure=` sidesteps `@formula` entirely: each `Expr` is quoted by the
-caller with `:(...)` and walked by GLLVM's own recognizer, so the grammar can
+caller with `:(...)` and walked by GLLVModels's own recognizer, so the grammar can
 support the bar syntax without teaching StatsModels a new dialect. A macro
 front door that lets users write `structure(indep(0 + trait | g))` directly
 (instead of quoting) is a separate, later grammar decision — this wrapper does
@@ -733,7 +733,7 @@ takes no `family` argument at all). Any other `family` value throws a named
 # Example
 
 ```jldoctest
-julia> using GLLVM, Random, LinearAlgebra
+julia> using GLLVModels, Random, LinearAlgebra
 
 julia> rng = MersenneTwister(70100); p, n = 3, 24;
 

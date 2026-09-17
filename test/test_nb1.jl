@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
 
 # Negative binomial type-1 (NB1): linear variance Var = μ(1+φ), i.e. NB with a
 # mean-dependent size r = μ/φ and constant success prob p = 1/(1+φ). NB1's Fisher
@@ -18,7 +18,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         for t in 1:p, s in 1:n
             Y[t, s] = rand(NegativeBinomial(μ[t] / φ, 1 / (1 + φ)))
         end
-        ll = GLLVM.nb1_marginal_loglik_laplace(Y, zeros(p, K), β, φ)
+        ll = GLLVModels.nb1_marginal_loglik_laplace(Y, zeros(p, K), β, φ)
         ref = sum(logpdf(NegativeBinomial(μ[t] / φ, 1 / (1 + φ)), Y[t, s]) for t in 1:p, s in 1:n)
         @test ll ≈ ref atol = 1e-8
     end
@@ -41,8 +41,8 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         # loses all precision to a loggamma(y+r) − loggamma(r) catastrophic
         # cancellation (a float limit of evaluating NB1 at an absurd dispersion, not
         # a bug — the Λ=0, score-vs-AD, and real-φ fit anchors confirm correctness).
-        ll_nb1 = GLLVM.nb1_marginal_loglik_laplace(Y, Λ, β, 1e-5)
-        ll_pois = GLLVM.poisson_marginal_loglik_laplace(Y, Λ, β)
+        ll_nb1 = GLLVModels.nb1_marginal_loglik_laplace(Y, Λ, β, 1e-5)
+        ll_pois = GLLVModels.poisson_marginal_loglik_laplace(Y, Λ, β)
         @test ll_nb1 ≈ ll_pois atol = 1e-2
     end
 
@@ -52,17 +52,17 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
             η = log(μ); me = μ                       # log link: dμ/dη = μ
             lp(ηv) = logpdf(NegativeBinomial(exp(ηv) / φ, 1 / (1 + φ)), y)
             s_ad = ForwardDiff.derivative(lp, η)
-            s_an = GLLVM._glm_score(GLLVM.NB1(φ), μ, 1, me, y)
+            s_an = GLLVModels._glm_score(GLLVModels.NB1(φ), μ, 1, me, y)
             @test s_an ≈ s_ad atol = 1e-7
         end
     end
 
     @testset "tiny φ Fisher information uses the Poisson-limit branch" begin
         for φ in (1e-8, 1e-9), μ in (2.0, 5.0, 10.0)
-            @test GLLVM._nb1_fisher_mu(μ, φ) ≈ inv(μ * (1 + φ)) rtol = 1e-12
+            @test GLLVModels._nb1_fisher_mu(μ, φ) ≈ inv(μ * (1 + φ)) rtol = 1e-12
         end
         for μ in (2.0, 5.0, 10.0)
-            @test GLLVM._nb1_fisher_mu(μ, 1e-5) ≈ inv(μ * (1 + 1e-5)) rtol = 3e-6
+            @test GLLVModels._nb1_fisher_mu(μ, 1e-5) ≈ inv(μ * (1 + 1e-5)) rtol = 3e-6
         end
     end
 
@@ -114,7 +114,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         end
         fit = fit_nb1_gllvm(Y; K = K, iterations = 60)
         ci = confint(fit, Y; method = :wald)
-        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 1   # β + Λ + φ
+        @test length(ci.term) == p + GLLVModels.rr_theta_len(p, K) + 1   # β + Λ + φ
         @test any(t -> t == "phi", ci.term)
         for i in eachindex(ci.term)
             if isfinite(ci.lower[i]) && isfinite(ci.upper[i])

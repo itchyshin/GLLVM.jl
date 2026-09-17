@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "Ordinal Laplace marginal" begin
     @testset "Λ = 0 reduces to independent cumulative-logit loglik (exact)" begin
@@ -6,10 +6,10 @@ using GLLVM, Test, Random, Distributions
         p, K, n = 5, 2, 60
         C = 4
         τ = [-1.0, 0.0, 1.2]                              # C−1 ordered cutpoints
-        probs = [GLLVM._ord_prob(c, 0.0, τ) for c in 1:C]
+        probs = [GLLVModels._ord_prob(c, 0.0, τ) for c in 1:C]
         Y = [rand(Categorical(probs)) for t in 1:p, s in 1:n]
 
-        ll = GLLVM.ordinal_marginal_loglik_laplace(Y, zeros(p, K), τ)
+        ll = GLLVModels.ordinal_marginal_loglik_laplace(Y, zeros(p, K), τ)
         F(x) = 1 / (1 + exp(-x))
         function logp(c)
             hi = c == C ? 1.0 : F(τ[c])
@@ -28,18 +28,18 @@ using GLLVM, Test, Random, Distributions
         ztrue = randn()
         Y = Vector{Int}(undef, p)
         for t in 1:p
-            pr = [GLLVM._ord_prob(c, Λ[t, 1] * ztrue, τ) for c in 1:C]
+            pr = [GLLVModels._ord_prob(c, Λ[t, 1] * ztrue, τ) for c in 1:C]
             Y[t] = rand(Categorical(pr))
         end
         Ym = reshape(Y, p, 1)
-        ll_lap = GLLVM.ordinal_marginal_loglik_laplace(Ym, Λ, τ)
+        ll_lap = GLLVModels.ordinal_marginal_loglik_laplace(Ym, Λ, τ)
 
         zs = range(-8, 8; length = 4001); dz = step(zs)
         marg = 0.0
         for z in zs
             lp = 0.0
             for t in 1:p
-                lp += log(GLLVM._ord_prob(Y[t], Λ[t, 1] * z, τ))
+                lp += log(GLLVModels._ord_prob(Y[t], Λ[t, 1] * z, τ))
             end
             marg += exp(lp) * pdf(Normal(), z) * dz
         end

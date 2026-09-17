@@ -54,7 +54,7 @@ _glm_obs_weight(f::Gamma, μ, n, me, y, link::LogLink, η) =
 """
     gamma_marginal_loglik_laplace(Y, Λ, β, α; link=LogLink(), kwargs...) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of a Gamma GLLVM with
+Total Laplace log-marginal over the `n` sites (columns) of a Gamma GLLVModels with
 shape `α` — responses `Y > 0`, mean `μ = exp(η)` (log link), per-observation
 `Gamma(α, μ/α)` (`Var = μ²/α`). A thin wrapper over the family-generic
 `marginal_loglik_laplace` with the `Gamma(α, ·)` marker.
@@ -155,7 +155,7 @@ end
 """
     fit_gamma_gllvm(Y; K, link=LogLink(), α_init=nothing, …) -> GammaFit
 
-Fit a Gamma GLLVM by L-BFGS over `[β; vec(Λ); log α]` on the Laplace marginal
+Fit a Gamma GLLVModels by L-BFGS over `[β; vec(Λ); log α]` on the Laplace marginal
 (`gamma_marginal_loglik_laplace`), jointly estimating the shape `α`
 (`Var = μ²/α`). `Y` is a p×n matrix of positive reals; `K` the latent
 dimension. Analytic gradient on the no-mask/no-offset path with finite-difference

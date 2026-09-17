@@ -1,4 +1,4 @@
-# Profile-likelihood confidence intervals for the Gaussian GLLVM.
+# Profile-likelihood confidence intervals for the Gaussian GLLVModels.
 #
 # For parameter θ_i with MLE θ̂_i and full log-likelihood ℓ̂,
 # the profile log-lik at candidate value c is
@@ -546,7 +546,7 @@ end
 # RETURN VALUE. R's `tmbprofile_wrapper()` gets there by first calling
 # `TMB::tmbprofile()`, which returns the raw (parameter value, deviance)
 # TRACE, and only then reducing that trace to bounds via `.profile_bounds()`.
-# GLLVM.jl's `profile_ci` never materialises that trace — every constrained
+# GLLVModels.jl's `profile_ci` never materialises that trace — every constrained
 # refit's deviance is used and discarded inside `_profile_bisect_side`.
 #
 # `tmbprofile_wrapper` here fills that namespace/surface gap: it re-walks
@@ -717,7 +717,7 @@ Batch curve wrapper: calls [`tmbprofile_wrapper`](@ref) for every entry of
 R's `profile_targets()` is a READINESS REGISTRY (which parameters/targets a
 fit COULD be profiled on, without running anything, because
 `TMB::tmbprofile()` needs the fit's live `tmb_obj` checkpoint machinery to
-run cheaply and reversibly). GLLVM.jl's `profile_ci` has no comparable
+run cheaply and reversibly). GLLVModels.jl's `profile_ci` has no comparable
 checkpoint/restore step — running it IS the cheap operation — so this
 function runs every target's curve directly rather than reporting a
 separate readiness flag; a fit for which a given `parm` cannot be resolved

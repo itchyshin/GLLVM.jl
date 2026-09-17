@@ -20,7 +20,7 @@
 #      (the analytic gradient implements the default-curvature objective; using it with
 #      the other objective would silently desynchronise gradient from objective).
 
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "hessian kwarg on the family fitters" begin
     Random.seed!(11)
@@ -40,47 +40,47 @@ using GLLVM, Test, Random, Distributions
            for t in 1:p, s in 1:n]
 
     @testset "default == explicit default, bit-identical (contract 1+2)" begin
-        f0 = GLLVM.fit_beta_gllvm(Ybe; K = K)
-        ff = GLLVM.fit_beta_gllvm(Ybe; K = K, hessian = :observed) # Beta/logit default (decision A)
+        f0 = GLLVModels.fit_beta_gllvm(Ybe; K = K)
+        ff = GLLVModels.fit_beta_gllvm(Ybe; K = K, hessian = :observed) # Beta/logit default (decision A)
         @test f0.loglik == ff.loglik                                # bit-identical
-        g0 = GLLVM.fit_gamma_gllvm(Yg; K = K)
-        go = GLLVM.fit_gamma_gllvm(Yg; K = K, hessian = :observed) # Gamma/log default
+        g0 = GLLVModels.fit_gamma_gllvm(Yg; K = K)
+        go = GLLVModels.fit_gamma_gllvm(Yg; K = K, hessian = :observed) # Gamma/log default
         @test g0.loglik == go.loglik
     end
 
     @testset "non-default curvature runs and differs (contract 3)" begin
-        fb_f = GLLVM.fit_beta_gllvm(Ybe; K = K, hessian = :fisher)
-        fb_o = GLLVM.fit_beta_gllvm(Ybe; K = K, hessian = :observed)
+        fb_f = GLLVModels.fit_beta_gllvm(Ybe; K = K, hessian = :fisher)
+        fb_o = GLLVModels.fit_beta_gllvm(Ybe; K = K, hessian = :observed)
         @test fb_o.converged && isfinite(fb_o.loglik)
         @test abs(fb_f.loglik - fb_o.loglik) > 1e-6      # genuinely different objectives
 
-        fg_f = GLLVM.fit_gamma_gllvm(Yg; K = K, hessian = :fisher)
-        fg_o = GLLVM.fit_gamma_gllvm(Yg; K = K, hessian = :observed)
+        fg_f = GLLVModels.fit_gamma_gllvm(Yg; K = K, hessian = :fisher)
+        fg_o = GLLVModels.fit_gamma_gllvm(Yg; K = K, hessian = :observed)
         @test fg_f.converged && isfinite(fg_f.loglik)
         @test abs(fg_f.loglik - fg_o.loglik) > 1e-6
     end
 
     @testset "canonical links: selector is a no-op (contract 4)" begin
-        pp_f = GLLVM.fit_poisson_gllvm(Yp; K = K, hessian = :fisher)
-        pp_o = GLLVM.fit_poisson_gllvm(Yp; K = K, hessian = :observed)
+        pp_f = GLLVModels.fit_poisson_gllvm(Yp; K = K, hessian = :fisher)
+        pp_o = GLLVModels.fit_poisson_gllvm(Yp; K = K, hessian = :observed)
         @test pp_f.loglik == pp_o.loglik                  # bit-identical, not approx
-        bb_f = GLLVM.fit_binomial_gllvm(Yb; K = K, hessian = :fisher)
-        bb_o = GLLVM.fit_binomial_gllvm(Yb; K = K, hessian = :observed)
+        bb_f = GLLVModels.fit_binomial_gllvm(Yb; K = K, hessian = :fisher)
+        bb_o = GLLVModels.fit_binomial_gllvm(Yb; K = K, hessian = :observed)
         @test bb_f.loglik == bb_o.loglik
     end
 
     @testset "invalid symbol throws before optimising (contract 5)" begin
-        @test_throws ArgumentError GLLVM.fit_beta_gllvm(Ybe; K = K, hessian = :banana)
-        @test_throws ArgumentError GLLVM.fit_gamma_gllvm(Yg; K = K, hessian = :expected)
-        @test_throws ArgumentError GLLVM.fit_nb_gllvm(Ynb; K = K, hessian = :Observed)
-        @test_throws ArgumentError GLLVM.fit_gp1_gllvm(Ynb; K = K, hessian = :none)
+        @test_throws ArgumentError GLLVModels.fit_beta_gllvm(Ybe; K = K, hessian = :banana)
+        @test_throws ArgumentError GLLVModels.fit_gamma_gllvm(Yg; K = K, hessian = :expected)
+        @test_throws ArgumentError GLLVModels.fit_nb_gllvm(Ynb; K = K, hessian = :Observed)
+        @test_throws ArgumentError GLLVModels.fit_gp1_gllvm(Ynb; K = K, hessian = :none)
     end
 
     @testset "every remaining fitter accepts both selectors" begin
         for h in (:fisher, :observed)
-            @test isfinite(GLLVM.fit_nb_gllvm(Ynb; K = K, hessian = h).loglik)
-            @test isfinite(GLLVM.fit_nb1_gllvm(Ynb; K = K, hessian = h).loglik)
-            @test isfinite(GLLVM.fit_gp1_gllvm(Ynb; K = K, hessian = h).loglik)
+            @test isfinite(GLLVModels.fit_nb_gllvm(Ynb; K = K, hessian = h).loglik)
+            @test isfinite(GLLVModels.fit_nb1_gllvm(Ynb; K = K, hessian = h).loglik)
+            @test isfinite(GLLVModels.fit_gp1_gllvm(Ynb; K = K, hessian = h).loglik)
         end
     end
 
@@ -89,26 +89,26 @@ using GLLVM, Test, Random, Distributions
         # objective wraps every evaluation in try/catch: a kwarg the wrapper drops turns
         # into the 1e12 fail penalty SILENTLY, and the fit collapses to -Inf/unconverged.
         # These assertions fail loudly if that passthrough ever regresses.
-        tw0 = GLLVM.fit_tweedie_gllvm(Ytw; K = K)
-        two = GLLVM.fit_tweedie_gllvm(Ytw; K = K, hessian = :observed)  # Tweedie/log default (2026-08-28)
+        tw0 = GLLVModels.fit_tweedie_gllvm(Ytw; K = K)
+        two = GLLVModels.fit_tweedie_gllvm(Ytw; K = K, hessian = :observed)  # Tweedie/log default (2026-08-28)
         @test tw0.converged && isfinite(tw0.loglik)
         @test tw0.loglik == two.loglik                                  # bit-identical
-        twf = GLLVM.fit_tweedie_gllvm(Ytw; K = K, hessian = :fisher)
+        twf = GLLVModels.fit_tweedie_gllvm(Ytw; K = K, hessian = :fisher)
         @test twf.converged && isfinite(twf.loglik)
         @test abs(twf.loglik - two.loglik) > 1e-6
-        @test_throws ArgumentError GLLVM.fit_tweedie_gllvm(Ytw; K = K, hessian = :banana)
+        @test_throws ArgumentError GLLVModels.fit_tweedie_gllvm(Ytw; K = K, hessian = :banana)
     end
 
     @testset "binomial/probit: default flips to :observed (contracts 1+2+3+5+6, 2026-08-28)" begin
         Ybp = [rand(Binomial(1, 1 / (1 + exp(-H[t, s])))) for t in 1:p, s in 1:n]
-        bp0 = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.ProbitLink())
-        bpo = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.ProbitLink(), hessian = :observed)
+        bp0 = GLLVModels.fit_binomial_gllvm(Ybp; K = K, link = GLLVModels.ProbitLink())
+        bpo = GLLVModels.fit_binomial_gllvm(Ybp; K = K, link = GLLVModels.ProbitLink(), hessian = :observed)
         @test bp0.converged && isfinite(bp0.loglik)
         @test bp0.loglik == bpo.loglik                                  # bit-identical (contracts 1+2)
-        bpf = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.ProbitLink(), hessian = :fisher)
+        bpf = GLLVModels.fit_binomial_gllvm(Ybp; K = K, link = GLLVModels.ProbitLink(), hessian = :fisher)
         @test bpf.converged && isfinite(bpf.loglik)
         @test abs(bpf.loglik - bpo.loglik) > 1e-6                       # genuinely different (contract 3)
-        @test_throws ArgumentError GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.ProbitLink(), hessian = :banana)
+        @test_throws ArgumentError GLLVModels.fit_binomial_gllvm(Ybp; K = K, link = GLLVModels.ProbitLink(), hessian = :banana)
         # Contract 6, probit-specific: the analytic-gradient branch in
         # `fit_binomial_gllvm` is gated on `link isa LogitLink` (binomial.jl),
         # so a probit fit NEVER reaches the logit-specific analytic Laplace
@@ -118,17 +118,17 @@ using GLLVM, Test, Random, Distributions
         # (not a new guard added here); this locks it stays true post-flip, so
         # a probit fit is never silently desynchronised from a logit-only
         # analytic gradient.
-        @test !(GLLVM.ProbitLink() isa GLLVM.LogitLink)
+        @test !(GLLVModels.ProbitLink() isa GLLVModels.LogitLink)
         # cloglog ALSO flips to :observed (2026-09-01, maintainer decisions
         # round 1 item 2 — confirmed Julia-side likelihood-value defect vs
         # R/gllvmTMB at fixed coordinates; see
         # docs/dev-log/core070/cloglog-leaf-notes.md). The 2026-08-28
         # optimizer-runaway pathology was measured under BOTH curvature
         # selectors and is unaffected by this default.
-        bc0 = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.CLogLogLink())
-        bco = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.CLogLogLink(), hessian = :observed)
+        bc0 = GLLVModels.fit_binomial_gllvm(Ybp; K = K, link = GLLVModels.CLogLogLink())
+        bco = GLLVModels.fit_binomial_gllvm(Ybp; K = K, link = GLLVModels.CLogLogLink(), hessian = :observed)
         @test bc0.loglik == bco.loglik                                  # default IS :observed for cloglog
-        bcf = GLLVM.fit_binomial_gllvm(Ybp; K = K, link = GLLVM.CLogLogLink(), hessian = :fisher)
+        bcf = GLLVModels.fit_binomial_gllvm(Ybp; K = K, link = GLLVModels.CLogLogLink(), hessian = :fisher)
         @test bcf.converged && isfinite(bcf.loglik)
         @test abs(bcf.loglik - bco.loglik) > 1e-6                       # genuinely different, selector still reachable
     end

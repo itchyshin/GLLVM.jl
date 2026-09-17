@@ -1,5 +1,5 @@
 # Transformed-scale Wald confidence intervals for *derived bounded
-# quantities* of a fitted Gaussian GLLVM.
+# quantities* of a fitted Gaussian GLLVModels.
 #
 # Motivation
 # ----------
@@ -202,13 +202,13 @@ the public accessor (`correlation(fit)[i,j]`, `communality(fit)[t]`, …).
 scalar; use the closure helpers in this file / confint_derived.jl:
 
 ```julia
-spec = GLLVM._derived_spec(fit)
-f_ρ  = GLLVM._make_correlation_closure(spec, 1, 2)   # ρ[1,2]
-ci   = GLLVM.transformed_wald_ci_derived(fit, f_ρ;
+spec = GLLVModels._derived_spec(fit)
+f_ρ  = GLLVModels._make_correlation_closure(spec, 1, 2)   # ρ[1,2]
+ci   = GLLVModels.transformed_wald_ci_derived(fit, f_ρ;
                                          transform = :fisher_z, y = y)
 
-f_c2 = GLLVM._make_communality_closure(spec, 1)      # c²[1]
-ci2  = GLLVM.transformed_wald_ci_derived(fit, f_c2;
+f_c2 = GLLVModels._make_communality_closure(spec, 1)      # c²[1]
+ci2  = GLLVModels.transformed_wald_ci_derived(fit, f_c2;
                                          transform = :logit, y = y)
 ```
 
@@ -433,7 +433,7 @@ end
 # `method = "wald_asym"` (asymmetric Wald via Fisher-z on the standardised
 # scale — see `.lambda_ci_asym()` in the R oracle).
 #
-# `component` selects the loading tier: `:B` (GLLVM.jl's "unit"/shared block,
+# `component` selects the loading tier: `:B` (GLLVModels.jl's "unit"/shared block,
 # the R default `level = "unit"`) or `:W` (the "unit_obs"/within block).
 # Standardisation always divides by the FULL per-site total variance
 # `Σ_y_site[t,t]` (both blocks combined, plus σ²_eps and any diagonal
@@ -495,7 +495,7 @@ end
 Symmetric (identity-link) transformed-Wald CI for the RAW loading entry
 `Λ[t, k]` on its native (unbounded) scale, built with the same one-Hessian
 machinery as [`standardized_loading_wald_ci`](@ref). This is the `method =
-"wald"` route of R's `loading_ci()` on GLLVM.jl's dense reduced-rank fit.
+"wald"` route of R's `loading_ci()` on GLLVModels.jl's dense reduced-rank fit.
 For `k > t` on the lower-triangular reduced-rank packing convention
 (`src/packing.jl`), the entry is structurally pinned at `0` — `estimate ==
 0`, `se == 0`, `lower == upper == 0`, mirroring `pinned = TRUE` rows in R's
@@ -548,7 +548,7 @@ per `(trait, axis)` — the Julia analogue of R's `loading_ci()`
 Every row carries `trait`, `axis`, `estimate`, `se`, `lower`, `upper`,
 `method`, `loading_scale`, and `pinned` (`true` for the structurally-zero
 upper-triangular entries of the lower-triangular reduced-rank packing
-convention — GLLVM.jl's built-in identifiability device; there is no
+convention — GLLVModels.jl's built-in identifiability device; there is no
 separate `lambda_constraint`/confirmatory-fit concept to gate on here, so
 unlike R this function does not refuse exploratory fits).
 
@@ -723,14 +723,14 @@ Julia analogue of R gllvmTMB's `standard_errors()` (`.unlazy/core070-aghq/
 oracle-source/readback/R/standard-errors.R`). R's version lazily defers
 TMB's `sdreport()` to a later call when a fit was made with `control =
 gllvmTMBcontrol(se = FALSE)` — a "fit fast now, get SEs later" door.
-GLLVM.jl's `GllvmFit` has no such deferred-SE control: the observed-
+GLLVModels.jl's `GllvmFit` has no such deferred-SE control: the observed-
 information Hessian is always available on demand via [`confint`](@ref).
 
 `standard_errors` is therefore a thin, always-eager wrapper around
 `confint(fit, y; level=level, X=X, Σ_phy=Σ_phy)`, returning only the
 `term`/`estimate`/`se`/`pd_hessian` fields (the CI-bound-free subset R's
 downstream consumers — `summary()`, `getREsd()`, `confint(method =
-"wald")` — actually read off `sd_report`). Since GLLVM.jl never skips the
+"wald")` — actually read off `sd_report`). Since GLLVModels.jl never skips the
 computation, `fit` is returned unchanged (it is immutable) and the
 `NamedTuple` result stands in for R's "populate `sd_report` and return the
 fit" side effect.
@@ -766,7 +766,7 @@ Parametric bootstrap percentile CIs for every entry of `sigma_y_site(fit)`
 (the fitted site-level trait covariance `Σ_y = Λ Λ' + diag(d_total)`), via
 `bootstrap_ci_derived` (src/confint_derived.jl) applied entrywise.
 
-`level = :unit` is the only value accepted: GLLVM.jl computes one
+`level = :unit` is the only value accepted: GLLVModels.jl computes one
 site-level `Σ_y` per fit (`sigma_y_site`), not R's separate unit / unit_obs
 / phy tiers, so `level` is kept for interface parity with R's
 `bootstrap_Sigma(level = ...)` and validated rather than silently ignored.
@@ -791,7 +791,7 @@ GAP (honestly recorded, matching the required-source-case-map disposition
 for the sibling `loading_ci` / `loading_profile_exploratory` rows): R's
 `bootstrap_Sigma()` also bootstraps `R` (correlation), `communality`, `ICC`,
 and `cross_corr` in the SAME call, over multiple covariance tiers. This
-driver covers only the `Sigma` entries at the single `:unit` tier GLLVM.jl
+driver covers only the `Sigma` entries at the single `:unit` tier GLLVModels.jl
 has. The other summaries are already independently reachable via
 `bootstrap_ci_derived(fit, fb -> communality(fb)[t]; ...)` /
 `bootstrap_ci_derived(fit, fb -> correlation(fb)[i,j]; ...)`; a unified
@@ -810,7 +810,7 @@ function bootstrap_Sigma(fit::GllvmFit;
                          verbose::Bool = false)
     level === :unit || throw(ArgumentError(
         "bootstrap_Sigma currently supports level = :unit only " *
-        "(GLLVM.jl computes one site-level Σ_y tier); got :$level"))
+        "(GLLVModels.jl computes one site-level Σ_y tier); got :$level"))
     p = fit.model.p
 
     ii = Int[]; jj = Int[]

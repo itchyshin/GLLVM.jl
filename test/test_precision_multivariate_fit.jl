@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays, ForwardDiff, Random, StableRNGs
+using GLLVModels, Test, LinearAlgebra, SparseArrays, ForwardDiff, Random, StableRNGs
 
 function _pmvf_fixture()
     q = sparse([4.0 -1.0 -1.0 0.0;
@@ -26,7 +26,7 @@ end
 # status is not.
 function _pmvf_boundary_unique_fixture()
     rng = StableRNG(20260900)
-    phy = PrecisionPhy(GLLVM.random_balanced_tree(16; branch_length = 0.35))
+    phy = PrecisionPhy(GLLVModels.random_balanced_tree(16; branch_length = 0.35))
     d, n_tips, repeats = 3, phy.n_leaves, 6
     beta = [0.4, -0.3, 0.7]
     loading = reshape([0.75, -0.45, 0.55], d, 1)
@@ -45,7 +45,7 @@ function _pmvf_boundary_unique_fixture()
                 sqrt(residual[trait]) * randn(rng)
         end
     end
-    start = vcat(beta, GLLVM.pack_lambda(loading),
+    start = vcat(beta, GLLVModels.pack_lambda(loading),
         log.(sqrt.(unique)), log.(sqrt.(residual)))
     return Y, phy, species_id, start
 end
@@ -64,7 +64,7 @@ end
 # rather than which side of this BLAS-sensitive knife-edge it lands on.
 function _pmvf_intermediate_boundary_fixture()
     rng = MersenneTwister(20260907)
-    phy = PrecisionPhy(GLLVM.random_balanced_tree(32; branch_length = 0.35))
+    phy = PrecisionPhy(GLLVModels.random_balanced_tree(32; branch_length = 0.35))
     d, n_tips, repeats = 3, phy.n_leaves, 8
     beta = [0.4, -0.3, 0.7]
     loading = reshape([1.05, -0.75, 0.90], d, 1)
@@ -83,7 +83,7 @@ function _pmvf_intermediate_boundary_fixture()
                 sqrt(residual[trait]) * randn(rng)
         end
     end
-    start = vcat(beta, GLLVM.pack_lambda(loading),
+    start = vcat(beta, GLLVModels.pack_lambda(loading),
         log.(sqrt.(unique)), log.(sqrt.(residual)))
     return Y, phy, species_id, start
 end
@@ -93,7 +93,7 @@ end
 # fixed. Four observations per tip identify independent residual variance.
 function _pmvf_large_interior_fixture()
     rng = MersenneTwister(20260907)
-    phy = PrecisionPhy(GLLVM.random_balanced_tree(128; branch_length = 0.35))
+    phy = PrecisionPhy(GLLVModels.random_balanced_tree(128; branch_length = 0.35))
     d, n_tips, repeats = 3, phy.n_leaves, 4
     beta = [0.4, -0.3, 0.7]
     loading = reshape([1.05, -0.75, 0.90], d, 1)
@@ -112,7 +112,7 @@ function _pmvf_large_interior_fixture()
                 sqrt(residual[trait]) * randn(rng)
         end
     end
-    start = vcat(beta, GLLVM.pack_lambda(loading),
+    start = vcat(beta, GLLVModels.pack_lambda(loading),
         log.(sqrt.(unique)), log.(sqrt.(residual)))
     return Y, phy, species_id, start
 end
@@ -124,35 +124,35 @@ end
     loading = [0.4; -0.2; 0.3] |> x -> reshape(x, d, 1)
     unique = [0.15, 0.10, 0.2]
     residual = [0.5, 0.7, 0.4]
-    theta = vcat(beta, GLLVM.pack_lambda(loading), log.(sqrt.(unique)), log.(sqrt.(residual)))
+    theta = vcat(beta, GLLVModels.pack_lambda(loading), log.(sqrt.(unique)), log.(sqrt.(residual)))
 
     @testset "packed objective is the exact residualized kernel" begin
-        got = GLLVM._precision_multivariate_nll(Y, phy, theta;
+        got = GLLVModels._precision_multivariate_nll(Y, phy, theta;
             rank = 1, mode = :explicitunique, species_id = species_id)
         z = Y .- reshape(beta, d, 1)
-        expected = -GLLVM.multivariate_phylo_precision_loglik(z', phy, loading, residual;
+        expected = -GLLVModels.multivariate_phylo_precision_loglik(z', phy, loading, residual;
             sigma2_phy = 1.0, phylo_unique_variance = unique, species_id = species_id)
         @test isapprox(got, expected; atol = 1e-10, rtol = 1e-10)
     end
 
     @testset "packed transforms preserve separate U and observation residual" begin
-        u = GLLVM._precision_multivariate_unpack(theta, d, 1, :explicitunique, d)
+        u = GLLVModels._precision_multivariate_unpack(theta, d, 1, :explicitunique, d)
         @test u.beta == beta
         @test u.loading ≈ loading
         @test u.phylo_unique_variance ≈ unique
         @test u.residual_variance ≈ residual
-        bare = vcat(beta, GLLVM.pack_lambda(loading), log.(sqrt.(residual)))
-        ub = GLLVM._precision_multivariate_unpack(bare, d, 1, :barelowrank, d)
+        bare = vcat(beta, GLLVModels.pack_lambda(loading), log.(sqrt.(residual)))
+        ub = GLLVModels._precision_multivariate_unpack(bare, d, 1, :barelowrank, d)
         @test ub.phylo_unique_variance === nothing
         @test ub.residual_variance ≈ residual
     end
 
     @testset "invalid finite-difference stencils are never stationary" begin
         storage = zeros(1)
-        sentinel_neighbor = x -> x[1] > 0 ? GLLVM._PMV_PENALTY : x[1]^2
-        gradient = GLLVM._pmv_fd_gradient!(storage, sentinel_neighbor, [0.0])
+        sentinel_neighbor = x -> x[1] > 0 ? GLLVModels._PMV_PENALTY : x[1]^2
+        gradient = GLLVModels._pmv_fd_gradient!(storage, sentinel_neighbor, [0.0])
         @test isnan(gradient[1])
-        @test isnan(GLLVM._fd_hessian(sentinel_neighbor, [0.0])[1, 1])
+        @test isnan(GLLVModels._fd_hessian(sentinel_neighbor, [0.0])[1, 1])
     end
 
     @testset "fixed-seed simulator uses the intended covariance alignment" begin
@@ -167,27 +167,27 @@ end
     end
 
     @testset "tiny deterministic fit retains trait-major mean metadata" begin
-        fit = GLLVM.fit_precision_multivariate(Y, phy; rank = 1, mode = :barelowrank,
+        fit = GLLVModels.fit_precision_multivariate(Y, phy; rank = 1, mode = :barelowrank,
             species_id = species_id, iterations = 80, g_tol = 1e-4)
         @test fit.response_shape == size(Y)
         @test size(fit.mean_design) == (d * m, d)
         @test length(fit.beta) == d
         @test isfinite(fit.loglik)
-        @test isfinite(GLLVM._precision_multivariate_nll(Y, phy, fit.parameters;
+        @test isfinite(GLLVModels._precision_multivariate_nll(Y, phy, fit.parameters;
             rank = 1, mode = :barelowrank, species_id = species_id,
             mean_design = fit.mean_design))
-        targets = GLLVM._pmv_targets(fit)
+        targets = GLLVModels._pmv_targets(fit)
         @test any(t -> t.name == "phylo_cov[2,1]", targets)
         @test any(t -> t.name == "residual_var[1]", targets)
         @test all(isfinite, ForwardDiff.gradient(targets[1].value, fit.parameters))
         @test all(isfinite, ForwardDiff.gradient(targets[length(fit.beta) + 1].value,
                                                    fit.parameters))
-        signal = GLLVM._pmv_phylogenetic_signal(fit)
+        signal = GLLVModels._pmv_phylogenetic_signal(fit)
         @test signal.status == :estimand_not_admitted
         @test occursin("species-level", signal.definition)
         @test occursin("excludes observation residual", signal.definition)
         @test !occursin("A_tipdiag", signal.definition)
-        fitted_intervals = GLLVM.precision_multivariate_intervals(fit)
+        fitted_intervals = GLLVModels.precision_multivariate_intervals(fit)
         @test fitted_intervals.status == :partial
         @test any(x -> x.name == "beta[1]" && x.status == :available,
                   fitted_intervals.intervals)
@@ -197,7 +197,7 @@ end
     @testset "frozen unique-boundary fixture stays at boundary with self-consistent intervals" begin
         Y_interior, phy_interior, ids_interior, start = _pmvf_boundary_unique_fixture()
         expected_Y, expected_ids = copy(Y_interior), copy(ids_interior)
-        fit = GLLVM.fit_precision_multivariate(Y_interior, phy_interior;
+        fit = GLLVModels.fit_precision_multivariate(Y_interior, phy_interior;
             rank = 1, mode = :explicitunique, species_id = ids_interior,
             start = start, iterations = 250, g_tol = 1e-4)
         Y_interior .= NaN
@@ -205,16 +205,16 @@ end
         @test fit.converged
         @test fit.response == expected_Y
         @test fit.species_id == expected_ids
-        @test isapprox(fit.loglik, -GLLVM._precision_multivariate_nll(
+        @test isapprox(fit.loglik, -GLLVModels._precision_multivariate_nll(
             fit.response, fit.phy, fit.parameters; rank = fit.rank,
             mode = fit.mode, species_id = fit.species_id,
             mean_design = fit.mean_design); atol = 1e-10)
-        u = GLLVM._precision_multivariate_unpack(fit.parameters, size(expected_Y, 1),
+        u = GLLVModels._precision_multivariate_unpack(fit.parameters, size(expected_Y, 1),
             fit.rank, fit.mode, size(expected_Y, 1))
         @test u.phylo_unique_variance[1] < 1e-6
         @test isfinite(fit.hessian_min_eigenvalue)
         @test abs(fit.hessian_min_eigenvalue) < 1e-5
-        intervals = GLLVM.precision_multivariate_intervals(fit)
+        intervals = GLLVModels.precision_multivariate_intervals(fit)
         # Coarse interval status flips with BLAS/Julia on this fixture (see
         # docstring); require self-consistency, not a platform-specific label.
         @test intervals.status in (:invalid_curvature, :available)
@@ -223,11 +223,11 @@ end
 
     @testset "fixed-seed intermediate fixture stays internally consistent at its knife-edge" begin
         Y_interior, phy_interior, ids_interior, start = _pmvf_intermediate_boundary_fixture()
-        fit = GLLVM.fit_precision_multivariate(Y_interior, phy_interior;
+        fit = GLLVModels.fit_precision_multivariate(Y_interior, phy_interior;
             rank = 1, mode = :explicitunique, species_id = ids_interior,
             start = start, iterations = 250, g_tol = 1e-4)
         @test fit.converged
-        intervals = GLLVM.precision_multivariate_intervals(fit)
+        intervals = GLLVModels.precision_multivariate_intervals(fit)
         # This exact fixture sits on a BLAS/Julia-version-sensitive curvature
         # knife-edge (see the fixture's docstring): :invalid_curvature on
         # Julia 1.10, :available on Julia 1.12 for the identical data and
@@ -241,24 +241,24 @@ end
 
     @testset "fixed-seed large interior explicit-unique intervals are all available" begin
         Y_interior, phy_interior, ids_interior, start = _pmvf_large_interior_fixture()
-        fit = GLLVM.fit_precision_multivariate(Y_interior, phy_interior;
+        fit = GLLVModels.fit_precision_multivariate(Y_interior, phy_interior;
             rank = 1, mode = :explicitunique, species_id = ids_interior,
             start = start, iterations = 250, g_tol = 1e-4)
         @test fit.converged
-        intervals = GLLVM.precision_multivariate_intervals(fit)
+        intervals = GLLVModels.precision_multivariate_intervals(fit)
         @test intervals.status == :available
         @test all(x -> x.status == :available, intervals.intervals)
     end
 
     @testset "malformed and unavailable interval outcomes stay explicit" begin
-        @test_throws ArgumentError GLLVM.fit_precision_multivariate(Y, phy; rank = 4)
-        @test_throws ArgumentError GLLVM.fit_precision_multivariate(Y, phy; mode = :other)
+        @test_throws ArgumentError GLLVModels.fit_precision_multivariate(Y, phy; rank = 4)
+        @test_throws ArgumentError GLLVModels.fit_precision_multivariate(Y, phy; mode = :other)
         overflow = copy(theta); overflow[end] = 1000.0
-        @test GLLVM._precision_multivariate_nll(Y, phy, overflow;
+        @test GLLVModels._precision_multivariate_nll(Y, phy, overflow;
             rank = 1, mode = :explicitunique, species_id = species_id) == 1e12
-        stalled = GLLVM.fit_precision_multivariate(Y, phy; rank = 1, mode = :barelowrank,
+        stalled = GLLVModels.fit_precision_multivariate(Y, phy; rank = 1, mode = :barelowrank,
             species_id = species_id, iterations = 0)
-        intervals = GLLVM.precision_multivariate_intervals(stalled)
+        intervals = GLLVModels.precision_multivariate_intervals(stalled)
         @test intervals.status == :not_converged
         @test all(x -> x.status == :not_converged, intervals.intervals)
     end

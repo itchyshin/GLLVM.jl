@@ -8,9 +8,9 @@
 # JSON oracle file the paired R runner (tools/core070_family_links_batch.R)
 # writes BEFORE invoking this script (that R process already has the frozen
 # gllvmTMB library loaded and does 100% of the live R-side fitting itself),
-# and fits the identical data natively via direct `using GLLVM` module calls
+# and fits the identical data natively via direct `using GLLVModels` module calls
 # only -- fit_binomial_gllvm(Y; K, link), the native family-dispatch fit path
-# GLLVM._bridge_family_key("binomial_probit"/"binomial_cloglog") route to
+# GLLVModels._bridge_family_key("binomial_probit"/"binomial_cloglog") route to
 # (src/bridge.jl:147-148). No RCall, no parity-runner include, no R of any
 # kind runs in this process.
 #
@@ -26,7 +26,7 @@
 # Invocation:
 #   julia --project=. tools/core070_family_links_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 
 # ---------------------------------------------------------------------------
 # Minimal JSON reader/writer (no external dependency; mirrors the existing
@@ -153,7 +153,7 @@ out_path = ARGS[1]
 isfile(out_path) && error("destination already exists: $out_path")
 mkpath(dirname(out_path))
 
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd()) "must run from the GLLVM.jl package root"
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(pwd()) "must run from the GLLVModels.jl package root"
 
 oracle_path = get(ENV, "CORE070_FAMILY_LINKS_R_ORACLE", "")
 isempty(oracle_path) &&
@@ -178,8 +178,8 @@ cases = Dict{String, Any}()
 # check): both bridge dispatch keys must resolve on the Julia side too.
 # ---------------------------------------------------------------------------
 gate = oracle["gate"]
-bridge_key_probit  = GLLVM._bridge_family_key("binomial_probit")  == "binomial_probit"
-bridge_key_cloglog = GLLVM._bridge_family_key("binomial_cloglog") == "binomial_cloglog"
+bridge_key_probit  = GLLVModels._bridge_family_key("binomial_probit")  == "binomial_probit"
+bridge_key_cloglog = GLLVModels._bridge_family_key("binomial_cloglog") == "binomial_cloglog"
 gate_probit_ok  = gate["probit"]["ok"]  === true && gate["probit"]["key"]  == "binomial_probit"
 gate_cloglog_ok = gate["cloglog"]["ok"] === true && gate["cloglog"]["key"] == "binomial_cloglog"
 @assert bridge_key_probit && bridge_key_cloglog && gate_probit_ok && gate_cloglog_ok "family-key admission gate mismatch between R and Julia"

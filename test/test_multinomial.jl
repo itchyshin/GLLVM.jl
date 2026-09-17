@@ -1,8 +1,8 @@
-using GLLVM, Test, Random, LinearAlgebra, ForwardDiff, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, ForwardDiff, Distributions
 
-# `using Distributions` after `using GLLVM` makes bare `Multinomial`
+# `using Distributions` after `using GLLVModels` makes bare `Multinomial`
 # undefined (both export it). Identity keeps the public marker as
-# `GLLVM.Multinomial`; qualify here so the suite stays usable after
+# `GLLVModels.Multinomial`; qualify here so the suite stays usable after
 # earlier `runtests.jl` files have already imported Distributions.
 
 # Central FD (same stencil as test_lognormal.jl / test_studentt.jl).
@@ -25,17 +25,17 @@ end
 @testset "multinomial family (FE softmax, twin fid 16)" begin
 
     @testset "marker is Multinomial, not Categorical" begin
-        m = GLLVM.Multinomial()
-        @test m isa GLLVM.Multinomial
+        m = GLLVModels.Multinomial()
+        @test m isa GLLVModels.Multinomial
         @test nameof(typeof(m)) === :Multinomial
         @test nameof(typeof(m)) !== :Categorical
-        @test !(m isa GLLVM.Ordinal)
+        @test !(m isa GLLVModels.Ordinal)
     end
 
-    @testset "GLLVM.Multinomial vs Distributions.Multinomial" begin
-        m = GLLVM.Multinomial()
+    @testset "GLLVModels.Multinomial vs Distributions.Multinomial" begin
+        m = GLLVModels.Multinomial()
         d = Distributions.Multinomial(3, [0.2, 0.3, 0.5])
-        @test m isa GLLVM.Multinomial
+        @test m isa GLLVModels.Multinomial
         @test d isa Distributions.Multinomial
         @test typeof(m) !== typeof(d)
         @test length(d) == 3
@@ -68,19 +68,19 @@ end
     end
 
     @testset "packing length is (K-1)(1+p); η₁ ≡ 0" begin
-        @test GLLVM.multinomial_pack_len(3, 0) == 2
-        @test GLLVM.multinomial_pack_len(4, 2) == 9
-        @test_throws ArgumentError GLLVM.multinomial_pack_len(2, 0)
+        @test GLLVModels.multinomial_pack_len(3, 0) == 2
+        @test GLLVModels.multinomial_pack_len(4, 2) == 9
+        @test_throws ArgumentError GLLVModels.multinomial_pack_len(2, 0)
         β = [0.4, -0.2]
         γ = zeros(2, 0)
-        η = GLLVM.multinomial_eta(β, γ, Float64[])
+        η = GLLVModels.multinomial_eta(β, γ, Float64[])
         @test length(η) == 3
         @test η[1] == 0
         @test η[2] ≈ 0.4
         @test η[3] ≈ -0.2
         βx = [0.1, 0.3]
         γx = [0.5  -0.2; 0.0  0.4]   # (K-1) × p, contrast-major rows
-        ηx = GLLVM.multinomial_eta(βx, γx, [1.0, 2.0])
+        ηx = GLLVModels.multinomial_eta(βx, γx, [1.0, 2.0])
         @test ηx[1] == 0
         @test ηx[2] ≈ 0.1 + 0.5 * 1.0 + (-0.2) * 2.0
         @test ηx[3] ≈ 0.3 + 0.0 * 1.0 + 0.4 * 2.0
@@ -92,7 +92,7 @@ end
         Y = reshape(y, 1, length(y))
         β = [0.6, -0.3]
         θ = copy(β)
-        ll = GLLVM.multinomial_loglik(Y, θ; n_categories = 3)
+        ll = GLLVModels.multinomial_loglik(Y, θ; n_categories = 3)
         η = [0.0, β[1], β[2]]
         lse = _mn_logsumexp(η)
         ll_ref = sum(η[yi] - lse for yi in y)
@@ -101,8 +101,8 @@ end
 
     @testset "rejects LV K / num_lv" begin
         Y = reshape(Int[1, 2, 3, 1, 2, 3, 1, 2, 3], 1, 9)
-        @test_throws ArgumentError fit_gllvm(Y; family = GLLVM.Multinomial(), K = 1)
-        @test_throws ArgumentError fit_gllvm(Y; family = GLLVM.Multinomial(), num_lv = 2)
+        @test_throws ArgumentError fit_gllvm(Y; family = GLLVModels.Multinomial(), K = 1)
+        @test_throws ArgumentError fit_gllvm(Y; family = GLLVModels.Multinomial(), num_lv = 2)
         @test_throws ArgumentError fit_multinomial_gllvm(Y; K = 1)
     end
 
@@ -112,8 +112,8 @@ end
         y = rand(1:ncat, n)
         Y = reshape(y, 1, n)
         X = randn(n, p_cov)
-        θ = 0.3 .* randn(GLLVM.multinomial_pack_len(ncat, p_cov))
-        nll = θv -> -GLLVM.multinomial_loglik(Y, θv; X = X, n_categories = ncat)
+        θ = 0.3 .* randn(GLLVModels.multinomial_pack_len(ncat, p_cov))
+        nll = θv -> -GLLVModels.multinomial_loglik(Y, θv; X = X, n_categories = ncat)
         gad = ForwardDiff.gradient(nll, θ)
         gfd = _mn_central_fd_gradient(nll, θ)
         @test maximum(abs, gad .- gfd) ≤ 1e-6
@@ -133,7 +133,7 @@ end
         @test length(fit.theta_packed) == 2
         @test isfinite(fit.loglik)
         @test maximum(abs, fit.β .- β_true) < 0.25
-        fit2 = fit_gllvm(Y; family = GLLVM.Multinomial())
+        fit2 = fit_gllvm(Y; family = GLLVModels.Multinomial())
         @test fit2 isa MultinomialFit
         @test fit2.loglik ≈ fit.loglik atol = 1e-8
     end
@@ -146,7 +146,7 @@ end
         X = randn(n, p_cov)
         y = Vector{Int}(undef, n)
         for i in 1:n
-            η = GLLVM.multinomial_eta(β_true, γ_true, vec(X[i, :]))
+            η = GLLVModels.multinomial_eta(β_true, γ_true, vec(X[i, :]))
             π = exp.(η) ./ sum(exp.(η))
             y[i] = findfirst(rand() .≤ cumsum(π))
         end

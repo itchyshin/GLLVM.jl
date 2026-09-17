@@ -8,7 +8,7 @@ using Test
 using Random
 using LinearAlgebra
 using Distributions
-using GLLVM
+using GLLVModels
 
 function _zib_x_sim(p, n, K, q, N; seed = 1)
     Random.seed!(seed)
@@ -18,8 +18,8 @@ function _zib_x_sim(p, n, K, q, N; seed = 1)
     γc = 0.45 .* randn(q)
     Λc = 0.3 .* randn(p, K)
     X = randn(p, n, q)
-    Oz = GLLVM._build_offset(X, γz)
-    Oc = GLLVM._build_offset(X, γc)
+    Oz = GLLVModels._build_offset(X, γz)
+    Oc = GLLVModels._build_offset(X, γc)
     Z = randn(K, n)
     Y = Matrix{Int}(undef, p, n)
     for t in 1:p, s in 1:n
@@ -39,15 +39,15 @@ end
     @testset "dual-offset marginal matches hand-built Oz/Oc" begin
         Ntr = 8
         Y, X, βz, γz, βc, γc, Λc = _zib_x_sim(4, 35, 1, 1, Ntr; seed = 8801)
-        Oz = GLLVM._build_offset(X, γz)
-        Oc = GLLVM._build_offset(X, γc)
-        ll = GLLVM.zib_marginal_loglik_laplace(Y, Λc, βz, βc, Ntr; offsetz = Oz, offsetc = Oc)
+        Oz = GLLVModels._build_offset(X, γz)
+        Oc = GLLVModels._build_offset(X, γc)
+        ll = GLLVModels.zib_marginal_loglik_laplace(Y, Λc, βz, βc, Ntr; offsetz = Oz, offsetc = Oc)
         @test isfinite(ll)
         Xconst = ones(size(X)...)
-        Ozc = GLLVM._build_offset(Xconst, γz)
-        Occ = GLLVM._build_offset(Xconst, γc)
-        ll_off = GLLVM.zib_marginal_loglik_laplace(Y, Λc, βz, βc, Ntr; offsetz = Ozc, offsetc = Occ)
-        ll_abs = GLLVM.zib_marginal_loglik_laplace(Y, Λc, βz .+ γz[1], βc .+ γc[1], Ntr)
+        Ozc = GLLVModels._build_offset(Xconst, γz)
+        Occ = GLLVModels._build_offset(Xconst, γc)
+        ll_off = GLLVModels.zib_marginal_loglik_laplace(Y, Λc, βz, βc, Ntr; offsetz = Ozc, offsetc = Occ)
+        ll_abs = GLLVModels.zib_marginal_loglik_laplace(Y, Λc, βz .+ γz[1], βc .+ γc[1], Ntr)
         @test isapprox(ll_off, ll_abs; atol = 1e-8, rtol = 0)
     end
 
@@ -57,8 +57,8 @@ end
         Y, _, _, _, _, _, _ = _zib_x_sim(p, n, K, q, Ntr; seed = 8810)
         X0 = zeros(p, n, q)
         f0 = fit_zib_gllvm(Y; K = K, N = Ntr, iterations = 250)
-        fx = GLLVM.fit_zib_gllvm_cov(Y; X = X0, K = K, N = Ntr, iterations = 250)
-        @test fx isa GLLVM.ZIBCovFit
+        fx = GLLVModels.fit_zib_gllvm_cov(Y; X = X0, K = K, N = Ntr, iterations = 250)
+        @test fx isa GLLVModels.ZIBCovFit
         @test fx.N == Ntr
         @test length(fx.γz) == q
         @test length(fx.γc) == q
@@ -74,8 +74,8 @@ end
     @testset "fit recovers finite loglik under non-zero X" begin
         Ntr = 8
         Y, X, _, _, _, _, _ = _zib_x_sim(4, 80, 1, 1, Ntr; seed = 8820)
-        fit = GLLVM.fit_zib_gllvm_cov(Y; X = X, K = 1, N = Ntr, iterations = 200)
-        @test fit isa GLLVM.ZIBCovFit
+        fit = GLLVModels.fit_zib_gllvm_cov(Y; X = X, K = 1, N = Ntr, iterations = 200)
+        @test fit isa GLLVModels.ZIBCovFit
         @test isfinite(fit.loglik)
         @test fit.N == Ntr
         @test size(fit.Λc) == (4, 1)
@@ -87,17 +87,17 @@ end
         Ntr = 8
         Y, X, βz, γz, βc, γc, Λc = _zib_x_sim(3, 28, 1, 1, Ntr; seed = 8830)
         p, n = size(Y); K = 1; q = 1
-        rr = GLLVM.rr_theta_len(p, K)
-        θ = vcat(βz, γz, βc, γc, GLLVM.pack_lambda(Λc))
+        rr = GLLVModels.rr_theta_len(p, K)
+        θ = vcat(βz, γz, βc, γc, GLLVModels.pack_lambda(Λc))
         nll = θv -> begin
             βzv = @view θv[1:p]
             γzv = @view θv[(p + 1):(p + q)]
             βcv = @view θv[(p + q + 1):(2p + q)]
             γcv = @view θv[(2p + q + 1):(2p + 2q)]
-            Λcv = GLLVM.unpack_lambda(@view(θv[(2p + 2q + 1):(2p + 2q + rr)]), p, K)
-            Oz = GLLVM._build_offset(X, γzv)
-            Oc = GLLVM._build_offset(X, γcv)
-            return -GLLVM.zib_marginal_loglik_laplace(Y, Λcv, βzv, βcv, Ntr;
+            Λcv = GLLVModels.unpack_lambda(@view(θv[(2p + 2q + 1):(2p + 2q + rr)]), p, K)
+            Oz = GLLVModels._build_offset(X, γzv)
+            Oc = GLLVModels._build_offset(X, γcv)
+            return -GLLVModels.zib_marginal_loglik_laplace(Y, Λcv, βzv, βcv, Ntr;
                                                       offsetz = Oz, offsetc = Oc)
         end
         h = 1e-6

@@ -1,14 +1,14 @@
-using GLLVM, Test, Random, LinearAlgebra, ForwardDiff, SparseArrays
-using GLLVM: AugmentedPhy
+using GLLVModels, Test, Random, LinearAlgebra, ForwardDiff, SparseArrays
+using GLLVModels: AugmentedPhy
 
-# The analytic-gradient sparse phylo path is wired into the GLLVM module. Do not
+# The analytic-gradient sparse phylo path is wired into the GLLVModels module. Do not
 # self-include the source file here: doing so splits internal phylo types from
 # the package instance and can hide integration bugs.
 
-const _gml   = GLLVM.gaussian_marginal_loglik
-const _rbt   = GLLVM.random_balanced_tree
-const _aug   = GLLVM.augmented_phy
-const _smlsp = GLLVM.gaussian_marginal_loglik_sparse_phy
+const _gml   = GLLVModels.gaussian_marginal_loglik
+const _rbt   = GLLVModels.random_balanced_tree
+const _aug   = GLLVModels.augmented_phy
+const _smlsp = GLLVModels.gaussian_marginal_loglik_sparse_phy
 
 # Fixed leaf covariance G_phy = S Q_cond⁻¹ S' so the dense reference uses the
 # IDENTICAL Σ_phy = σ²_phy · G_phy as the sparse path. Built densely (test only).
@@ -69,8 +69,8 @@ end
         p = phy.n_leaves
         Λ_B = randn(p, 2); Λ_phy = reshape(randn(p), p, 1); σ_phy = abs.(randn(p)) .+ 0.2
         y = randn(p, 24)
-        st = GLLVM.build_sparse_phy_state(y, Λ_B, 0.6; Λ_phy = Λ_phy, σ_phy = σ_phy, phy = phy, σ²_phy = 0.7)
-        @test GLLVM.sparse_phy_value(st) ≈
+        st = GLLVModels.build_sparse_phy_state(y, Λ_B, 0.6; Λ_phy = Λ_phy, σ_phy = σ_phy, phy = phy, σ²_phy = 0.7)
+        @test GLLVModels.sparse_phy_value(st) ≈
               _smlsp(y, Λ_B, 0.6; Λ_phy = Λ_phy, σ_phy = σ_phy, phy = phy, σ²_phy = 0.7) rtol = 1e-9
     end
 
@@ -86,9 +86,9 @@ end
         σ_eps = 0.5; σ²_phy = 0.8
         y = randn(p, n)
 
-        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, σ_phy = σ_phy,
+        st = GLLVModels.build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, σ_phy = σ_phy,
                                     phy = phy, σ²_phy = σ²_phy)
-        g = GLLVM.sparse_phy_grad(st)
+        g = GLLVModels.sparse_phy_grad(st)
 
         f = _dense_packed(y, Gphy, p, K_B, 1, true)
         par0 = vcat(vec(Λ_B), σ_eps^2, σ²_phy, vec(Λ_phy), σ_phy)
@@ -119,8 +119,8 @@ end
         Λ_B = 0.6 .* randn(p, K_B); Λ_phy = reshape(0.5 .* randn(p), p, 1)
         σ_eps = 0.5; σ²_phy = 0.9
         y = randn(p, n)
-        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, phy = phy, σ²_phy = σ²_phy)
-        g = GLLVM.sparse_phy_grad(st)
+        st = GLLVModels.build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy = Λ_phy, phy = phy, σ²_phy = σ²_phy)
+        g = GLLVModels.sparse_phy_grad(st)
         f = _dense_packed(y, Gphy, p, K_B, 1, false)
         par0 = vcat(vec(Λ_B), σ_eps^2, σ²_phy, vec(Λ_phy))
         gfd = ForwardDiff.gradient(f, par0)
@@ -145,8 +145,8 @@ end
         Λ_B = reshape(0.6 .* randn(p), p, K_B); σ_phy = abs.(randn(p)) .+ 0.3
         σ_eps = 0.4; σ²_phy = 1.2
         y = randn(p, n)
-        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy, phy = phy, σ²_phy = σ²_phy)
-        g = GLLVM.sparse_phy_grad(st)
+        st = GLLVModels.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy, phy = phy, σ²_phy = σ²_phy)
+        g = GLLVModels.sparse_phy_grad(st)
         f = _dense_packed(y, Gphy, p, K_B, 0, true)
         par0 = vcat(vec(Λ_B), σ_eps^2, σ²_phy, σ_phy)
         gfd = ForwardDiff.gradient(f, par0)
@@ -174,10 +174,10 @@ end
         σ_phy = abs.(randn(p)) .+ 0.3
         σ_eps = 0.5; σ²_phy = 0.9
         y = randn(p, n)
-        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy,
+        st = GLLVModels.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy,
                                            phy = phy, σ²_phy = σ²_phy)
-        g_short = GLLVM.sparse_phy_grad(st)
-        g_ref = GLLVM._sparse_phy_grad_leafblock(st)
+        g_short = GLLVModels.sparse_phy_grad(st)
+        g_ref = GLLVModels._sparse_phy_grad_leafblock(st)
 
         relmax(a, b) = maximum(abs.(vec(a) .- vec(b))) / max(1.0, maximum(abs.(vec(b))))
         @test relmax(g_short.dΛ_B, g_ref.dΛ_B) < 1e-8
@@ -187,7 +187,7 @@ end
         @test g_short.dσ_phy isa Vector{Float64}
         @test relmax(g_short.dσ_phy, g_ref.dσ_phy) < 1e-8
 
-        g_no_eps = GLLVM.sparse_phy_grad(st; want_σ²_eps = false)
+        g_no_eps = GLLVModels.sparse_phy_grad(st; want_σ²_eps = false)
         @test g_no_eps.dσ²_eps == 0.0
         @test relmax(g_no_eps.dΛ_B, g_ref.dΛ_B) < 1e-8
         @test abs(g_no_eps.dσ²_phy - g_ref.dσ²_phy) / max(1.0, abs(g_ref.dσ²_phy)) < 1e-8
@@ -205,7 +205,7 @@ end
     #  (A) cross-check vs the production dense fitter `fit_gaussian_gllvm` on a
     #      MATCHING model (free Λ_B + Λ_phy, Σ_phy fixed): same logLik to 1e-4.
     @testset "end-to-end LBFGS — headline σ²_phy fit (p=120)" begin
-        Optim = GLLVM.Optim
+        Optim = GLLVModels.Optim
         Random.seed!(3)
         p = 120; n = 300; K_B = 2
         phy = _rbt(p; branch_length = 0.1)
@@ -217,8 +217,8 @@ end
         z = Λ_phy[:, 1] .* (Lchol * randn(p))
         y = Λ_B_true * randn(K_B, n) .+ repeat(z, 1, n) .+ σ_eps_true .* randn(p, n)
 
-        rrB = GLLVM.rr_theta_len(p, K_B)
-        unpack(par) = (GLLVM.unpack_lambda((@view par[1:rrB]), p, K_B),
+        rrB = GLLVModels.rr_theta_len(p, K_B)
+        unpack(par) = (GLLVModels.unpack_lambda((@view par[1:rrB]), p, K_B),
                        exp(par[rrB+1]), exp(par[rrB+2]))
         function densenll(par)
             Λ, σe, s2p = unpack(par)
@@ -226,18 +226,18 @@ end
         end
         function sparse_fg!(F, Grad, par)
             Λ, σe, s2p = unpack(par)
-            st = GLLVM.build_sparse_phy_state(y, Λ, σe; Λ_phy = Λ_phy, phy = phy, σ²_phy = s2p)
+            st = GLLVModels.build_sparse_phy_state(y, Λ, σe; Λ_phy = Λ_phy, phy = phy, σ²_phy = s2p)
             if Grad !== nothing
-                g = GLLVM.sparse_phy_grad(st)
-                Grad[1:rrB] .= -GLLVM.pack_lambda(g.dΛ_B)
+                g = GLLVModels.sparse_phy_grad(st)
+                Grad[1:rrB] .= -GLLVModels.pack_lambda(g.dΛ_B)
                 Grad[rrB+1] = -(g.dσ²_eps * 2 * σe^2)   # σ²_eps = exp(2 logσe)
                 Grad[rrB+2] = -(g.dσ²_phy * s2p)         # σ²_phy = exp(logσ²_phy)
             end
-            F !== nothing && return -GLLVM.sparse_phy_value(st)
+            F !== nothing && return -GLLVModels.sparse_phy_value(st)
             return nothing
         end
 
-        par0 = vcat(GLLVM.init_theta_rr(p, K_B), log(1.0), log(0.5))
+        par0 = vcat(GLLVModels.init_theta_rr(p, K_B), log(1.0), log(0.5))
         opts = Optim.Options(g_tol = 1e-8, f_reltol = 1e-12, x_abstol = 1e-10,
                              iterations = 500)
 
@@ -288,7 +288,7 @@ end
     end
 
     @testset "end-to-end LBFGS — matches fit_gaussian_gllvm (p=120)" begin
-        Optim = GLLVM.Optim
+        Optim = GLLVModels.Optim
         Random.seed!(5)
         # Moderate p; kept modest because `fit_gaussian_gllvm` fits the phylo
         # loadings DENSELY via ForwardDiff over ~rr(p,K_B)+rr(p,K_phy) params —
@@ -305,25 +305,25 @@ end
         y = Λ_B_true * randn(K_B, n) .+ repeat(z, 1, n) .+ 0.5 .* randn(p, n)
 
         # Production dense fitter (robust: profiling + PPCA warm-start).
-        fitd = GLLVM.fit_gaussian_gllvm(y; K = K_B, K_phy = K_phy, Σ_phy = Σ_phy)
+        fitd = GLLVModels.fit_gaussian_gllvm(y; K = K_B, K_phy = K_phy, Σ_phy = Σ_phy)
         @test fitd.converged
 
         # Sparse-analytic fit of the SAME model: free Λ_B + Λ_phy + σ_eps,
         # σ²_phy = 1 fixed. Exercises dΛ_B, dΛ_phy, dσ²_eps.
-        rrB = GLLVM.rr_theta_len(p, K_B)
-        rrP = GLLVM.rr_theta_len(p, K_phy)
+        rrB = GLLVModels.rr_theta_len(p, K_B)
+        rrP = GLLVModels.rr_theta_len(p, K_phy)
         function fgA!(F, Grad, par)
-            LB = GLLVM.unpack_lambda((@view par[1:rrB]), p, K_B)
+            LB = GLLVModels.unpack_lambda((@view par[1:rrB]), p, K_B)
             σe = exp(par[rrB+1])
-            LP = GLLVM.unpack_lambda((@view par[rrB+2:rrB+1+rrP]), p, K_phy)
-            st = GLLVM.build_sparse_phy_state(y, LB, σe; Λ_phy = LP, phy = phy, σ²_phy = 1.0)
+            LP = GLLVModels.unpack_lambda((@view par[rrB+2:rrB+1+rrP]), p, K_phy)
+            st = GLLVModels.build_sparse_phy_state(y, LB, σe; Λ_phy = LP, phy = phy, σ²_phy = 1.0)
             if Grad !== nothing
-                g = GLLVM.sparse_phy_grad(st)
-                Grad[1:rrB] .= -GLLVM.pack_lambda(g.dΛ_B)
+                g = GLLVModels.sparse_phy_grad(st)
+                Grad[1:rrB] .= -GLLVModels.pack_lambda(g.dΛ_B)
                 Grad[rrB+1] = -(g.dσ²_eps * 2 * σe^2)
-                Grad[rrB+2:rrB+1+rrP] .= -GLLVM.pack_lambda(g.dΛ_phy)
+                Grad[rrB+2:rrB+1+rrP] .= -GLLVModels.pack_lambda(g.dΛ_phy)
             end
-            F !== nothing && return -GLLVM.sparse_phy_value(st)
+            F !== nothing && return -GLLVModels.sparse_phy_value(st)
             return nothing
         end
         opts = Optim.Options(g_tol = 1e-8, f_reltol = 1e-12, x_abstol = 1e-10,
@@ -334,15 +334,15 @@ end
         # objective too: the logLik should not move and the optimiser should
         # not walk away. This is the decisive "same MLE" check, immune to the
         # loadings multimodality that plagues from-scratch comparisons.
-        par_dense = vcat(GLLVM.pack_lambda(fitd.pars.Λ), log(fitd.pars.σ_eps),
-                         GLLVM.pack_lambda(fitd.pars.Λ_phy))
+        par_dense = vcat(GLLVModels.pack_lambda(fitd.pars.Λ), log(fitd.pars.σ_eps),
+                         GLLVModels.pack_lambda(fitd.pars.Λ_phy))
         resW = Optim.optimize(Optim.only_fg!(fgA!), par_dense, Optim.LBFGS(), opts)
         ll_warm = -Optim.minimum(resW)
         @test abs(fitd.logLik - ll_warm) < 1e-4          # SAME MLE (logLik to 1e-4)
 
         # (ii) From-scratch analytic fit converges (logLik ≥ dense up to tol;
         # may land in an equivalent rotated optimum).
-        par0 = vcat(GLLVM.init_theta_rr(p, K_B), log(1.0), GLLVM.init_theta_rr(p, K_phy))
+        par0 = vcat(GLLVModels.init_theta_rr(p, K_B), log(1.0), GLLVModels.init_theta_rr(p, K_phy))
         resA = Optim.optimize(Optim.only_fg!(fgA!), par0, Optim.LBFGS(), opts)
         @test Optim.converged(resA)
         ll_scratch = -Optim.minimum(resA)

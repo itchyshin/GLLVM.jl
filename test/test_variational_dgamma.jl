@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Variational (VA) marginal — Delta-Gamma" begin
     @testset "Λc=0 reduces to independent two-part Delta-Gamma loglik (exact)" begin
@@ -16,7 +16,7 @@ using GLLVM, Test, Random, Distributions, Statistics
                 Y[t, s] = 0.0
             end
         end
-        va = GLLVM.delta_gamma_marginal_loglik_va(Y, zeros(p, K), βz, βc, α)
+        va = GLLVModels.delta_gamma_marginal_loglik_va(Y, zeros(p, K), βz, βc, α)
         ref = 0.0
         for t in 1:p, s in 1:n
             π = inv(1 + exp(-βz[t]))
@@ -47,8 +47,8 @@ using GLLVM, Test, Random, Distributions, Statistics
                 end
             end
         end
-        fit = GLLVM.fit_delta_gamma_gllvm_va(Y; K = K)
-        @test fit isa GLLVM.DeltaGammaFit
+        fit = GLLVModels.fit_delta_gamma_gllvm_va(Y; K = K)
+        @test fit isa GLLVModels.DeltaGammaFit
         @test isfinite(fit.loglik)
         @test 0 < fit.α < 1e3
         @test size(fit.Λc) == (p, K)
@@ -69,12 +69,12 @@ using GLLVM, Test, Random, Distributions, Statistics
             y[t] = rand() < π ? rand(Gamma(α, exp(βc[t]) / α)) : 0.0
         end
         y[1] = 0.0; y[2] = rand(Gamma(α, exp(βc[2]) / α))  # ensure both branches present
-        negelbo(ψ) = -GLLVM._va_site_dgamma_elbo(ψ, y, Λc, Λc2, βz, βc, α)
+        negelbo(ψ) = -GLLVModels._va_site_dgamma_elbo(ψ, y, Λc, Λc2, βz, βc, α)
         h = 1e-6
         for _ in 1:3
             ψ = randn(2K)
             G = zeros(2K)
-            GLLVM._va_site_dgamma_grad!(G, ψ, y, Λc, Λc2, βz, βc, α)
+            GLLVModels._va_site_dgamma_grad!(G, ψ, y, Λc, Λc2, βz, βc, α)
             for i in 1:(2K)
                 ψp = copy(ψ); ψp[i] += h
                 ψm = copy(ψ); ψm[i] -= h

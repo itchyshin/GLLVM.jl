@@ -1,14 +1,14 @@
-# Cross-language benchmark harness: GLLVM.jl vs R gllvmTMB (issue #65, item 2).
+# Cross-language benchmark harness: GLLVModels.jl vs R gllvmTMB (issue #65, item 2).
 #
 # RUNTIME-SESSION SCRIPT — needs R with {gllvm} (gllvmTMB) installed and a Julia
-# with GLLVM.jl available. NOT run/verified in the authoring environment (no R).
+# with GLLVModels.jl available. NOT run/verified in the authoring environment (no R).
 # It is a starting point: simulate per family, fit gllvmTMB (timed), export the
 # data, fit the same in Julia (gradient=:finite and :analytic), and compare
 # per-fit median time and maximised log-likelihood.
 #
 # Usage:
 #   Rscript bench/gllvmTMB_compare.R            # writes data + gllvmTMB timings
-#   julia --project=. bench/gllvmTMB_compare.jl # fits in GLLVM.jl, prints comparison
+#   julia --project=. bench/gllvmTMB_compare.jl # fits in GLLVModels.jl, prints comparison
 #
 # Keep the reporting rule from the phylo handoff note: never mix fixed-dispersion
 # "speed isolation" rows with estimated-dispersion "likelihood parity" rows in a

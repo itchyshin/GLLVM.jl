@@ -7,7 +7,7 @@ using Test
 using Random
 using LinearAlgebra
 using Distributions
-using GLLVM
+using GLLVModels
 
 function _ox_sim_ordinal(p, n, K, q, C; seed, link = LogitLink())
     rng = Random.MersenneTwister(seed)
@@ -15,7 +15,7 @@ function _ox_sim_ordinal(p, n, K, q, C; seed, link = LogitLink())
     γ = 0.5 .* randn(rng, q)
     Λ = 0.35 .* randn(rng, p, K)
     X = randn(rng, p, n, q)
-    O = GLLVM._build_offset(X, γ)
+    O = GLLVModels._build_offset(X, γ)
     Z = randn(rng, K, n)
     η = β .+ O .+ Λ * Z
     τ = fill(NaN, p, C - 1)
@@ -31,7 +31,7 @@ function _ox_sim_ordinal(p, n, K, q, C; seed, link = LogitLink())
         u = rand(rng)
         y = C
         for c in 1:(C - 1)
-            F = GLLVM._ord_F(τ[t, c] - η_ts, link)
+            F = GLLVModels._ord_F(τ[t, c] - η_ts, link)
             if u <= F
                 y = c
                 break
@@ -56,9 +56,9 @@ end
         end
         Ct = fill(C, p)
         Y = rand(1:C, p, n)
-        ll0 = GLLVM.ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, Ct)
+        ll0 = GLLVModels.ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, Ct)
         O = zeros(p, n)
-        llX = GLLVM.ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, Ct; offset = O)
+        llX = GLLVModels.ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, Ct; offset = O)
         @test isapprox(ll0, llX; atol = 1e-10, rtol = 0)
     end
 
@@ -76,8 +76,8 @@ end
         Y = rand(1:C, p, n)
         δ = 0.35
         O = fill(δ, p, n)
-        ll_off = GLLVM.ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, Ct; offset = O)
-        ll_β = GLLVM.ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β .+ δ, τ, Ct)
+        ll_off = GLLVModels.ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β, τ, Ct; offset = O)
+        ll_β = GLLVModels.ordinal_marginal_loglik_laplace_pertrait(Y, Λ, β .+ δ, τ, Ct)
         @test isapprox(ll_off, ll_β; atol = 1e-10, rtol = 0)
     end
 
@@ -109,7 +109,7 @@ end
         Random.seed!(8520)
         p, n, K, q, C = 3, 25, 1, 1, 3
         Y, X, β, γ, Λ, τ, Ct, _ = _ox_sim_ordinal(p, n, K, q, C; seed = 8520)
-        rr = GLLVM.rr_theta_len(p, K)
+        rr = GLLVModels.rr_theta_len(p, K)
         ncut = sum(Ct .- 2)
         # Pack ψ from known τ (τ[:,1]=0; free log-spacings for c≥2).
         ψ = Float64[]
@@ -118,15 +118,15 @@ end
                 push!(ψ, log(max(τ[t, c] - τ[t, c - 1], 1e-3)))
             end
         end
-        θ = vcat(β, γ, GLLVM.pack_lambda(Λ), ψ)
+        θ = vcat(β, γ, GLLVModels.pack_lambda(Λ), ψ)
         nll = θv -> begin
             βv = @view θv[1:p]
             γv = @view θv[(p + 1):(p + q)]
-            Λv = GLLVM.unpack_lambda(@view(θv[(p + q + 1):(p + q + rr)]), p, K)
-            τv = GLLVM._unpack_cutpoints_pertrait(
+            Λv = GLLVModels.unpack_lambda(@view(θv[(p + q + 1):(p + q + rr)]), p, K)
+            τv = GLLVModels._unpack_cutpoints_pertrait(
                 @view(θv[(p + q + rr + 1):(p + q + rr + ncut)]), Ct)
-            O = GLLVM._build_offset(X, γv)
-            return -GLLVM.ordinal_marginal_loglik_laplace_pertrait(
+            O = GLLVModels._build_offset(X, γv)
+            return -GLLVModels.ordinal_marginal_loglik_laplace_pertrait(
                 Y, Λv, βv, τv, Ct; offset = O)
         end
         h = 1e-6

@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 # Post-fit completeness: aic/bic for the recently-added fit types. The generic
 # aic(fit) / bic(fit, n) (src/postfit.jl) dispatch on the internal accessors
@@ -7,7 +7,7 @@ using GLLVM, Test, Random, Distributions, Statistics
 # and _nparams matches the expected free-parameter count.
 #
 # Expected free-parameter counts (matching the existing families' convention,
-# with the loadings df = GLLVM.rr_theta_len(p, K)):
+# with the loadings df = GLLVModels.rr_theta_len(p, K)):
 #   grouped fits:    p + rr_theta_len(p,K) + G          (one dispersion per group)
 #   Tweedie-grouped: p + rr_theta_len(p,K) + G + 1      (+ the shared power)
 #   Gaussian-pervar: p + rr_theta_len(p,K) + p          (one variance per species)
@@ -32,7 +32,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         G = length(fit.r_group)
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
-        @test GLLVM._nparams(fit) == p + GLLVM.rr_theta_len(p, K) + G
+        @test GLLVModels._nparams(fit) == p + GLLVModels.rr_theta_len(p, K) + G
     end
 
     @testset "BetaGroupedFit (per-species, G = p)" begin
@@ -47,7 +47,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         G = length(fit.φ)
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
-        @test GLLVM._nparams(fit) == p + GLLVM.rr_theta_len(p, K) + G
+        @test GLLVModels._nparams(fit) == p + GLLVModels.rr_theta_len(p, K) + G
     end
 
     @testset "GammaGroupedFit (per-species, G = p)" begin
@@ -62,7 +62,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         G = length(fit.α)
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
-        @test GLLVM._nparams(fit) == p + GLLVM.rr_theta_len(p, K) + G
+        @test GLLVModels._nparams(fit) == p + GLLVModels.rr_theta_len(p, K) + G
     end
 
     @testset "NB1GroupedFit (per-species, G = p)" begin
@@ -78,7 +78,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         G = length(fit.φ)
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
-        @test GLLVM._nparams(fit) == p + GLLVM.rr_theta_len(p, K) + G
+        @test GLLVModels._nparams(fit) == p + GLLVModels.rr_theta_len(p, K) + G
     end
 
     @testset "TweedieGroupedFit (per-species, G = p; + shared power)" begin
@@ -108,7 +108,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         G = length(fit.φ)
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
-        @test GLLVM._nparams(fit) == p + GLLVM.rr_theta_len(p, K) + G + 1
+        @test GLLVModels._nparams(fit) == p + GLLVModels.rr_theta_len(p, K) + G + 1
     end
 
     @testset "GaussianPerVarFit (one variance per species)" begin
@@ -122,10 +122,10 @@ using GLLVM, Test, Random, Distributions, Statistics
         for t in 1:p
             Y[t, :] .+= sqrt(φ²_true[t]) .* randn(n)
         end
-        fit = GLLVM.fit_gaussian_pervar_gllvm(Y; K = K, iterations = 80)
+        fit = GLLVModels.fit_gaussian_pervar_gllvm(Y; K = K, iterations = 80)
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
-        @test GLLVM._nparams(fit) == p + GLLVM.rr_theta_len(p, K) + p
+        @test GLLVModels._nparams(fit) == p + GLLVModels.rr_theta_len(p, K) + p
     end
 
 end

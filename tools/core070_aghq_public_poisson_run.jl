@@ -1,17 +1,17 @@
-using GLLVM,Test,LinearAlgebra,TOML,SHA
+using GLLVModels,Test,LinearAlgebra,TOML,SHA
 @testset "Public Poisson AGHQ identity" begin
  include(joinpath(@__DIR__,"../test/test_aghq_public_poisson.jl"))
 end
 ENV["CORE070_AGHQ_PUBLIC_PAIR"]="1"
 include(joinpath(@__DIR__,"core070_aghq_poisson_pair_run.jl"))
-ad=GLLVM._family_ci(public_fit,Y)
-H=GLLVM.ForwardDiff.hessian(ad.nll,ad.θ)
-Hfd=GLLVM._fd_hessian(ad.nll,ad.θ)
+ad=GLLVModels._family_ci(public_fit,Y)
+H=GLLVModels.ForwardDiff.hessian(ad.nll,ad.θ)
+Hfd=GLLVModels._fd_hessian(ad.nll,ad.θ)
 wald=confint(public_fit,Y;parm="beta")
 # The R frozen objective and its parameterization have the same intercept block.
 R"app_H <- optimHess(app_fit$opt$par, app_obj$fn, app_obj$gr)"
 rse=rcopy(Vector{Float64},R"sqrt(diag(solve(app_H)))[seq_len(p)]")
-r_native_H=GLLVM.ForwardDiff.hessian(t->problem.objective(t,r_caches),r_theta)
+r_native_H=GLLVModels.ForwardDiff.hessian(t->problem.objective(t,r_caches),r_theta)
 r_native_se=sqrt.(diag(inv(Symmetric(r_native_H))))[1:p]
 profile=confint(public_fit,Y;method=:profile,parm="beta[1]")
 boot=confint(public_fit,Y;method=:bootstrap,parm="beta[1]",n_boot=10,seed=710)

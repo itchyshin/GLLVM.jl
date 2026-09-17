@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 using Random
 using StableRNGs
@@ -43,30 +43,30 @@ function _dbim_fixture(kind::Symbol)
             cluster2_effect[trait, geometry.cluster2[observation]]
     end
     if kind === :gaussian
-        return (; geometry..., family = GLLVM.Normal(),
+        return (; geometry..., family = GLLVModels.Normal(),
             Y = eta .+ 0.40 .* randn(rng, geometry.p, geometry.n), N = nothing)
     elseif kind === :poisson
-        Y = [rand(rng, GLLVM.Poisson(exp(eta[trait, observation])))
+        Y = [rand(rng, GLLVModels.Poisson(exp(eta[trait, observation])))
             for trait in 1:geometry.p, observation in 1:geometry.n]
-        return (; geometry..., family = GLLVM.Poisson(), Y, N = nothing)
+        return (; geometry..., family = GLLVModels.Poisson(), Y, N = nothing)
     elseif kind === :binomial
         N = fill(24, geometry.p, geometry.n)
-        Y = [rand(rng, GLLVM.Binomial(N[trait, observation],
+        Y = [rand(rng, GLLVModels.Binomial(N[trait, observation],
             inv(1 + exp(-eta[trait, observation]))))
             for trait in 1:geometry.p, observation in 1:geometry.n]
-        return (; geometry..., family = GLLVM.Binomial(), Y, N)
+        return (; geometry..., family = GLLVModels.Binomial(), Y, N)
     elseif kind === :beta
         Y = [begin
                 mean_value = inv(1 + exp(-eta[trait, observation]))
-                rand(rng, GLLVM.Beta(14 * mean_value, 14 * (1 - mean_value)))
+                rand(rng, GLLVModels.Beta(14 * mean_value, 14 * (1 - mean_value)))
             end for trait in 1:geometry.p, observation in 1:geometry.n]
-        return (; geometry..., family = GLLVM.Beta(14.0, 1.0), Y, N = nothing)
+        return (; geometry..., family = GLLVModels.Beta(14.0, 1.0), Y, N = nothing)
     elseif kind === :nb2
         Y = [begin
                 mean_value = exp(eta[trait, observation])
-                rand(rng, GLLVM.NegativeBinomial(2.5, 2.5 / (2.5 + mean_value)))
+                rand(rng, GLLVModels.NegativeBinomial(2.5, 2.5 / (2.5 + mean_value)))
             end for trait in 1:geometry.p, observation in 1:geometry.n]
-        return (; geometry..., family = GLLVM.NegativeBinomial(2.5, 0.5),
+        return (; geometry..., family = GLLVModels.NegativeBinomial(2.5, 0.5),
             Y, N = nothing)
     end
     error("unsupported interval-matrix family: $kind")
@@ -82,7 +82,7 @@ end
 
 function _dbim_intervals(fixture, fit)
     kwargs = fixture.N === nothing ? (; ) : (; N = fixture.N)
-    return fixture.family isa GLLVM.Normal ?
+    return fixture.family isa GLLVModels.Normal ?
         grouped_gaussian_intervals(fixture.Y, fit;
             unit = fixture.unit, unit_obs = fixture.unit_obs,
             cluster = fixture.cluster, cluster2 = fixture.cluster2) :
@@ -92,11 +92,11 @@ function _dbim_intervals(fixture, fit)
 end
 
 function _dbim_objective(fit)
-    if fit isa GLLVM.GroupedGaussianFit
-        return GLLVM._grouped_gaussian_objective(fit.response, fit.mean_design,
+    if fit isa GLLVModels.GroupedGaussianFit
+        return GLLVModels._grouped_gaussian_objective(fit.response, fit.mean_design,
             fit.terms, fit.incidences)
     end
-    return GLLVM._grouped_nongaussian_objective(fit.response, fit.trials,
+    return GLLVModels._grouped_nongaussian_objective(fit.response, fit.trials,
         fit.mean_design, fit.terms, fit.incidences, fit.family_kind;
         dispersion_mode = fit.dispersion_mode,
         inner_maxiter = 100, inner_tol = 1e-8)
@@ -130,7 +130,7 @@ end
             else
                 @test fit.hessian_positive_definite
             end
-            !(fit isa GLLVM.GroupedGaussianFit) && @test fit.inner_status === :ok
+            !(fit isa GLLVModels.GroupedGaussianFit) && @test fit.inner_status === :ok
             @test getfield.(fit.terms, :name) == collect(_DBIM_SOURCES)
             @test length(fit.term_covariances) == length(_DBIM_SOURCES)
             @test rank(fit.mean_design) == size(fit.mean_design, 2)
@@ -162,7 +162,7 @@ end
                 # (Julia 1.13 on identical StableRNG-seeded data). Accept any
                 # coarse outcome; keep substantive per-target checks below.
                 @test intervals.status in (:available, :partial, :invalid_curvature)
-                fitted_source_var = Dict(source => GLLVM.extract_Sigma(fit; level = source).Sigma[1, 1]
+                fitted_source_var = Dict(source => GLLVModels.extract_Sigma(fit; level = source).Sigma[1, 1]
                     for source in _DBIM_SOURCES)
                 collapsed_sources = [source for source in _DBIM_SOURCES if fitted_source_var[source] < 1e-4]
                 if intervals.status === :available

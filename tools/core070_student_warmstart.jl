@@ -1,11 +1,11 @@
 # Public fixed-to-free warm start; original fixture and acceptance preserved.
-using GLLVM, RCall, Random, Distributions, SHA, TOML, Test
+using GLLVModels, RCall, Random, Distributions, SHA, TOML, Test
 length(ARGS)==2 || error("expected retained parameters and fresh output")
 retained_path,output=ARGS
 ispath(output) && error("fresh output required")
 startswith(lowercase(readchomp(`hostname`)),"totoro") || error("Totoro only")
 get(ENV,"CORE070_PARITY_REQUIRED","")=="1" || error("required mode missing")
-@assert realpath(Base.pkgdir(GLLVM))==realpath(pwd())
+@assert realpath(Base.pkgdir(GLLVModels))==realpath(pwd())
 include(joinpath(pwd(),"test/parity/parity_helpers.jl"))
 old=TOML.parsefile(retained_path);fixture="test/parity/test_studentt_parity.jl"
 @assert bytes2hex(sha256(read(fixture)))==old["fixture_sha256"]
@@ -69,8 +69,8 @@ end
 original=fit_summary("original_summary");warm=fit_summary("warm_summary");final=fit_summary("final_summary")
 native=fit_studentt_gllvm(Y;K=1,nu=nothing,disp_group=:species,iterations=400)
 native_theta=vcat(native.β,vec(native.Λ),log.(native.σ),log.(native.ν .-1))
-objective(x)=-GLLVM.studentt_marginal_loglik_laplace(Y,reshape(x[6:10],5,1),x[1:5],exp.(x[11:15]);ν=1 .+exp.(x[16:20]))
-native_gradient=GLLVM.ForwardDiff.gradient(objective,native_theta)
+objective(x)=-GLLVModels.studentt_marginal_loglik_laplace(Y,reshape(x[6:10],5,1),x[1:5],exp.(x[11:15]);ν=1 .+exp.(x[16:20]))
+native_gradient=GLLVModels.ForwardDiff.gradient(objective,native_theta)
 samepoint=objective(final["parameters"])
 checks=Dict(
  "same_data_map"=>rcopy(Bool,R"same_data_map"),

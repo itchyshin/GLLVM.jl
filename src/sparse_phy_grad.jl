@@ -124,7 +124,7 @@ end
     build_sparse_phy_state(y, Λ_B, σ_eps; Λ_phy, σ_phy, phy, σ²_phy)
 
 Assemble the augmented-state sparse machinery for the STANDARD phylogenetic
-GLLVM (no W tier, no per-trait diagonal REs, scalar `σ²_phy`). Mirrors the
+GLLVModels (no W tier, no per-trait diagonal REs, scalar `σ²_phy`). Mirrors the
 construction in `likelihood_sparse_phy.jl` and is shared between the value
 (`sparse_phy_value`) and the analytic gradient (`sparse_phy_grad`).
 """

@@ -15,7 +15,7 @@
 #   (3) a fully-masked site contributes exactly 0;
 #   (4) FIT with NA == explicit-mask fit on the same observed cells.
 
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions
 
 # --- Independent drop-missing oracles (one per bespoke marginal). Each physically
 #     subsets the OBSERVED sub-rows of (Λ, β, [N], y) per site and calls the
@@ -25,7 +25,7 @@ function _compoisson_dropmissing(Y, Λ, β, ν, mask)
     n = size(Y, 2); acc = 0.0
     for s in 1:n
         obs = findall(view(mask, :, s)); isempty(obs) && continue
-        acc += GLLVM.compoisson_marginal_loglik_laplace(reshape(Y[obs, s], :, 1),
+        acc += GLLVModels.compoisson_marginal_loglik_laplace(reshape(Y[obs, s], :, 1),
                                                         Λ[obs, :], β[obs], ν)
     end
     return acc
@@ -35,7 +35,7 @@ function _ordered_beta_dropmissing(Y, Λ, β, c0, c1, φ, mask)
     n = size(Y, 2); acc = 0.0
     for s in 1:n
         obs = findall(view(mask, :, s)); isempty(obs) && continue
-        acc += GLLVM.ordered_beta_marginal_loglik_laplace(reshape(Y[obs, s], :, 1),
+        acc += GLLVModels.ordered_beta_marginal_loglik_laplace(reshape(Y[obs, s], :, 1),
                                                           Λ[obs, :], β[obs], c0, c1, φ)
     end
     return acc
@@ -45,7 +45,7 @@ function _betabinomial_dropmissing(Y, N, Λ, β, φ, mask)
     n = size(Y, 2); acc = 0.0
     for s in 1:n
         obs = findall(view(mask, :, s)); isempty(obs) && continue
-        acc += GLLVM.betabinomial_marginal_loglik_laplace(reshape(Y[obs, s], :, 1),
+        acc += GLLVModels.betabinomial_marginal_loglik_laplace(reshape(Y[obs, s], :, 1),
                                                           reshape(N[obs, s], :, 1),
                                                           Λ[obs, :], β[obs], φ)
     end
@@ -56,7 +56,7 @@ function _tweedie_dropmissing(Y, Λ, β, φ, p, mask)
     n = size(Y, 2); acc = 0.0
     for s in 1:n
         obs = findall(view(mask, :, s)); isempty(obs) && continue
-        acc += GLLVM.tweedie_marginal_loglik_laplace(reshape(Y[obs, s], :, 1),
+        acc += GLLVModels.tweedie_marginal_loglik_laplace(reshape(Y[obs, s], :, 1),
                                                      Λ[obs, :], β[obs], φ, p)
     end
     return acc
@@ -79,37 +79,37 @@ end
 
         # --- COM-Poisson ---
         Yc = rand(0:6, p, n)
-        ℓm = GLLVM.compoisson_marginal_loglik_laplace(Yc, Λ, β, 1.2; mask = mask)
+        ℓm = GLLVModels.compoisson_marginal_loglik_laplace(Yc, Λ, β, 1.2; mask = mask)
         ℓd = _compoisson_dropmissing(Yc, Λ, β, 1.2, mask)
         @test isapprox(ℓm, ℓd; atol = 1e-9, rtol = 0)
-        @test GLLVM.compoisson_marginal_loglik_laplace(Yc, Λ, β, 1.2; mask = trues(p, n)) ==
-              GLLVM.compoisson_marginal_loglik_laplace(Yc, Λ, β, 1.2)
+        @test GLLVModels.compoisson_marginal_loglik_laplace(Yc, Λ, β, 1.2; mask = trues(p, n)) ==
+              GLLVModels.compoisson_marginal_loglik_laplace(Yc, Λ, β, 1.2)
 
         # --- ordered-beta ---
         Yo = clamp.(rand(p, n), 0.0, 1.0)
         Yo[1, 1] = 0.0; Yo[2, 2] = 1.0           # exercise both point masses
-        ℓm_o = GLLVM.ordered_beta_marginal_loglik_laplace(Yo, Λ, β, -1.0, 1.0, 8.0; mask = mask)
+        ℓm_o = GLLVModels.ordered_beta_marginal_loglik_laplace(Yo, Λ, β, -1.0, 1.0, 8.0; mask = mask)
         ℓd_o = _ordered_beta_dropmissing(Yo, Λ, β, -1.0, 1.0, 8.0, mask)
         @test isapprox(ℓm_o, ℓd_o; atol = 1e-9, rtol = 0)
-        @test GLLVM.ordered_beta_marginal_loglik_laplace(Yo, Λ, β, -1.0, 1.0, 8.0; mask = trues(p, n)) ==
-              GLLVM.ordered_beta_marginal_loglik_laplace(Yo, Λ, β, -1.0, 1.0, 8.0)
+        @test GLLVModels.ordered_beta_marginal_loglik_laplace(Yo, Λ, β, -1.0, 1.0, 8.0; mask = trues(p, n)) ==
+              GLLVModels.ordered_beta_marginal_loglik_laplace(Yo, Λ, β, -1.0, 1.0, 8.0)
 
         # --- beta-binomial ---
         Nbb = fill(5, p, n)
         Ybb = rand(0:5, p, n)
-        ℓm_b = GLLVM.betabinomial_marginal_loglik_laplace(Ybb, Nbb, Λ, β, 8.0; mask = mask)
+        ℓm_b = GLLVModels.betabinomial_marginal_loglik_laplace(Ybb, Nbb, Λ, β, 8.0; mask = mask)
         ℓd_b = _betabinomial_dropmissing(Ybb, Nbb, Λ, β, 8.0, mask)
         @test isapprox(ℓm_b, ℓd_b; atol = 1e-9, rtol = 0)
-        @test GLLVM.betabinomial_marginal_loglik_laplace(Ybb, Nbb, Λ, β, 8.0; mask = trues(p, n)) ==
-              GLLVM.betabinomial_marginal_loglik_laplace(Ybb, Nbb, Λ, β, 8.0)
+        @test GLLVModels.betabinomial_marginal_loglik_laplace(Ybb, Nbb, Λ, β, 8.0; mask = trues(p, n)) ==
+              GLLVModels.betabinomial_marginal_loglik_laplace(Ybb, Nbb, Λ, β, 8.0)
 
         # --- Tweedie ---
         Yt = abs.(randn(p, n)); Yt[1, 1] = 0.0; Yt[3, 3] = 0.0   # exact zeros (atom)
-        ℓm_t = GLLVM.tweedie_marginal_loglik_laplace(Yt, Λ, β, 1.0, 1.5; mask = mask)
+        ℓm_t = GLLVModels.tweedie_marginal_loglik_laplace(Yt, Λ, β, 1.0, 1.5; mask = mask)
         ℓd_t = _tweedie_dropmissing(Yt, Λ, β, 1.0, 1.5, mask)
         @test isapprox(ℓm_t, ℓd_t; atol = 1e-9, rtol = 0)
-        @test GLLVM.tweedie_marginal_loglik_laplace(Yt, Λ, β, 1.0, 1.5; mask = trues(p, n)) ==
-              GLLVM.tweedie_marginal_loglik_laplace(Yt, Λ, β, 1.0, 1.5)
+        @test GLLVModels.tweedie_marginal_loglik_laplace(Yt, Λ, β, 1.0, 1.5; mask = trues(p, n)) ==
+              GLLVModels.tweedie_marginal_loglik_laplace(Yt, Λ, β, 1.0, 1.5)
     end
 
     @testset "fully-masked site contributes exactly 0" begin
@@ -120,13 +120,13 @@ end
         mask = hcat(trues(p), falses(p))
 
         Yc = hcat(rand(0:6, p), rand(0:6, p))
-        full = GLLVM.compoisson_marginal_loglik_laplace(Yc[:, 1:1], Λ, β, 1.1)
-        both = GLLVM.compoisson_marginal_loglik_laplace(Yc, Λ, β, 1.1; mask = mask)
+        full = GLLVModels.compoisson_marginal_loglik_laplace(Yc[:, 1:1], Λ, β, 1.1)
+        both = GLLVModels.compoisson_marginal_loglik_laplace(Yc, Λ, β, 1.1; mask = mask)
         @test isapprox(both, full; atol = 1e-12, rtol = 0)
 
         Yt = hcat(abs.(randn(p)), abs.(randn(p)))
-        full_t = GLLVM.tweedie_marginal_loglik_laplace(Yt[:, 1:1], Λ, β, 1.0, 1.6)
-        both_t = GLLVM.tweedie_marginal_loglik_laplace(Yt, Λ, β, 1.0, 1.6; mask = mask)
+        full_t = GLLVModels.tweedie_marginal_loglik_laplace(Yt[:, 1:1], Λ, β, 1.0, 1.6)
+        both_t = GLLVModels.tweedie_marginal_loglik_laplace(Yt, Λ, β, 1.0, 1.6; mask = mask)
         @test isapprox(both_t, full_t; atol = 1e-12, rtol = 0)
     end
 

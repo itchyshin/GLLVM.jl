@@ -3,7 +3,7 @@
 # This driver deliberately covers only the typed fixed-source API.  It is not a
 # source/formula/bridge/recovery claim.
 
-using GLLVM, LinearAlgebra, TOML
+using GLLVModels, LinearAlgebra, TOML
 
 const CORE070_SOURCE_PAIR_IDS = (
     "STRUCT-PHY-TREE-RR",
@@ -148,23 +148,23 @@ function _core070_r_trait_covariances(id, names, values)
     if id == "STRUCT-PHY-TREE-PROPTO"
         return [Matrix(Diagonal(fill(exp(values[only(idx["loglambda_phy"])]), 3)))]
     elseif id == "STRUCT-KER-SINGLE-PSI"
-        L = GLLVM.unpack_lambda(values[idx["theta_rr_phy"]], 3, 1)
+        L = GLLVModels.unpack_lambda(values[idx["theta_rr_phy"]], 3, 1)
         d = exp.(2 .* values[idx["log_sd_phy_diag"]])
         return [L * L' + Matrix(Diagonal(d))]
     elseif id == "STRUCT-KER-MULTI"
         theta = values[idx["theta_rr_kernel"]]
         return [begin
-            L = GLLVM.unpack_lambda(theta[(3k - 2):(3k)], 3, 1)
+            L = GLLVModels.unpack_lambda(theta[(3k - 2):(3k)], 3, 1)
             L * L'
         end for k in 1:2]
     else
-        L = GLLVM.unpack_lambda(values[idx["theta_rr_phy"]], 3, 1)
+        L = GLLVModels.unpack_lambda(values[idx["theta_rr_phy"]], 3, 1)
         return [L * L']
     end
 end
 
 function _core070_native_trait_covariances(binding, theta)
-    return GLLVM._source_trait_covariances(binding.sources, size(binding.Y, 1),
+    return GLLVModels._source_trait_covariances(binding.sources, size(binding.Y, 1),
         view(theta, (size(binding.Y, 1) + 1):(length(theta) - 1)))
 end
 
@@ -245,7 +245,7 @@ function _core070_error_receipt(id, root, message; summary_ok, output_dir)
         "scope" => "paired typed fixed-source Gaussian diagnostic; not source/formula/bridge/recovery coverage",
         "summary_census_ok" => summary_ok,
         "source_reference_commit" => CORE070_GAUSSIAN_SOURCE_REFERENCE,
-        "package_root" => pkgdir(GLLVM),
+        "package_root" => pkgdir(GLLVModels),
         "script_root" => root,
         "julia_version" => string(VERSION),
     )
@@ -258,8 +258,8 @@ function main()
     !ispath(output_root) || error("output directory must be fresh: $output_root")
     mkpath(output_root)
     root = CORE070_SOURCE_PAIR_ROOT
-    realpath(pkgdir(GLLVM)) == realpath(root) ||
-        error("loaded GLLVM package root differs from the source-pinned script root")
+    realpath(pkgdir(GLLVModels)) == realpath(root) ||
+        error("loaded GLLVModels package root differs from the source-pinned script root")
 
     summary = nothing
     summary_error = nothing
@@ -298,16 +298,16 @@ function main()
                 throw(DimensionMismatch("$id mapped R start differs from binding layout"))
 
             start_coordinate_delta = maximum(abs.(native_start .- binding.start))
-            nll = theta -> GLLVM._gaussian_sources_nll(binding.Y, binding.sources, theta)
+            nll = theta -> GLLVModels._gaussian_sources_nll(binding.Y, binding.sources, theta)
             # Evaluate the R-exported coordinate after mapping, then separately
             # require it to be the immutable binding start used for optimization.
             native_nll_start = nll(native_start)
-            native_gradient_start = GLLVM.ForwardDiff.gradient(nll, native_start)
+            native_gradient_start = GLLVModels.ForwardDiff.gradient(nll, native_start)
             native_gradient_start_r = _core070_native_gradient_to_r(id, names, native_gradient_start)
             start_gradient_delta = maximum(abs.(native_gradient_start_r .- r_gradient_start))
 
             native_nll_r_endpoint = nll(native_estimate)
-            native_gradient_r_endpoint = GLLVM.ForwardDiff.gradient(nll, native_estimate)
+            native_gradient_r_endpoint = GLLVModels.ForwardDiff.gradient(nll, native_estimate)
             native_gradient_r_endpoint_r = _core070_native_gradient_to_r(id, names, native_gradient_r_endpoint)
             endpoint_gradient_delta = maximum(abs.(native_gradient_r_endpoint_r .- r_gradient_fit))
             r_covariance = _core070_r_trait_covariances(id, names, r_estimate)
@@ -316,7 +316,7 @@ function main()
                 native_endpoint_covariance, r_covariance)
             endpoint_mean_relative = _core070_relative_difference(native_estimate[1:3], r_estimate[_core070_indices(id, names)["b_fix"]])
 
-            fit = GLLVM.fit_gaussian_sources(binding.Y; sources=binding.sources,
+            fit = GLLVModels.fit_gaussian_sources(binding.Y; sources=binding.sources,
                 start=binding.start, g_tol=1e-6, iterations=500)
             native_fit_r_order = _core070_native_to_r(id, names, fit.parameters)
             _core070_write_native_parameters(joinpath(case_dir, "native-parameters.tsv"),
@@ -352,7 +352,7 @@ function main()
                 "status" => case_pass ? "pass" : "fail",
                 "scope" => "paired typed fixed-source Gaussian diagnostic; not source/formula/bridge/recovery coverage",
                 "source_reference_commit" => binding.reference_commit,
-                "package_root" => pkgdir(GLLVM),
+                "package_root" => pkgdir(GLLVModels),
                 "script_root" => root,
                 "julia_version" => string(VERSION),
                 "r_parameter_names_original_order" => names,

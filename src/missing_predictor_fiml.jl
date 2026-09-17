@@ -1,4 +1,4 @@
-# Missing-predictor FIML for the Gaussian GLLVM — the mi() axis, Phase-2a slice.
+# Missing-predictor FIML for the Gaussian GLLVModels — the mi() axis, Phase-2a slice.
 #
 # A single site-level continuous predictor x (one value per site, possibly
 # `missing`) enters the response mean with a slope b_x broadcast across all
@@ -89,7 +89,7 @@ _mi_fiml_nll(params, y, xobs, isobs, p::Int, n::Int, K::Int) =
     fit_gaussian_mi_fiml(y, x; K, Z=nothing, g_tol=1e-8, iterations=1000)
         -> NamedTuple
 
-Fit a Gaussian GLLVM with one site-level continuous predictor `x` whose missing
+Fit a Gaussian GLLVModels with one site-level continuous predictor `x` whose missing
 entries are integrated out by full-information maximum likelihood. `y` is `p × n`
 (traits × sites); `x` is length `n` (one value per site) and may contain
 `missing` or `NaN`. The predictor enters the response mean with a single slope

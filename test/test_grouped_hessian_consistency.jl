@@ -30,7 +30,7 @@
 # differentiates THE SAME objective the fit maximised, whichever curvature
 # that was.
 
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "confint rebuilds the GROUPED fit's own objective (hessian consistency)" begin
     Random.seed!(37)
@@ -47,35 +47,35 @@ using GLLVM, Test, Random, Distributions
     Yn1 = [rand(NegativeBinomial(exp(H[t, s]) / 1.5, 1 / (1 + 1.5))) for t in 1:p, s in 1:n]
 
     function nll_at_thetahat(fit, Y; kwargs...)
-        ad = GLLVM._family_ci(fit, Y; kwargs...)
+        ad = GLLVModels._family_ci(fit, Y; kwargs...)
         return ad.nll(ad.θ)
     end
 
     @testset "the fit records its selector (default and explicit :fisher)" begin
-        @test GLLVM.fit_nb_gllvm_grouped(Ynb; K = K, group = group).hessian === :observed
-        @test GLLVM.fit_nb_gllvm_grouped(Ynb; K = K, group = group, hessian = :fisher).hessian === :fisher
-        @test GLLVM.fit_beta_gllvm_grouped(Ybe; K = K, group = group).hessian === :observed
-        @test GLLVM.fit_beta_gllvm_grouped(Ybe; K = K, group = group, hessian = :fisher).hessian === :fisher
-        @test GLLVM.fit_gamma_gllvm_grouped(Yg; K = K, group = group).hessian === :observed
-        @test GLLVM.fit_gamma_gllvm_grouped(Yg; K = K, group = group, hessian = :fisher).hessian === :fisher
-        @test GLLVM.fit_nb1_gllvm_grouped(Yn1; K = K, group = group).hessian === :observed
-        @test GLLVM.fit_nb1_gllvm_grouped(Yn1; K = K, group = group, hessian = :fisher).hessian === :fisher
+        @test GLLVModels.fit_nb_gllvm_grouped(Ynb; K = K, group = group).hessian === :observed
+        @test GLLVModels.fit_nb_gllvm_grouped(Ynb; K = K, group = group, hessian = :fisher).hessian === :fisher
+        @test GLLVModels.fit_beta_gllvm_grouped(Ybe; K = K, group = group).hessian === :observed
+        @test GLLVModels.fit_beta_gllvm_grouped(Ybe; K = K, group = group, hessian = :fisher).hessian === :fisher
+        @test GLLVModels.fit_gamma_gllvm_grouped(Yg; K = K, group = group).hessian === :observed
+        @test GLLVModels.fit_gamma_gllvm_grouped(Yg; K = K, group = group, hessian = :fisher).hessian === :fisher
+        @test GLLVModels.fit_nb1_gllvm_grouped(Yn1; K = K, group = group).hessian === :observed
+        @test GLLVModels.fit_nb1_gllvm_grouped(Yn1; K = K, group = group, hessian = :fisher).hessian === :fisher
     end
 
     @testset "rebuilt nll(θ̂) == −loglik under both selectors (NB2/Beta/Gamma grouped)" begin
         for h in (:observed, :fisher)
-            fn = GLLVM.fit_nb_gllvm_grouped(Ynb; K = K, group = group, hessian = h)
+            fn = GLLVModels.fit_nb_gllvm_grouped(Ynb; K = K, group = group, hessian = h)
             @test isapprox(nll_at_thetahat(fn, Ynb), -fn.loglik; atol = 1e-8)
-            fb = GLLVM.fit_beta_gllvm_grouped(Ybe; K = K, group = group, hessian = h)
+            fb = GLLVModels.fit_beta_gllvm_grouped(Ybe; K = K, group = group, hessian = h)
             @test isapprox(nll_at_thetahat(fb, Ybe), -fb.loglik; atol = 1e-8)
-            fg = GLLVM.fit_gamma_gllvm_grouped(Yg; K = K, group = group, hessian = h)
+            fg = GLLVModels.fit_gamma_gllvm_grouped(Yg; K = K, group = group, hessian = h)
             @test isapprox(nll_at_thetahat(fg, Yg), -fg.loglik; atol = 1e-8)
         end
     end
 
     @testset "rebuilt nll(θ̂) == −loglik under both selectors (NB1 grouped, cheap add)" begin
         for h in (:observed, :fisher)
-            fn1 = GLLVM.fit_nb1_gllvm_grouped(Yn1; K = K, group = group, hessian = h)
+            fn1 = GLLVModels.fit_nb1_gllvm_grouped(Yn1; K = K, group = group, hessian = h)
             @test isapprox(nll_at_thetahat(fn1, Yn1), -fn1.loglik; atol = 1e-8)
         end
     end
@@ -86,9 +86,9 @@ using GLLVM, Test, Random, Distributions
     # :observed fit's at a common point — otherwise the threading is
     # decorative (exactly the class the one-part arc's test caught).
     @testset "the selector reaches the grouped CI objective" begin
-        fo = GLLVM.fit_nb_gllvm_grouped(Ynb; K = K, group = group, hessian = :observed)
-        ff = GLLVM.fit_nb_gllvm_grouped(Ynb; K = K, group = group, hessian = :fisher)
-        ao = GLLVM._family_ci(fo, Ynb); af = GLLVM._family_ci(ff, Ynb)
+        fo = GLLVModels.fit_nb_gllvm_grouped(Ynb; K = K, group = group, hessian = :observed)
+        ff = GLLVModels.fit_nb_gllvm_grouped(Ynb; K = K, group = group, hessian = :fisher)
+        ao = GLLVModels._family_ci(fo, Ynb); af = GLLVModels._family_ci(ff, Ynb)
         @test !isapprox(ao.nll(ao.θ), af.nll(ao.θ); atol = 1e-6)
     end
 
@@ -99,7 +99,7 @@ using GLLVM, Test, Random, Distributions
         Nb = fill(5, p, n)
         Ybb = [rand(Binomial(5, clamp(rand(Beta(6.0 * μβ[t, s], 6.0 * (1 - μβ[t, s]))), 1e-6, 1 - 1e-6)))
                for t in 1:p, s in 1:n]
-        fbb = GLLVM.fit_beta_binomial_gllvm_grouped(Ybb; K = K, N = Nb, group = group)
+        fbb = GLLVModels.fit_beta_binomial_gllvm_grouped(Ybb; K = K, N = Nb, group = group)
         @test fbb.hessian === :fisher
         @test isapprox(nll_at_thetahat(fbb, Ybb; N = Nb), -fbb.loglik; atol = 1e-8)
     end
@@ -112,11 +112,11 @@ using GLLVM, Test, Random, Distributions
     @testset "TweedieGroupedFit records its selector; nll(θ̂) identity holds" begin
         Ytw = max.(Yg, 1e-6)   # reuse Gamma-shaped positive data as a Tweedie fixture
         for h in (:observed, :fisher)
-            ftw = GLLVM.fit_tweedie_gllvm_grouped(Ytw; K = K, group = group,
+            ftw = GLLVModels.fit_tweedie_gllvm_grouped(Ytw; K = K, group = group,
                                                   hessian = h, iterations = 60)
             @test ftw.hessian === h
             φvec = [ftw.φ[ftw.group[t]] for t in 1:p]
-            ll = GLLVM.tweedie_grouped_marginal_loglik_laplace(Ytw, ftw.Λ, ftw.β, φvec,
+            ll = GLLVModels.tweedie_grouped_marginal_loglik_laplace(Ytw, ftw.Λ, ftw.β, φvec,
                                                                 ftw.power; hessian = h)
             @test isapprox(ll, ftw.loglik; atol = 1e-8)
         end

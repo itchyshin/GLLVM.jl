@@ -91,7 +91,7 @@ def build(root: Path = ROOT) -> dict:
                 scope_boundary=(
                     "Frozen R 0.7.0 public bridge behavior only. Native and Julia "
                     "formula PASS rows remain independent; no structured payload is "
-                    "transported to GLLVM.jl."
+                    "transported to GLLVModels.jl."
                 ),
             )
         )

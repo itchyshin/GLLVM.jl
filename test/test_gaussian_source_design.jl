@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics
+using GLLVModels, Test, LinearAlgebra, Random, Statistics
 
 @testset "Gaussian source complete mean design" begin
     p,n=2,8; x=collect(range(-1,1;length=n))
@@ -13,7 +13,7 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics
     @test f.converged && f.gradient_norm<=1e-7
     @test f.mean_design==D && f.response_shape==(p,n)
     @test f.coefficient_names==["trait1","trait2","x"]
-    @test GLLVM.dof(f)==3
+    @test GLLVModels.dof(f)==3
     fm=fit_gaussian_sources(Y;sources=[],X=D,sigma_eps_fixed=sigma,g_tol=1e-7)
     @test fm.loglik≈f.loglik atol=1e-9
     @test fm.beta≈f.beta atol=1e-9
@@ -22,10 +22,10 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics
     @test free.converged && free.gradient_norm<=1e-7
     @test free.beta≈beta atol=1e-6
     @test free.sigma_eps≈mle_sigma atol=1e-6
-    @test GLLVM.dof(free)==4
+    @test GLLVModels.dof(free)==4
     z=fit_gaussian_sources(Y;sources=[],X=zeros(p,n,0),sigma_eps_fixed=sigma)
     @test isempty(z.beta) && isempty(z.parameters) && isempty(z.coefficient_names)
-    @test GLLVM.dof(z)==0 && z.converged && z.gradient_norm==0
+    @test GLLVModels.dof(z)==0 && z.converged && z.gradient_norm==0
     @test !z.hessian_positive_definite
     @test z.loglik≈-length(Y)*log(sigma*sqrt(2pi))-sum(abs2,Y)/(2sigma^2) atol=1e-9
     const_zero=fit_gaussian_sources(fill(2.,p,n);sources=[],X=zeros(p,n,0),g_tol=1e-7)
@@ -45,7 +45,7 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics
     @test_throws DimensionMismatch fit_gaussian_sources(Y;sources=[],X=X,start=zeros(3))
     saturated=fit_gaussian_sources(Y;sources=[],X=Matrix{Float64}(I,p*n,p*n),sigma_eps_fixed=sigma)
     @test saturated.beta≈vec(Y) atol=1e-9
-    @test saturated.converged && GLLVM.dof(saturated)==length(Y)
+    @test saturated.converged && GLLVModels.dof(saturated)==length(Y)
 end
 
 @testset "Source mean design declared recovery regression" begin
@@ -63,5 +63,5 @@ end
     @test maximum(abs,f.beta-truth)<=.35
     @test maximum(abs,diag(only(f.trait_covariances))-[.16,.25,.36])<=.30
     @test abs(f.sigma_eps-.35)<=.15
-    @test GLLVM.dof(f)==8
+    @test GLLVModels.dof(f)==8
 end

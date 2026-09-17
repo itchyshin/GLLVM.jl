@@ -1,9 +1,9 @@
 # Changelog
 
-Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
+Notable changes to GLLVModels.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 **IN** (shipped), **PARTIAL** (limited), **PLANNED** (next), with issue/PR refs.
 
-## GLLVM.jl (development version)
+## GLLVModels.jl (development version)
 
 ### Changed
 - **Development:** fixed Gaussian source fits accept a complete mean design `X`.
@@ -105,7 +105,7 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 - **IN:** isolated RCall.jl parity scaffold (`test/parity/`, opt-in) for
   checking agreement against R `gllvmTMB`.
 
-## GLLVM.jl v0.2.0
+## GLLVModels.jl v0.2.0
 
 A large expansion from the v0.1.0 Gaussian-only pilot to a broad, gllvmTMB-class
 package; every numerical addition is gated by deterministic tests.
@@ -161,7 +161,7 @@ package; every numerical addition is gated by deterministic tests.
 ### Spatial & missing data
 - **IN:** SPDE / Matérn-GMRF spatial field (Lindgren–Rue–Lindström 2011) —
   `fit_spde_gaussian` and the SPDE field as a latent variable inside the
-  non-Gaussian GLLVM (`fit_spde_latent_gllvm`), with kriging prediction
+  non-Gaussian GLLVModels (`fit_spde_latent_gllvm`), with kriging prediction
   (`predict_spatial`) and auto-meshing (`spde_mesh_grid` / `spde_mesh_delaunay`).
 - **IN:** NA handling in the Laplace core (`marginal_loglik_laplace(...; mask)`),
   with `observed_mask(Y)` and `missing` support in the GLM fitters.
@@ -170,9 +170,9 @@ package; every numerical addition is gated by deterministic tests.
 - **IN:** the `@formula` / `gllvm(...)` front-end (continuous fixed effects, wide
   + long input) and an R interface scaffold (`r/gllvmjl.R`, via JuliaConnectoR).
 
-## GLLVM.jl v0.1.0
+## GLLVModels.jl v0.1.0
 
-- **IN:** Gaussian + phylogenetic GLLVM engine — closed-form marginal
+- **IN:** Gaussian + phylogenetic GLLVModels engine — closed-form marginal
   likelihood, PPCA / EM initialisation, multiple phylogenetic representations
   (sparse precision, Felsenstein contrasts, edge-incidence) agreeing to machine
   precision.

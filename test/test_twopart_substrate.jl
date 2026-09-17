@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "Two-part substrate (Delta-lognormal)" begin
     @testset "Λ = 0 reduces to independent two-part loglik (exact)" begin
@@ -15,7 +15,7 @@ using GLLVM, Test, Random, Distributions
             end                                    # else stays 0 (absence)
         end
 
-        ll = GLLVM.delta_lognormal_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, σ)
+        ll = GLLVModels.delta_lognormal_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, σ)
         ref = 0.0
         for t in 1:p, s in 1:n
             ref += Y[t, s] > 0 ? (log(π[t]) + logpdf(LogNormal(βc[t], σ), Y[t, s])) :
@@ -40,7 +40,7 @@ using GLLVM, Test, Random, Distributions
             end
         end
         Y = reshape(y, p, 1)
-        ll_lap = GLLVM.delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ)
+        ll_lap = GLLVModels.delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ)
 
         zs = range(-10, 10; length = 8001); dz = step(zs)
         marg = 0.0

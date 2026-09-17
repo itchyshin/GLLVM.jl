@@ -15,7 +15,7 @@ _glm_logpdf(::Poisson, μ, n, y)    = logpdf(Poisson(μ), Int(y))
 """
     poisson_marginal_loglik_laplace(Y, Λ, β, link=LogLink(); kwargs...) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of a Poisson GLLVM — a
+Total Laplace log-marginal over the `n` sites (columns) of a Poisson GLLVModels — a
 thin wrapper over the family-generic `marginal_loglik_laplace` with `Poisson()`.
 `Y` is the p×n integer count matrix; `Λ` p×K; `β` length-p. Poisson has no trial
 counts, so a unit `N` is supplied internally.
@@ -130,7 +130,7 @@ end
 """
     fit_poisson_gllvm(Y; K, link=LogLink(), mask=nothing, …) -> PoissonFit
 
-Fit a Poisson GLLVM by L-BFGS on the Laplace marginal log-likelihood
+Fit a Poisson GLLVModels by L-BFGS on the Laplace marginal log-likelihood
 (`poisson_marginal_loglik_laplace`). `Y` is a p×n integer count matrix
 (responses × sites) that may contain `missing` (gllvm-style NA); `K` the latent
 dimension. Optimises intercepts `β` and loadings `Λ`. The default analytic

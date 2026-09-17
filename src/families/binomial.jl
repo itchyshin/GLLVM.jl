@@ -1,4 +1,4 @@
-# Per-site Laplace marginal log-likelihood for the Binomial GLLVM.
+# Per-site Laplace marginal log-likelihood for the Binomial GLLVModels.
 #
 # Model (site s, p binary/binomial responses):
 #     y_{ts} ~ Binomial(n_{ts}, μ_{ts}),  μ_{ts} = linkinv(link, η_{ts}),
@@ -107,7 +107,7 @@ laplace_loglik_site(y::AbstractVector, n::AbstractVector, Λ::AbstractMatrix,
 """
     binomial_marginal_loglik_laplace(Y, N, Λ, β, link; kwargs...) -> Float64
 
-Total Laplace log-marginal over the `n` sites of a Binomial GLLVM — a thin
+Total Laplace log-marginal over the `n` sites of a Binomial GLLVModels — a thin
 wrapper over the family-generic `marginal_loglik_laplace` with `Binomial()`.
 `Y`, `N` are p×n response and trial-count matrices; `Λ` p×K; `β` length-p.
 """
@@ -307,7 +307,7 @@ end
 """
     fit_binomial_gllvm(Y; K, link=LogitLink(), N=nothing, X_lv=nothing, …) -> BinomialFit
 
-Fit a Binomial GLLVM by L-BFGS on the Laplace marginal log-likelihood
+Fit a Binomial GLLVModels by L-BFGS on the Laplace marginal log-likelihood
 (`binomial_marginal_loglik_laplace`). `Y` is a p×n integer response
 matrix (responses × sites); `N` the matching trial counts (default all-ones,
 i.e. Bernoulli / binary). `K` is the latent dimension. Optimises the intercepts

@@ -1,7 +1,7 @@
-using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, SparseArrays, Statistics
 
 # Relaxed-clock per-branch rate prototype.
-# edge_incidence.jl and relaxed_clock.jl are included in GLLVM.jl.
+# edge_incidence.jl and relaxed_clock.jl are included in GLLVModels.jl.
 
 # Balanced EdgePhy via Newick (same helper pattern as test_edge_incidence.jl).
 function _balanced_edge_phy(p::Integer; branch_length::Real = 0.1)

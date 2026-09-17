@@ -1,4 +1,4 @@
-# Generic Laplace-approximated marginal log-likelihood for non-Gaussian GLLVM
+# Generic Laplace-approximated marginal log-likelihood for non-Gaussian GLLVModels
 # families. The family-specific pieces — the Fisher-scoring score and weight, the
 # μ clamp, and the conditional log-density — dispatch on the Distributions family
 # type, so Binomial, Poisson, … share one mode-finder (no hardcoded family switch).
@@ -266,7 +266,7 @@ end
 """
     laplace_loglik_site(family, y, n, Λ, β, link; mask=nothing, maxiter=100, tol=1e-9) -> Float64
 
-Laplace-approximated log-marginal for one site of a non-Gaussian GLLVM. `family`
+Laplace-approximated log-marginal for one site of a non-Gaussian GLLVModels. `family`
 is a `Distributions` family marker (e.g. `Binomial()`, `Poisson()`); `y`, `n` are
 the response and trial counts (length p; `n` is ignored by families without
 trials); `Λ` p×K; `β` length-p; `link` a `Link`. `mask` (length-p Bool, or
@@ -349,7 +349,7 @@ end
 """
     marginal_loglik_laplace(family, Y, N, Λ, β, link; mask=nothing, offset=nothing, kwargs...) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of a non-Gaussian GLLVM.
+Total Laplace log-marginal over the `n` sites (columns) of a non-Gaussian GLLVModels.
 `Y`, `N` are p×n response and trial-count matrices. `mask` (p×n Bool, or `nothing`)
 marks observed cells — missing responses (`mask` false) are dropped per site, so the
 marginal is over the observed entries only (gllvm-style NA handling). The value is

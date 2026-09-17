@@ -1,7 +1,7 @@
-# speed_bench.jl — "speed against myself" benchmark for GLLVM.jl
+# speed_bench.jl — "speed against myself" benchmark for GLLVModels.jl
 # =============================================================================
 #
-# A self-contained wall-clock + allocation benchmark for the GLLVM.jl fitters.
+# A self-contained wall-clock + allocation benchmark for the GLLVModels.jl fitters.
 # It quantifies fit speed (median seconds) and memory (MB allocated) across a
 # small grid of problem sizes and response families, and — crucially — times
 # the GLM families with `gradient = :finite` vs `gradient = :analytic` side by
@@ -11,7 +11,7 @@
 # ----------
 #     julia --project=. bench/speed_bench.jl
 #
-# (Uses the root project; the same way `bench/grad_speedup.jl` loads GLLVM.)
+# (Uses the root project; the same way `bench/grad_speedup.jl` loads GLLVModels.)
 #
 # Runtime knobs for quick decision runs:
 #
@@ -47,7 +47,7 @@
 # portable, decision-relevant outputs.
 # =============================================================================
 
-using GLLVM, Random, Statistics, Printf
+using GLLVModels, Random, Statistics, Printf
 
 # ----------------------------------------------------------------------------
 # Timing helpers (Base only)
@@ -91,8 +91,8 @@ _loglik(fit) = hasproperty(fit, :loglik) ? fit.loglik :
 # (plus N for the binomial case).
 # ----------------------------------------------------------------------------
 
-# GLLVM re-exports Distributions; reach the constructors without an extra dep.
-const _D = GLLVM.Distributions
+# GLLVModels re-exports Distributions; reach the constructors without an extra dep.
+const _D = GLLVModels.Distributions
 _safe_pois(λ)     = _D.Poisson(max(λ, 0.0))
 _safe_gamma(a, θ) = _D.Gamma(max(a, 1e-3), max(θ, 1e-8))
 _safe_beta(a, b)  = _D.Beta(max(a, 1e-3), max(b, 1e-3))
@@ -288,7 +288,7 @@ const ITERS = parse(Int, get(ENV, "GLLVM_SPEED_BENCH_ITERS", "300"))
 const PROFILE_CI = get(ENV, "GLLVM_SPEED_BENCH_PROFILE_CI", "1") != "0"
 
 function main()
-    println("GLLVM.jl speed benchmark — Base timing, no BenchmarkTools")
+    println("GLLVModels.jl speed benchmark — Base timing, no BenchmarkTools")
     println("grid (p, n, K): ", GRID, "   reps: ", REPS, "   iterations cap: ", ITERS)
     println("Julia ", VERSION, "   threads: ", Threads.nthreads())
 

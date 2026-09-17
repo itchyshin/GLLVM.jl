@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics, Distributions, ForwardDiff
+using GLLVModels, Test, LinearAlgebra, Random, Statistics, Distributions, ForwardDiff
 
 # Track T3: multiple missing predictors, jointly integrated (mi() vector axis).
 #
@@ -25,7 +25,7 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics, Distributions, ForwardDiff
 
 # Helpers for the packed Σ_x Cholesky parametrisation used by the test oracles.
 # θ_chol = [L11, L21, L22, L31, L32, L33, ...] (lower-tri, log-diagonal), the same
-# convention as GLLVM._mi_unpack_cholesky.
+# convention as GLLVModels._mi_unpack_cholesky.
 function chol_from_packed(c, q)
     L = zeros(eltype(c), q, q)
     k = 1
@@ -61,12 +61,12 @@ end
         xm[[3, 11, 25, 38]] .= missing
 
         # single-predictor reference
-        ll1 = GLLVM.marginal_loglik_laplace_xs(Poisson(), Y, N, Λ, β, LogLink();
+        ll1 = GLLVModels.marginal_loglik_laplace_xs(Poisson(), Y, N, Λ, β, LogLink();
                                                x = xm, b_x = b_x, μ_x = μ_x, σ_x2 = σ_x^2)
         # multi-predictor with q=1: X is n×1, b/μ length-1, Σ_x 1×1.
         X = reshape(Vector{Union{Missing,Float64}}(xm), n, 1)
         L = reshape([σ_x], 1, 1)                      # Σ_x = σ_x²
-        llq = GLLVM.marginal_loglik_laplace_mi(Poisson(), Y, N, Λ, β, LogLink();
+        llq = GLLVModels.marginal_loglik_laplace_mi(Poisson(), Y, N, Λ, β, LogLink();
                                                X = X, b = [b_x], μ = [μ_x], Lx = L)
         @test llq ≈ ll1 atol = 1e-8
     end
@@ -93,7 +93,7 @@ end
 
         # Multi-predictor Gaussian marginal (identity link). Σ_eps carried as a
         # log-σ scalar tacked onto the family marker via the Normal path.
-        llmi = GLLVM.marginal_loglik_mi_gaussian(y, X, a, Λ, b, μ, Lx, σ_eps^2)
+        llmi = GLLVModels.marginal_loglik_mi_gaussian(y, X, a, Λ, b, μ, Lx, σ_eps^2)
 
         # Brute-force Gaussian FIML over observed cells. Stack w = [y (p); x (q)]:
         #   y = a + B x + Λη + ε,  x ~ N(μ, Σx),  (Bx)_t = b·x.
@@ -148,7 +148,7 @@ end
             μ = θ[(o + q + 1):(o + 2q)]
             cpack = θ[(o + 2q + 1):(o + 2q + nchol)]
             L = chol_from_packed(cpack, q)
-            GLLVM.marginal_loglik_laplace_mi(Poisson(), Y, N, Λ, β, LogLink();
+            GLLVModels.marginal_loglik_laplace_mi(Poisson(), Y, N, Λ, β, LogLink();
                                              X = X, b = b, μ = μ, Lx = L)
         end
         θ = vcat(β0, vec(Λ0), b0, μ0, cpack0)
@@ -176,11 +176,11 @@ end
         y = rand(Poisson(2.0), p)
         N = ones(Int, p)
         xmiss = [missing, missing]
-        ll_lap = GLLVM.laplace_loglik_site_mi(Poisson(), y, N, Λ, β, LogLink();
+        ll_lap = GLLVModels.laplace_loglik_site_mi(Poisson(), y, N, Λ, β, LogLink();
                                               x = xmiss, b = b, μ = μ, Lx = Lx)
         # 3-D Gauss–Hermite over (z, x1, x2): factor N(x; μ, Σx) via x = μ + Lx u,
         # u ~ N(0, I). ∫ p(y|z,x) N(z) N(u) dz du.
-        nodes, wts = GLLVM._gauss_hermite(36)
+        nodes, wts = GLLVModels._gauss_hermite(36)
         zz = sqrt(2) .* nodes; wz = wts ./ sqrt(π)
         uu = sqrt(2) .* nodes; wu = wts ./ sqrt(π)
         acc = 0.0

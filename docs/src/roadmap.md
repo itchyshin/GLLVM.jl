@@ -1,6 +1,6 @@
 # Roadmap
 
-GLLVM.jl is being built as a fast Julia **companion to
+GLLVModels.jl is being built as a fast Julia **companion to
 [`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/)**: the same core estimands
 where paired, usable directly in Julia and through a **narrow** R bridge
 (`engine = "julia"`). Core070 ledger closure (FREE=0) is spreadsheet accounting,
@@ -9,10 +9,10 @@ surface port (column_coef, slopes, formula grid) is out of scope unless a new
 arc opens it. The live, detailed roadmap — with linked issues — is tracked on
 GitHub:
 
-➡️ **[GLLVM.jl roadmap (issue #11)](https://github.com/itchyshin/GLLVM.jl/issues/11)**
+➡️ **[GLLVModels.jl roadmap (issue #11)](https://github.com/itchyshin/GLLVModels.jl/issues/11)**
 
 Current sequencing is R-first. Native `gllvmTMB` functionality and the R user
-workflow define the oracle; `GLLVM.jl` mirrors admitted rows, supplies parity
+workflow define the oracle; `GLLVModels.jl` mirrors admitted rows, supplies parity
 evidence, and accelerates them after point estimates, logLik/objective, CI or
 CI-status, docs, tests, and Rose audit agree. REML is Gaussian-only; AI-REML is
 future design input for exact Gaussian cells, not non-Gaussian Laplace.
@@ -28,7 +28,7 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
 
 ## What works today
 
-- Gaussian + phylogenetic GLLVM fitting (closed-form Gaussian marginal).
+- Gaussian + phylogenetic GLLVModels fitting (closed-form Gaussian marginal).
 - An **O(p)** phylogenetic gradient — exact, linear-in-species scaling.
 - Wald / profile-likelihood / parametric-bootstrap confidence intervals,
   including derived quantities (Sigma_y, communality, phylogenetic signal), where

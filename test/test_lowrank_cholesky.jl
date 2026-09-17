@@ -3,7 +3,7 @@
 # The struct + methods are not currently exported from the top-level module
 # (this stage is library-internal), so we include the source directly and
 # reference the symbols unqualified. If lowrank_cholesky.jl gets wired into
-# GLLVM.jl proper later, swap the include for `using GLLVM`.
+# GLLVModels.jl proper later, swap the include for `using GLLVModels`.
 
 using Test, Random, LinearAlgebra
 

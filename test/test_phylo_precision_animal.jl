@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, SparseArrays
+using GLLVModels, Test, Random, LinearAlgebra, SparseArrays
 
 # Phylo transport S3-ANIMAL — 12-individual pedigree / sparse Ainv fixture.
 #
@@ -133,7 +133,7 @@ end
     @test payload.n_aug != 2 * payload.n_leaves - 2   # not the tree 2p−2 convention
 
     @testset "admit raw Ainv triplets (tip-only animal)" begin
-        admitted = GLLVM.admit_phylo_precision_payload(payload)
+        admitted = GLLVModels.admit_phylo_precision_payload(payload)
         @test admitted.n_aug == 12
         @test admitted.n_leaves == 12
         @test admitted.species_aug_id == collect(1:12)
@@ -143,15 +143,15 @@ end
         recomputed, shipped, abs_diff = precision_logdet_check(admitted)
         @test abs_diff <= 1e-8
         @test isapprox(recomputed, shipped; atol = 1e-8)
-        packed = GLLVM.phylo_precision_payload(admitted)
-        readmitted = GLLVM.admit_phylo_precision_payload(packed)
+        packed = GLLVModels.phylo_precision_payload(admitted)
+        readmitted = GLLVModels.admit_phylo_precision_payload(packed)
         @test Matrix(readmitted.Q) ≈ Matrix(admitted.Q) atol = 1e-12
     end
 
     @testset "n_aug < n_leaves still raises DIM" begin
         bad = merge(payload, (; n_aug = 11))
         err = try
-            GLLVM.admit_phylo_precision_payload(bad)
+            GLLVModels.admit_phylo_precision_payload(bad)
             nothing
         catch e
             e
@@ -160,7 +160,7 @@ end
         @test occursin("GJL-GATE-PHYLO-PAYLOAD-DIM", err.msg)
     end
 
-    admitted = GLLVM.admit_phylo_precision_payload(payload)
+    admitted = GLLVModels.admit_phylo_precision_payload(payload)
 
     @testset "replay vs dense Henderson A (existing animal path)" begin
         Random.seed!(20260907)
@@ -169,8 +169,8 @@ end
         @test Matrix(Σ_rel) ≈ A atol = 1e-12
 
         for (σ²_phy, σ²_eps, μ) in ((0.3, 0.4, 0.0), (1.2, 0.45, 0.35), (2.5, 0.8, -0.2))
-            st = GLLVM._build_precision_phy_fit_state(admitted, fill(sqrt(σ²_phy), p), σ²_eps)
-            nll_pp = GLLVM._phylo_negll(st, y, μ)
+            st = GLLVModels._build_precision_phy_fit_state(admitted, fill(sqrt(σ²_phy), p), σ²_eps)
+            nll_pp = GLLVModels._phylo_negll(st, y, μ)
             nll_A = _s3animal_dense_negll(A, y, μ, σ²_phy, σ²_eps)
             @test isfinite(nll_pp) && isfinite(nll_A)
             @test nll_pp != 0.0 || nll_A != 0.0
@@ -184,7 +184,7 @@ end
         anc_payload = _s3animal_payload(Ainv, _S3ANIMAL_IDS; tips = tips)
         @test anc_payload.n_aug == 12
         @test anc_payload.n_leaves == 10
-        admitted_anc = GLLVM.admit_phylo_precision_payload(anc_payload)
+        admitted_anc = GLLVModels.admit_phylo_precision_payload(anc_payload)
         @test admitted_anc.n_aug == 12
         @test admitted_anc.n_leaves == 10
         @test admitted_anc.species_aug_id == collect(tips)
@@ -192,8 +192,8 @@ end
         A_marg = A[tips, tips]   # correct: marginalise, do not condition
         Random.seed!(20260907)
         y10 = randn(10)
-        st = GLLVM._build_precision_phy_fit_state(admitted_anc, fill(1.0, 10), 0.5)
-        nll_pp = GLLVM._phylo_negll(st, y10, 0.0)
+        st = GLLVModels._build_precision_phy_fit_state(admitted_anc, fill(1.0, 10), 0.5)
+        nll_pp = GLLVModels._phylo_negll(st, y10, 0.0)
         nll_A = _s3animal_dense_negll(A_marg, y10, 0.0, 1.0, 0.5)
         @test isapprox(nll_pp, nll_A; atol = 1e-8, rtol = 1e-8)
 
@@ -203,8 +203,8 @@ end
         wrong = PrecisionPhy(I, J, V, 10, 10, _S3ANIMAL_IDS[tips],
                              logdet(cholesky(Symmetric(Matrix(Ainv_sub)))),
                              1.0, collect(1:10))
-        st_wrong = GLLVM._build_precision_phy_fit_state(wrong, fill(1.0, 10), 0.5)
-        nll_wrong = GLLVM._phylo_negll(st_wrong, y10, 0.0)
+        st_wrong = GLLVModels._build_precision_phy_fit_state(wrong, fill(1.0, 10), 0.5)
+        nll_wrong = GLLVModels._phylo_negll(st_wrong, y10, 0.0)
         @test abs(nll_wrong - nll_A) > 1e-4
     end
 
@@ -217,13 +217,13 @@ end
         nll_dense = _s3animal_dense_negll(A, ysim, fit_pp.μ, fit_pp.σ²_phy, fit_pp.σ²_eps)
         @test isapprox(fit_pp.negll, nll_dense; atol = 1e-8, rtol = 1e-8)
 
-        nll_pp = GLLVM._phylo_negll(
-            GLLVM._build_precision_phy_fit_state(admitted, fill(sqrt(1.2), p), 0.45),
+        nll_pp = GLLVModels._phylo_negll(
+            GLLVModels._build_precision_phy_fit_state(admitted, fill(sqrt(1.2), p), 0.45),
             ysim, 0.35)
         nll_A = _s3animal_dense_negll(A, ysim, 0.35, 1.2, 0.45)
         @test isapprox(nll_pp, nll_A; atol = 1e-8, rtol = 1e-8)
 
-        br = GLLVM.bridge_fit(; y = ysim, family = "gaussian", phylo = payload)
+        br = GLLVModels.bridge_fit(; y = ysim, family = "gaussian", phylo = payload)
         @test br.converged === true
         @test isapprox(br.negll, fit_pp.negll; atol = 1e-8, rtol = 1e-8)
         @test br.diagnostic_only === true

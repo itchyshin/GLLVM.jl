@@ -1,4 +1,4 @@
-# Random-effects foundation for GLLVM.jl — grouping-factor coding.
+# Random-effects foundation for GLLVModels.jl — grouping-factor coding.
 #
 # A random-effects (RE) block is a latent block on a grouping factor, integrated out
 # by the SAME marginal engines as the ordination latent variables. The per-level

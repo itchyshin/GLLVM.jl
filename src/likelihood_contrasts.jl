@@ -48,7 +48,7 @@ using SparseArrays
         tree::AugmentedPhy, σ²_phy::Real=1.0) -> Real
 
 Marginal log-likelihood of `y` (size p × n_sites) for the Gaussian
-GLLVM with a Brownian-motion phylogenetic block, computed on the
+GLLVModels with a Brownian-motion phylogenetic block, computed on the
 Felsenstein-contrast scale.
 
 The model is the same as the J3 dense path in `likelihood.jl`:

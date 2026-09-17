@@ -3,7 +3,7 @@
 
 using Test
 using Random
-using GLLVM
+using GLLVModels
 
 @testset "MultinomialFit second-order Wald CI (no-X)" begin
     Random.seed!(711)
@@ -51,7 +51,7 @@ end
     X = randn(n, p_cov)
     y = Vector{Int}(undef, n)
     for i in 1:n
-        η = GLLVM.multinomial_eta(β_true, γ_true, vec(X[i, :]))
+        η = GLLVModels.multinomial_eta(β_true, γ_true, vec(X[i, :]))
         π = exp.(η) ./ sum(exp.(η))
         y[i] = findfirst(rand() .≤ cumsum(π))
     end

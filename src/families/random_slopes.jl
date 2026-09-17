@@ -21,7 +21,7 @@
 #
 #     η = β_t + Λ[t,:]·z_{i_j} + (Z[i_j,:]·L_b)·c_g ,
 #
-# i.e. EXACTLY a standard GLLVM super-site at the augmented loadings Λ̃_g (p̃ × m):
+# i.e. EXACTLY a standard GLLVModels super-site at the augmented loadings Λ̃_g (p̃ × m):
 #   • block j of K cols → Λ on rows of site j (0 elsewhere): the per-site z_i,
 #   • last q cols       → (L_b' Z[i_j,:]) on ALL species rows of site j: the slopes.
 # Its prior is the identity, so the family-generic mode-finder/marginal
@@ -59,7 +59,7 @@ end
     random_slope_marginal_loglik_laplace(family, Y, N, Z, Λ, β, Lb, group_idx;
         link=default_link(family), maxiter=100, tol=1e-9) -> Float64
 
-Total Laplace log-marginal over the groups of a non-Gaussian GLLVM with grouped random
+Total Laplace log-marginal over the groups of a non-Gaussian GLLVModels with grouped random
 slopes `(Z | g)`: per-group `b_g ~ N(0, Σ_b)` entering `η_{ts} = β_t + (Λ z_s)_t +
 Z[s,:]·b_{g(s)}`. `Lb` is the lower-Cholesky factor of `Σ_b = Lb·Lbᵀ`; `Z` is the `n×q`
 site design (col 1 conventionally all-ones for the random intercept); `group_idx` is a
@@ -127,7 +127,7 @@ end
         g_tol=1e-5, iterations=500, newton_maxiter=100, newton_tol=1e-9)
         -> PoissonRandomSlopeFit
 
-Fit a Poisson GLLVM with grouped random slopes `(Z | grouping)` — a per-group
+Fit a Poisson GLLVModels with grouped random slopes `(Z | grouping)` — a per-group
 coefficient vector `b_g ~ N(0, Σ_b)` with an UNSTRUCTURED (correlated) q×q `Σ_b` (the
 behavioural-syndromes random-regression model: a correlated random intercept + slopes
 per group). `η_{ts} = β_t + (Λ z_s)_t + Z[s,:]·b_{g(s)}`; `Y` is `p×n` (species × sites)

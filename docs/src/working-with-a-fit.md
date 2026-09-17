@@ -1,11 +1,11 @@
 # Working with a fitted model
 
-Once you have a fit from `fit_gaussian_gllvm` or `fit_gllvm(Y; family=…)`, GLLVM.jl
+Once you have a fit from `fit_gaussian_gllvm` or `fit_gllvm(Y; family=…)`, GLLVModels.jl
 gives you the standard post-fit toolkit — ordination, predictions, residual
 diagnostics, and model-selection criteria — for Gaussian and non-Gaussian fits.
 
 ```julia
-using GLLVM, Random
+using GLLVModels, Random
 Random.seed!(1)
 n, p, K = 120, 6, 2
 Λ = 0.8 .* randn(p, K)
@@ -35,7 +35,7 @@ ordination biplot — sites as points, species as labeled vectors:
 
 ![Model-based ordination biplot](assets/ordination_biplot.png)
 
-*Simulated two-block data, two-factor Gaussian GLLVM. Species loading on the same
+*Simulated two-block data, two-factor Gaussian GLLVModels. Species loading on the same
 latent factor point the same way; the grey cloud is the site scores `getLV(fit, y)`.*
 
 For supported one-part non-Gaussian fits, `ordination_uncertainty` gives per-site
@@ -72,7 +72,7 @@ mean, and spatial latent fits use `predict_spatial` for new locations.
 ## Residual diagnostics
 
 `residuals` gives **Dunn–Smyth** randomized quantile residuals by default — the
-GLLVM standard, approximately `N(0, 1)` under a correct model and comparable
+GLLVModels standard, approximately `N(0, 1)` under a correct model and comparable
 across families. For discrete families the randomization uses an `rng`; pass a
 seeded one to reproduce:
 

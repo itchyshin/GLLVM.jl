@@ -1,4 +1,4 @@
-using JSON3, SHA, LinearAlgebra, GLLVM
+using JSON3, SHA, LinearAlgebra, GLLVModels
 include(joinpath(@__DIR__, "compare_tree_gaussian_reference.jl"))
 include(joinpath(@__DIR__, "compare_pedigree_gaussian_reference.jl"))
 
@@ -34,9 +34,9 @@ function _db_compare_checked_uncertainty(r,j,checked)
     V = rawV[permutation,permutation]
     theta = Float64.(r["fitted"]["values"])[permutation]
     require(theta[4] > 0, "rank-one sign alignment not satisfied")
-    objective = t -> GLLVM._precision_multivariate_nll(checked.Y,checked.phy,t;
+    objective = t -> GLLVModels._precision_multivariate_nll(checked.Y,checked.phy,t;
         rank=1,mode=:barelowrank,residual_mode=:shared,species_id=repeat(1:8;inner=2))
-    H = GLLVM._fd_hessian(objective,theta)
+    H = GLLVModels._fd_hessian(objective,theta)
     require(isposdef(Symmetric(H)), "matched Julia marginal Hessian not positive definite")
     matchedV = cholesky(Symmetric(H)) \ Matrix{Float64}(I,7,7)
     ownV = _dbmatrix(j["interval_diagnostics"],"covariance")

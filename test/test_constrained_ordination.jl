@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Constrained ordination (RRR)" begin
     # ----------------------------------------------------------------------
@@ -19,21 +19,21 @@ using GLLVM, Test, Random, Distributions, Statistics
         Y = [rand(rng, Poisson(exp(β[t]))) for t in 1:p, _ in 1:n]
         Nm = ones(Int, p, n)
 
-        ll_constrained = GLLVM.constrained_marginal_loglik_laplace(
+        ll_constrained = GLLVModels.constrained_marginal_loglik_laplace(
             Poisson(), Y, Nm, Λ, β, zeros(q, K), X, LogLink())
-        ll_unconstrained = GLLVM.poisson_marginal_loglik_laplace(Y, Λ, β)
+        ll_unconstrained = GLLVModels.poisson_marginal_loglik_laplace(Y, Λ, β)
         @test ll_constrained ≈ ll_unconstrained atol = 1e-8
 
         # Hand-checked single offset entry for a nonzero B.
         B = randn(rng, q, K)
-        O = GLLVM._build_offset_constrained(Λ, B, X)
+        O = GLLVModels._build_offset_constrained(Λ, B, X)
         @test size(O) == (p, n)
         t, s = 3, 4
         @test O[t, s] ≈ (Λ * (B' * X'))[t, s] atol = 1e-12
 
         # Dimension checks.
-        @test_throws DimensionMismatch GLLVM._build_offset_constrained(Λ, zeros(q, K + 1), X)
-        @test_throws DimensionMismatch GLLVM._build_offset_constrained(Λ, zeros(q + 1, K), X)
+        @test_throws DimensionMismatch GLLVModels._build_offset_constrained(Λ, zeros(q, K + 1), X)
+        @test_throws DimensionMismatch GLLVModels._build_offset_constrained(Λ, zeros(q + 1, K), X)
     end
 
     # ----------------------------------------------------------------------
@@ -97,7 +97,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test all(isfinite, μhat)
 
         # model-selection criteria (β + Λ + vec(B); Poisson has no dispersion)
-        @test GLLVM._nparams(fit) == p + (p * K - div(K * (K - 1), 2)) + q * K
+        @test GLLVModels._nparams(fit) == p + (p * K - div(K * (K - 1), 2)) + q * K
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
         ftd = fitted(fit, Y, X)

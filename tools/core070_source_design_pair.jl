@@ -1,9 +1,9 @@
-using GLLVM, RCall, Test, LinearAlgebra, TOML, SHA
-using GLLVM.StatsModels: @formula
+using GLLVModels, RCall, Test, LinearAlgebra, TOML, SHA
+using GLLVModels.StatsModels: @formula
 include(joinpath(pwd(),"test/parity/parity_helpers.jl"))
 length(ARGS)==1 || error("expected fresh output directory")
 output=ARGS[1];ispath(output)&&error("fresh output required");mkpath(output)
-@assert realpath(Base.pkgdir(GLLVM))==realpath(pwd())
+@assert realpath(Base.pkgdir(GLLVModels))==realpath(pwd())
 get(ENV,"CORE070_PARITY_REQUIRED","")=="1" || error("required parity environment missing")
 pin=_core070_source_pin!();_parity_require_gllvmtmb!()
 @rput output
@@ -40,7 +40,7 @@ rcode=rcopy(Int,R"fit_r$opt$convergence")
 router=rcopy(Vector{Float64},R"as.numeric(outer)")
 names=rcopy(Vector{String},R"names(outer)")
 point=vcat(rbeta,log.(abs.(rdiag)),log(rsigma))
-samepoint=GLLVM._gaussian_sources_nll(Y,[block],point;X=reshape(X,p*n,4))
+samepoint=GLLVModels._gaussian_sources_nll(Y,[block],point;X=reshape(X,p*n,4))
 R"expected_X <- cbind(diag(3)[fit_r$tmb_data$trait_id+1L,,drop=FALSE],df$x)"
 checks=Dict(
  "required_id"=>rcopy(String,R"source_mean_id")=="SOURCE-MEAN-KERNEL-INDEP-X",

@@ -1,7 +1,7 @@
 # Independent scalar diagnosis at retained native/R dispersion values; no fits.
-using GLLVM,Test,TOML,SHA
+using GLLVModels,Test,TOML,SHA
 startswith(lowercase(readchomp(`hostname`)),"totoro") || error("Totoro only")
-@assert realpath(Base.pkgdir(GLLVM))==realpath(pwd())
+@assert realpath(Base.pkgdir(GLLVModels))==realpath(pwd())
 ispath("precision") && error("fresh output required")
 old=TOML.parsefile("nb2-retained.toml")
 function reference(y,mu,r)
@@ -18,9 +18,9 @@ end
 rows=Dict[]
 rs=[2.5,old["native_r"][1],old["r_dispersion"][1],old["native_r"][3],old["r_dispersion"][3],1e12]
 for r in rs,mu in [0.01,1.0,4.0,20.0],y in [0,1,5,20]
- ref=Float64(reference(y,mu,r));value=GLLVM._glm_logpdf(GLLVM.NegativeBinomial(r,0.5),mu,1,y);new=candidate(y,mu,r)
+ ref=Float64(reference(y,mu,r));value=GLLVModels._glm_logpdf(GLLVModels.NegativeBinomial(r,0.5),mu,1,y);new=candidate(y,mu,r)
  h=1e-5
- oldg=(GLLVM._glm_logpdf(GLLVM.NegativeBinomial(r,0.5),mu*exp(h),1,y)-GLLVM._glm_logpdf(GLLVM.NegativeBinomial(r,0.5),mu*exp(-h),1,y))/(2h)
+ oldg=(GLLVModels._glm_logpdf(GLLVModels.NegativeBinomial(r,0.5),mu*exp(h),1,y)-GLLVModels._glm_logpdf(GLLVModels.NegativeBinomial(r,0.5),mu*exp(-h),1,y))/(2h)
  newg=(candidate(y,mu*exp(h),r)-candidate(y,mu*exp(-h),r))/(2h)
  gref=(y-mu)/(1+mu/r)
  push!(rows,Dict("r"=>r,"mu"=>mu,"y"=>y,"reference"=>ref,"current"=>value,"candidate"=>new,

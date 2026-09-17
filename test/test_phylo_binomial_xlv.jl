@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 using Distributions: Binomial
 
 function _dense_leaf_phylo_binomial_xlv_loglik(Y, N, beta, Lambda, alpha_lv,
@@ -10,7 +10,7 @@ function _dense_leaf_phylo_binomial_xlv_loglik(Y, N, beta, Lambda, alpha_lv,
     leaf_pos = [(lp = phy.leaf_indices[t]; phy.root_index < lp ? lp - 1 : lp) for t in 1:p]
     Sigma_a = sigma2_phy .* (inv(Qc)[leaf_pos, leaf_pos])
     Pa = inv(Sigma_a)
-    mean_eta = GLLVM._lv_mean_eta(Lambda, X_lv, alpha_lv)
+    mean_eta = GLLVModels._lv_mean_eta(Lambda, X_lv, alpha_lv)
 
     eps = zeros(n, K)
     a = zeros(p)
@@ -36,11 +36,11 @@ function _dense_leaf_phylo_binomial_xlv_loglik(Y, N, beta, Lambda, alpha_lv,
             for k in 1:K
                 eta_ts += Lambda[t, k] * eps[s, k]
             end
-            eta_c = GLLVM._clamp_eta(eta_ts)
-            mu_ts = GLLVM._clamp_mu(Binomial(), GLLVM.linkinv(LogitLink(), eta_c))
-            me_ts = GLLVM.mu_eta(LogitLink(), eta_c)
-            score_ts = GLLVM._glm_score(Binomial(), mu_ts, N[t, s], me_ts, Y[t, s])
-            weight_ts = GLLVM._glm_weight(Binomial(), mu_ts, N[t, s], me_ts)
+            eta_c = GLLVModels._clamp_eta(eta_ts)
+            mu_ts = GLLVModels._clamp_mu(Binomial(), GLLVModels.linkinv(LogitLink(), eta_c))
+            me_ts = GLLVModels.mu_eta(LogitLink(), eta_c)
+            score_ts = GLLVModels._glm_score(Binomial(), mu_ts, N[t, s], me_ts, Y[t, s])
+            weight_ts = GLLVModels._glm_weight(Binomial(), mu_ts, N[t, s], me_ts)
             aidx = n_z + t
             grad[aidx] += score_ts
             H[aidx, aidx] += weight_ts
@@ -73,9 +73,9 @@ function _dense_leaf_phylo_binomial_xlv_loglik(Y, N, beta, Lambda, alpha_lv,
         for k in 1:K
             eta_ts += Lambda[t, k] * eps[s, k]
         end
-        eta_c = GLLVM._clamp_eta(eta_ts)
-        mu_ts = GLLVM._clamp_mu(Binomial(), GLLVM.linkinv(LogitLink(), eta_c))
-        q += GLLVM._glm_logpdf(Binomial(), mu_ts, N[t, s], Y[t, s])
+        eta_c = GLLVModels._clamp_eta(eta_ts)
+        mu_ts = GLLVModels._clamp_mu(Binomial(), GLLVModels.linkinv(LogitLink(), eta_c))
+        q += GLLVModels._glm_logpdf(Binomial(), mu_ts, N[t, s], Y[t, s])
     end
     return q + 0.5 * logdet(cholesky(Symmetric(Pa))) -
            0.5 * logdet(cholesky(Symmetric(H)))
@@ -83,7 +83,7 @@ end
 
 @testset "Phylo x Binomial predictor-informed LV S1 likelihood" begin
     Random.seed!(732)
-    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    phy = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p = phy.n_leaves
     n = 7
     K = 1
@@ -94,21 +94,21 @@ end
     X_lv = reshape(collect(range(-1.1, 1.1; length = n)), n, q_lv)
     N = fill(14, p, n)
     eta = beta .+ Lambda * transpose(X_lv * alpha_lv)
-    prob = clamp.(GLLVM.linkinv.(Ref(LogitLink()), eta), 1e-4, 1 - 1e-4)
+    prob = clamp.(GLLVModels.linkinv.(Ref(LogitLink()), eta), 1e-4, 1 - 1e-4)
     Y = clamp.(round.(Int, N .* prob .+ rand(-2:2, p, n)), 0, N)
 
-    ll_joint0 = GLLVM._phylo_binomial_xlv_marginal_loglik(
+    ll_joint0 = GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, N, beta, Lambda, alpha_lv, 1e-8, phy, X_lv;
         maxiter = 120, tol = 1e-10)
-    theta_plain = vcat(beta, vec(alpha_lv), GLLVM.pack_lambda(Lambda))
-    ll_plain = -GLLVM.binomial_lv_nll_packed(
+    theta_plain = vcat(beta, vec(alpha_lv), GLLVModels.pack_lambda(Lambda))
+    ll_plain = -GLLVModels.binomial_lv_nll_packed(
         theta_plain, Y, N, p, K, LogitLink(); X_lv = X_lv, q_lv = q_lv,
         maxiter = 120, tol = 1e-10)
     @test isapprox(ll_joint0, ll_plain; atol = 2e-3)
 
     sigma2 = 0.45
     Lambda0 = zeros(p, K)
-    ll_phylo_only = GLLVM._phylo_binomial_xlv_marginal_loglik(
+    ll_phylo_only = GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, N, beta, Lambda0, alpha_lv, sigma2, phy, X_lv;
         maxiter = 120, tol = 1e-10)
     ll_phylo_glm = phylo_glm_marginal_loglik(
@@ -116,7 +116,7 @@ end
         link = LogitLink(), maxiter = 120, tol = 1e-10)
     @test isapprox(ll_phylo_only, ll_phylo_glm; atol = 1e-7)
 
-    ll_sparse_aug = GLLVM._phylo_binomial_xlv_marginal_loglik(
+    ll_sparse_aug = GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, N, beta, Lambda, alpha_lv, sigma2, phy, X_lv;
         maxiter = 120, tol = 1e-10)
     ll_dense_leaf = _dense_leaf_phylo_binomial_xlv_loglik(
@@ -124,37 +124,37 @@ end
     @test isapprox(ll_sparse_aug, ll_dense_leaf; atol = 1e-6)
     @test isfinite(ll_sparse_aug)
 
-    @test GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, N, beta, Lambda, alpha_lv, 0.0, phy, X_lv) == -Inf
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y[1:5, :], N[1:5, :], beta, Lambda, alpha_lv, sigma2, phy, X_lv)
-    @test_throws DimensionMismatch GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test_throws DimensionMismatch GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, N[1:5, :], beta, Lambda, alpha_lv, sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, fill(0, p, n), beta, Lambda, alpha_lv, sigma2, phy, X_lv)
     N_bad = Float64.(N)
     N_bad[1, 1] += 0.5
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, N_bad, beta, Lambda, alpha_lv, sigma2, phy, X_lv)
     Y_frac = Float64.(Y)
     Y_frac[1, 1] += 0.5
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y_frac, N, beta, Lambda, alpha_lv, sigma2, phy, X_lv)
     Y_bad = copy(Y)
     Y_bad[1, 1] = N[1, 1] + 1
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y_bad, N, beta, Lambda, alpha_lv, sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, N, beta, Lambda, alpha_lv, sigma2, phy, X_lv[1:(end - 1), :])
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, N, beta, Lambda, ones(2, K), sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_marginal_loglik(
         Y, N, beta, Lambda, alpha_lv, sigma2, phy, X_lv; link = ProbitLink())
 end
 
 @testset "Phylo x Binomial B_eta_realized selected-entry canary" begin
     Random.seed!(733)
-    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    phy = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p = phy.n_leaves
     n = 30
     K = 1
@@ -168,12 +168,12 @@ end
     Z_truth = X_lv * alpha_lv + epsilon
     eta = beta .+ Lambda * transpose(Z_truth)
     N = fill(28, p, n)
-    prob = clamp.(GLLVM.linkinv.(Ref(LogitLink()), eta), 1e-4, 1 - 1e-4)
+    prob = clamp.(GLLVModels.linkinv.(Ref(LogitLink()), eta), 1e-4, 1 - 1e-4)
     Y = clamp.(round.(Int, N .* prob), 0, N)
 
     # Deterministic positive-control counts keep the canary focused on
     # selected-entry LR routing. This is not a source-variance recovery test.
-    fit = GLLVM._fit_phylo_binomial_xlv(
+    fit = GLLVModels._fit_phylo_binomial_xlv(
         Y, N, phy; K = K, X_lv = X_lv,
         beta_init = beta, Lambda_init = Lambda, alpha_lv_init = alpha_lv,
         sigma2_phy_init = sigma2,
@@ -183,8 +183,8 @@ end
     @test isfinite(fit.loglik)
     @test fit.sigma2_phy > 0
 
-    eta_target = vec(GLLVM._eta_realized_lv_effects(X_lv, Z_truth, Lambda))
-    prof = GLLVM._phylo_binomial_xlv_profile_eta_realized(
+    eta_target = vec(GLLVModels._eta_realized_lv_effects(X_lv, Z_truth, Lambda))
+    prof = GLLVModels._phylo_binomial_xlv_profile_eta_realized(
         fit, Y, N, phy, X_lv, [1], eta_target;
         level = 0.95, profile_iterations = 700,
         newton_maxiter = 120, newton_tol = 1e-10)
@@ -202,16 +202,16 @@ end
     @test prof.covered == [true]
     @test prof.pd_hessian
 
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_profile_eta_realized(
         fit, Y, N, phy, X_lv, Int[], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_profile_eta_realized(
         fit, Y, N, phy, X_lv, [1, 1], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_profile_eta_realized(
         fit, Y, N, phy, X_lv, [p + 1], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_profile_eta_realized(
         fit, Y, N, phy, X_lv, [1], eta_target[1:(end - 1)])
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_profile_eta_realized(
         fit, Y, N, phy, X_lv, [1], eta_target; profile_iterations = 0)
-    @test_throws ArgumentError GLLVM._phylo_binomial_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_binomial_xlv_profile_eta_realized(
         fit, Y, N, phy, X_lv, [1], eta_target; endpoint_step = -0.1)
 end

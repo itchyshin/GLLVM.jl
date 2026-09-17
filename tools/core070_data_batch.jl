@@ -1,6 +1,6 @@
 # Runtime evidence that no Julia surface exists yet for any of the 28
 # planned data-area cases in docs/dev-log/core070/data-batch-contract.json.
-# Loads the actual GLLVM module and checks, for every planned_surface_group
+# Loads the actual GLLVModels module and checks, for every planned_surface_group
 # in that contract (candidate_exported_symbols / candidate_kwargs, duplicated
 # here rather than JSON-parsed, to avoid adding a JSON dependency -- see
 # tools/core070_masks_known.jl for the same no-external-dependency convention
@@ -11,7 +11,7 @@
 #
 # Usage: julia --project=<repo> tools/core070_data_batch.jl [output.json]
 
-using GLLVM
+using GLLVModels
 
 const CONTRACT_PATH = joinpath(@__DIR__, "..", "docs", "dev-log", "core070", "data-batch-contract.json")
 const REFERENCE_COMMIT = "b4d5fee64def88bc768dda1f1f77c29b295edd86"
@@ -55,16 +55,16 @@ function kwarg_names(f)
     names_seen
 end
 
-exported = Set(string.(names(GLLVM)))
+exported = Set(string.(names(GLLVModels)))
 entry_point_kwargs = Dict{String,Set{Symbol}}(
-    "gllvm" => isdefined(GLLVM, :gllvm) ? kwarg_names(GLLVM.gllvm) : Set{Symbol}(),
-    "fit_gllvm" => isdefined(GLLVM, :fit_gllvm) ? kwarg_names(GLLVM.fit_gllvm) : Set{Symbol}(),
+    "gllvm" => isdefined(GLLVModels, :gllvm) ? kwarg_names(GLLVModels.gllvm) : Set{Symbol}(),
+    "fit_gllvm" => isdefined(GLLVModels, :fit_gllvm) ? kwarg_names(GLLVModels.fit_gllvm) : Set{Symbol}(),
 )
 
 surfaces_out = Dict{String,Any}()
 all_absent = true
 for (group_name, candidate_symbols, candidate_kwargs) in PLANNED_SURFACES
-    found_symbols = [s for s in candidate_symbols if isdefined(GLLVM, Symbol(s))]
+    found_symbols = [s for s in candidate_symbols if isdefined(GLLVModels, Symbol(s))]
     found_kwargs = String[]
     for (entry, kws) in entry_point_kwargs
         for ck in candidate_kwargs

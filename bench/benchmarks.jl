@@ -1,4 +1,4 @@
-# BenchmarkTools.jl suite for the Gaussian GLLVM engine.
+# BenchmarkTools.jl suite for the Gaussian GLLVModels engine.
 #
 # Mirrors the 6 cells used in the external R-vs-Julia benchmark
 # (gllvmTMB-julia-bench/report/grid-bench.md): small / medium / large,
@@ -11,14 +11,14 @@
 #     include("bench/benchmarks.jl"); run(SUITE)
 
 using BenchmarkTools, Random, Distributions, LinearAlgebra
-using GLLVM
+using GLLVModels
 
 const SUITE = BenchmarkGroup()
 
 """
     _make_fixture(n_sites, n_species, K, has_intercept; seed)
 
-Synthetic Gaussian-GLLVM fixture matching the 6 J2-bench-grid cells.
+Synthetic Gaussian-GLLVModels fixture matching the 6 J2-bench-grid cells.
 Returns `(y, K, X)` where `y` is `(p, n_sites)`, and `X` is either
 `nothing` (no-X) or a `(p, n_sites, q)` indicator design with q = p
 (one intercept per trait — the simplest +X cell).

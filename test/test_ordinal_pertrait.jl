@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 
 @testset "Ordinal per-trait cutpoints" begin
     Y = [
@@ -23,7 +23,7 @@ using GLLVM
     @test all(isnan, fit.τ[3, 2:3])
     @test issorted(fit.τ[1, 1:2])
     @test issorted(fit.τ[2, 1:3])
-    @test GLLVM._nparams(fit) == size(Y, 1) + GLLVM.rr_theta_len(size(Y, 1), K) +
+    @test GLLVModels._nparams(fit) == size(Y, 1) + GLLVModels.rr_theta_len(size(Y, 1), K) +
                                   sum(C .- 2)
     @test isfinite(fit.loglik)
 
@@ -49,8 +49,8 @@ using GLLVM
     τmat = repeat(reshape(τ, 1, :), size(Ys, 1), 1)
     Cs = fill(3, size(Ys, 1))
     @test isapprox(
-        GLLVM.ordinal_marginal_loglik_laplace(Ys, Λ, τ),
-        GLLVM.ordinal_marginal_loglik_laplace_pertrait(Ys, Λ, τmat, Cs);
+        GLLVModels.ordinal_marginal_loglik_laplace(Ys, Λ, τ),
+        GLLVModels.ordinal_marginal_loglik_laplace_pertrait(Ys, Λ, τmat, Cs);
         atol = 1e-10,
         rtol = 0,
     )
@@ -78,7 +78,7 @@ end
     @test all(isfinite, br.cutpoints[2, 1:3])
     @test isfinite(br.cutpoints[3, 1])
     @test all(isnan, br.cutpoints[3, 2:3])
-    @test br.df == size(Y, 1) + GLLVM.rr_theta_len(size(Y, 1), K) +
+    @test br.df == size(Y, 1) + GLLVModels.rr_theta_len(size(Y, 1), K) +
                    sum(br.n_categories .- 2)
     @test !(:ci_method in keys(br))
     @test_throws ArgumentError bridge_fit(; y = Y, family = "ordinal_probit", d = K,

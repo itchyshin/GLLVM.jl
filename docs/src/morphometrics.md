@@ -1,13 +1,13 @@
-# Morphometrics: the simplest GLLVM
+# Morphometrics: the simplest GLLVModels
 
-The simplest place to meet a GLLVM is **morphometrics** — several size or shape
+The simplest place to meet a GLLVModels is **morphometrics** — several size or shape
 measurements taken on each individual. Body parts grow together, so the
-measurements are correlated; a GLLVM asks *how many underlying axes of variation
+measurements are correlated; a GLLVModels asks *how many underlying axes of variation
 drive that correlation, and how much of each trait is shared versus
 trait-specific.*
 
 This worked example simulates a small morphometric dataset, fits a two-factor
-Gaussian GLLVM, and reads the answer off the fit.
+Gaussian GLLVModels, and reads the answer off the fit.
 
 ## Simulate measurements
 
@@ -16,7 +16,7 @@ general "size" axis that loads on every trait, and a "shape" axis that contrasts
 two groups of traits:
 
 ```julia
-using GLLVM, Random
+using GLLVModels, Random
 Random.seed!(7)
 
 n, p, K = 150, 8, 2

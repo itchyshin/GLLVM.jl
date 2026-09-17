@@ -1,4 +1,4 @@
-# test_lognormal_parity.jl — one-part lognormal GLLVM logLik vs gllvmTMB (twin fid 3)
+# test_lognormal_parity.jl — one-part lognormal GLLVModels logLik vs gllvmTMB (twin fid 3)
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
 #
@@ -17,7 +17,7 @@
 # Twin Δ rule: no number is quoted unless this cell runs live under
 # GLLVM_PARITY_TESTS=1 against a real gllvmTMB. Never invent, never carry over.
 
-using GLLVM, RCall, Test, Random, LinearAlgebra
+using GLLVModels, RCall, Test, Random, LinearAlgebra
 
 # parity_helpers.jl is included once by runparity.jl
 
@@ -38,7 +38,7 @@ function _lognormal_sim(p, K, n; seed = _LN_SEED)
     return Y
 end
 
-@testset "lognormal GLLVM parity: GLLVM.jl vs gllvmTMB (twin fid 3)" begin
+@testset "lognormal GLLVModels parity: GLLVModels.jl vs gllvmTMB (twin fid 3)" begin
 
     p, K, n = 5, 2, 60
     Y = _lognormal_sim(p, K, n)

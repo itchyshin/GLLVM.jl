@@ -1,4 +1,4 @@
-using GLLVM, Test, SparseArrays
+using GLLVModels, Test, SparseArrays
 
 # Quality battery. Aqua (hygiene) + JET (type-stability) live in
 # test/Project.toml, so they run under `Pkg.test()` (the full suite — what CI
@@ -14,8 +14,8 @@ _HAS_JET  && @eval using JET
     @testset "Aqua (package hygiene)" begin
         if _HAS_AQUA
             # ambiguities=false: method ambiguities here originate in
-            # dependencies, not GLLVM, so they are noise for this hygiene gate.
-            Aqua.test_all(GLLVM; ambiguities = false)
+            # dependencies, not GLLVModels, so they are noise for this hygiene gate.
+            Aqua.test_all(GLLVModels; ambiguities = false)
         else
             @info "Aqua not in this environment — run `Pkg.test()` for the full battery"
             @test_skip false

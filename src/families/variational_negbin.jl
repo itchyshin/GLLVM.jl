@@ -1,4 +1,4 @@
-# Gaussian-variational (VA / ELBO) marginal for the Negative-Binomial (NB2) GLLVM
+# Gaussian-variational (VA / ELBO) marginal for the Negative-Binomial (NB2) GLLVModels
 # with log link — the non-conjugate companion to the Poisson VA in
 # families/variational.jl. Where Poisson admits a closed-form E_q[e^η], the NB2
 # log-pmf has no Gaussian-conjugate expectation, so the per-trait expectation
@@ -239,7 +239,7 @@ end
     nb_marginal_loglik_va(Y, Λ, β, r; maxiter=100, tol=1e-9, gh=20) -> Float64
 
 Gaussian-variational (VA) log-marginal lower bound (ELBO) over the `n` sites
-(columns) of a negative-binomial (NB2) GLLVM with log link — `Y` the p×n integer
+(columns) of a negative-binomial (NB2) GLLVModels with log link — `Y` the p×n integer
 count matrix, `Λ` p×K, `β` length-p, dispersion `r > 0` (`Var = μ + μ²/r`). The
 per-site variational posterior `q(z_s)=N(m_s, diag(v_s))` is profiled out by jointly
 minimising the negative ELBO over `[m; logv]`; the per-trait expectation is
@@ -268,7 +268,7 @@ end
 """
     fit_nb_gllvm_va(Y; K, link=LogLink(), …) -> NBFit
 
-Fit a negative-binomial (NB2) GLLVM by maximising the **variational** lower bound
+Fit a negative-binomial (NB2) GLLVModels by maximising the **variational** lower bound
 ([`nb_marginal_loglik_va`](@ref)) over `[β; vec(Λ); log r]` with L-BFGS, jointly
 estimating the dispersion `r` — the VA counterpart of [`fit_nb_gllvm`](@ref)
 (which maximises the Laplace marginal). `Y` is a p×n integer count matrix; `K` the

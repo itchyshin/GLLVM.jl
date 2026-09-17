@@ -26,7 +26,7 @@
 #
 # DEPENDENCIES (MUST be loaded before this file)
 # -----------------------------------------------
-# This file is `include`d by `src/GLLVM.jl` AFTER `sparse_phy_grad.jl` (which
+# This file is `include`d by `src/GLLVModels.jl` AFTER `sparse_phy_grad.jl` (which
 # itself `include`s `takahashi_selinv.jl`) and `sparse_phy.jl`. It relies on
 # those already being in module scope:
 #   * `SparsePhyState`, `build_sparse_phy_state`, `sparse_phy_value`,

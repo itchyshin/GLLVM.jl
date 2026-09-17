@@ -1,14 +1,14 @@
-# test_binomial_parity.jl — Binomial (Bernoulli) GLLVM logLik vs gllvmTMB
+# test_binomial_parity.jl — Binomial (Bernoulli) GLLVModels logLik vs gllvmTMB
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
 # Same-model bar: per-trait intercepts + latent unique=FALSE (no Ψ).
 # Inventory: docs/dev-log/plans/scratch/2026-08-01-correctness-inventory.md
 
-using GLLVM, RCall, Test, Random, LinearAlgebra
+using GLLVModels, RCall, Test, Random, LinearAlgebra
 
 # parity_helpers.jl is included once by runparity.jl
 
-@testset "Binomial GLLVM parity: GLLVM.jl vs gllvmTMB" begin
+@testset "Binomial GLLVModels parity: GLLVModels.jl vs gllvmTMB" begin
     Random.seed!(43)
     p, K, n = 5, 2, 60
     β = [-0.5, 0.0, 0.5, -0.2, 0.3]

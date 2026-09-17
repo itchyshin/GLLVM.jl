@@ -1,5 +1,5 @@
 # Retained evidence runner for the "inference" manifest-area batch (45
-# EXECUTABLE_NOW routing cases + 2 negative controls). Exercises GLLVM.jl's
+# EXECUTABLE_NOW routing cases + 2 negative controls). Exercises GLLVModels.jl's
 # own confidence-interval method-routing surface (confint/profile_ci/
 # bootstrap_ci for packed theta terms; the derived-quantity wald_ci/
 # profile_ci_derived/bootstrap_ci_derived family for communality/rho/
@@ -15,7 +15,7 @@
 # Usage:
 #   julia --project=<repo-root> tools/core070_inference_batch.jl <repo-root> <destination>
 #
-# argv[1] <repo-root>   the GLLVM.jl checkout to activate and to pin source
+# argv[1] <repo-root>   the GLLVModels.jl checkout to activate and to pin source
 #                        hashes from (this script does not read from any other
 #                        tree; there is no "installed package" path).
 # argv[2] <destination> output directory; MUST NOT already exist (this script
@@ -31,7 +31,7 @@ isdir(destination) && error("destination already exists (refusing to overwrite r
 mkpath(destination)
 
 Pkg.activate(repo_root; io = devnull)
-using GLLVM, Random, LinearAlgebra, SHA
+using GLLVModels, Random, LinearAlgebra, SHA
 
 sha256_file(path) = bytes2hex(open(SHA.sha256, path))
 
@@ -67,7 +67,7 @@ for s in 1:n
 end
 fitA = fit_gaussian_gllvm(YA; K = K, X = XA, aghq = 3)
 fitA.converged || error("fixture A did not converge")
-GLLVM._has_gaussian_record(fitA) || error(
+GLLVModels._has_gaussian_record(fitA) || error(
     "fixture A must be an AGHQ Gaussian record (_has_gaussian_record); the " *
     "confint(method::Symbol) validation route this batch exercises for " *
     "Lambda/beta/sigma_eps only exists on that path (src/confint.jl:359-370, " *
@@ -97,12 +97,12 @@ for s in 1:n
 end
 fitS = fit_gaussian_gllvm(YS; K = K, has_diag = true, has_phy_unique = true, Σ_phy = Σ_phy)
 fitS.converged || error("fixture S did not converge")
-GLLVM._has_gaussian_record(fitS) && error("fixture S was expected to be a plain (non-AGHQ-record) fit")
+GLLVModels._has_gaussian_record(fitS) && error("fixture S was expected to be a plain (non-AGHQ-record) fit")
 
-specS = GLLVM._derived_spec(fitS)
-communality_packed_1 = θ -> GLLVM._communality_packed(θ, specS, 1)
-correlation_closure_12 = GLLVM._make_correlation_closure(specS, 1, 2)
-phylo_signal_closure_1 = GLLVM._make_phylo_signal_closure(specS, 1)
+specS = GLLVModels._derived_spec(fitS)
+communality_packed_1 = θ -> GLLVModels._communality_packed(θ, specS, 1)
+correlation_closure_12 = GLLVModels._make_correlation_closure(specS, 1, 2)
+phylo_signal_closure_1 = GLLVModels._make_phylo_signal_closure(specS, 1)
 
 # ---------------------------------------------------------------------------
 # Route classifier: distinguishes which CI solver ran by the *shape* of the
@@ -207,31 +207,31 @@ push!(cases, Case("CI-ROUTE-063", "CORE070-INFERENCE-SIGMA-PHY-CI-METHOD-ROUTE",
 push!(cases, Case("CI-ROUTE-022", "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
     () -> communality_wald_ci(fitS, 1; y = YS, Σ_phy = Σ_phy), :wald_derived))
 push!(cases, Case("CI-ROUTE-023", "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
-    () -> GLLVM.profile_ci_derived(fitS, communality_packed_1; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
+    () -> GLLVModels.profile_ci_derived(fitS, communality_packed_1; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
 push!(cases, Case("CI-ROUTE-024", "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
     () -> communality_wald_ci(fitS, 1; y = YS, Σ_phy = Σ_phy), :wald_derived))
 push!(cases, Case("CI-ROUTE-025", "CORE070-INFERENCE-COMMUNALITY-CI-METHOD-ROUTE",
-    () -> GLLVM.bootstrap_ci_derived(fitS, f -> communality(f)[1]; y = YS, Σ_phy = Σ_phy, n_boot = 6, seed = 9), :bootstrap))
+    () -> GLLVModels.bootstrap_ci_derived(fitS, f -> communality(f)[1]; y = YS, Σ_phy = Σ_phy, n_boot = 6, seed = 9), :bootstrap))
 
 # --- rho (fixture S, pair 1,2) ----------------------------------------------
 push!(cases, Case("CI-ROUTE-029", "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
     () -> correlation_wald_ci(fitS, 1, 2; y = YS, Σ_phy = Σ_phy), :wald_derived))
 push!(cases, Case("CI-ROUTE-030", "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
-    () -> GLLVM.profile_ci_derived(fitS, correlation_closure_12; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
+    () -> GLLVModels.profile_ci_derived(fitS, correlation_closure_12; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
 push!(cases, Case("CI-ROUTE-032", "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
-    () -> GLLVM.bootstrap_ci_derived(fitS, f -> correlation(f)[1, 2]; y = YS, Σ_phy = Σ_phy, n_boot = 6, seed = 10), :bootstrap))
+    () -> GLLVModels.bootstrap_ci_derived(fitS, f -> correlation(f)[1, 2]; y = YS, Σ_phy = Σ_phy, n_boot = 6, seed = 10), :bootstrap))
 push!(cases, Case("CI-ROUTE-034", "CORE070-INFERENCE-RHO-CI-METHOD-ROUTE",
     () -> correlation_wald_ci(fitS, 1, 2; y = YS, Σ_phy = Σ_phy), :wald_derived))
 
 # --- phylo_signal (fixture S, trait 1) --------------------------------------
 push!(cases, Case("CI-ROUTE-015", "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
-    () -> GLLVM.profile_ci_derived(fitS, phylo_signal_closure_1; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
+    () -> GLLVModels.profile_ci_derived(fitS, phylo_signal_closure_1; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
 push!(cases, Case("CI-ROUTE-016", "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
-    () -> GLLVM.profile_ci_derived(fitS, phylo_signal_closure_1; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
+    () -> GLLVModels.profile_ci_derived(fitS, phylo_signal_closure_1; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
 push!(cases, Case("CI-ROUTE-017", "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
     () -> phylo_signal_wald_ci(fitS, 1; y = YS, Σ_phy = Σ_phy), :wald_derived))
 push!(cases, Case("CI-ROUTE-018", "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUTE",
-    () -> GLLVM.bootstrap_ci_derived(fitS, f -> phylo_signal(f)[1]; y = YS, Σ_phy = Σ_phy, n_boot = 6, seed = 11), :bootstrap))
+    () -> GLLVModels.bootstrap_ci_derived(fitS, f -> phylo_signal(f)[1]; y = YS, Σ_phy = Σ_phy, n_boot = 6, seed = 11), :bootstrap))
 
 # --- proportion:shared_unit (fixture S, trait 1, via icc_wald_ci reuse) -----
 # proportions(fit; component=:shared) is mathematically identical to
@@ -243,11 +243,11 @@ push!(cases, Case("CI-ROUTE-018", "CORE070-INFERENCE-PHYLO-SIGNAL-CI-METHOD-ROUT
 push!(cases, Case("CI-ROUTE-036", "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
     () -> icc_wald_ci(fitS, communality_packed_1; y = YS, Σ_phy = Σ_phy), :wald_derived))
 push!(cases, Case("CI-ROUTE-037", "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
-    () -> GLLVM.profile_ci_derived(fitS, communality_packed_1; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
+    () -> GLLVModels.profile_ci_derived(fitS, communality_packed_1; y = YS, Σ_phy = Σ_phy, penalty_weight = 1e4), :profile))
 push!(cases, Case("CI-ROUTE-038", "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
     () -> icc_wald_ci(fitS, communality_packed_1; y = YS, Σ_phy = Σ_phy), :wald_derived))
 push!(cases, Case("CI-ROUTE-039", "CORE070-INFERENCE-PROPORTION-CI-METHOD-ROUTE",
-    () -> GLLVM.bootstrap_ci_derived(fitS, f -> GLLVM.proportions(f; component = :shared)[1]; y = YS, Σ_phy = Σ_phy, n_boot = 6, seed = 12), :bootstrap))
+    () -> GLLVModels.bootstrap_ci_derived(fitS, f -> GLLVModels.proportions(f; component = :shared)[1]; y = YS, Σ_phy = Σ_phy, n_boot = 6, seed = 12), :bootstrap))
 
 length(cases) == 45 || error("internal: expected 45 executable cases, built $(length(cases))")
 
@@ -367,7 +367,7 @@ write_json_file(results_path, Dict(
     "all_positive_pass" => all_ok,
     "negative_controls_behaved_as_expected" => negatives_ok,
     "julia_version" => string(VERSION),
-    "gllvm_pkg_version" => string(Base.pkgversion(GLLVM)),
+    "gllvm_pkg_version" => string(Base.pkgversion(GLLVModels)),
     "source_pins" => source_pins,
     "generated_at_epoch_seconds" => round(Int, time()),
     "cases" => results,

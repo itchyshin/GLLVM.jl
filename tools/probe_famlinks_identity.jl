@@ -5,7 +5,7 @@
 #
 # argv: ARGS[1] = path to wave4-famlinks2/r-oracle.json
 
-using GLLVM
+using GLLVModels
 include(joinpath(@__DIR__, "core070_cross_objective.jl"))
 
 # Reuse the batch's minimal JSON reader by parsing with a tiny regex-free
@@ -79,7 +79,7 @@ function json_read(path::AbstractString)
 end
 
 oracle = json_read(ARGS[1])
-for (key, link) in (("probit", GLLVM.ProbitLink()), ("cloglog", GLLVM.CLogLogLink()))
+for (key, link) in (("probit", GLLVModels.ProbitLink()), ("cloglog", GLLVModels.CLogLogLink()))
     c = oracle[key]
     p = Int(c["p"]); n = Int(c["n"]); K = Int(c["K"])
     # "y" is the flat vector as R serialized matrix(Y, p, n) column-major

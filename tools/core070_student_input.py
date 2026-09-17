@@ -38,9 +38,9 @@ def run(phase):
     for name in (TEST, NEIGHBOUR):
         shutil.copy2(ROOT/name, destination/name)
     runner = destination/'run.jl'
-    runner.write_text('using GLLVM, Test\n'
-        '@assert realpath(pathof(GLLVM)) == realpath(joinpath(@__DIR__, "src/GLLVM.jl"))\n'
-        'println("PACKAGE_PATH ", pathof(GLLVM)); println("JULIA_VERSION ", VERSION)\n'
+    runner.write_text('using GLLVModels, Test\n'
+        '@assert realpath(pathof(GLLVModels)) == realpath(joinpath(@__DIR__, "src/GLLVModels.jl"))\n'
+        'println("PACKAGE_PATH ", pathof(GLLVModels)); println("JULIA_VERSION ", VERSION)\n'
         f'include("{TEST}")\n' +
         (f'include("{NEIGHBOUR}")\nprintln("STUDENT_INPUT_AND_SCALAR_PASS")\n' if phase == 'green' else ''))
     env = dict(os.environ, JULIA_DEPOT_PATH=str(ENVIRONMENT/'depot')+':/Users/z3437171/.julia',

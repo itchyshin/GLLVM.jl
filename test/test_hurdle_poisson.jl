@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions
 
 # zero-truncated Poisson draw
 function _rztpois(μ)
@@ -20,7 +20,7 @@ end
         for t in 1:p, s in 1:n
             rand() < π[t] && (Y[t, s] = _rztpois(μ[t]))
         end
-        ll = GLLVM.hurdle_poisson_marginal_loglik_laplace(Y, zeros(p, K), βz, βc)
+        ll = GLLVModels.hurdle_poisson_marginal_loglik_laplace(Y, zeros(p, K), βz, βc)
         ref = 0.0
         for t in 1:p, s in 1:n
             if Y[t, s] > 0
@@ -61,23 +61,23 @@ end
             rand() < π[t] && (Y[t, s] = _rztpois(exp(ηc[t, s])))
         end
         fit = fit_hurdle_poisson_gllvm(Y; K = K)
-        Zh = GLLVM.getLV(fit, Y; rotate = false)
+        Zh = GLLVModels.getLV(fit, Y; rotate = false)
         @test size(Zh) == (n, K)
         for s in 1:n
-            ẑ = GLLVM._twopart_mode(GLLVM.HurdlePoisson(), view(Y, :, s),
+            ẑ = GLLVModels._twopart_mode(GLLVModels.HurdlePoisson(), view(Y, :, s),
                                     zeros(p, K), fit.Λc, fit.βz, fit.βc)
             @test Zh[s, :] ≈ ẑ atol = 1e-7
         end
-        @test GLLVM.rotation(fit)' * GLLVM.rotation(fit) ≈ I(K) atol = 1e-10
-        @test all(GLLVM.predict(fit, Y; type = :response) .≥ 0)
-        @test all(0 .< GLLVM.predict(fit, Y; type = :occurrence) .< 1)
-        @test all(GLLVM.predict(fit, Y; type = :positive) .≥ 1)   # truncated mean ≥ 1
-        @test GLLVM.fitted(fit, Y) == GLLVM.predict(fit, Y; type = :response)
-        r = GLLVM.residuals(fit, Y; rng = MersenneTwister(2))
+        @test GLLVModels.rotation(fit)' * GLLVModels.rotation(fit) ≈ I(K) atol = 1e-10
+        @test all(GLLVModels.predict(fit, Y; type = :response) .≥ 0)
+        @test all(0 .< GLLVModels.predict(fit, Y; type = :occurrence) .< 1)
+        @test all(GLLVModels.predict(fit, Y; type = :positive) .≥ 1)   # truncated mean ≥ 1
+        @test GLLVModels.fitted(fit, Y) == GLLVModels.predict(fit, Y; type = :response)
+        r = GLLVModels.residuals(fit, Y; rng = MersenneTwister(2))
         @test all(isfinite, r)
         k = 2p + (p * K - div(K * (K - 1), 2))
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Hurdle-Poisson", s)
     end

@@ -1,7 +1,7 @@
 # Original seed58 target: inspect default and tighter public R fit health.
-using GLLVM, RCall, Test, Random, SHA, TOML
+using GLLVModels, RCall, Test, Random, SHA, TOML
 import Distributions
-@assert realpath(Base.pkgdir(GLLVM))==realpath(pwd())
+@assert realpath(Base.pkgdir(GLLVModels))==realpath(pwd())
 include(joinpath(pwd(),"test/parity/parity_helpers.jl"))
 fixture="test/parity/test_truncated_nbinom2_parity.jl";text=read(fixture,String)
 a=findfirst("    Random.seed!",text).start;b=findfirst("    jl_fit =",text).start-1
@@ -23,7 +23,7 @@ R"""
 """
 θ=native.theta_packed
 function objective(v)
- -GLLVM.truncated_nbinom2_pertrait_marginal_loglik_laplace(Y,GLLVM.unpack_lambda(v[p+1:2p],p,K),v[1:p],exp.(v[2p+1:3p]);hessian=:observed,maxiter=100,tol=1e-9)
+ -GLLVModels.truncated_nbinom2_pertrait_marginal_loglik_laplace(Y,GLLVModels.unpack_lambda(v[p+1:2p],p,K),v[1:p],exp.(v[2p+1:3p]);hessian=:observed,maxiter=100,tol=1e-9)
 end
 function fd(v,m)
  [begin

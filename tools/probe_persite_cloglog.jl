@@ -1,4 +1,4 @@
-using GLLVM
+using GLLVModels
 include(joinpath(@__DIR__, "core070_cross_objective.jl"))
 
 function json_read(path::AbstractString)
@@ -75,7 +75,7 @@ p = Int(c["p"]); n = Int(c["n"]); K = Int(c["K"])
 Y = reshape(Float64.(c["y"]), p, n)
 beta = Float64.(c["coef"])
 Lam = reshape(Float64.(c["loadings"]), p, K)
-link = GLLVM.CLogLogLink()
+link = GLLVModels.CLogLogLink()
 N = ones(p, n)
 
 # per-site contributions under fisher vs observed
@@ -83,8 +83,8 @@ println("K = ", K, "  p = ", p, "  n = ", n)
 gaps = Float64[]
 for i in 1:n
     y = view(Y, :, i); nn = view(N, :, i)
-    lf = GLLVM.laplace_loglik_site(GLLVM.Binomial(), y, nn, Lam, beta, link; hessian = :fisher)
-    lo = GLLVM.laplace_loglik_site(GLLVM.Binomial(), y, nn, Lam, beta, link; hessian = :observed)
+    lf = GLLVModels.laplace_loglik_site(GLLVModels.Binomial(), y, nn, Lam, beta, link; hessian = :fisher)
+    lo = GLLVModels.laplace_loglik_site(GLLVModels.Binomial(), y, nn, Lam, beta, link; hessian = :observed)
     push!(gaps, lo - lf)
 end
 idx = sortperm(abs.(gaps); rev = true)
@@ -101,7 +101,7 @@ using QuadGK
 function exact_marginal(y, beta, lam::AbstractVector, link)
     f(z) = begin
         eta = beta .+ lam .* z
-        mu = clamp.(GLLVM.linkinv.(Ref(link), eta), 1e-12, 1-1e-12)
+        mu = clamp.(GLLVModels.linkinv.(Ref(link), eta), 1e-12, 1-1e-12)
         ll = sum(y[t]*log(mu[t]) + (1-y[t])*log1p(-mu[t]) for t in eachindex(y))
         exp(ll) * exp(-0.5*z^2) / sqrt(2*pi)
     end
@@ -110,8 +110,8 @@ function exact_marginal(y, beta, lam::AbstractVector, link)
 end
 lam1 = Lam[:, 1]
 lq, err = exact_marginal(y, beta, lam1, link)
-lf = GLLVM.laplace_loglik_site(GLLVM.Binomial(), y, ones(p), lam1 |> x->reshape(x,p,1), beta, link; hessian=:fisher)
-lo = GLLVM.laplace_loglik_site(GLLVM.Binomial(), y, ones(p), reshape(lam1,p,1), beta, link; hessian=:observed)
+lf = GLLVModels.laplace_loglik_site(GLLVModels.Binomial(), y, ones(p), lam1 |> x->reshape(x,p,1), beta, link; hessian=:fisher)
+lo = GLLVModels.laplace_loglik_site(GLLVModels.Binomial(), y, ones(p), reshape(lam1,p,1), beta, link; hessian=:observed)
 println("site $i0: quadrature=", lq, " (quadgk err=", err, ")")
 println("  fisher   = ", lf, "  |gap to quad| = ", abs(lf-lq))
 println("  observed = ", lo, "  |gap to quad| = ", abs(lo-lq))

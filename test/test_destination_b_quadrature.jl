@@ -1,14 +1,14 @@
 using Test
 
 # QuadGK is a direct dependency of the isolated numerical-quality environment,
-# rather than of GLLVM's lean core project. Its absence in a bare core run is
+# rather than of GLLVModels's lean core project. Its absence in a bare core run is
 # intentionally visible as a skip: it is never interpreted as an oracle pass.
 if Base.find_package("QuadGK") === nothing
     @testset "Destination B scalar quadrature (QuadGK unavailable)" begin
         @test_skip false
     end
 else
-    using GLLVM
+    using GLLVModels
     using Distributions
     using QuadGK
     using SparseArrays
@@ -83,7 +83,7 @@ else
 
                 # Exact conditional check: a mismatch here is a normalization
                 # or objective-constant implementation error, not Laplace error.
-                no_effect = GLLVM.joint_grouped_laplace_loglik(
+                no_effect = GLLVModels.joint_grouped_laplace_loglik(
                     case.family, case.y, case.trials, X, [case.beta], spzeros(nobs, 0);
                     link = case.link,
                 )
@@ -95,7 +95,7 @@ else
 
                 # One W column is deliberately shared by all observations;
                 # this verifies a joint mode rather than per-observation modes.
-                shared_effect = GLLVM.joint_grouped_laplace_loglik(
+                shared_effect = GLLVModels.joint_grouped_laplace_loglik(
                     case.family, case.y, case.trials, X, [case.beta], sparse(ones(nobs, 1));
                     link = case.link,
                 )

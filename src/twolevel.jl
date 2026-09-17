@@ -1,4 +1,4 @@
-# Two-level (between- vs within-individual) reduced-rank Gaussian GLLVM —
+# Two-level (between- vs within-individual) reduced-rank Gaussian GLLVModels —
 # the behavioural-syndromes decomposition (paper Eq 11).
 #
 # Model, per trait t of observation j on individual i:
@@ -111,7 +111,7 @@ end
 """
     twolevel_marginal_loglik(y, individual, Λ_B, σ²_B, Λ_W, σ²_W) -> Real
 
-Marginal log-likelihood of the Gaussian two-level reduced-rank GLLVM
+Marginal log-likelihood of the Gaussian two-level reduced-rank GLLVModels
 (behavioural-syndromes decomposition, paper Eq 11). `y` is `p × n_obs` (each
 column one observation, observation-major); `individual` a length-`n_obs` vector
 assigning each observation to an individual. The between-individual block
@@ -182,7 +182,7 @@ end
 """
     fit_twolevel_gaussian(y, individual; K_B, K_W, center=true, …) -> TwoLevelFit
 
-Fit the Gaussian two-level reduced-rank GLLVM (behavioural-syndromes
+Fit the Gaussian two-level reduced-rank GLLVModels (behavioural-syndromes
 decomposition). `y` is `p × n_obs` (observation-major columns); `individual` a
 length-`n_obs` grouping vector. `K_B` / `K_W` are the between- / within-individual
 reduced-rank dimensions. By default the per-trait grand mean is removed

@@ -11,7 +11,7 @@
 # CI covers 0; NULL-B B_lv cor=1.0. This is smoke evidence only; interval
 # calibration waits for the full DRAC campaign.
 
-using GLLVM, Random, LinearAlgebra, Distributions, Statistics
+using GLLVModels, Random, LinearAlgebra, Distributions, Statistics
 
 p, n, K, q_lv, K_phy = 4, 200, 1, 1, 1
 Λ_B   = reshape([0.8, -0.5, 0.4, -0.6], p, K)

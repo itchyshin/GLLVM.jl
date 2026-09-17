@@ -1,4 +1,4 @@
-# Cross-Validation (CV) Engine for GLLVM.jl
+# Cross-Validation (CV) Engine for GLLVModels.jl
 #
 # Implements K-fold cross-validation supporting:
 #   - Random entry-wise (cell-level) split
@@ -64,7 +64,7 @@ StatsAPI.predict(res::CVResult) = res.predictions
 StatsAPI.fitted(res::CVResult) = res.predictions
 
 function Base.show(io::IO, ::MIME"text/plain", res::CVResult)
-    println(io, "GLLVM $(res.k_folds)-Fold Cross-Validation ($(res.split) split)")
+    println(io, "GLLVModels $(res.k_folds)-Fold Cross-Validation ($(res.split) split)")
     println(io, "  Out-of-sample logLik: ", @sprintf("%.4f", res.loglik))
     println(io, "  Out-of-sample MSE:    ", @sprintf("%.6f", res.mse))
     println(io, "  Residual Mean:        ", @sprintf("%.4f", res.residual_mean), " (target ≈ 0)")
@@ -289,7 +289,7 @@ Dunn–Smyth randomized quantile residuals, predictions, and per-fold metrics.
 
 # Examples
 ```julia
-using GLLVM, Random
+using GLLVModels, Random
 
 # 5-fold random cell-level CV on count data
 Y = rand(0:10, 6, 40)

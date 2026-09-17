@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "fit_ordinal_gllvm" begin
     @testset "recovers ΛΛ' and ordered cutpoints" begin
@@ -11,7 +11,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         η = Λtrue * Z
         Y = Matrix{Int}(undef, p, n)
         for i in 1:n, t in 1:p
-            pr = [GLLVM._ord_prob(c, η[t, i], τtrue) for c in 1:C]
+            pr = [GLLVModels._ord_prob(c, η[t, i], τtrue) for c in 1:C]
             Y[t, i] = rand(Categorical(pr))
         end
 
@@ -32,7 +32,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         η = Λ * randn(1, n)
         Y = Matrix{Int}(undef, p, n)
         for i in 1:n, t in 1:p
-            pr = [GLLVM._ord_prob(c, η[t, i], τ) for c in 1:C]
+            pr = [GLLVModels._ord_prob(c, η[t, i], τ) for c in 1:C]
             Y[t, i] = rand(Categorical(pr))
         end
         f = fit_gllvm(Y; family = Ordinal(), K = 1)

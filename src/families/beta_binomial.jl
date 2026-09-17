@@ -29,8 +29,8 @@
 
 Beta-binomial family marker (gllvm `family="beta.binomial"`, enum 15). `φ > 0` is
 the Beta precision (the shape-sum `a+b`, i.e. the species dispersion). Named to
-avoid colliding with `Distributions.BetaBinomial` — with `using GLLVM,
-Distributions` both names are in scope, and `BetaBinom` is the GLLVM marker.
+avoid colliding with `Distributions.BetaBinomial` — with `using GLLVModels,
+Distributions` both names are in scope, and `BetaBinom` is the GLLVModels marker.
 Pass it to [`fit_gllvm`](@ref) or [`gllvm`](@ref):
 
 ```julia
@@ -162,7 +162,7 @@ end
     betabinomial_marginal_loglik_laplace(Y, N, Λ, β, φ; mask=nothing, link=LogitLink(),
                                          offset=nothing, maxiter=100, tol=1e-9) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of a beta-binomial GLLVM.
+Total Laplace log-marginal over the `n` sites (columns) of a beta-binomial GLLVModels.
 `Y` is a p×n matrix of integer successes; `N` the matching p×n trial counts; `Λ`
 p×K loadings; `β` length-p intercepts; `φ` the Beta precision (shape-sum). Runs
 its own per-site Laplace (single latent η, gllvm parameterisation `a=μφ, b=(1−μ)φ`,
@@ -207,7 +207,7 @@ end
                                                  link=LogitLink(), offset=nothing,
                                                  maxiter=100, tol=1e-9) -> Float64
 
-Total Laplace log-marginal of a beta-binomial GLLVM with **per-trait** Beta
+Total Laplace log-marginal of a beta-binomial GLLVModels with **per-trait** Beta
 precision `φvec` (length p; gllvm's `disp.group`, twin `log_phi_betabinom`).
 `Y` is the p×n matrix of integer successes; `N` the matching p×n trial counts;
 `Λ` p×K; `β` length-p. `offset` (`nothing`, or a p×n matrix such as `Xγ`) is
@@ -319,7 +319,7 @@ end
 """
     fit_beta_binomial_gllvm(Y; K, N=nothing, link=LogitLink(), φ_init=nothing, …) -> BetaBinomialFit
 
-Fit a beta-binomial GLLVM by L-BFGS on the Laplace marginal
+Fit a beta-binomial GLLVModels by L-BFGS on the Laplace marginal
 (`betabinomial_marginal_loglik_laplace`), jointly estimating the Beta precision
 `φ` (gllvm parameterisation `a=μφ, b=(1−μ)φ`). `Y` is a p×n matrix of integer
 successes; `N` the matching trial counts (default all-ones, i.e. Bernoulli-
@@ -491,7 +491,7 @@ end
     fit_beta_binomial_gllvm_grouped(Y; K, N=nothing, group=1:p, link=LogitLink(),
                                     mask=nothing, φ_init=nothing, …) -> BetaBinomialGroupedFit
 
-Fit a beta-binomial GLLVM with grouped / species-specific Beta precision
+Fit a beta-binomial GLLVModels with grouped / species-specific Beta precision
 (gllvm's `disp.group`; twin `log_phi_betabinom`): species `t` shares precision
 `φ[group[t]]`. `group` is a length-p vector of group ids (relabelled to `1..G`
 internally; default `1:p` = per-species). `N` is the matching p×n trial-count
@@ -662,7 +662,7 @@ end
                                         mask=nothing, γ_fixed=nothing, φ_init=nothing,
                                         …) -> BetaBinomialGroupedCovFit
 
-Fit a beta-binomial GLLVM with **grouped / per-trait Beta precision** and
+Fit a beta-binomial GLLVModels with **grouped / per-trait Beta precision** and
 **shared site covariates** `X` (`p×n×q`) — the twin default under X (decision
 `docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md`,
 API B: per-trait `φ_t` twin to gllvmTMB's `log_phi_betabinom` + shared `γ`).

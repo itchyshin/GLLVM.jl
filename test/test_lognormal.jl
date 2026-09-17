@@ -1,11 +1,11 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions, ForwardDiff
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions, ForwardDiff
 
 # Own-file harness: conductor has not yet include/export-wired lognormal.jl.
-# Load the family module file into GLLVM so focused tests run without editing
+# Load the family module file into GLLVModels so focused tests run without editing
 # shared choke points (see ADMIT.md).
-isf = isdefined(GLLVM, :fit_lognormal_gllvm)
+isf = isdefined(GLLVModels, :fit_lognormal_gllvm)
 if !isf
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "families", "lognormal.jl"))
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "families", "lognormal.jl"))
 end
 
 # Central FD (same stencil discipline as test_studentt.jl — avoid Float32 `2f0`).
@@ -34,7 +34,7 @@ end
         β = [0.4, 0.9, -0.2, 0.6]
         σ = 0.7
         Y = [_rlognormal(β[t], σ) for t in 1:p, s in 1:n]
-        ll = GLLVM.lognormal_marginal_loglik(Y, zeros(p, K), β, σ)
+        ll = GLLVModels.lognormal_marginal_loglik(Y, zeros(p, K), β, σ)
         ll_indep = sum(logpdf(LogNormal(β[t], σ), Y[t, s]) for t in 1:p, s in 1:n)
         @test ll ≈ ll_indep atol = 1e-8
     end
@@ -53,42 +53,42 @@ end
             end
         end
         Z = log.(Y)
-        ref = GLLVM.gaussian_marginal_loglik(Z .- β, Λ, σ) - sum(Z)
-        ll = GLLVM.lognormal_marginal_loglik(Y, Λ, β, σ)
+        ref = GLLVModels.gaussian_marginal_loglik(Z .- β, Λ, σ) - sum(Z)
+        ll = GLLVModels.lognormal_marginal_loglik(Y, Λ, β, σ)
         @test ll ≈ ref atol = 1e-9
     end
 
     @testset "response mean uses σ²/2 bias correction" begin
         η, σ = 0.5, 0.8
-        @test GLLVM.lognormal_response_mean(η, σ) ≈ exp(η + σ^2 / 2) atol = 0
-        @test GLLVM.lognormal_response_mean(η, σ) ≉ exp(η) atol = 1e-12
+        @test GLLVModels.lognormal_response_mean(η, σ) ≈ exp(η + σ^2 / 2) atol = 0
+        @test GLLVModels.lognormal_response_mean(η, σ) ≉ exp(η) atol = 1e-12
     end
 
     @testset "rejects y ≤ 0" begin
         Y = [1.0 2.0; 0.0 3.0]
-        @test_throws ArgumentError GLLVM.fit_lognormal_gllvm(Y; K = 1, iterations = 5)
+        @test_throws ArgumentError GLLVModels.fit_lognormal_gllvm(Y; K = 1, iterations = 5)
         Y2 = [1.0 2.0; -0.1 3.0]
-        @test_throws ArgumentError GLLVM.fit_lognormal_gllvm(Y2; K = 1, iterations = 5)
+        @test_throws ArgumentError GLLVModels.fit_lognormal_gllvm(Y2; K = 1, iterations = 5)
     end
 
     @testset "rejects non-LogLink" begin
         Y = exp.(randn(3, 20))
-        @test_throws ArgumentError GLLVM.fit_lognormal_gllvm(Y; K = 1,
-                                                       link = GLLVM.IdentityLink(),
+        @test_throws ArgumentError GLLVModels.fit_lognormal_gllvm(Y; K = 1,
+                                                       link = GLLVModels.IdentityLink(),
                                                        iterations = 5)
     end
 
     @testset "packed NLL FD vs ForwardDiff ≤ 1e-6" begin
         Random.seed!(503)
         p, n, K = 4, 12, 1
-        rr = GLLVM.rr_theta_len(p, K)
+        rr = GLLVModels.rr_theta_len(p, K)
         β0 = [0.4, 0.9, -0.2, 0.6]
-        Λ0 = GLLVM.pack_lambda(0.2 .* randn(p, K))
+        Λ0 = GLLVModels.pack_lambda(0.2 .* randn(p, K))
         σ_true = 0.7
         Y = [_rlognormal(β0[t], σ_true) for t in 1:p, s in 1:n]
         θ0 = vcat(β0, Λ0, log(σ_true))
-        f = θ -> -GLLVM.lognormal_marginal_loglik(
-            Y, GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        f = θ -> -GLLVModels.lognormal_marginal_loglik(
+            Y, GLLVModels.unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
             exp(θ[p + rr + 1]))
         gad = ForwardDiff.gradient(f, θ0)
         gfd = _ln_central_fd_gradient(f, θ0)
@@ -110,17 +110,17 @@ end
                 Y[t, s] = _rlognormal(β_true[t] + (Λ_true * z)[t], σ_true)
             end
         end
-        fit = GLLVM.fit_lognormal_gllvm(Y; K = K)
+        fit = GLLVModels.fit_lognormal_gllvm(Y; K = K)
         @info "lognormal fit" converged=fit.converged σ̂=fit.σ loglik=fit.loglik
-        @test fit isa GLLVM.LognormalFit
+        @test fit isa GLLVModels.LognormalFit
         @test size(fit.Λ) == (p, K)
-        @test length(fit.theta_packed) == p + GLLVM.rr_theta_len(p, K) + 1
+        @test length(fit.theta_packed) == p + GLLVModels.rr_theta_len(p, K) + 1
         @test isfinite(fit.loglik)
         @test maximum(abs.(fit.β .- β_true)) < 0.25
         @test cor(vec(fit.Λ * fit.Λ'), vec(Λ_true * Λ_true')) > 0.65
         @test fit.σ ≈ σ_true rtol = 0.25
         # Reported loglik includes Jacobian (not bare Gaussian-on-log).
         Z = log.(Y)
-        @test fit.loglik ≈ GLLVM.gaussian_marginal_loglik(Z .- fit.β, fit.Λ, fit.σ) - sum(Z) atol = 1e-6
+        @test fit.loglik ≈ GLLVModels.gaussian_marginal_loglik(Z .- fit.β, fit.Λ, fit.σ) - sum(Z) atol = 1e-6
     end
 end

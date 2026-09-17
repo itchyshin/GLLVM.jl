@@ -12,7 +12,7 @@
 #      Bit-identity is the honest claim: the kwarg must be plumbed and inert,
 #      not plumbed and quietly doing something unmeasured.
 
-using GLLVM, Test, Random
+using GLLVModels, Test, Random
 
 @testset "two-part hessian kwarg exposure" begin
     Random.seed!(7)
@@ -27,29 +27,29 @@ using GLLVM, Test, Random
     X = 0.2 .* randn(p, n, 2)
 
     @testset "invalid selector throws (all ten entry points)" begin
-        @test_throws ArgumentError GLLVM.fit_delta_lognormal_gllvm(Ypos; K, hessian = :bogus)
-        @test_throws ArgumentError GLLVM.fit_hurdle_poisson_gllvm(Ycount; K, hessian = :bogus)
-        @test_throws ArgumentError GLLVM.fit_hurdle_nb_gllvm(Ycount; K, hessian = :bogus)
-        @test_throws ArgumentError GLLVM.fit_zip_gllvm(Ycount; K, hessian = :bogus)
-        @test_throws ArgumentError GLLVM.fit_zinb_gllvm(Ycount; K, hessian = :bogus)
-        @test_throws ArgumentError GLLVM.fit_zib_gllvm(Ybin; K, N, hessian = :bogus)
-        @test_throws ArgumentError GLLVM.fit_beta_hurdle_gllvm(Yprop; K, hessian = :bogus)
-        @test_throws ArgumentError GLLVM.fit_zip_gllvm_cov(Ycount; X, K, hessian = :bogus)
-        @test_throws ArgumentError GLLVM.fit_zinb_gllvm_cov(Ycount; X, K, hessian = :bogus)
-        @test_throws ArgumentError GLLVM.fit_zib_gllvm_cov(Ybin; X, K, N, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_delta_lognormal_gllvm(Ypos; K, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_hurdle_poisson_gllvm(Ycount; K, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_hurdle_nb_gllvm(Ycount; K, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_zip_gllvm(Ycount; K, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_zinb_gllvm(Ycount; K, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_zib_gllvm(Ybin; K, N, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_beta_hurdle_gllvm(Yprop; K, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_zip_gllvm_cov(Ycount; X, K, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_zinb_gllvm_cov(Ycount; X, K, hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.fit_zib_gllvm_cov(Ybin; X, K, N, hessian = :bogus)
     end
 
     @testset ":fisher ≡ :observed bit-identical while the observed weight is unspecialised" begin
-        fo = GLLVM.fit_delta_lognormal_gllvm(Ypos; K, hessian = :observed)
-        ff = GLLVM.fit_delta_lognormal_gllvm(Ypos; K, hessian = :fisher)
+        fo = GLLVModels.fit_delta_lognormal_gllvm(Ypos; K, hessian = :observed)
+        ff = GLLVModels.fit_delta_lognormal_gllvm(Ypos; K, hessian = :fisher)
         @test fo.loglik == ff.loglik
 
-        zo = GLLVM.fit_zip_gllvm(Ycount; K, hessian = :observed)
-        zf = GLLVM.fit_zip_gllvm(Ycount; K, hessian = :fisher)
+        zo = GLLVModels.fit_zip_gllvm(Ycount; K, hessian = :observed)
+        zf = GLLVModels.fit_zip_gllvm(Ycount; K, hessian = :fisher)
         @test zo.loglik == zf.loglik
 
-        co = GLLVM.fit_zip_gllvm_cov(Ycount; X, K, hessian = :observed)
-        cf = GLLVM.fit_zip_gllvm_cov(Ycount; X, K, hessian = :fisher)
+        co = GLLVModels.fit_zip_gllvm_cov(Ycount; X, K, hessian = :observed)
+        cf = GLLVModels.fit_zip_gllvm_cov(Ycount; X, K, hessian = :fisher)
         @test co.loglik == cf.loglik
     end
 end

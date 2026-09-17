@@ -1,6 +1,6 @@
 # Latent-dimension selection — a practical workflow tool.
 #
-# Fits the same GLLVM at a sweep of latent dimensions K = 1:Kmax via the
+# Fits the same GLLVModels at a sweep of latent dimensions K = 1:Kmax via the
 # unified `fit_gllvm` dispatcher, records the information criteria (using the
 # same `_nparams`/`_loglik` path that `aic`/`bic` use), and picks the K that
 # minimises the chosen criterion. Each fit is guarded so a single failing K
@@ -93,7 +93,7 @@ end
 
 # Tidy table display, best row marked with '*'.
 function Base.show(io::IO, ::MIME"text/plain", sel::LVSelection)
-    println(io, "GLLVM latent-dimension selection (best K = ", sel.best_k, ")")
+    println(io, "GLLVModels latent-dimension selection (best K = ", sel.best_k, ")")
     println(io, "      K   nparams        logLik           AIC           BIC")
     for i in eachindex(sel.K)
         mark = sel.K[i] == sel.best_k ? "*" : " "

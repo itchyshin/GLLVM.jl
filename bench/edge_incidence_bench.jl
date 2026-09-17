@@ -20,9 +20,9 @@ using BenchmarkTools
 using Random
 using LinearAlgebra
 using SparseArrays
-using GLLVM
+using GLLVModels
 
-# Not exported by GLLVM (this branch keeps src/GLLVM.jl untouched). Pull
+# Not exported by GLLVModels (this branch keeps src/GLLVModels.jl untouched). Pull
 # the source files in directly so the benchmark is self-contained.
 include(joinpath(@__DIR__, "..", "src", "edge_incidence.jl"))
 include(joinpath(@__DIR__, "..", "src", "likelihood_edge_incidence.jl"))

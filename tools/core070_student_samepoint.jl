@@ -1,11 +1,11 @@
 # Original Student fixture; diagnostic decomposition, no replacement estimator.
-using GLLVM, RCall, Random, Distributions, LinearAlgebra, SHA, TOML, Test
+using GLLVModels, RCall, Random, Distributions, LinearAlgebra, SHA, TOML, Test
 length(ARGS)==2 || error("expected retained refinement and fresh output paths")
 retained_path, output=ARGS
 ispath(output) && error("fresh output required")
 get(ENV,"CORE070_PARITY_REQUIRED","")=="1" || error("required mode missing")
 startswith(lowercase(readchomp(`hostname`)),"totoro") || error("Totoro only")
-@assert realpath(Base.pkgdir(GLLVM))==realpath(pwd())
+@assert realpath(Base.pkgdir(GLLVModels))==realpath(pwd())
 include(joinpath(pwd(),"test/parity/parity_helpers.jl"))
 retained=TOML.parsefile(retained_path)
 fixture="test/parity/test_studentt_parity.jl"
@@ -65,7 +65,7 @@ for (label,theta) in points
         z=x[ids["z_B"]]
         value=sum(abs2,z)/2+n*log(2pi)/2
         for s in 1:n,t in 1:p
-            value-=GLLVM._glm_logpdf(StudentTFamily(nu[t],sigma[t]),beta[t]+lam[t]*z[s],1,Y[t,s])
+            value-=GLLVModels._glm_logpdf(StudentTFamily(nu[t],sigma[t]),beta[t]+lam[t]*z[s],1,Y[t,s])
         end
         value
     end
@@ -74,17 +74,17 @@ for (label,theta) in points
     # Actual reported loading reconstruction must match raw K1 coordinates.
     @rput lam
     R"stopifnot(isTRUE(all.equal(as.numeric(obj$report(full)$Lambda_B),as.numeric(lam),tolerance=1e-12)))"
-    native_hzz=[1+sum(lam[t]^2*GLLVM._glm_obs_weight(StudentTFamily(nu[t],sigma[t]),
+    native_hzz=[1+sum(lam[t]^2*GLLVModels._glm_obs_weight(StudentTFamily(nu[t],sigma[t]),
         beta[t]+lam[t]*z[s],1,1,Y[t,s],IdentityLink(),beta[t]+lam[t]*z[s]) for t in 1:p) for s in 1:n]
     r_hessian=rcopy(Matrix{Float64},R"full_hessian")
     r_hzz=r_hessian[ids["z_B"],ids["z_B"]]
     r_gradient=rcopy(Vector{Float64},R"as.numeric(full_gradient)")
-    native_gradient=GLLVM.ForwardDiff.gradient(native_joint,q)
+    native_gradient=GLLVModels.ForwardDiff.gradient(native_joint,q)
     native_j=native_joint(q); r_j=rcopy(Float64,R"joint_value")
     r_marginal=rcopy(Float64,R"marginal")
     r_reconstructed=r_j+sum(log,diag(r_hzz))/2-n*log(2pi)/2
     native_reconstructed=native_j+sum(log,native_hzz)/2-n*log(2pi)/2
-    native_actual=-GLLVM.studentt_marginal_loglik_laplace(Y,reshape(lam,p,1),beta,sigma;ν=nu)
+    native_actual=-GLLVModels.studentt_marginal_loglik_laplace(Y,reshape(lam,p,1),beta,sigma;ν=nu)
     row=Dict{String,Any}("id"=>label,"outer_parameters"=>theta,"full_parameters"=>q,"parameter_names"=>names,
         "r_joint"=>r_j,"native_joint"=>native_j,"joint_delta"=>native_j-r_j,
         "r_marginal"=>r_marginal,"r_reconstructed"=>r_reconstructed,

@@ -1,5 +1,5 @@
 # Diagnose the retained first binomial case; never replaces its failed receipt.
-using GLLVM, RCall, Test, LinearAlgebra, TOML, SHA
+using GLLVModels, RCall, Test, LinearAlgebra, TOML, SHA
 length(ARGS) == 2 || error("expected retained fixture path and fresh output directory")
 startswith(lowercase(readchomp(`hostname`)), "totoro") || error("Totoro diagnostic only")
 get(ENV, "CORE070_PARITY_REQUIRED", "") == "1" || error("required mode missing")

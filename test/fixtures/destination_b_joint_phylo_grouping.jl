@@ -41,7 +41,7 @@ end
 Return an independent, dense, two-trait oracle for the proposed joint Gaussian
 phylogenetic-plus-ordinary-grouped likelihood. The response is traits by
 observations, so `vectorized_response == vec(response)` has observation blocks
-with traits inside each block. Neither this fixture nor its NLL calls a GLLVM
+with traits inside each block. Neither this fixture nor its NLL calls a GLLVModels
 likelihood or optimiser.
 """
 function destination_b_joint_phylo_grouping_fixture()

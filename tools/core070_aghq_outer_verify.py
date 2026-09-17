@@ -17,7 +17,7 @@ def verify():
         original_test=archive.extractfile('test/test_aghq_outer.jl').read().decode()
     assert (ROOT/'test/test_aghq_outer.jl').read_text().startswith(original_test)
     assert intermediate['pins']['src/families/aghq_outer.jl']!=plan['pins']['src/families/aghq_outer.jl']
-    assert old['pins']['src/GLLVM.jl']!=plan['pins']['src/GLLVM.jl']
+    assert old['pins']['src/GLLVModels.jl']!=plan['pins']['src/GLLVModels.jl']
     assert re.search(r'AGHQ outer driver and numerical prerequisites\s*\|\s*262\s+262',log)
     assert plan['commands'][1]['argv'][-1]=='tools/core070_aghq_outer_run.jl'
     assert p['results'][1]['elapsed_seconds']<180

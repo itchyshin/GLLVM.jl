@@ -1,9 +1,9 @@
-using GLLVM, Test
+using GLLVModels, Test
 # Wald is deliberately unsupported on this route: both old and new code stop
 # before fitting. Invalid responses must fail for their own reason first.
 function bridge_truncated_input_error(Y;family="truncated_poisson")
     try
-        GLLVM.bridge_fit(y=Y,family=family,d=1,options=Dict("ci_method"=>"wald"))
+        GLLVModels.bridge_fit(y=Y,family=family,d=1,options=Dict("ci_method"=>"wald"))
         return nothing
     catch e
         return e

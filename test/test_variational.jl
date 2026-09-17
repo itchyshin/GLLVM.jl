@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Variational (VA) marginal — Poisson (increment 1)" begin
     @testset "Λ=0 reduces to independent Poisson loglik (exact)" begin
@@ -6,7 +6,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         p, K, n = 6, 2, 50
         β = 0.3 .* randn(p) .+ 1.0
         Y = [rand(Poisson(exp(β[t]))) for t in 1:p, s in 1:n]
-        va = GLLVM.poisson_marginal_loglik_va(Y, zeros(p, K), β)
+        va = GLLVModels.poisson_marginal_loglik_va(Y, zeros(p, K), β)
         ref = 0.0
         for t in 1:p, s in 1:n
             ref += logpdf(Poisson(exp(β[t])), Y[t, s])
@@ -22,7 +22,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         ztrue = randn()
         y = [rand(Poisson(exp(β[t] + Λ[t, 1] * ztrue))) for t in 1:p]
         Y = reshape(y, p, 1)
-        va = GLLVM.poisson_marginal_loglik_va(Y, Λ, β)
+        va = GLLVModels.poisson_marginal_loglik_va(Y, Λ, β)
 
         # exact single-site marginal by dense quadrature
         zs = range(-10, 10; length = 8001); dz = step(zs)
@@ -52,8 +52,8 @@ using GLLVM, Test, Random, Distributions, Statistics
                 Y[t, s] = rand(Poisson(exp(β[t] + Λ[t, 1] * z)))
             end
         end
-        va  = GLLVM.poisson_marginal_loglik_va(Y, Λ, β)
-        lap = GLLVM.poisson_marginal_loglik_laplace(Y, Λ, β)
+        va  = GLLVModels.poisson_marginal_loglik_va(Y, Λ, β)
+        lap = GLLVModels.poisson_marginal_loglik_laplace(Y, Λ, β)
         @test isfinite(va)
         @test isapprox(va, lap; rtol = 0.05)    # both approximate the same integral
     end
@@ -76,7 +76,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test size(getLV(fit, Y)) == (n, K)
         @test size(predict(fit, Y; type = :response)) == (p, n)
         # the latent variables do not decrease the ELBO vs the no-LV bound at fitted β
-        ll0 = GLLVM.poisson_marginal_loglik_va(Y, zeros(p, K), fit.β)
+        ll0 = GLLVModels.poisson_marginal_loglik_va(Y, zeros(p, K), fit.β)
         @test fit.loglik ≥ ll0 - 1e-3
     end
 end

@@ -1,5 +1,5 @@
 # Curvature and fixed-step observations at a retained point; never a new fit.
-using GLLVM, RCall, Test, LinearAlgebra, TOML, SHA
+using GLLVModels, RCall, Test, LinearAlgebra, TOML, SHA
 length(ARGS) == 4 || error("expected case ID, baseline directory, stopping directory, fresh output directory")
 id, input, stopping, output = ARGS
 get(ENV,"CORE070_PARITY_REQUIRED","") == "1" || error("required mode missing")

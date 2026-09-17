@@ -9,7 +9,7 @@
 # out/<cell_id>_r.log style stdout is just left on the process's own stdout
 # (redirected by the caller).
 
-using GLLVM
+using GLLVModels
 using RCall
 using LinearAlgebra
 using Random

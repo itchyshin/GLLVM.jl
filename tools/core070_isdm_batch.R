@@ -1,7 +1,7 @@
 # Retained evidence runner for the isdm manifest-area admission batch (20 cases).
 # Replays pinned R admission-predicate functions against a frozen fixture; no
 # fitted model, no Julia call -- see docs/dev-log/core070/isdm-batch-contract.json
-# for why (GLLVM.jl has no public isdm_sources()/isdm_source() surface yet).
+# for why (GLLVModels.jl has no public isdm_sources()/isdm_source() surface yet).
 #
 # Usage:
 #   Rscript --vanilla tools/core070_isdm_batch.R <source-root> <destination>

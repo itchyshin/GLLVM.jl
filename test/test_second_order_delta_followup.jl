@@ -1,7 +1,7 @@
 # Second-order follow-up batch: Delta-lognormal / Delta-Gamma shared-η Wald wiring.
 # R↔Julia SE receipts run only when GLLVM_PARITY_TESTS=1 (needs RCall + gllvmTMB).
 
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 function _sim_delta_lognormal(p, K, n; seed = 171)
     Random.seed!(seed)
@@ -23,8 +23,8 @@ end
         Y = _sim_delta_lognormal(5, 1, 100; seed = 171)
         fit = fit_delta_lognormal_gllvm(Y; K = 1, predictor = :shared, iterations = 400)
         @test fit.predictor === :shared
-        ad = GLLVM._family_ci(fit, Y)
-        @test length(ad.θ) == 5 + GLLVM.rr_theta_len(5, 1) + 1
+        ad = GLLVModels._family_ci(fit, Y)
+        @test length(ad.θ) == 5 + GLLVModels.rr_theta_len(5, 1) + 1
         @test count(startswith("beta["), ad.names) == 5
         ci = confint(fit, Y; method = :wald, parm = "beta")
         @test length(ci.term) == 5
@@ -50,7 +50,7 @@ end
             end
         end
         fit = fit_delta_gamma_gllvm(Y; K = K, predictor = :shared, iterations = 400)
-        ad = GLLVM._family_ci(fit, Y)
+        ad = GLLVModels._family_ci(fit, Y)
         @test count(startswith("beta["), ad.names) == 5
         ci = confint(fit, Y; method = :wald, parm = "beta[1]")
         @test ci.term == ["beta[1]"]

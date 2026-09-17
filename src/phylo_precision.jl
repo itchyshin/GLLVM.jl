@@ -6,7 +6,7 @@
 # (= 2p − 2), and a `species_aug_id` tip → row map
 # (`fit-multi.R:3796-3860`, `phylo-tree-precision.R:183-249`; see
 # docs/dev-log/core070/phylo-transport-design.md §1.1, §2). This file gives
-# GLLVM.jl a consumer for exactly that bundle, so the bridge (a later slice,
+# GLLVModels.jl a consumer for exactly that bundle, so the bridge (a later slice,
 # S3) can hand it across without either side re-deriving or re-inverting
 # anything.
 #

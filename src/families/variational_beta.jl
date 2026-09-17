@@ -1,4 +1,4 @@
-# Gaussian-variational (VA / ELBO) marginal for the Beta GLLVM with logit link.
+# Gaussian-variational (VA / ELBO) marginal for the Beta GLLVModels with logit link.
 # The non-conjugate companion to families/beta.jl's Laplace marginal. The
 # per-trait expectation E_q[log p(y_t | η_t, φ)] is computed by 1-D Gauss–Hermite
 # (GH) quadrature, exactly mirroring the Negative-Binomial VA path.
@@ -242,7 +242,7 @@ end
     beta_marginal_loglik_va(Y, Λ, β, φ; maxiter=100, tol=1e-9, gh=20) -> Float64
 
 Gaussian-variational (VA) log-marginal lower bound (ELBO) over the `n` sites
-(columns) of a Beta GLLVM with logit link — `Y` the p×n matrix of proportions in
+(columns) of a Beta GLLVModels with logit link — `Y` the p×n matrix of proportions in
 (0,1), `Λ` p×K, `β` length-p, precision `φ > 0` (mean `μ = logistic(η)`,
 per-observation `Beta(μφ, (1−μ)φ)`, `Var = μ(1−μ)/(1+φ)`). The per-site variational
 posterior `q(z_s)=N(m_s, diag(v_s))` is profiled out by jointly minimising the
@@ -270,7 +270,7 @@ end
 """
     fit_beta_gllvm_va(Y; K, link=LogitLink(), …) -> BetaFit
 
-Fit a Beta GLLVM by maximising the **variational** lower bound
+Fit a Beta GLLVModels by maximising the **variational** lower bound
 ([`beta_marginal_loglik_va`](@ref)) over `[β; vec(Λ); log φ]` with L-BFGS, jointly
 estimating the precision `φ` — the VA counterpart of [`fit_beta_gllvm`](@ref)
 (which maximises the Laplace marginal). `Y` is a p×n matrix of proportions in

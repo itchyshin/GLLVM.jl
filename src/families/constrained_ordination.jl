@@ -65,7 +65,7 @@ end
 """
     ConstrainedOrdinationFit
 
-Result of [`fit_constrained_gllvm`](@ref): a GLLVM fit in which the K latent
+Result of [`fit_constrained_gllvm`](@ref): a GLLVModels fit in which the K latent
 variables are regressed on the site covariates (constrained ordination /
 reduced-rank regression). Fields: `family` (the Distributions marker), per-species
 intercepts `β` (length p), the RRR coefficient matrix `B` (q×K — column `k` is the
@@ -170,7 +170,7 @@ fitted(fit::ConstrainedOrdinationFit, Y::AbstractMatrix{<:Real}, X::AbstractMatr
 """
     fit_constrained_gllvm(Y; family, X, K, link=nothing, N=nothing, …) -> ConstrainedOrdinationFit
 
-Fit a **constrained-ordination** GLLVM by L-BFGS over `[β; vec(Λ); vec(B);
+Fit a **constrained-ordination** GLLVModels by L-BFGS over `[β; vec(Λ); vec(B);
 (log-dispersion)]` on the reduced-rank offset-augmented Laplace marginal. The K
 latent variables carry a covariate-driven mean, `z_s ~ N(B' x_s, I_K)`, so the
 linear predictor is

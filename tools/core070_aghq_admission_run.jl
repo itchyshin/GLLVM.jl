@@ -1,4 +1,4 @@
-using GLLVM,RCall,Test,LinearAlgebra,SHA,TOML,Statistics,Random,Distributions,Logging
+using GLLVModels,RCall,Test,LinearAlgebra,SHA,TOML,Statistics,Random,Distributions,Logging
 root=normpath(joinpath(@__DIR__,".."))
 include(joinpath(root,"test/parity/parity_helpers.jl"));_parity_require_gllvmtmb!()
 contract_path=joinpath(root,"test/parity/core070_aghq_admission_cases.toml")
@@ -9,12 +9,12 @@ function logged_call(f)
     io=IOBuffer();fit=with_logger(SimpleLogger(io,Logging.Warn)) do;f();end
     return fit,String(take!(io))
 end
-ll(f)=f isa GLLVM.GllvmFit ? f.logLik : f.loglik
+ll(f)=f isa GLLVModels.GllvmFit ? f.logLik : f.loglik
 function parameters(f,Y;trials=nothing)
-    if f isa GLLVM.GllvmFit
-        return f.pars.θ_packed,GLLVM._confint_reconstruct_nll(f,Y,nothing,nothing)
+    if f isa GLLVModels.GllvmFit
+        return f.pars.θ_packed,GLLVModels._confint_reconstruct_nll(f,Y,nothing,nothing)
     end
-    ad=f isa GLLVM.BinomialFit ? GLLVM._family_ci(f,Y;N=trials) : GLLVM._family_ci(f,Y);return ad.θ,ad.nll
+    ad=f isa GLLVModels.BinomialFit ? GLLVModels._family_ci(f,Y;N=trials) : GLLVModels._family_ci(f,Y);return ad.θ,ad.nll
 end
 R"""
 .admission_run <- function(Y, fam, rformula, seed, aghq=FALSE, weights=NULL) {
@@ -55,7 +55,7 @@ for row in spec["cases"]
     off,ow=logged_call(()->fitter(Y;kw...,aghq=false))
     one,w=logged_call(()->fitter(Y;kw...,aghq=1))
     form,fw=logged_call(()->gllvm(fam=="gaussian" ? @formula(y~0) : @formula(y~1),Y,(site=collect(1:n),);family=family,kw...,aghq=1))
-    theta,nll=parameters(one,Y;trials=N);gradient=GLLVM.ForwardDiff.gradient(nll,theta)
+    theta,nll=parameters(one,Y;trials=N);gradient=GLLVModels.ForwardDiff.gradient(nll,theta)
     rformula=row["r_formula"]
     @rput Y fam rformula seed N
     R"""
@@ -115,7 +115,7 @@ for row in spec["cases"]
     end
 end
 record=Dict("contract_sha256"=>bytes2hex(sha256(read(contract_path))),"julia_version"=>string(VERSION),
-    "package_root"=>pkgdir(GLLVM),"threads"=>Threads.nthreads(),"cases"=>records,
+    "package_root"=>pkgdir(GLLVModels),"threads"=>Threads.nthreads(),"cases"=>records,
     "scope"=>"k1 native/formula routing and numerical pair; no R bridge or general AGHQ promotion",
     "artifacts"=>Dict(suffix=>bytes2hex(sha256(read(out*suffix))) for suffix in [".fixtures.toml",".gaussian.rds",".poisson.rds",".binomial.rds",".unique.rds",".unique.toml"]))
 open(io->TOML.print(io,record),out,"w")

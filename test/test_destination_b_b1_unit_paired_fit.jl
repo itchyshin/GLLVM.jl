@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using JSON3
 
 @testset "Destination B B1 frozen-R paired Gaussian unit fit" begin
@@ -35,11 +35,11 @@ using JSON3
     @test receipt.fit.convergence == 0
     @test vec(String.(receipt.response_long.trait)) == repeat(["trait_1", "trait_2"], 8)
     @test size(Y) == (2, 8)
-    at_r_coordinates = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    at_r_coordinates = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = unit, start = r_theta_in_julia_order, iterations = 0)
-    refit = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    refit = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = unit, iterations = 100)
-    changed_membership = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    changed_membership = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = changed_unit, start = r_theta_in_julia_order, iterations = 0)
 
     @test at_r_coordinates.loglik ≈ r_loglik atol = 1e-8 rtol = 0

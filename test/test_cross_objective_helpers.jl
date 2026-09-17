@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra, TOML, Random, Distributions
+using Test, GLLVModels, LinearAlgebra, TOML, Random, Distributions
 
 # Unit tests for the family-generic cross-objective helpers (panel 2026-09-01
 # generalization) added in tools/core070_cross_objective.jl:

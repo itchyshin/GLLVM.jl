@@ -1,6 +1,6 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, ForwardDiff
 
-# REML for the Gaussian GLLVM (`src/reml.jl`). The load-bearing check is that
+# REML for the Gaussian GLLVModels (`src/reml.jl`). The load-bearing check is that
 # `gaussian_reml_loglik` equals the standard REML formula computed independently
 # from a DENSE Σ_y, rather than through the Woodbury solves the source uses.
 #
@@ -37,10 +37,10 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
         end
         ll_ml = -0.5 * (n * p * log(2π) + n * logdet(cΣ) + quad)
         ll_ref = ll_ml + (q / 2) * log(2π) - 0.5 * logdet(M)
-        @test isapprox(GLLVM.gaussian_reml_loglik(Y, X, Λ, σ), ll_ref; rtol = 1e-8)
+        @test isapprox(GLLVModels.gaussian_reml_loglik(Y, X, Λ, σ), ll_ref; rtol = 1e-8)
 
         # the GLS profile itself, not just the criterion it feeds
-        β_gls, logdetM = GLLVM._gaussian_gls(Y, X, Λ, σ)
+        β_gls, logdetM = GLLVModels._gaussian_gls(Y, X, Λ, σ)
         @test isapprox(β_gls, β̂; rtol = 1e-8)
         @test isapprox(logdetM, logdet(M); rtol = 1e-8)
     end
@@ -49,9 +49,9 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
         Random.seed!(31004)
         p, K, n, q = 4, 1, 40, 2
         Λ = 0.5 .* randn(p, K); σ = 0.6; X = randn(p, n, q); Y = randn(p, n)
-        β̂, logdetM = GLLVM._gaussian_gls(Y, X, Λ, σ)
-        ll_ml = GLLVM.gaussian_marginal_loglik(Y, Λ, σ; X = X, β = β̂)
-        @test isapprox(GLLVM.gaussian_reml_loglik(Y, X, Λ, σ),
+        β̂, logdetM = GLLVModels._gaussian_gls(Y, X, Λ, σ)
+        ll_ml = GLLVModels.gaussian_marginal_loglik(Y, Λ, σ; X = X, β = β̂)
+        @test isapprox(GLLVModels.gaussian_reml_loglik(Y, X, Λ, σ),
                        ll_ml + (q / 2) * log(2π) - 0.5 * logdetM; rtol = 1e-10)
     end
 
@@ -67,10 +67,10 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
         for k in 1:q
             shift .+= b[k] .* X[:, :, k]
         end
-        @test isapprox(GLLVM.gaussian_reml_loglik(Y .+ shift, X, Λ, σ),
-                       GLLVM.gaussian_reml_loglik(Y, X, Λ, σ); rtol = 1e-9)
-        β0, _ = GLLVM._gaussian_gls(Y, X, Λ, σ)
-        β1, _ = GLLVM._gaussian_gls(Y .+ shift, X, Λ, σ)
+        @test isapprox(GLLVModels.gaussian_reml_loglik(Y .+ shift, X, Λ, σ),
+                       GLLVModels.gaussian_reml_loglik(Y, X, Λ, σ); rtol = 1e-9)
+        β0, _ = GLLVModels._gaussian_gls(Y, X, Λ, σ)
+        β1, _ = GLLVModels._gaussian_gls(Y .+ shift, X, Λ, σ)
         @test isapprox(β1, β0 .+ b; rtol = 1e-8)
     end
 
@@ -78,10 +78,10 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
         Random.seed!(31002)
         p, K, n, q = 4, 1, 50, 2
         Λ0 = 0.5 .* randn(p, K); σ = 0.6; X = randn(p, n, q); Y = randn(p, n)
-        rr = GLLVM.rr_theta_len(p, K)
-        f = θ -> -GLLVM.gaussian_reml_loglik(Y, X, GLLVM.unpack_lambda(θ[1:rr], p, K),
+        rr = GLLVModels.rr_theta_len(p, K)
+        f = θ -> -GLLVModels.gaussian_reml_loglik(Y, X, GLLVModels.unpack_lambda(θ[1:rr], p, K),
                                              exp(θ[rr + 1]))
-        θ = vcat(GLLVM.pack_lambda(Λ0), log(σ))
+        θ = vcat(GLLVModels.pack_lambda(Λ0), log(σ))
         gad = ForwardDiff.gradient(f, θ); h = 1e-6; gfd = similar(θ)
         for i in eachindex(θ)
             s = h * max(1.0, abs(θ[i])); tp = copy(θ); tp[i] += s; tm = copy(θ); tm[i] -= s
@@ -108,7 +108,7 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics, ForwardDiff
         @test cor(vec(rfit.Λ * rfit.Λ'), vec(Λt * Λt')) > 0.8
         # the reported criterion is the objective at the returned point
         @test isapprox(rfit.reml_loglik,
-                       GLLVM.gaussian_reml_loglik(Y, X, rfit.Λ, rfit.σ_eps); rtol = 1e-8)
+                       GLLVModels.gaussian_reml_loglik(Y, X, rfit.Λ, rfit.σ_eps); rtol = 1e-8)
         @test occursin("GaussianREMLFit", sprint(show, rfit))
     end
 

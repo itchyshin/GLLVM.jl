@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 @testset "Random row effects" begin
     # ------------------------------------------------------------------
@@ -15,18 +15,18 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         Λ = 0.4 .* randn(p, K)
         # Poisson
         Yp = rand(0:5, p, n)
-        ll_rr = GLLVM.row_random_marginal_loglik_laplace(Poisson(), Yp, ones(Int, p, n),
+        ll_rr = GLLVModels.row_random_marginal_loglik_laplace(Poisson(), Yp, ones(Int, p, n),
                                                          Λ, β, 0.0)
-        ll_base = GLLVM.marginal_loglik_laplace(Poisson(), Yp, ones(Int, p, n),
-                                                Λ, β, GLLVM.LogLink())
+        ll_base = GLLVModels.marginal_loglik_laplace(Poisson(), Yp, ones(Int, p, n),
+                                                Λ, β, GLLVModels.LogLink())
         @test ll_rr ≈ ll_base atol = 1e-10
         # Negative binomial (dispersion family)
         fam = NegativeBinomial(5.0, 0.5)
         Yn = rand(0:8, p, n)
-        ll_rr_nb = GLLVM.row_random_marginal_loglik_laplace(fam, Yn, ones(Int, p, n),
+        ll_rr_nb = GLLVModels.row_random_marginal_loglik_laplace(fam, Yn, ones(Int, p, n),
                                                             Λ, β, 0.0)
-        ll_base_nb = GLLVM.marginal_loglik_laplace(fam, Yn, ones(Int, p, n),
-                                                   Λ, β, GLLVM.LogLink())
+        ll_base_nb = GLLVModels.marginal_loglik_laplace(fam, Yn, ones(Int, p, n),
+                                                   Λ, β, GLLVModels.LogLink())
         @test ll_rr_nb ≈ ll_base_nb atol = 1e-10
     end
 
@@ -39,10 +39,10 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         β = randn(p)
         Λ = 0.5 .* randn(p, K)
         Y = rand(0:5, p, n)
-        ll_eps = GLLVM.row_random_marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n),
+        ll_eps = GLLVModels.row_random_marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n),
                                                           Λ, β, 1e-7)
-        ll_base = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n),
-                                                Λ, β, GLLVM.LogLink())
+        ll_base = GLLVModels.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n),
+                                                Λ, β, GLLVModels.LogLink())
         @test ll_eps ≈ ll_base atol = 1e-6
     end
 

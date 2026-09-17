@@ -1,7 +1,7 @@
 """Formula-interface qualification for the retained Core070 Gaussian source fits."""
 module Core070CovarianceFormulaCases
 
-using GLLVM, LinearAlgebra, Test, TOML
+using GLLVModels, LinearAlgebra, Test, TOML
 
 export run_group!
 
@@ -46,7 +46,7 @@ function _fit_record(fit, explicit_X, source; reversed_long::Bool)
         "source_covariance" => _rows(only(fit.trait_covariances)),
         "residual_sd" => _safe_number(fit.sigma_eps),
         "residual_fixed" => fit.residual_fixed,
-        "free_parameters" => GLLVM.dof(fit),
+        "free_parameters" => GLLVModels.dof(fit),
         "explicit_X" => _rows(reshape(explicit_X, :, size(explicit_X, 3))),
         "design" => _rows(fit.mean_design),
         "shape" => collect(fit.response_shape),
@@ -200,8 +200,8 @@ function _case_row(native_id::String, row, fixed::Bool)
         "long_identifiable_covariance_to_R" => longfit !== nothing && covariance_match(longfit),
         "wide_residual_to_R_when_identifiable" => wide !== nothing && residual_match(wide),
         "long_residual_to_R_when_identifiable" => longfit !== nothing && residual_match(longfit),
-        "wide_free_parameters" => wide !== nothing && GLLVM.dof(wide) == expected_dof,
-        "long_free_parameters" => longfit !== nothing && GLLVM.dof(longfit) == expected_dof,
+        "wide_free_parameters" => wide !== nothing && GLLVModels.dof(wide) == expected_dof,
+        "long_free_parameters" => longfit !== nothing && GLLVModels.dof(longfit) == expected_dof,
         "wide_explicit_design" => fit_design(wide),
         "long_explicit_design" => fit_design(longfit),
         "wide_shape" => fit_shape(wide),

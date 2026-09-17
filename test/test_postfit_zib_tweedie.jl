@@ -3,7 +3,7 @@
 # deterministic (seeded), low-iteration fits keep this CI-fast; the assertions
 # check shape, finiteness, and valid ranges rather than exact values.
 
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "ZIB post-fit (zero-inflated binomial)" begin
     rng = MersenneTwister(20240606)
@@ -28,8 +28,8 @@ using GLLVM, Test, Random, Distributions, Statistics
         end
     end
 
-    fit = GLLVM.fit_zib_gllvm(Y; K = K, N = N, iterations = 40)
-    @test fit isa GLLVM.ZIBFit
+    fit = GLLVModels.fit_zib_gllvm(Y; K = K, N = N, iterations = 40)
+    @test fit isa GLLVModels.ZIBFit
     @test fit.N == N
 
     # getLV: n×K, finite.
@@ -85,8 +85,8 @@ end
         end
     end
 
-    fit = GLLVM.fit_tweedie_gllvm(Y; K = K, iterations = 40)
-    @test fit isa GLLVM.TweedieFit
+    fit = GLLVModels.fit_tweedie_gllvm(Y; K = K, iterations = 40)
+    @test fit isa GLLVModels.TweedieFit
     @test 1 < fit.p < 2
     @test fit.φ > 0
 

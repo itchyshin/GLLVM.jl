@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays
+using GLLVModels, Test, LinearAlgebra, SparseArrays
 
 function _pfia_raw(Q::AbstractMatrix; n_leaves::Integer = 2,
         node_labels = ["ancestor", "tip_a", "tip_b"],
@@ -29,7 +29,7 @@ end
     valid = _pfia_raw(Q)
 
     @testset "valid snapshots retain canonical Q and scale" begin
-        admitted = GLLVM._validate_precision_fit_input(valid)
+        admitted = GLLVModels._validate_precision_fit_input(valid)
         @test admitted !== valid
         @test admitted.Q !== valid.Q
         @test admitted.species_aug_id !== valid.species_aug_id
@@ -42,7 +42,7 @@ end
         # checks metadata but neither applies scale again nor inverts Q.
         tree = augmented_phy("((A:0.3,B:0.3):0.4,(C:0.3,D:0.3):0.4);")
         nonunit = PrecisionPhy(tree; correlation = true)
-        admitted_tree = GLLVM._validate_precision_fit_input(nonunit)
+        admitted_tree = GLLVModels._validate_precision_fit_input(nonunit)
         @test admitted_tree.scale == 0.7
         @test Matrix(admitted_tree.Q) == Matrix(nonunit.Q)
 
@@ -54,7 +54,7 @@ end
         pedigree = _pfia_raw(inv(A); n_leaves = 2,
             node_labels = ["founder_1", "founder_2", "offspring"],
             species_aug_id = [2, 3])
-        admitted_pedigree = GLLVM._validate_precision_fit_input(pedigree)
+        admitted_pedigree = GLLVModels._validate_precision_fit_input(pedigree)
         @test admitted_pedigree.n_aug == 3
         @test admitted_pedigree.n_leaves == 2
         @test admitted_pedigree.species_aug_id == [2, 3]
@@ -64,7 +64,7 @@ end
     @testset "raw construction remains permissive; fitting admission rejects malformed state" begin
         wrong_det = _pfia_raw(Q; log_det = valid.log_det + 0.1)
         @test wrong_det isa PrecisionPhy
-        @test_throws ArgumentError GLLVM._validate_precision_fit_input(wrong_det)
+        @test_throws ArgumentError GLLVModels._validate_precision_fit_input(wrong_det)
 
         # Symmetric(Matrix(Q)) would silently retain this triangle. Require
         # sparse Q itself to be symmetric before the PD/checksum path.
@@ -73,7 +73,7 @@ end
                          0.0 -1.0 2.0]
         asymmetric = _pfia_raw(asymmetric_Q; log_det = valid.log_det)
         @test asymmetric isa PrecisionPhy
-        @test_throws ArgumentError GLLVM._validate_precision_fit_input(asymmetric)
+        @test_throws ArgumentError GLLVModels._validate_precision_fit_input(asymmetric)
 
         # A positive residual contribution can make a downstream augmented
         # system positive definite even though the phylogenetic prior Q is
@@ -84,27 +84,27 @@ end
         @test issuccess(cholesky(Symmetric(augmented_J); check = false))
         indefinite = _pfia_raw(indefinite_Q; n_leaves = 2,
             node_labels = ["tip_a", "tip_b"], species_aug_id = [1, 2], log_det = 0.0)
-        @test_throws ArgumentError GLLVM._validate_precision_fit_input(indefinite)
+        @test_throws ArgumentError GLLVModels._validate_precision_fit_input(indefinite)
 
         duplicate_map = _pfia_raw(Q; species_aug_id = [2, 2])
-        @test_throws ArgumentError GLLVM._validate_precision_fit_input(duplicate_map)
+        @test_throws ArgumentError GLLVModels._validate_precision_fit_input(duplicate_map)
 
         empty_label = _pfia_raw(Q; node_labels = ["ancestor", "", "tip_b"])
-        @test_throws ArgumentError GLLVM._validate_precision_fit_input(empty_label)
+        @test_throws ArgumentError GLLVModels._validate_precision_fit_input(empty_label)
 
         nonpositive_scale = _pfia_raw(Q; scale = 0.0)
-        @test_throws ArgumentError GLLVM._validate_precision_fit_input(nonpositive_scale)
+        @test_throws ArgumentError GLLVModels._validate_precision_fit_input(nonpositive_scale)
 
         nonfinite_Q = _pfia_raw([NaN 0.0 0.0;
                                   0.0 2.0 -1.0;
                                   0.0 -1.0 2.0]; log_det = 0.0)
-        @test_throws ArgumentError GLLVM._validate_precision_fit_input(nonfinite_Q)
+        @test_throws ArgumentError GLLVModels._validate_precision_fit_input(nonfinite_Q)
 
         # Direct field construction can violate the struct's own Q/n_aug
         # invariant; the public fit boundary must not trust its type alone.
         malformed_shape = PrecisionPhy{Float64}(2, 3, sparse(Q[1:2, 1:2]),
             0.0, 1.0, [1, 2], ["a", "b", "c"])
-        @test_throws ArgumentError GLLVM._validate_precision_fit_input(malformed_shape)
+        @test_throws ArgumentError GLLVModels._validate_precision_fit_input(malformed_shape)
     end
 
     @testset "public standalone and grouped routes cannot bypass admission" begin

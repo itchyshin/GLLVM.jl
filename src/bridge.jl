@@ -1,8 +1,8 @@
-# R -> Julia bridge entry point for GLLVM.jl, exposing the fitted one-part families
+# R -> Julia bridge entry point for GLLVModels.jl, exposing the fitted one-part families
 # to R via JuliaCall (the canonical transport across the drmTMB<->DRM.jl ecosystem).
 #
 # `bridge_fit` accepts plain matrices + family strings (the R side, gllvmTMB, owns
-# formula parsing; GLLVM.jl owns the numerical fit) and returns a FLAT NamedTuple of
+# formula parsing; GLLVModels.jl owns the numerical fit) and returns a FLAT NamedTuple of
 # JuliaCall-convertible primitives only (Float64 scalars/arrays, Ints, Strings,
 # Bools) — no Julia struct ever crosses the language boundary.
 #
@@ -98,7 +98,7 @@
 # land. Mixed-family and REML paths skip-with-note since their fits have no
 # native confint engine yet.
 #
-# ADDITIVE: this file + an include/export line in GLLVM.jl. It edits no fitter or
+# ADDITIVE: this file + an include/export line in GLLVModels.jl. It edits no fitter or
 # extractor; it is included LAST so every dispatch target already exists.
 
 # --- plain-data helpers ----------------------------------------------------
@@ -444,7 +444,7 @@ end
                trait_names=nothing, unit_names=nothing, phylo=nothing,
                options=Dict())
 
-Plain-data R->Julia bridge (JuliaCall transport). Fits a one-part GLLVM for the
+Plain-data R->Julia bridge (JuliaCall transport). Fits a one-part GLLVModels for the
 requested `family` and returns a flat, JuliaCall-convertible NamedTuple (see the
 file header for the key->type contract). `y` is a `p x n` response matrix
 (traits x units); `d` is the latent dimension `K`; `N` (Binomial trials, `p x n`
@@ -1904,7 +1904,7 @@ function _bridge_fit_mixed(y, family_strs::AbstractVector, K::Integer, N,
         converged = fit.converged, iterations = fit.iterations,
         loadings = Matrix{Float64}(fit.Λ * _svd_rotation(fit.Λ)),  # canonical SVD-rotated p×K loadings
         families = keys_norm,
-        note = "mixed-family GLLVM: one shared latent block across distinct response " *
+        note = "mixed-family GLLVModels: one shared latent block across distinct response " *
                "families; `correlation` is the cross-distribution latent-scale " *
                "correlation. `families` is the per-trait family vector.", ci = ci,
         # gradient_max: NaN — MixedFamilyFit has no _family_ci adapter (no packed

@@ -1,4 +1,4 @@
-"""Frozen gllvmTMB oracle pins for GLLVM.jl parity tools (P13 / D-220).
+"""Frozen gllvmTMB oracle pins for GLLVModels.jl parity tools (P13 / D-220).
 
 Export-surface parity reads R's ``NAMESPACE`` at ``DEFAULT_R_REF`` (frozen
 gllvmTMB 0.7.0). Capability-status CLOSURE uses ``gllvmTMB/tools/parity_ledger.R``

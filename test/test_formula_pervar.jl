@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, StatsModels, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, StatsModels, LinearAlgebra
 
 @testset "Per-variance Gaussian formula contract" begin
     rng = MersenneTwister(8103102)
@@ -44,12 +44,12 @@ using GLLVM, Test, Random, Distributions, StatsModels, LinearAlgebra
     @test length(categorical.β) == p+1
     @test categorical.loglik ≈ cat_matrix.loglik atol=1e-7
     @test categorical.β ≈ cat_matrix.β atol=1e-6
-    no_intercept = GLLVM._pervar_formula_design((@formula(y ~ 0+habitat)).rhs,
+    no_intercept = GLLVModels._pervar_formula_design((@formula(y ~ 0+habitat)).rhs,
         (habitat=habitat,),p,n;contrasts=Dict(:habitat=>DummyCoding(base="A")))
     @test size(no_intercept) == (p,n,2)
     @test no_intercept[:,:,1] == repeat(reshape(Float64.(habitat .== "A"),1,n),p,1)
     @test no_intercept[:,:,2] == repeat(reshape(Float64.(habitat .== "B"),1,n),p,1)
-    effects = GLLVM._pervar_formula_design((@formula(y ~ 1+habitat)).rhs,
+    effects = GLLVModels._pervar_formula_design((@formula(y ~ 1+habitat)).rhs,
         (habitat=habitat,),p,n;contrasts=Dict(:habitat=>EffectsCoding(base="A")))
     @test size(effects) == (p,n,p+1)
     @test effects[:,:,end] == repeat(reshape(ifelse.(habitat .== "A",-1.0,1.0),1,n),p,1)

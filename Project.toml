@@ -1,4 +1,4 @@
-name = "GLLVM"
+name = "GLLVModels"
 uuid = "2dc8e01c-4f48-4476-aaae-e919b4a30df7"
 authors = ["Shinichi Nakagawa <itchyshin@gmail.com>"]
 version = "0.3.0"

@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra
+using Test, GLLVModels, LinearAlgebra
 include(joinpath(@__DIR__, "..", "tools", "core070_gaussian_source_bindings.jl"))
 
 @testset "Retained Core070 source input bindings (not fitted parity)" begin

@@ -1,4 +1,4 @@
-# Gaussian-variational (VA / ELBO) marginal for the Binomial/Bernoulli GLLVM
+# Gaussian-variational (VA / ELBO) marginal for the Binomial/Bernoulli GLLVModels
 # with logit link. Companion to families/variational.jl (the Poisson VA, where the
 # expectation E_q[log p] is closed-form). For the Binomial/logit family there is
 # no closed form for E_q[log(1+e^η)], so the expectation is evaluated by 1-D
@@ -244,7 +244,7 @@ end
     binomial_marginal_loglik_va(Y, N, Λ, β; maxiter=100, tol=1e-9, gh=20) -> Float64
 
 Gaussian-variational (VA) log-marginal lower bound (ELBO) over the `n` sites
-(columns) of a Binomial GLLVM with logit link — `Y` the p×n integer response
+(columns) of a Binomial GLLVModels with logit link — `Y` the p×n integer response
 matrix, `N` the matching p×n trial counts (all-ones ⇒ Bernoulli), `Λ` p×K, `β`
 length-p. The per-site variational posterior `q(z_s)=N(m_s, diag(v_s))` is profiled
 out by L-BFGS over `[m; log v]`. The non-conjugate expectation `E_q[log(1+e^η)]` is
@@ -273,7 +273,7 @@ end
 """
     fit_binomial_gllvm_va(Y; N=nothing, K, link=LogitLink(), …) -> BinomialFit
 
-Fit a Binomial GLLVM by maximising the **variational** lower bound
+Fit a Binomial GLLVModels by maximising the **variational** lower bound
 ([`binomial_marginal_loglik_va`](@ref)) over `[β; vec(Λ)]` with L-BFGS — the VA
 counterpart of [`fit_binomial_gllvm`](@ref) (which maximises the Laplace
 marginal). `Y` is a p×n integer response matrix; `N` the matching trial counts

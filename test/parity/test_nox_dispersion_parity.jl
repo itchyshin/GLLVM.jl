@@ -27,7 +27,7 @@
 # Twin Δ rule: no number is quoted unless this file runs live under
 # GLLVM_PARITY_TESTS=1 against a real gllvmTMB. Never invent, never carry over.
 
-using GLLVM, RCall, Test, Random, LinearAlgebra
+using GLLVModels, RCall, Test, Random, LinearAlgebra
 import Distributions
 
 # parity_helpers.jl is included once by runparity.jl
@@ -38,7 +38,7 @@ const _NOXD_SEED_GAMMA = 54
 const _NOXD_SEED_NB1   = 55
 const _NOXD_SEED_BB    = 56
 
-@testset "no-X per-trait-dispersion light logLik: GLLVM.jl vs gllvmTMB" begin
+@testset "no-X per-trait-dispersion light logLik: GLLVModels.jl vs gllvmTMB" begin
 
     # ── Gamma (twin fid 4), per-trait shape α ────────────────────────────────
     @testset "Gamma no-X (twin fid 4, per-trait α)" begin

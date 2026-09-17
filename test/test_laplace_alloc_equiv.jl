@@ -24,17 +24,17 @@
     Np = ones(Int, size(Yp))
 
     # (1) idempotence: exact equality across repeated calls (== not ≈).
-    m1 = GLLVM.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink())
-    m2 = GLLVM.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink())
+    m1 = GLLVModels.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink())
+    m2 = GLLVModels.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink())
     @test m1 == m2
     @test isfinite(m1)
     # Top-level wrapper agrees with the generic call, also exactly.
-    @test GLLVM.poisson_marginal_loglik_laplace(Yp, Λ, β) == m1
+    @test GLLVModels.poisson_marginal_loglik_laplace(Yp, Λ, β) == m1
 
     # (2) site additivity: total == Σ per-site (atol 1e-12). A buffer corrupting a
     # site's result would break this even though each call is internally clean.
     site_sum = sum(
-        GLLVM.laplace_loglik_site(Poisson(), view(Yp, :, i), view(Np, :, i),
+        GLLVModels.laplace_loglik_site(Poisson(), view(Yp, :, i), view(Np, :, i),
                                   Λ, β, LogLink())
         for i in axes(Yp, 2)
     )
@@ -44,12 +44,12 @@
     # through the shared buffers).
     r = 3.0
     Nnb = ones(Int, size(Yp))
-    nb1 = GLLVM.nb_marginal_loglik_laplace(Yp, Λ, β, r)
-    nb2 = GLLVM.nb_marginal_loglik_laplace(Yp, Λ, β, r)
+    nb1 = GLLVModels.nb_marginal_loglik_laplace(Yp, Λ, β, r)
+    nb2 = GLLVModels.nb_marginal_loglik_laplace(Yp, Λ, β, r)
     @test nb1 == nb2
     @test isfinite(nb1)
     nb_site_sum = sum(
-        GLLVM.laplace_loglik_site(NegativeBinomial(float(r), 0.5),
+        GLLVModels.laplace_loglik_site(NegativeBinomial(float(r), 0.5),
                                   view(Yp, :, i), view(Nnb, :, i), Λ, β, LogLink())
         for i in axes(Yp, 2)
     )

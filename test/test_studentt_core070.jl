@@ -1,4 +1,4 @@
-using GLLVM, Test
+using GLLVModels, Test
 
 @testset "CORE-070 Student-t model identity" begin
     p, K = 3, 1
@@ -13,8 +13,8 @@ using GLLVM, Test
                                  link, -1.0, true, 1, :observed, :species)
     @test !fixed_shared.estimated_nu
     @test !fixed_species.estimated_nu
-    @test GLLVM._nparams(fixed_shared) == 7
-    @test GLLVM._nparams(fixed_species) == 9
+    @test GLLVModels._nparams(fixed_shared) == 7
+    @test GLLVModels._nparams(fixed_species) == 9
 
     # The fitted identity must retain the estimation policy independently of
     # scalar-versus-vector parameter shape so AIC/BIC count ν coordinates.
@@ -24,6 +24,6 @@ using GLLVM, Test
                                     link, -1.0, true, 1, :observed, :species, true)
     @test estimated_shared.estimated_nu
     @test estimated_species.estimated_nu
-    @test GLLVM._nparams(estimated_shared) == 8
-    @test GLLVM._nparams(estimated_species) == 12
+    @test GLLVModels._nparams(estimated_shared) == 8
+    @test GLLVModels._nparams(estimated_species) == 12
 end

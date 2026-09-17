@@ -1,6 +1,6 @@
 """Verify the wave-6 conversion batch: 10 BLOCKED_NEEDS_JULIA_SURFACE ledger
 rows converted to bound cases (namespace/, covariance/, postfit/ prefixes),
-evidence naming a function that now exists in src/GLLVM.jl (the
+evidence naming a function that now exists in src/GLLVModels.jl (the
 formula-recognizer slice, src/formula.jl's _recognize_source_term /
 _fit_gaussian_structured_sources, commit 5371137c; and the already-existing
 postfit surfaces loglikelihood/confint/nobs on AnyGllvmFit/GllvmFit). 8

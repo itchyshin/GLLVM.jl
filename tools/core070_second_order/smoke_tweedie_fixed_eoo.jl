@@ -1,7 +1,7 @@
 # Manual / receipt smoke: each-own-optimum second-order for tweedie_fixed.
 # Not CI-gated. Writes under tools/core070_second_order/second-order-batch-out/ when run.
 
-using GLLVM
+using GLLVModels
 using RCall
 using Random
 using LinearAlgebra

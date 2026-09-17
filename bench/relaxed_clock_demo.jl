@@ -23,7 +23,7 @@
 #   (c) clade detection — does the fit separate the fast clade from background;
 #   (d) degradation — how recovery changes as n_rep shrinks / the prior tightens.
 #
-# Self-contained: pulls in the new src files directly (src/GLLVM.jl untouched).
+# Self-contained: pulls in the new src files directly (src/GLLVModels.jl untouched).
 
 using Random
 using Statistics

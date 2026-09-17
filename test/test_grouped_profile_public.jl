@@ -1,4 +1,4 @@
-using Test, GLLVM, Random
+using Test, GLLVModels, Random
 
 @testset "public grouped Gaussian variance profile" begin
     rng = MersenneTwister(20_260_907)

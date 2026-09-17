@@ -1,4 +1,4 @@
-# Restricted maximum likelihood (REML) for the Gaussian GLLVM.
+# Restricted maximum likelihood (REML) for the Gaussian GLLVModels.
 #
 # REML estimates the variance components after integrating out the fixed effects β
 # under a flat prior, removing the downward bias ML has in the variance components
@@ -65,7 +65,7 @@ end
 """
     gaussian_reml_loglik(y, X, Λ_B, σ_eps; Λ_W, σ²_B, σ²_W) -> Real
 
-REML log-likelihood of the variance components for a Gaussian GLLVM with fixed
+REML log-likelihood of the variance components for a Gaussian GLLVModels with fixed
 effects `X` (`p×n×q`): the ML marginal at the GLS `β̂` plus the restricted-likelihood
 adjustment `(q/2)log(2π) − ½logdet(Σ_i X_iᵀΣ_y⁻¹X_i)`. Reuses
 [`gaussian_marginal_loglik`](@ref) for the ML part. Non-phylo path only.
@@ -112,7 +112,7 @@ end
 """
     fit_gaussian_reml(y, X; K, g_tol=1e-6, iterations=500) -> GaussianREMLFit
 
-Fit a Gaussian GLLVM by REML over `[vec(Λ); log σ_eps]` (the fixed effects `β` are
+Fit a Gaussian GLLVModels by REML over `[vec(Λ); log σ_eps]` (the fixed effects `β` are
 profiled out via GLS each step, so they are not optimised parameters). `y` is `p×n`;
 `X` the `p×n×q` fixed-effect design (include an intercept column to REML-adjust for
 trait means). Warm start = OLS `β` → PPCA on the residuals. MoreThuente line search.

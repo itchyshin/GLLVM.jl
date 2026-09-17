@@ -14,7 +14,7 @@
 #                mixed-family X reject loudly with an ArgumentError.
 
 using Test
-using GLLVM
+using GLLVModels
 using Random
 using Statistics
 using Distributions
@@ -79,7 +79,7 @@ function _bx_sim(family_marker, p, n, K, q; seed = 7, Ntrial = 1, nb_r = 8.0, in
     Λ = 0.4 .* randn(rng, p, K)
     xs = [randn(rng, n) for _ in 1:q]
     X = _bridge_x_design(xs, p)
-    O = GLLVM._build_offset(X, γ)
+    O = GLLVModels._build_offset(X, γ)
     Z = randn(rng, K, n)
     η = β .+ O .+ Λ * Z
     Y = Matrix{Float64}(undef, p, n)
@@ -119,13 +119,13 @@ end
                                seed = 100 + dims.p, Ntrial = Ntrial === nothing ? 1 : Ntrial)
                 Nm = key == "binomial" ? fill(Ntrial, dims.p, dims.n) : nothing
                 oracle = Nm === nothing ?
-                    GLLVM.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K) :
-                    GLLVM.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K, N = Nm)
+                    GLLVModels.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K) :
+                    GLLVModels.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K, N = Nm)
                 br = bridge_fit(; y = Y, family = key, d = dims.K, N = Nm, X = X)
                 @test br.gamma ≈ oracle.γ atol = 1e-8
                 @test br.beta_cov ≈ oracle.β atol = 1e-8
                 @test br.alpha ≈ oracle.β atol = 1e-8
-                @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+                @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
                 @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
                 if isnan(oracle.dispersion)
                     @test all(isnan, br.dispersion)
@@ -138,12 +138,12 @@ end
         @testset "negbinomial (per-trait grouped_cov)" begin
             Y, X = _bx_sim(NegativeBinomial(), 4, 80, 1, 1; seed = 104)
             Yi = round.(Int, Y)
-            oracle = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4))
+            oracle = GLLVModels.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4))
             br = bridge_fit(; y = Y, family = "negbinomial", d = 1, X = X)
             @test br.gamma ≈ oracle.γ atol = 1e-8
             @test br.beta_cov ≈ oracle.β atol = 1e-8
             @test br.alpha ≈ oracle.β atol = 1e-8
-            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
             @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
             disp_true = [oracle.r_group[oracle.group[t]] for t in 1:4]
             @test br.dispersion ≈ disp_true atol = 1e-8
@@ -151,12 +151,12 @@ end
 
         @testset "beta (per-trait grouped_cov)" begin
             Y, X = _bx_sim(Beta(), 4, 80, 1, 1; seed = 105)
-            oracle = GLLVM.fit_beta_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:4))
+            oracle = GLLVModels.fit_beta_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:4))
             br = bridge_fit(; y = Y, family = "beta", d = 1, X = X)
             @test br.gamma ≈ oracle.γ atol = 1e-8
             @test br.beta_cov ≈ oracle.β atol = 1e-8
             @test br.alpha ≈ oracle.β atol = 1e-8
-            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
             @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
             disp_true = [oracle.φ[oracle.group[t]] for t in 1:4]
             @test br.dispersion ≈ disp_true atol = 1e-8
@@ -164,12 +164,12 @@ end
 
         @testset "gamma (per-trait grouped_cov)" begin
             Y, X = _bx_sim(Gamma(), 4, 80, 1, 1; seed = 106)
-            oracle = GLLVM.fit_gamma_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:4))
+            oracle = GLLVModels.fit_gamma_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:4))
             br = bridge_fit(; y = Y, family = "gamma", d = 1, X = X)
             @test br.gamma ≈ oracle.γ atol = 1e-8
             @test br.beta_cov ≈ oracle.β atol = 1e-8
             @test br.alpha ≈ oracle.β atol = 1e-8
-            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
             @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
             disp_true = [oracle.α[oracle.group[t]] for t in 1:4]
             @test br.dispersion ≈ disp_true atol = 1e-8
@@ -181,7 +181,7 @@ end
             β = 0.2 .* randn(p); γ = [0.4]; Λ = 0.3 .* randn(p, K)
             x1 = randn(n)
             X = _bridge_x_design([x1], p)
-            O = GLLVM._build_offset(X, γ)
+            O = GLLVModels._build_offset(X, γ)
             Z = randn(K, n)
             η = β .+ O .+ Λ * Z
             φ = 9.0
@@ -193,13 +193,13 @@ end
                 pr = clamp(rand(Distributions.Beta(a, b)), 1e-6, 1 - 1e-6)
                 Y[t, s] = float(rand(Distributions.Binomial(Nt[t, s], pr)))
             end
-            oracle = GLLVM.fit_beta_binomial_gllvm_grouped_cov(Y; X = X, K = K, N = Nt,
+            oracle = GLLVModels.fit_beta_binomial_gllvm_grouped_cov(Y; X = X, K = K, N = Nt,
                                                                group = collect(1:p))
             br = bridge_fit(; y = Y, family = "betabinomial", d = K, N = Nt, X = X)
             @test br.gamma ≈ oracle.γ atol = 1e-8
             @test br.beta_cov ≈ oracle.β atol = 1e-8
             @test br.alpha ≈ oracle.β atol = 1e-8
-            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
             @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
             disp_true = [oracle.φ[oracle.group[t]] for t in 1:p]
             @test br.dispersion ≈ disp_true atol = 1e-8
@@ -210,7 +210,7 @@ end
             p, n, K, q, C = 4, 70, 1, 1, 3
             β = 0.2 .* randn(p); γ = [0.45]; Λ = 0.3 .* randn(p, K)
             X = randn(p, n, q)
-            O = GLLVM._build_offset(X, γ)
+            O = GLLVModels._build_offset(X, γ)
             Z = randn(K, n)
             η = β .+ O .+ Λ * Z
             Y = Matrix{Float64}(undef, p, n)
@@ -220,19 +220,19 @@ end
                 y = C
                 for c in 1:(C - 1)
                     τc = c == 1 ? 0.0 : 1.1
-                    if u <= GLLVM._ord_F(τc - η_ts, LogitLink())
+                    if u <= GLLVModels._ord_F(τc - η_ts, LogitLink())
                         y = c; break
                     end
                 end
                 Y[t, s] = float(y)
             end
             Yi = round.(Int, Y)
-            oracle = GLLVM.fit_ordinal_gllvm_pertrait_cov(Yi; X = X, K = 1)
+            oracle = GLLVModels.fit_ordinal_gllvm_pertrait_cov(Yi; X = X, K = 1)
             br = bridge_fit(; y = Y, family = "ordinal", d = 1, X = X)
             @test br.gamma ≈ oracle.γ atol = 1e-8
             @test br.beta_cov ≈ oracle.β atol = 1e-8
             @test br.alpha ≈ oracle.β atol = 1e-8
-            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
             @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
             @test br.cutpoint_mode == "per_trait"
             @test br.cutpoints ≈ oracle.τ atol = 1e-8
@@ -246,7 +246,7 @@ end
             γz = [0.3]; βc = 0.2 .* randn(p) .+ 0.5; γc = [0.4]
             Λc = 0.25 .* randn(p, K)
             X = randn(p, n, q)
-            Oz = GLLVM._build_offset(X, γz); Oc = GLLVM._build_offset(X, γc)
+            Oz = GLLVModels._build_offset(X, γz); Oc = GLLVModels._build_offset(X, γc)
             Z = randn(K, n)
             Y = Matrix{Float64}(undef, p, n)
             for t in 1:p, s in 1:n
@@ -255,7 +255,7 @@ end
                 Y[t, s] = rand() < π ? 0.0 : float(rand(Poisson(μ)))
             end
             Yi = round.(Int, Y)
-            oracle = GLLVM.fit_zip_gllvm_cov(Yi; X = X, K = K, iterations = 120)
+            oracle = GLLVModels.fit_zip_gllvm_cov(Yi; X = X, K = K, iterations = 120)
             br = bridge_fit(; y = Y, family = "zip", d = K, X = X)
             @test br.family == "zip"
             @test br.model == "zip_x_rr"
@@ -265,7 +265,7 @@ end
             @test br.beta_zero ≈ oracle.βz atol = 1e-8
             @test br.beta_cov ≈ oracle.βc atol = 1e-8
             @test br.alpha ≈ oracle.βc atol = 1e-8
-            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
             @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
             @test occursin("Julia-forward", br.note)
             @test occursin("twin", lowercase(br.note))
@@ -280,7 +280,7 @@ end
             γz = [0.3]; βc = 0.2 .* randn(p) .+ 0.5; γc = [0.4]
             Λc = 0.25 .* randn(p, K)
             X = randn(p, n, q)
-            Oz = GLLVM._build_offset(X, γz); Oc = GLLVM._build_offset(X, γc)
+            Oz = GLLVModels._build_offset(X, γz); Oc = GLLVModels._build_offset(X, γc)
             Z = randn(K, n)
             Y = Matrix{Float64}(undef, p, n)
             for t in 1:p, s in 1:n
@@ -294,10 +294,10 @@ end
             # Linux OpenBLAS — Ubuntu CI missed γ/β/Λ/r by ~2–5e-6 while
             # loglik still agreed. Keep atol=1e-8 via same-fit transport +
             # θ_init with iterations=0 (no second wander on the shared-r ridge).
-            oracle = GLLVM.fit_zinb_gllvm_cov(Yi; X = X, K = K)
+            oracle = GLLVModels.fit_zinb_gllvm_cov(Yi; X = X, K = K)
             θ̂ = vcat(oracle.βz, oracle.γz, oracle.βc, oracle.γc,
-                     GLLVM.pack_lambda(oracle.Λc), log(oracle.r))
-            started = GLLVM.fit_zinb_gllvm_cov(Yi; X = X, K = K, θ_init = θ̂,
+                     GLLVModels.pack_lambda(oracle.Λc), log(oracle.r))
+            started = GLLVModels.fit_zinb_gllvm_cov(Yi; X = X, K = K, θ_init = θ̂,
                                                iterations = 0)
             @test started.γc ≈ oracle.γc atol = 1e-8
             @test started.γz ≈ oracle.γz atol = 1e-8
@@ -305,9 +305,9 @@ end
             @test started.βc ≈ oracle.βc atol = 1e-8
             @test started.r ≈ oracle.r atol = 1e-8
             @test started.loglik ≈ oracle.loglik atol = 1e-8
-            traits = GLLVM._bridge_names(nothing, p, "trait")
-            units = GLLVM._bridge_names(nothing, n, "unit")
-            br = GLLVM._bridge_assemble_zinb_cov(oracle, traits, units, Yi, X,
+            traits = GLLVModels._bridge_names(nothing, p, "trait")
+            units = GLLVModels._bridge_names(nothing, n, "unit")
+            br = GLLVModels._bridge_assemble_zinb_cov(oracle, traits, units, Yi, X,
                                                 fill(false, q), "none", 0.95, 0, 1)
             @test br.family == "zinb"
             @test br.model == "zinb_x_rr"
@@ -318,7 +318,7 @@ end
             @test br.beta_cov ≈ oracle.βc atol = 1e-8
             @test br.alpha ≈ oracle.βc atol = 1e-8
             @test all(x -> isapprox(x, oracle.r; atol = 1e-8), br.dispersion)
-            @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+            @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
             @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
             @test occursin("Julia-forward", br.note)
             @test occursin("shared scalar r", br.note)
@@ -345,9 +345,9 @@ end
                                seed = 520 + dims.p, Ntrial = Ntrial === nothing ? 1 : Ntrial)
                 Nm = key == "binomial" ? fill(Ntrial, dims.p, dims.n) : nothing
                 oracle = Nm === nothing ?
-                    GLLVM.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K) :
-                    GLLVM.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K, N = Nm)
-                nat = GLLVM.confint(oracle, Y; method = :wald, X = X, N = Nm)
+                    GLLVModels.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K) :
+                    GLLVModels.fit_gllvm_cov(Y; family = marker, X = X, K = dims.K, N = Nm)
+                nat = GLLVModels.confint(oracle, Y; method = :wald, X = X, N = Nm)
                 br = bridge_fit(; y = Y, family = key, d = dims.K, N = Nm, X = X,
                                 options = Dict("ci_method" => "wald"))
                 @test br.ci_method == "wald"
@@ -376,11 +376,11 @@ end
         @testset "negbinomial Wald (grouped_cov): well-conditioned fixture (T14 F2)" begin
             Y, X = _bx_sim(NegativeBinomial(), 3, 200, 1, 1; seed = 523, nb_r = 2.0, intercept = 1.5)
             Yi = round.(Int, Y)
-            oracle = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:3))
+            oracle = GLLVModels.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:3))
             @test all(0.5 .<= oracle.r_group .<= 100)
             @test !any(oracle.dispersion_boundary)
             @test oracle.converged
-            nat = GLLVM.confint(oracle, Yi; method = :wald, X = X)
+            nat = GLLVModels.confint(oracle, Yi; method = :wald, X = X)
             @test nat.pd_hessian
             @test all(isfinite, nat.lower) && all(isfinite, nat.upper)
             br = bridge_fit(; y = Y, family = "negbinomial", d = 1, X = X,
@@ -395,8 +395,8 @@ end
         @testset "negbinomial Wald (grouped_cov): seed-523 degenerate case (T14 F2)" begin
             Y, X = _bx_sim(NegativeBinomial(), 3, 70, 1, 1; seed = 523)
             Yi = round.(Int, Y)
-            oracle = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:3))
-            nat = GLLVM.confint(oracle, Yi; method = :wald, X = X)
+            oracle = GLLVModels.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:3))
+            nat = GLLVModels.confint(oracle, Yi; method = :wald, X = X)
             br = bridge_fit(; y = Y, family = "negbinomial", d = 1, X = X,
                             options = Dict("ci_method" => "wald"))
             @test br.ci_method == "wald"
@@ -415,8 +415,8 @@ end
 
         @testset "beta Wald (grouped_cov)" begin
             Y, X = _bx_sim(Beta(), 3, 70, 1, 1; seed = 524)
-            oracle = GLLVM.fit_beta_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:3))
-            nat = GLLVM.confint(oracle, Y; method = :wald, X = X)
+            oracle = GLLVModels.fit_beta_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:3))
+            nat = GLLVModels.confint(oracle, Y; method = :wald, X = X)
             br = bridge_fit(; y = Y, family = "beta", d = 1, X = X,
                             options = Dict("ci_method" => "wald"))
             @test br.ci_method == "wald"
@@ -428,8 +428,8 @@ end
 
         @testset "gamma Wald (grouped_cov)" begin
             Y, X = _bx_sim(Gamma(), 3, 70, 1, 1; seed = 525)
-            oracle = GLLVM.fit_gamma_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:3))
-            nat = GLLVM.confint(oracle, Y; method = :wald, X = X)
+            oracle = GLLVModels.fit_gamma_gllvm_grouped_cov(Y; X = X, K = 1, group = collect(1:3))
+            nat = GLLVModels.confint(oracle, Y; method = :wald, X = X)
             br = bridge_fit(; y = Y, family = "gamma", d = 1, X = X,
                             options = Dict("ci_method" => "wald"))
             @test br.ci_method == "wald"
@@ -445,7 +445,7 @@ end
             β = 0.2 .* randn(p); γ = [0.4]; Λ = 0.3 .* randn(p, K)
             x1 = randn(n)
             X = _bridge_x_design([x1], p)
-            O = GLLVM._build_offset(X, γ)
+            O = GLLVModels._build_offset(X, γ)
             Z = randn(K, n)
             η = β .+ O .+ Λ * Z
             φ = 9.0
@@ -457,9 +457,9 @@ end
                 pr = clamp(rand(Distributions.Beta(a, b)), 1e-6, 1 - 1e-6)
                 Y[t, s] = float(rand(Distributions.Binomial(Nt[t, s], pr)))
             end
-            oracle = GLLVM.fit_beta_binomial_gllvm_grouped_cov(Y; X = X, K = K, N = Nt,
+            oracle = GLLVModels.fit_beta_binomial_gllvm_grouped_cov(Y; X = X, K = K, N = Nt,
                                                                group = collect(1:p))
-            nat = GLLVM.confint(oracle, Y; method = :wald, X = X, N = Nt)
+            nat = GLLVModels.confint(oracle, Y; method = :wald, X = X, N = Nt)
             br = bridge_fit(; y = Y, family = "betabinomial", d = K, N = Nt, X = X,
                             options = Dict("ci_method" => "wald"))
             @test br.ci_method == "wald"
@@ -476,7 +476,7 @@ end
             γz = [0.25]; βc = 0.2 .* randn(p) .+ 0.5; γc = [0.35]
             Λc = 0.25 .* randn(p, K)
             X = _bridge_x_design([randn(n)], p)
-            Oz = GLLVM._build_offset(X, γz); Oc = GLLVM._build_offset(X, γc)
+            Oz = GLLVModels._build_offset(X, γz); Oc = GLLVModels._build_offset(X, γc)
             Z = randn(K, n)
             Y = Matrix{Float64}(undef, p, n)
             for t in 1:p, s in 1:n
@@ -485,8 +485,8 @@ end
                 Y[t, s] = rand() < π ? 0.0 : float(rand(Poisson(μ)))
             end
             Yi = round.(Int, Y)
-            oracle = GLLVM.fit_zip_gllvm_cov(Yi; X = X, K = K, iterations = 120)
-            nat = GLLVM.confint(oracle, Yi; method = :wald, X = X)
+            oracle = GLLVModels.fit_zip_gllvm_cov(Yi; X = X, K = K, iterations = 120)
+            nat = GLLVModels.confint(oracle, Yi; method = :wald, X = X)
             br = bridge_fit(; y = Y, family = "zip", d = K, X = X,
                             options = Dict("ci_method" => "wald"))
             @test br.ci_method == "wald"
@@ -505,7 +505,7 @@ end
             γz = [0.25]; βc = 0.2 .* randn(p) .+ 0.5; γc = [0.35]
             Λc = 0.25 .* randn(p, K)
             X = _bridge_x_design([randn(n)], p)
-            Oz = GLLVM._build_offset(X, γz); Oc = GLLVM._build_offset(X, γc)
+            Oz = GLLVModels._build_offset(X, γz); Oc = GLLVModels._build_offset(X, γc)
             Z = randn(K, n)
             Y = Matrix{Float64}(undef, p, n)
             for t in 1:p, s in 1:n
@@ -514,11 +514,11 @@ end
                 Y[t, s] = rand() < π ? 0.0 : float(rand(NegativeBinomial(r, r / (r + μ))))
             end
             Yi = round.(Int, Y)
-            oracle = GLLVM.fit_zinb_gllvm_cov(Yi; X = X, K = K)
-            nat = GLLVM.confint(oracle, Yi; method = :wald, X = X)
-            traits = GLLVM._bridge_names(nothing, p, "trait")
-            units = GLLVM._bridge_names(nothing, n, "unit")
-            br = GLLVM._bridge_assemble_zinb_cov(oracle, traits, units, Yi, X,
+            oracle = GLLVModels.fit_zinb_gllvm_cov(Yi; X = X, K = K)
+            nat = GLLVModels.confint(oracle, Yi; method = :wald, X = X)
+            traits = GLLVModels._bridge_names(nothing, p, "trait")
+            units = GLLVModels._bridge_names(nothing, n, "unit")
+            br = GLLVModels._bridge_assemble_zinb_cov(oracle, traits, units, Yi, X,
                                                 fill(false, q), "wald", 0.95, 0, 1)
             @test br.ci_method == "wald"
             @test any(==("gammaz[1]"), br.ci_param_names)
@@ -535,8 +535,8 @@ end
         p, n, q, K = 3, 40, 1, 1
         Xg = randn(p, n, q)
         Yg = randn(p, n)
-        gf = GLLVM.fit_gaussian_gllvm(Yg; K = K, X = Xg)
-        natg = GLLVM.confint(gf; y = Yg, X = Xg, level = 0.95)
+        gf = GLLVModels.fit_gaussian_gllvm(Yg; K = K, X = Xg)
+        natg = GLLVModels.confint(gf; y = Yg, X = Xg, level = 0.95)
         brg = bridge_fit(; y = Yg, family = "gaussian", d = K, X = Xg,
                          options = Dict("ci_method" => "wald"))
         dg = _bx_ci_max_absdiff(brg.ci_param_names, brg.ci_lower, brg.ci_upper,
@@ -546,8 +546,8 @@ end
         # Profile/bootstrap are routed through the same native covariate CI
         # engines; use a tiny K=0 Poisson-X fixture to keep this test quick.
         Yp, Xp = _bx_sim(Poisson(), 2, 24, 0, 1; seed = 808)
-        pf = GLLVM.fit_gllvm_cov(Yp; family = Poisson(), X = Xp, K = 0)
-        nat_profile = GLLVM.confint(pf, Yp; method = :profile, X = Xp)
+        pf = GLLVModels.fit_gllvm_cov(Yp; family = Poisson(), X = Xp, K = 0)
+        nat_profile = GLLVModels.confint(pf, Yp; method = :profile, X = Xp)
         br_profile = bridge_fit(; y = Yp, family = "poisson", d = 0, X = Xp,
                                 options = Dict("ci_method" => "profile"))
         @test br_profile.ci_method == "profile"
@@ -593,7 +593,7 @@ end
         br = bridge_fit(; y = Yg, family = "gaussian", d = K, X = Xg)
         # Rebuild the expected Gaussian-X return from the public pieces (mirrors
         # the bridge's gaussian-X branch exactly).
-        fit = GLLVM.fit_gaussian_gllvm(Yg; K = K, X = Xg)
+        fit = GLLVModels.fit_gaussian_gllvm(Yg; K = K, X = Xg)
         β = collect(Float64, fit.pars.β)
         alpha = zeros(Float64, p)
         for t in 1:p

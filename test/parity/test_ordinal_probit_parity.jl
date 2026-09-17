@@ -1,12 +1,12 @@
-# test_ordinal_probit_parity.jl — ordinal-probit GLLVM logLik vs gllvmTMB
+# test_ordinal_probit_parity.jl — ordinal-probit GLLVModels logLik vs gllvmTMB
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
 # Same-model bar: cumulative-probit link, per-trait intercepts, τ₁ = 0,
 # and latent unique=FALSE (no Ψ).
 
-using GLLVM, RCall, Test, Random
+using GLLVModels, RCall, Test, Random
 
-@testset "Ordinal-probit GLLVM diagnostic: GLLVM.jl vs gllvmTMB" begin
+@testset "Ordinal-probit GLLVModels diagnostic: GLLVModels.jl vs gllvmTMB" begin
     Random.seed!(46)
     p, K, n, C = 5, 1, 60, 3
     β = [0.30, -0.20, 0.15, -0.10, 0.05]
@@ -17,8 +17,8 @@ using GLLVM, RCall, Test, Random
     Y = Matrix{Int}(undef, p, n)
     for s in 1:n, t in 1:p
         u = rand()
-        Y[t, s] = u < GLLVM._ord_F(τ[1] - η[t, s], ProbitLink()) ? 1 :
-                  u < GLLVM._ord_F(τ[2] - η[t, s], ProbitLink()) ? 2 : 3
+        Y[t, s] = u < GLLVModels._ord_F(τ[1] - η[t, s], ProbitLink()) ? 1 :
+                  u < GLLVModels._ord_F(τ[2] - η[t, s], ProbitLink()) ? 2 : 3
     end
 
     jl_fit = fit_ordinal_gllvm_pertrait(Y; K = K, link = ProbitLink(),

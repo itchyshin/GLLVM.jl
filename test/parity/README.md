@@ -1,6 +1,6 @@
-# GLLVM.jl parity suite (`test/parity/`)
+# GLLVModels.jl parity suite (`test/parity/`)
 
-Opt-in comparison tests between GLLVM.jl (Julia) and R's `gllvmTMB`
+Opt-in comparison tests between GLLVModels.jl (Julia) and R's `gllvmTMB`
 (primary twin), using RCall.jl to drive R from within Julia. Optional light
 CRAN `gllvm` cross-checks are secondary and must not block the twin cell.
 

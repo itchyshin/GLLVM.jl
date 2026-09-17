@@ -2,7 +2,7 @@
 # Clears the holdout `_CIFit` gap; wires `r_fit_se_tweedie` + `tweedie_fixed` cell.
 # R↔Julia live Δ only when GLLVM_PARITY_TESTS=1. ≠ programme §7.
 
-using GLLVM, Test, Random
+using GLLVModels, Test, Random
 
 @testset "second-order TweedieGroupedFit Wald wiring" begin
     @testset "fixed power: θ packing + public Wald on beta" begin
@@ -17,13 +17,13 @@ using GLLVM, Test, Random
         μ = exp.(β .+ Λ * Z)
         Y = zeros(p, n)
         for t in 1:p, s in 1:n
-            Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ[t], pw, Random.default_rng())
+            Y[t, s] = GLLVModels._tweedie_sample(μ[t, s], φ[t], pw, Random.default_rng())
         end
         fit = fit_tweedie_gllvm_grouped(Y; K = K, power = pw, iterations = 250)
-        @test fit isa GLLVM.TweedieGroupedFit
+        @test fit isa GLLVModels.TweedieGroupedFit
         @test fit.power_fixed
-        ad = GLLVM._family_ci(fit, Y)
-        @test length(ad.θ) == p + GLLVM.rr_theta_len(p, K) + p
+        ad = GLLVModels._family_ci(fit, Y)
+        @test length(ad.θ) == p + GLLVModels.rr_theta_len(p, K) + p
         @test count(startswith("beta["), ad.names) == p
         @test count(startswith("phi["), ad.names) == p
         ci = confint(fit, Y; method = :wald, parm = "beta")
@@ -44,16 +44,16 @@ using GLLVM, Test, Random
         μ = exp.(β .+ Λ * Z)
         Y = zeros(p, n)
         for t in 1:p, s in 1:n
-            Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ[t], pw, Random.default_rng())
+            Y[t, s] = GLLVModels._tweedie_sample(μ[t, s], φ[t], pw, Random.default_rng())
         end
         fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :shared, iterations = 200)
-        @test fit isa GLLVM.TweedieGroupedFit
+        @test fit isa GLLVModels.TweedieGroupedFit
         @test !fit.power_fixed
-        ad = GLLVM._family_ci(fit, Y)
-        @test length(ad.θ) == p + GLLVM.rr_theta_len(p, K) + length(fit.φ)
+        ad = GLLVModels._family_ci(fit, Y)
+        @test length(ad.θ) == p + GLLVModels.rr_theta_len(p, K) + length(fit.φ)
         ci = confint(fit, Y; method = :wald, parm = "beta[1]")
         @test ci.term == ["beta[1]"]
-        @test length(ad.θ) == GLLVM._nparams(fit) - 1  # minus free power coordinate
+        @test length(ad.θ) == GLLVModels._nparams(fit) - 1  # minus free power coordinate
     end
 
     @testset "species estimated power: plug-in θ length + beta Wald" begin
@@ -67,13 +67,13 @@ using GLLVM, Test, Random
         μ = exp.(β .+ Λ * Z)
         Y = zeros(p, n)
         for t in 1:p, s in 1:n
-            Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ[t], pw[t], Random.default_rng())
+            Y[t, s] = GLLVModels._tweedie_sample(μ[t, s], φ[t], pw[t], Random.default_rng())
         end
         fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :species, iterations = 250)
-        @test fit isa GLLVM.TweediePerTraitPowerFit
-        ad = GLLVM._family_ci(fit, Y)
-        @test length(ad.θ) == p + GLLVM.rr_theta_len(p, K) + length(fit.φ)
-        @test length(ad.θ) == GLLVM._nparams(fit) - p
+        @test fit isa GLLVModels.TweediePerTraitPowerFit
+        ad = GLLVModels._family_ci(fit, Y)
+        @test length(ad.θ) == p + GLLVModels.rr_theta_len(p, K) + length(fit.φ)
+        @test length(ad.θ) == GLLVModels._nparams(fit) - p
         ci = confint(fit, Y; method = :wald, parm = "beta")
         @test length(ci.term) == p
         fin = isfinite.(ci.se)

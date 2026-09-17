@@ -19,7 +19,7 @@
 # have observed ≠ Fisher — i.e. which are real instances of the curvature
 # fault class through this kernel.
 
-using GLLVM, Test, Distributions
+using GLLVModels, Test, Distributions
 
 @testset "Laplace fallback dual-safety census" begin
 
@@ -27,26 +27,26 @@ using GLLVM, Test, Distributions
 
     # (name, family, link, n, y, observed==Fisher?)
     CASES = [
-        ("Poisson/log",        Poisson(),                      GLLVM.LogLink(),      1, 3.0, true),
-        ("Binomial/logit",     Binomial(),                     GLLVM.LogitLink(),    6, 2.0, true),
-        ("Binomial/probit",    Binomial(),                     GLLVM.ProbitLink(),   6, 2.0, false),
-        ("Binomial/cloglog",   Binomial(),                     GLLVM.CLogLogLink(),  6, 2.0, false),
-        ("NegBin2/log",        NegativeBinomial(4.0, 0.5),     GLLVM.LogLink(),      1, 3.0, false),
-        ("NB1/log",            GLLVM.NB1(1.5),                 GLLVM.LogLink(),      1, 3.0, false),
-        ("Beta/logit",         Beta(12.0, 1.0),                GLLVM.LogitLink(),    1, 0.4, false),
-        ("Gamma/log",          Gamma(3.0, 1.0),                GLLVM.LogLink(),      1, 2.0, false),
-        ("Exponential/log",    Exponential(1.0),               GLLVM.LogLink(),      1, 2.0, false),
-        ("TruncatedPoisson",   GLLVM.TruncatedPoisson(),       GLLVM.LogLink(),      1, 3.0, true),
-        ("GP1/log",            GLLVM.GeneralizedPoisson1(0.3), GLLVM.LogLink(),      1, 3.0, false),
-        ("Student-t/identity", GLLVM.StudentTFamily(4.0, 1.0), GLLVM.IdentityLink(), 1, 0.7, false),
-        ("Tweedie/log",        GLLVM.TweedieED(1.5, 1.5),      GLLVM.LogLink(),      1, 2.0, false),
+        ("Poisson/log",        Poisson(),                      GLLVModels.LogLink(),      1, 3.0, true),
+        ("Binomial/logit",     Binomial(),                     GLLVModels.LogitLink(),    6, 2.0, true),
+        ("Binomial/probit",    Binomial(),                     GLLVModels.ProbitLink(),   6, 2.0, false),
+        ("Binomial/cloglog",   Binomial(),                     GLLVModels.CLogLogLink(),  6, 2.0, false),
+        ("NegBin2/log",        NegativeBinomial(4.0, 0.5),     GLLVModels.LogLink(),      1, 3.0, false),
+        ("NB1/log",            GLLVModels.NB1(1.5),                 GLLVModels.LogLink(),      1, 3.0, false),
+        ("Beta/logit",         Beta(12.0, 1.0),                GLLVModels.LogitLink(),    1, 0.4, false),
+        ("Gamma/log",          Gamma(3.0, 1.0),                GLLVModels.LogLink(),      1, 2.0, false),
+        ("Exponential/log",    Exponential(1.0),               GLLVModels.LogLink(),      1, 2.0, false),
+        ("TruncatedPoisson",   GLLVModels.TruncatedPoisson(),       GLLVModels.LogLink(),      1, 3.0, true),
+        ("GP1/log",            GLLVModels.GeneralizedPoisson1(0.3), GLLVModels.LogLink(),      1, 3.0, false),
+        ("Student-t/identity", GLLVModels.StudentTFamily(4.0, 1.0), GLLVModels.IdentityLink(), 1, 0.7, false),
+        ("Tweedie/log",        GLLVModels.TweedieED(1.5, 1.5),      GLLVModels.LogLink(),      1, 2.0, false),
     ]
 
     @testset "every family reaching the generic core is dual-safe" begin
         for (name, f, link, n, y, _) in CASES
-            μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-            me = GLLVM.mu_eta(link, η)
-            w  = GLLVM._glm_obs_weight(f, μ, n, me, y, link, η)   # must not throw
+            μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+            me = GLLVModels.mu_eta(link, η)
+            w  = GLLVModels._glm_obs_weight(f, μ, n, me, y, link, η)   # must not throw
             @test isfinite(w)
         end
     end
@@ -56,21 +56,21 @@ using GLLVM, Test, Distributions
     # (y is the response; φ and p are struct fields), so the series never sees a
     # Dual. Asserted here so the refutation stays refuted.
     @testset "Tweedie's infinite series is not an AD hazard" begin
-        f, link = GLLVM.TweedieED(1.5, 1.5), GLLVM.LogLink()
-        μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-        me = GLLVM.mu_eta(link, η)
-        @test isfinite(GLLVM._glm_obs_weight(f, μ, 1, me, 2.0, link, η))
+        f, link = GLLVModels.TweedieED(1.5, 1.5), GLLVModels.LogLink()
+        μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+        me = GLLVModels.mu_eta(link, η)
+        @test isfinite(GLLVModels._glm_obs_weight(f, μ, 1, me, 2.0, link, η))
     end
 
     # The known exception, pinned. If this ever starts passing, the upstream
     # gap has been fixed and CensoredPoisson could join the fallback; if a
     # SECOND family starts throwing, the census above catches it.
     @testset "CensoredPoisson is the ONLY non-dual-safe family (pinned)" begin
-        f, link = GLLVM.CensoredPoisson(), GLLVM.LogLink()
-        μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-        me = GLLVM.mu_eta(link, η)
-        @test_throws MethodError GLLVM._glm_obs_weight(f, μ, 3, me, 3.0, link, η)
-        @test GLLVM._glm_weight_matches_observed(f, link)   # …and the trait keeps it off that path
+        f, link = GLLVModels.CensoredPoisson(), GLLVModels.LogLink()
+        μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+        me = GLLVModels.mu_eta(link, η)
+        @test_throws MethodError GLLVModels._glm_obs_weight(f, μ, 3, me, 3.0, link, η)
+        @test GLLVModels._glm_weight_matches_observed(f, link)   # …and the trait keeps it off that path
     end
 
     # Which pairs are genuinely instances of the fault class through this
@@ -79,10 +79,10 @@ using GLLVM, Test, Distributions
     # INSTANCE at probit and cloglog — a family-level census would miss both.
     @testset "observed ≠ Fisher exactly where claimed" begin
         for (name, f, link, n, y, same) in CASES
-            μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-            me = GLLVM.mu_eta(link, η)
-            wo = GLLVM._glm_obs_weight(f, μ, n, me, y, link, η)
-            wf = GLLVM._glm_weight(f, μ, n, me)
+            μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+            me = GLLVModels.mu_eta(link, η)
+            wo = GLLVModels._glm_obs_weight(f, μ, n, me, y, link, η)
+            wf = GLLVModels._glm_weight(f, μ, n, me)
             if same
                 @test wo ≈ wf rtol = 1e-10
             else
@@ -109,19 +109,19 @@ using GLLVM, Test, Distributions
     # is the distinction that matters, and it is why this guard is cheap
     # insurance rather than a routine code path.
     @testset "Beta observed weights are positive AT THE MODE (guard stays quiet)" begin
-        link = GLLVM.LogitLink(); f = Beta(12.0, 1.0)
+        link = GLLVModels.LogitLink(); f = Beta(12.0, 1.0)
         for p in (4, 8), scale in (1.0, 10.0)
             β  = fill(-1.5, p); yv = fill(0.985, p)
             Λ  = fill(scale, p, 1); n1 = ones(Int, p)
-            z  = GLLVM._laplace_mode(f, yv, n1, Λ, β, link)
-            ηm = GLLVM._clamp_eta.(β .+ Λ * z)
-            μm = GLLVM._clamp_mu.(Ref(f), GLLVM.linkinv.(Ref(link), ηm))
-            mem = GLLVM.mu_eta.(Ref(link), ηm)
-            W  = [GLLVM._glm_obs_weight(f, μm[t], 1, mem[t], yv[t], link, ηm[t]) for t in 1:p]
+            z  = GLLVModels._laplace_mode(f, yv, n1, Λ, β, link)
+            ηm = GLLVModels._clamp_eta.(β .+ Λ * z)
+            μm = GLLVModels._clamp_mu.(Ref(f), GLLVModels.linkinv.(Ref(link), ηm))
+            mem = GLLVModels.mu_eta.(Ref(link), ηm)
+            W  = [GLLVModels._glm_obs_weight(f, μm[t], 1, mem[t], yv[t], link, ηm[t]) for t in 1:p]
             @test all(>(0), W)
             # …and the marginal is finite, i.e. the guard did not fire.
             Y = reshape(yv, p, 1); N = ones(Int, p, 1)
-            @test isfinite(GLLVM.marginal_loglik_laplace(f, Y, N, Λ, β, link; hessian = :observed))
+            @test isfinite(GLLVModels.marginal_loglik_laplace(f, Y, N, Λ, β, link; hessian = :observed))
         end
     end
 

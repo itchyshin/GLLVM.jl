@@ -82,7 +82,7 @@ class Collection(unittest.TestCase):
             oracle_build_receipt_sha256=evidence.digest(evidence.ORACLE_BUILD),
             oracle_source_receipt_sha256=evidence.digest(evidence.ORACLE_SOURCE),
             julia_source_tree_sha256=evidence.tree_digest(self.root/'src'),
-            julia_package_path=str(self.root/'src/GLLVM.jl'), julia_package_root=str(self.root),
+            julia_package_path=str(self.root/'src/GLLVModels.jl'), julia_package_root=str(self.root),
             julia_project_path=str(self.root/'test/parity/Project.toml'),
             julia_project_sha256=hashes['test/parity/Project.toml'], julia_manifest_sha256='ABSENT',
             julia_version='1.12.6', julia_machine='synthetic', julia_threads=1, blas_threads=1,
@@ -189,7 +189,7 @@ class Collection(unittest.TestCase):
         retained=cell.read_bytes(); cell.unlink()
         with self.assertRaisesRegex(evidence.EvidenceError,'MISSING_OR_EXTRA_CELL'):self.verify(rows)
         cell.write_bytes(retained)
-        source=self.root/'src/GLLVM.jl'; source.write_text(source.read_text()+'\n# changed\n')
+        source=self.root/'src/GLLVModels.jl'; source.write_text(source.read_text()+'\n# changed\n')
         with self.assertRaisesRegex(evidence.EvidenceError,'STALE_EXECUTION'):self.verify(rows)
 
     def test_unknown_case_and_duplicate_frozen_rows_reject(self):

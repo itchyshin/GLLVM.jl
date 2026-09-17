@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra, SparseArrays
+using Test, GLLVModels, LinearAlgebra, SparseArrays
 
 # Private foundation interface (no root finding or optimisation):
 #
@@ -63,11 +63,11 @@ function _profile_fixture()
     unit_obs = [:u1a, :u1a, :u1b, :u1b, :u2a, :u2a, :u2b, :u2b]
     labels = [unit, unit_obs]
     terms = [
-        GLLVM.GroupingTerm(:unit; mode=:indep, common=false),
-        GLLVM.GroupingTerm(:unit_obs; mode=:indep, common=false),
+        GLLVModels.GroupingTerm(:unit; mode=:indep, common=false),
+        GLLVModels.GroupingTerm(:unit_obs; mode=:indep, common=false),
     ]
-    incidences = [GLLVM._grouped_incidence(values, n) for values in labels]
-    D = GLLVM._trait_mean_design(p, n)
+    incidences = [GLLVModels._grouped_incidence(values, n) for values in labels]
+    D = GLLVModels._trait_mean_design(p, n)
     data = [0.30 -0.15 0.42 0.08 -0.27 0.51 -0.06 0.19;
             -0.11 0.37 -0.22 0.46 0.14 -0.31 0.28 -0.04]
     return (; p, n, unit, unit_obs, labels, terms, incidences, D, data)
@@ -96,7 +96,7 @@ end
     @test rank(dense_gram) == size(dense_gram, 1)
     @test rank(fixture.D) == size(fixture.D, 2)
 
-        gram_result = GLLVM._grouped_indep_variance_basis_gram(
+        gram_result = GLLVModels._grouped_indep_variance_basis_gram(
             fixture.D, fixture.terms, fixture.incidences)
         @test gram_result.gram ≈ dense_gram atol=1e-12
         @test gram_result.rank == size(dense_gram, 1)
@@ -111,87 +111,87 @@ end
 
         # Identical source incidences make their trait-specific bases aliased.
         alias_labels = [fixture.unit, fixture.unit]
-        alias_incidences = [GLLVM._grouped_incidence(values, fixture.n)
+        alias_incidences = [GLLVModels._grouped_incidence(values, fixture.n)
             for values in alias_labels]
         alias_bases = _profile_dense_basis(alias_labels, fixture.p)
         @test rank(_profile_dense_gram(alias_bases)) < length(alias_bases)
-        alias_gram = GLLVM._grouped_indep_variance_basis_gram(
+        alias_gram = GLLVModels._grouped_indep_variance_basis_gram(
             fixture.D, fixture.terms, alias_incidences)
         @test alias_gram.rank < length(alias_gram.labels)
         @test !alias_gram.valid && isinf(alias_gram.condition)
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_profile_objective(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, fixture.D, fixture.terms, alias_incidences;
             selected=(1, 1), fixed_variance=0.1)
 
         # A one-trait identity incidence makes its sole source basis residual-aliased.
         residual_data = reshape([0.2, -0.1, 0.3, 0.4], 1, :)
         residual_D = ones(Float64, 4, 1)
-        residual_terms = [GLLVM.GroupingTerm(:unit; mode=:indep, common=false)]
+        residual_terms = [GLLVModels.GroupingTerm(:unit; mode=:indep, common=false)]
         residual_incidence = [sparse(Matrix{Float64}(I, 4, 4))]
         residual_bases = _profile_dense_basis([collect(1:4)], 1)
         @test rank(_profile_dense_gram(residual_bases)) < length(residual_bases)
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_profile_objective(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_profile_objective(
             residual_data, residual_D, residual_terms, residual_incidence;
             selected=(1, 1), fixed_variance=0.1)
 
         deficient_D = hcat(ones(Float64, fixture.p * fixture.n),
             ones(Float64, fixture.p * fixture.n))
         @test rank(deficient_D) < size(deficient_D, 2)
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_profile_objective(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, deficient_D, fixture.terms, fixture.incidences;
             selected=(1, 1), fixed_variance=0.1)
 
-        common_terms = [GLLVM.GroupingTerm(:unit; mode=:indep, common=true)]
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_basis_gram(
+        common_terms = [GLLVModels.GroupingTerm(:unit; mode=:indep, common=true)]
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_basis_gram(
             fixture.D, common_terms, fixture.incidences[1:1])
-        dependent_terms = [GLLVM.GroupingTerm(:unit; mode=:dep)]
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_basis_gram(
+        dependent_terms = [GLLVModels.GroupingTerm(:unit; mode=:dep)]
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_basis_gram(
             fixture.D, dependent_terms, fixture.incidences[1:1])
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_profile_objective(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, fixture.D, fixture.terms, fixture.incidences;
             selected=(1, 2), fixed_variance=-0.1)
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_profile_objective(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, fixture.D, fixture.terms, fixture.incidences;
             selected=(1, 2), fixed_variance=0.0, evaluator_placeholder=Inf)
-        mismatched_incidence = [GLLVM._grouped_incidence(fixture.unit[1:6], 6),
+        mismatched_incidence = [GLLVModels._grouped_incidence(fixture.unit[1:6], 6),
             fixture.incidences[2]]
-        @test_throws DimensionMismatch GLLVM._grouped_indep_variance_profile_objective(
+        @test_throws DimensionMismatch GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, fixture.D, fixture.terms, mismatched_incidence;
             selected=(1, 2), fixed_variance=0.0)
         duplicate_terms = [fixture.terms[1], fixture.terms[1]]
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_basis_gram(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_basis_gram(
             fixture.D, duplicate_terms, fixture.incidences)
         weighted_incidence = copy(fixture.incidences[1])
         weighted_incidence.nzval[1] = 0.5
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_basis_gram(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_basis_gram(
             fixture.D, fixture.terms[1:1], [weighted_incidence])
         negative_incidence = copy(fixture.incidences[1])
         negative_incidence.nzval[1] = -1.0
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_basis_gram(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_basis_gram(
             fixture.D, fixture.terms[1:1], [negative_incidence])
         multiple_membership = sparse(fixture.incidences[1] +
             sparse([1], [2], [1.0], fixture.n, size(fixture.incidences[1], 2)))
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_basis_gram(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_basis_gram(
             fixture.D, fixture.terms[1:1], [multiple_membership])
-        crossing_unit_obs = GLLVM._grouped_incidence(
+        crossing_unit_obs = GLLVModels._grouped_incidence(
             [:a, :b, :b, :b, :a, :c, :c, :d], fixture.n)
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_basis_gram(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_basis_gram(
             fixture.D, fixture.terms, [fixture.incidences[1], crossing_unit_obs])
         overflow_value = BigFloat("1e10000")
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_profile_objective(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, fixture.D, fixture.terms, fixture.incidences;
             selected=(1, 2), fixed_variance=overflow_value)
-        @test_throws ArgumentError GLLVM._grouped_indep_variance_profile_objective(
+        @test_throws ArgumentError GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, fixture.D, fixture.terms, fixture.incidences;
             selected=(1, 2), fixed_variance=0.0,
             evaluator_placeholder=overflow_value)
 
         # v=0 overlays one selected diagonal exactly, without feeding -Inf to
         # the ordinary full objective. Two finite evaluator placeholders agree.
-        zero_a = GLLVM._grouped_indep_variance_profile_objective(
+        zero_a = GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, fixture.D, fixture.terms, fixture.incidences;
             selected=(1, 2), fixed_variance=0.0, evaluator_placeholder=-2.0)
-        zero_b = GLLVM._grouped_indep_variance_profile_objective(
+        zero_b = GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, fixture.D, fixture.terms, fixture.incidences;
             selected=(1, 2), fixed_variance=0.0, evaluator_placeholder=1.25)
         reduced = [0.10, -0.15, log(0.40), log(0.35), log(0.30), log(0.45)]
@@ -204,45 +204,45 @@ end
         zero_dense = _profile_dense_nll(fixture.data, fixture.D, reduced[1:2],
             fixture.labels, [[0.40^2, 0.0], [0.35^2, 0.30^2]], 0.45)
         @test zero_a.objective(reduced) ≈ zero_dense atol=1e-12
-        positive = GLLVM._grouped_indep_variance_profile_objective(
+        positive = GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, fixture.D, fixture.terms, fixture.incidences;
             selected=(1, 2), fixed_variance=0.16)
         @test positive.selected_coordinate(reduced) ≈ log(0.16) / 2 atol=1e-12
-        ordinary = GLLVM._grouped_gaussian_objective(fixture.data, fixture.D,
+        ordinary = GLLVModels._grouped_gaussian_objective(fixture.data, fixture.D,
             fixture.terms, fixture.incidences)
         full_with_minus_inf = [0.10, -0.15, log(0.40), -Inf,
             log(0.35), log(0.30), log(0.45)]
         full_positive = [0.10, -0.15, log(0.40), log(0.16) / 2,
             log(0.35), log(0.30), log(0.45)]
         @test positive.objective(reduced) ≈ ordinary(full_positive) atol=1e-12
-        @test ordinary(full_with_minus_inf) == GLLVM._NLL_SENTINEL
+        @test ordinary(full_with_minus_inf) == GLLVModels._NLL_SENTINEL
 
         # The returned closure owns its design/term/incidence snapshot. Later
         # caller mutation cannot change the recorded objective.
         mutable_D = copy(fixture.D)
         mutable_terms = copy(fixture.terms)
         mutable_incidences = copy.(fixture.incidences)
-        frozen = GLLVM._grouped_indep_variance_profile_objective(
+        frozen = GLLVModels._grouped_indep_variance_profile_objective(
             fixture.data, mutable_D, mutable_terms, mutable_incidences;
             selected=(1, 2), fixed_variance=0.0)
         frozen_value = frozen.objective(reduced)
         mutable_D .= 0.0
-        mutable_terms[1] = GLLVM.GroupingTerm(:unit; mode=:indep, common=true)
+        mutable_terms[1] = GLLVModels.GroupingTerm(:unit; mode=:indep, common=true)
         mutable_incidences[1].nzval .= 0.0
         @test frozen.objective(reduced) ≈ frozen_value atol=1e-12
 end
 
 @testset "profile Float64 conversion preserves boundary meaning" begin
     f = _profile_fixture()
-    adapter = GLLVM._grouped_indep_variance_profile_objective(f.data, f.D,
+    adapter = GLLVModels._grouped_indep_variance_profile_objective(f.data, f.D,
         f.terms, f.incidences; selected=(1,2), fixed_variance=0.0)
     bad = BigFloat.([0.10,-0.15,log(0.40),log(0.35),log(0.30),log(0.45)])
     bad[1] = big"1e10000"
-    @test adapter.objective(bad) == GLLVM._NLL_SENTINEL
+    @test adapter.objective(bad) == GLLVModels._NLL_SENTINEL
     @test_throws ArgumentError adapter.selected_covariance(bad)
-    @test_throws ArgumentError GLLVM._grouped_indep_variance_profile_objective(
+    @test_throws ArgumentError GLLVModels._grouped_indep_variance_profile_objective(
         fill(big"1e10000", size(f.data)), f.D, f.terms, f.incidences;
         selected=(1,2), fixed_variance=0.0)
-    @test_throws ArgumentError GLLVM._grouped_indep_variance_profile_objective(
+    @test_throws ArgumentError GLLVModels._grouped_indep_variance_profile_objective(
         f.data, f.D, f.terms, f.incidences; selected=(1,2), fixed_variance=big"1e-10000")
 end

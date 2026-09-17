@@ -2,7 +2,7 @@
 # (src/confint_family.jl). This file adds the missing paired-cell test evidence,
 # not new _CIFit wiring. ≠ programme §7. Bridge untouched.
 
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "BetaBinomialFit (shared phi) second-order Wald wiring" begin
     @testset "θ packing + public Wald on beta[] (no-X)" begin
@@ -22,8 +22,8 @@ using GLLVM, Test, Random, Distributions
         end
         fit = fit_beta_binomial_gllvm(Y; K = K, N = N)
         @test fit isa BetaBinomialFit
-        ad = GLLVM._family_ci(fit, Float64.(Y); N = N)
-        @test length(ad.θ) == p + GLLVM.rr_theta_len(p, K) + 1
+        ad = GLLVModels._family_ci(fit, Float64.(Y); N = N)
+        @test length(ad.θ) == p + GLLVModels.rr_theta_len(p, K) + 1
         @test count(startswith("beta["), ad.names) == p
         @test ad.names[end] == "phi"
         @test ad.kinds[end] === :log

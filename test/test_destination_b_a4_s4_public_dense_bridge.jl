@@ -1,7 +1,7 @@
 using Test
 using LinearAlgebra
 using SparseArrays
-using GLLVM
+using GLLVModels
 
 include(joinpath(@__DIR__, "..", "tools", "destination_b",
     "a4_s4_fixed_coordinate_evaluator.jl"))
@@ -15,7 +15,7 @@ include(joinpath(@__DIR__, "..", "tools", "destination_b",
     # fixed-coordinate public transport check, not optimiser parity.
     theta_r = [0.4, -0.2, 0.3, -1.2039728043259361, 0.9, 0.5, -0.6]
     theta_julia = [theta_r[1:3]; theta_r[5:7]; theta_r[4]]
-    expected_nll = GLLVM._precision_multivariate_nll(dense.Y, dense.phy,
+    expected_nll = GLLVModels._precision_multivariate_nll(dense.Y, dense.phy,
         theta_julia; rank = 1, mode = :barelowrank, residual_mode = :shared,
         species_id = dense.species_id)
 
@@ -23,7 +23,7 @@ include(joinpath(@__DIR__, "..", "tools", "destination_b",
         "species_id" => dense.species_id,
         "mode" => "barelowrank", "residual_mode" => "shared",
         "start" => theta_julia, "iterations" => 0, "ci_method" => "none")
-    result = GLLVM.bridge_fit(y = dense.Y, phylo = dense.phy,
+    result = GLLVModels.bridge_fit(y = dense.Y, phylo = dense.phy,
         family = "gaussian", d = 1,
         options = options)
 
@@ -43,10 +43,10 @@ include(joinpath(@__DIR__, "..", "tools", "destination_b",
     A_once = inv(Matrix(dense.phy.Q))
     Q_twice = Matrix(Symmetric(inv(A_once + 1e-8I)))
     ii, jj, vv = findnz(sparse(Q_twice))
-    twice = GLLVM.PrecisionPhy(ii, jj, vv, dense.phy.n_aug, dense.phy.n_leaves,
+    twice = GLLVModels.PrecisionPhy(ii, jj, vv, dense.phy.n_aug, dense.phy.n_leaves,
         dense.phy.node_labels, logdet(cholesky(Symmetric(Q_twice))), dense.phy.scale,
         dense.phy.species_aug_id)
-    twice_result = GLLVM.bridge_fit(y = dense.Y, phylo = twice,
+    twice_result = GLLVModels.bridge_fit(y = dense.Y, phylo = twice,
         family = "gaussian", d = 1, options = options)
     @test abs(twice_result.loglik - result.loglik) > 1e-10
     @test twice_result.admission_status == "closed"

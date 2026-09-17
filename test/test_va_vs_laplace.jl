@@ -1,7 +1,7 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # Reporting harness (NOT a pass/fail gate). For each family that has BOTH a Laplace
-# and a variational (VA) fitter, simulate a GLLVM with a KNOWN dispersion/shape and
+# and a variational (VA) fitter, simulate a GLLVModels with a KNOWN dispersion/shape and
 # log, side by side, what each estimator recovers AND its wall-clock fit time. The
 # numbers surface ONLY through these @info lines in the CI log — every message is
 # prefixed "VA-vs-LA" so they are greppable. The ONLY assertions are
@@ -25,8 +25,8 @@ gram_cor(fit, Λtrue) = cor(vec(fit.Λ * fit.Λ'), vec(Λtrue * Λtrue'))
                 Y[t, s] = rand(Poisson(exp(βtrue[t] + dot(Λtrue[t, :], z))))
             end
         end
-        tLA = @elapsed fitLA = GLLVM.fit_poisson_gllvm(Y; K = K)
-        tVA = @elapsed fitVA = GLLVM.fit_poisson_gllvm_va(Y; K = K)
+        tLA = @elapsed fitLA = GLLVModels.fit_poisson_gllvm(Y; K = K)
+        tVA = @elapsed fitVA = GLLVModels.fit_poisson_gllvm_va(Y; K = K)
         @info "VA-vs-LA [Poisson] fit quality" laplace_loglik=fitLA.loglik va_elbo=fitVA.loglik
         @info "VA-vs-LA [Poisson] loadings gram cor" laplace=gram_cor(fitLA, Λtrue) va=gram_cor(fitVA, Λtrue)
         @info "VA-vs-LA [Poisson] wall time (s)" laplace=tLA va=tVA ratio=tVA/tLA
@@ -47,8 +47,8 @@ gram_cor(fit, Λtrue) = cor(vec(fit.Λ * fit.Λ'), vec(Λtrue * Λtrue'))
                 Y[t, s] = rand(NegativeBinomial(r_true, r_true / (r_true + μ)))
             end
         end
-        tLA = @elapsed fitLA = GLLVM.fit_nb_gllvm(Y; K = K)
-        tVA = @elapsed fitVA = GLLVM.fit_nb_gllvm_va(Y; K = K)
+        tLA = @elapsed fitLA = GLLVModels.fit_nb_gllvm(Y; K = K)
+        tVA = @elapsed fitVA = GLLVModels.fit_nb_gllvm_va(Y; K = K)
         @info "VA-vs-LA [NB] dispersion r" r_true=r_true laplace_r=fitLA.r va_r=fitVA.r laplace_loglik=fitLA.loglik va_elbo=fitVA.loglik
         @info "VA-vs-LA [NB] loadings gram cor" laplace=gram_cor(fitLA, Λtrue) va=gram_cor(fitVA, Λtrue)
         @info "VA-vs-LA [NB] wall time (s)" laplace=tLA va=tVA ratio=tVA/tLA
@@ -69,8 +69,8 @@ gram_cor(fit, Λtrue) = cor(vec(fit.Λ * fit.Λ'), vec(Λtrue * Λtrue'))
                 Y[t, s] = rand(Gamma(α_true, μ / α_true))
             end
         end
-        tLA = @elapsed fitLA = GLLVM.fit_gamma_gllvm(Y; K = K)
-        tVA = @elapsed fitVA = GLLVM.fit_gamma_gllvm_va(Y; K = K)
+        tLA = @elapsed fitLA = GLLVModels.fit_gamma_gllvm(Y; K = K)
+        tVA = @elapsed fitVA = GLLVModels.fit_gamma_gllvm_va(Y; K = K)
         @info "VA-vs-LA [Gamma] shape α" α_true=α_true laplace_α=fitLA.α va_α=fitVA.α laplace_loglik=fitLA.loglik va_elbo=fitVA.loglik
         @info "VA-vs-LA [Gamma] loadings gram cor" laplace=gram_cor(fitLA, Λtrue) va=gram_cor(fitVA, Λtrue)
         @info "VA-vs-LA [Gamma] wall time (s)" laplace=tLA va=tVA ratio=tVA/tLA
@@ -95,8 +95,8 @@ gram_cor(fit, Λtrue) = cor(vec(fit.Λ * fit.Λ'), vec(Λtrue * Λtrue'))
                 end
             end
         end
-        tLA = @elapsed fitLA = GLLVM.fit_delta_gamma_gllvm(Y; K = K)
-        tVA = @elapsed fitVA = GLLVM.fit_delta_gamma_gllvm_va(Y; K = K)
+        tLA = @elapsed fitLA = GLLVModels.fit_delta_gamma_gllvm(Y; K = K)
+        tVA = @elapsed fitVA = GLLVModels.fit_delta_gamma_gllvm_va(Y; K = K)
         gdg(fit) = cor(vec(fit.Λc * fit.Λc'), vec(Λtrue * Λtrue'))
         @info "VA-vs-LA [Delta-Gamma] shape α (Laplace-biased cell)" α_true=α_true laplace_α=fitLA.α va_α=fitVA.α laplace_loglik=fitLA.loglik va_elbo=fitVA.loglik
         @info "VA-vs-LA [Delta-Gamma] loadings gram cor" laplace=gdg(fitLA) va=gdg(fitVA)

@@ -1,4 +1,4 @@
-# Phylogenetic GLLVM for non-Gaussian families — joint Laplace over the augmented
+# Phylogenetic GLLVModels for non-Gaussian families — joint Laplace over the augmented
 # sparse phylogenetic precision (issue #61, the "make it exist" half).
 #
 # Model (p species = tree leaves, n sites): each species t carries a phylogenetic
@@ -86,7 +86,7 @@ end
 """
     phylo_glm_marginal_loglik(family, Y, N, β, σ²_phy, phy; link, maxiter=50, tol=1e-9)
 
-Laplace marginal log-likelihood of a phylogenetic GLLVM with a per-species
+Laplace marginal log-likelihood of a phylogenetic GLLVModels with a per-species
 phylogenetic random intercept (`η_{ts} = β_t + a_t`, `a ~ N(0, σ²_phy Σ_phy)`),
 evaluated over the augmented sparse precision of `phy::AugmentedPhy`. `Y`, `N` are
 p×n response / trial-count matrices (p = `phy.n_leaves`), `β` the length-p intercepts,
@@ -199,7 +199,7 @@ end
                   σ²_phy_init=1.0, g_tol=1e-5, iterations=300,
                   newton_maxiter=50, newton_tol=1e-9) -> PhyloGLMFit
 
-Fit a phylogenetic GLLVM (per-species phylo random intercept) by L-BFGS on the
+Fit a phylogenetic GLLVModels (per-species phylo random intercept) by L-BFGS on the
 augmented-state Laplace marginal ([`phylo_glm_marginal_loglik`](@ref)). `Y` is p×n
 (species × sites, p = `phy.n_leaves`); fits intercepts `β`, the phylogenetic variance
 `σ²_phy` (on the log scale), and a dispersion parameter for the dispersion families.

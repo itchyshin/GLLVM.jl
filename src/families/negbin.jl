@@ -38,7 +38,7 @@ _glm_obs_weight(f::NegativeBinomial, μ, n, me, y, link::LogLink, η) =
     nb_marginal_loglik_laplace(Y, Λ, β, r; link=LogLink(), kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a negative-binomial
-(NB2) GLLVM with dispersion `r` (`Var = μ + μ²/r`) — a thin wrapper over the
+(NB2) GLLVModels with dispersion `r` (`Var = μ + μ²/r`) — a thin wrapper over the
 family-generic `marginal_loglik_laplace` with `NegativeBinomial(r, ·)`. `Y` is the
 p×n integer count matrix; `Λ` p×K; `β` length-p. As `r → ∞` this tends to the
 Poisson marginal.
@@ -155,7 +155,7 @@ _default_hessian(::NegativeBinomial, ::LogLink) = :observed
 """
     fit_nb_gllvm(Y; K, link=LogLink(), mask=nothing, r_init=nothing, …) -> NBFit
 
-Fit a negative-binomial (NB2) GLLVM by L-BFGS over `[β; vec(Λ); log r]` on the
+Fit a negative-binomial (NB2) GLLVModels by L-BFGS over `[β; vec(Λ); log r]` on the
 Laplace marginal (`nb_marginal_loglik_laplace`), jointly estimating the dispersion
 `r`. `Y` is a p×n integer count matrix (may contain `missing`); `K` the latent
 dimension. The default analytic Laplace gradient is used on the plain

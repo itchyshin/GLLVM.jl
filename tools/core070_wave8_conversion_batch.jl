@@ -14,7 +14,7 @@
 #
 # Usage: julia --project=. tools/core070_wave8_conversion_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 using LinearAlgebra: I
 using Random: Random
 
@@ -214,15 +214,15 @@ for cs in cases
         ok = false
         try
             if case_id == "CORE070-WAVE8-DEVIANCE-MULTI"
-                jl_vec = [GLLVM.deviance(fit_g)]
+                jl_vec = [GLLVModels.deviance(fit_g)]
             elseif case_id == "CORE070-WAVE8-TIDY-FIXED-ESTIMATE"
-                rows = GLLVM.tidy(fit_g, Y_g; X = X_g)
+                rows = GLLVModels.tidy(fit_g, Y_g; X = X_g)
                 jl_vec = [r.estimate for r in rows]
             elseif case_id == "CORE070-WAVE8-SUMMARY-FIXEF-AND-LOGLIK"
                 s = summary(fit_g, Y_g; X = X_g)
                 jl_vec = vcat([r.estimate for r in s.fixef], s.logLik)
             elseif case_id == "CORE070-WAVE8-ROTATE-LOADINGS-LLT-INVARIANT"
-                rot = GLLVM.rotate_loadings(fit_g, Y_g; level = :unit, method = :varimax)
+                rot = GLLVModels.rotate_loadings(fit_g, Y_g; level = :unit, method = :varimax)
                 jl_vec = vec(rot.Lambda * rot.Lambda')
             else
                 error("BOGUS_CASE_ID: no dispatcher entry for '$case_id'")
@@ -251,7 +251,7 @@ for cs in cases
         jl_verdict = Dict{String, Any}()
         try
             if case_id == "CORE070-WAVE8-EXTRACT-ROTATED-LOADINGS-TABLE-SHAPE"
-                t = GLLVM.extract_rotated_loadings_table(fit_g, Y_g; level = :unit, method = :varimax)
+                t = GLLVModels.extract_rotated_loadings_table(fit_g, Y_g; level = :unit, method = :varimax)
                 d = K
                 nrow_ok = length(t.trait) == p * d
                 axis_share_unique = Dict{Int, Float64}()
@@ -264,7 +264,7 @@ for cs in cases
                 ok = (r_verdict["nrow_ok"] == true) == nrow_ok &&
                      (r_verdict["axis_share_sums_to_one"] == true) == axis_share_sums_to_one
             elseif case_id == "CORE070-WAVE8-PREDICT-MISSING-ZERO-ROWS"
-                pm = GLLVM.predict_missing(fit_g, Y_g)
+                pm = GLLVModels.predict_missing(fit_g, Y_g)
                 nrow_is_zero = length(pm.row) == 0
                 jl_verdict["nrow_is_zero"] = nrow_is_zero
                 ok = (r_verdict["nrow_is_zero"] == true) == nrow_is_zero
@@ -276,7 +276,7 @@ for cs in cases
                 Lambda_W = reshape(Float64.(sp["Lambda_W"]), n_traits, 1)
                 psi_B = Float64.(sp["psi_B"]); psi_W = Float64.(sp["psi_W"])
                 sigma2_eps = Float64(sp["sigma2_eps"])
-                sim = GLLVM.simulate_unit_trait(_SUT_RNG; n_units = n_units,
+                sim = GLLVModels.simulate_unit_trait(_SUT_RNG; n_units = n_units,
                                                 n_obs_per_unit = n_obs_per_unit, n_traits = n_traits,
                                                 K_B = 2, K_W = 1, Lambda_B = Lambda_B, Lambda_W = Lambda_W,
                                                 psi_B = psi_B, psi_W = psi_W, sigma2_eps = sigma2_eps)
@@ -319,7 +319,7 @@ for rc in contract["rejection_cases"]
     jl_raised = false
     jl_message = ""
     try
-        GLLVM.rotate_loadings(fit_g, Y_g; level = :bogus_level_value)
+        GLLVModels.rotate_loadings(fit_g, Y_g; level = :bogus_level_value)
     catch e
         jl_raised = true
         jl_message = sprint(showerror, e)
@@ -355,7 +355,7 @@ neg_ok = neg_unknown_case_id && neg_bogus_kind &&
 report = Dict{String, Any}(
     "status" => (all_ok && rejection_ok && neg_ok) ? "PASS" : "FAIL",
     "julia_version" => string(VERSION),
-    "package_root" => Base.pkgdir(GLLVM),
+    "package_root" => Base.pkgdir(GLLVModels),
     "case_count" => length(cases),
     "all_checks" => all_ok,
     "rejection_checks_ok" => rejection_ok,

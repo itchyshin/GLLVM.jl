@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra, SparseArrays
+using Test, GLLVModels, LinearAlgebra, SparseArrays
 
 function _destination_b_invariance_fixture()
     p, n = 2, 10
@@ -18,10 +18,10 @@ function _destination_b_invariance_fixture()
         X[row, 3] = trait == 1 ? x_observation[observation] : -0.6 * x_observation[observation]
     end
     terms = [
-        GLLVM.GroupingTerm(:unit; mode=:dep),
-        GLLVM.GroupingTerm(:unit_obs; mode=:dep),
-        GLLVM.GroupingTerm(:cluster; mode=:dep),
-        GLLVM.GroupingTerm(:cluster2; mode=:indep),
+        GLLVModels.GroupingTerm(:unit; mode=:dep),
+        GLLVModels.GroupingTerm(:unit_obs; mode=:dep),
+        GLLVModels.GroupingTerm(:cluster; mode=:dep),
+        GLLVModels.GroupingTerm(:cluster2; mode=:indep),
     ]
     gamma = [0.20, -0.35, 0.18]
     LU = [0.55 0.0; 0.15 0.42]
@@ -87,11 +87,11 @@ end
     @test fixture.cluster2 != fixture.cluster
     @test fixture.covariance[4] == Diagonal(diag(fixture.covariance[4]))
 
-    incidences = [GLLVM._grouped_incidence(values, fixture.n) for values in labels]
+    incidences = [GLLVModels._grouped_incidence(values, fixture.n) for values in labels]
     @test Matrix(incidences[1] * incidences[1]') != Matrix(incidences[2] * incidences[2]')
-    objective = GLLVM._grouped_gaussian_objective(fixture.Y, fixture.X,
+    objective = GLLVModels._grouped_gaussian_objective(fixture.Y, fixture.X,
         fixture.terms, incidences)
-    _, _, packed_covariance, used_coordinates = GLLVM._grouped_term_unpack(
+    _, _, packed_covariance, used_coordinates = GLLVModels._grouped_term_unpack(
         fixture.theta[4:end-1], fixture.p, fixture.terms)
     @test used_coordinates == 11
     @test all(isapprox(packed_covariance[index], fixture.covariance[index]; atol=1e-12)
@@ -112,9 +112,9 @@ end
     permuted_Y = fixture.Y[:, observation_order]
     permuted_X = fixture.X[row_order, :]
     permuted_labels = [values[observation_order] for values in labels]
-    permuted_incidences = [GLLVM._grouped_incidence(values, fixture.n)
+    permuted_incidences = [GLLVModels._grouped_incidence(values, fixture.n)
         for values in permuted_labels]
-    permuted_objective = GLLVM._grouped_gaussian_objective(permuted_Y, permuted_X,
+    permuted_objective = GLLVModels._grouped_gaussian_objective(permuted_Y, permuted_X,
         fixture.terms, permuted_incidences)
     permuted_dense = _destination_b_dense_nll(permuted_Y, permuted_X, fixture.gamma,
         permuted_labels, fixture.covariance, fixture.sigma_eps)
@@ -123,9 +123,9 @@ end
 
     renamed_labels = [_destination_b_bijective_rename(values, prefix)
         for (values, prefix) in zip(labels, ("unit", "unit_obs", "cluster", "cluster2"))]
-    renamed_incidences = [GLLVM._grouped_incidence(values, fixture.n)
+    renamed_incidences = [GLLVModels._grouped_incidence(values, fixture.n)
         for values in renamed_labels]
-    renamed_objective = GLLVM._grouped_gaussian_objective(fixture.Y, fixture.X,
+    renamed_objective = GLLVModels._grouped_gaussian_objective(fixture.Y, fixture.X,
         fixture.terms, renamed_incidences)
     renamed_dense = _destination_b_dense_nll(fixture.Y, fixture.X, fixture.gamma,
         renamed_labels, fixture.covariance, fixture.sigma_eps)
@@ -136,8 +136,8 @@ end
     wrong_cluster2 = copy(fixture.cluster2)
     wrong_cluster2[1], wrong_cluster2[2] = wrong_cluster2[2], wrong_cluster2[1]
     wrong_labels = [fixture.unit, fixture.unit_obs, fixture.cluster, wrong_cluster2]
-    wrong_incidences = [GLLVM._grouped_incidence(values, fixture.n) for values in wrong_labels]
-    wrong_objective = GLLVM._grouped_gaussian_objective(fixture.Y, fixture.X,
+    wrong_incidences = [GLLVModels._grouped_incidence(values, fixture.n) for values in wrong_labels]
+    wrong_objective = GLLVModels._grouped_gaussian_objective(fixture.Y, fixture.X,
         fixture.terms, wrong_incidences)
     wrong_dense = _destination_b_dense_nll(fixture.Y, fixture.X, fixture.gamma,
         wrong_labels, fixture.covariance, fixture.sigma_eps)

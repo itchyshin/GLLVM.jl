@@ -1,16 +1,16 @@
-using Test, GLLVM, LinearAlgebra, Random
+using Test, GLLVModels, LinearAlgebra, Random
 
 @testset "private Gaussian named grouping fitter" begin
-    @test GLLVM._grouped_stopping_reason(true,true,10,10,0.0,1e-5) == :converged
-    @test GLLVM._grouped_stopping_reason(false,true,2,10,0.0,1e-5) == :optimizer_not_converged
-    @test GLLVM._grouped_stopping_reason(false,true,2,10,0.1,1e-5) == :gradient_not_converged
-    @test isdefined(GLLVM, :GroupingTerm)
-    @test isdefined(GLLVM, :fit_grouped_gaussian)
-    @test isdefined(GLLVM, :grouped_gaussian_intervals)
-    if isdefined(GLLVM, :GroupingTerm) && isdefined(GLLVM, :fit_grouped_gaussian) &&
-            isdefined(GLLVM, :grouped_gaussian_intervals)
-        term = GLLVM.GroupingTerm
-        fitfun = GLLVM.fit_grouped_gaussian
+    @test GLLVModels._grouped_stopping_reason(true,true,10,10,0.0,1e-5) == :converged
+    @test GLLVModels._grouped_stopping_reason(false,true,2,10,0.0,1e-5) == :optimizer_not_converged
+    @test GLLVModels._grouped_stopping_reason(false,true,2,10,0.1,1e-5) == :gradient_not_converged
+    @test isdefined(GLLVModels, :GroupingTerm)
+    @test isdefined(GLLVModels, :fit_grouped_gaussian)
+    @test isdefined(GLLVModels, :grouped_gaussian_intervals)
+    if isdefined(GLLVModels, :GroupingTerm) && isdefined(GLLVModels, :fit_grouped_gaussian) &&
+            isdefined(GLLVModels, :grouped_gaussian_intervals)
+        term = GLLVModels.GroupingTerm
+        fitfun = GLLVModels.fit_grouped_gaussian
         Y = [0.2 -0.4 0.8 0.1 0.5 -0.2;
              1.1  0.3 -0.2 0.5 0.4  0.7]
         unit = [:a, :a, :b, :b, :c, :c]
@@ -20,7 +20,7 @@ using Test, GLLVM, LinearAlgebra, Random
 
         @test_throws ArgumentError term(:unknown)
         @test_throws ArgumentError term(:cluster2; mode = :latent)
-        @test_throws ArgumentError fitfun(Y; terms = GLLVM.GroupingTerm[], unit = unit)
+        @test_throws ArgumentError fitfun(Y; terms = GLLVModels.GroupingTerm[], unit = unit)
         @test_throws ArgumentError fitfun(Y; terms = [term(:unit; mode = :indep)], unit = unit,
                                           cluster = cluster)
         @test_throws ArgumentError fitfun(Y; terms = [term(:unit_obs; mode = :indep)],
@@ -28,13 +28,13 @@ using Test, GLLVM, LinearAlgebra, Random
 
         theta_hessian = [0.3, -0.7]
         base_objective = theta -> sum(abs2, theta)
-        failed_neighbours = theta -> all(iszero, theta) ? 0.0 : GLLVM._NLL_SENTINEL
-        @test all(isnan, GLLVM._grouped_fd_gradient(failed_neighbours, zeros(2)))
-        @test all(isnan, GLLVM._grouped_fd_hessian(failed_neighbours, zeros(2)))
-        @test GLLVM._grouped_fd_hessian(base_objective, theta_hessian; step = 1e-2) ≈
-              GLLVM._grouped_fd_hessian(theta -> base_objective(theta) + 100.0, theta_hessian;
+        failed_neighbours = theta -> all(iszero, theta) ? 0.0 : GLLVModels._NLL_SENTINEL
+        @test all(isnan, GLLVModels._grouped_fd_gradient(failed_neighbours, zeros(2)))
+        @test all(isnan, GLLVModels._grouped_fd_hessian(failed_neighbours, zeros(2)))
+        @test GLLVModels._grouped_fd_hessian(base_objective, theta_hessian; step = 1e-2) ≈
+              GLLVModels._grouped_fd_hessian(theta -> base_objective(theta) + 100.0, theta_hessian;
                                          step = 1e-2) atol = 1e-8
-        @test GLLVM._grouped_fd_hessian(base_objective, theta_hessian; step = 1e-2) ≈ 2.0I atol = 1e-8
+        @test GLLVModels._grouped_fd_hessian(base_objective, theta_hessian; step = 1e-2) ≈ 2.0I atol = 1e-8
 
         terms = [term(:unit; mode = :latent, rank = 1, unique = true),
                  term(:unit_obs; mode = :indep, common = true),
@@ -68,15 +68,15 @@ using Test, GLLVM, LinearAlgebra, Random
         interior = fitfun(Yi; terms = [term(:unit; mode = :indep, common = true)],
                           unit = groups, iterations = 100)
         @test interior.converged && interior.hessian_positive_definite
-        ci = GLLVM.grouped_gaussian_intervals(Yi, interior; unit = groups)
+        ci = GLLVModels.grouped_gaussian_intervals(Yi, interior; unit = groups)
         @test ci.status == :available
         @test all(x -> x.status == :available && x.lower < x.estimate < x.upper,
                   ci.intervals)
         altered_Yi = copy(Yi); altered_Yi[1] += 0.01
-        @test_throws ArgumentError GLLVM.grouped_gaussian_intervals(altered_Yi, interior;
+        @test_throws ArgumentError GLLVModels.grouped_gaussian_intervals(altered_Yi, interior;
                                                                      unit = groups)
         altered_groups = copy(groups); altered_groups[1] = maximum(groups) + 1
-        @test_throws ArgumentError GLLVM.grouped_gaussian_intervals(Yi, interior;
+        @test_throws ArgumentError GLLVModels.grouped_gaussian_intervals(Yi, interior;
                                                                      unit = altered_groups)
 
         # Fixed-seed p=2 replicated interior fixtures.  Independent terms
@@ -95,7 +95,7 @@ using Test, GLLVM, LinearAlgebra, Random
         independent_fit = fitfun(Yindependent;
             terms = [term(:unit; mode = :indep)], unit = multi_groups, iterations = 100)
         @test independent_fit.converged && independent_fit.hessian_positive_definite
-        independent_ci = GLLVM.grouped_gaussian_intervals(Yindependent, independent_fit;
+        independent_ci = GLLVModels.grouped_gaussian_intervals(Yindependent, independent_fit;
                                                            unit = multi_groups)
         @test independent_ci.status == :available
         @test !any(x -> occursin("covariance", String(x.name)), independent_ci.intervals)
@@ -113,7 +113,7 @@ using Test, GLLVM, LinearAlgebra, Random
             terms = [term(:unit; mode = :latent, rank = 1)], unit = multi_groups,
             iterations = 100)
         @test latent_fit.converged && latent_fit.hessian_positive_definite
-        latent_ci = GLLVM.grouped_gaussian_intervals(Ylatent, latent_fit; unit = multi_groups)
+        latent_ci = GLLVModels.grouped_gaussian_intervals(Ylatent, latent_fit; unit = multi_groups)
         @test latent_ci.status == :available
         @test any(x -> x.name == "unit.covariance[1,2]" && x.status == :available,
                   latent_ci.intervals)
@@ -125,7 +125,7 @@ using Test, GLLVM, LinearAlgebra, Random
         singular = fitfun(Yi; terms = [term(:unit; mode = :indep, common = true),
                                        term(:cluster; mode = :indep, common = true)],
                          unit = groups, cluster = groups, iterations = 30)
-        unavailable = GLLVM.grouped_gaussian_intervals(Yi, singular;
+        unavailable = GLLVModels.grouped_gaussian_intervals(Yi, singular;
                                                         unit = groups, cluster = groups)
         @test unavailable.status != :available
         @test any(x -> x.method == :unavailable, unavailable.intervals)

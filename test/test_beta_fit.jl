@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "fit_beta_gllvm" begin
     @testset "recovers β, ΛΛ', and precision φ" begin

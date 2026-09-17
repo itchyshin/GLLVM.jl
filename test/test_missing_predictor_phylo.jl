@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
+using GLLVModels, Test, LinearAlgebra, Random, Statistics, ForwardDiff
 
 # Phylogenetic missing-predictor FIML (the mi() axis, design Phase 3 — the
 # high-value evolutionary feature). A species-level continuous predictor x
@@ -77,8 +77,8 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
         obs = [1, 2, 4, 6]
         mis = [3, 5]
         xo = x[obs]
-        pc = GLLVM._mi_phylo_precompute(A, obs, mis)
-        f(θ) = GLLVM._mi_phylo_nll(θ, y, xo, obs, mis, pc, p, n, K)
+        pc = GLLVModels._mi_phylo_precompute(A, obs, mis)
+        f(θ) = GLLVModels._mi_phylo_nll(θ, y, xo, obs, mis, pc, p, n, K)
         θ = vcat(0.2, 0.8, 0.3, log(0.7), log(0.3), vec(Λ))
         g_ad = ForwardDiff.gradient(f, θ)
         h = 1e-6

@@ -1,10 +1,10 @@
-using GLLVM
+using GLLVModels
 using Test
 using Random
 using LinearAlgebra
 using Distributions
 
-using GLLVM: pack_lambda
+using GLLVModels: pack_lambda
 
 @testset "phylo × dep matrix fitter" begin
     phy = augmented_phy("((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1);")

@@ -3,7 +3,7 @@
 
 using Test
 using Random
-using GLLVM
+using GLLVModels
 
 @testset "OrdinalPerTraitFit second-order Wald CI" begin
     Random.seed!(81)
@@ -36,7 +36,7 @@ using GLLVM
     ci = confint(fit, Y; method = :wald)
     @test ci.method === :wald
     n_free_tau = p * (C - 2)
-    @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + n_free_tau
+    @test length(ci.term) == p + GLLVModels.rr_theta_len(p, K) + n_free_tau
     @test "beta[1]" in ci.term
     @test "Lambda[1,1]" in ci.term
     @test "tau[1,2]" in ci.term

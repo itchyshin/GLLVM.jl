@@ -6,7 +6,7 @@
 using LinearAlgebra
 using SparseArrays
 using SHA
-using GLLVM
+using GLLVModels
 
 const _A4S4_FIXED_SCHEMA = "destination-b-a4-s4-fixed-coordinate-summary-1"
 const _A4S4_RAW_SCHEMA = "destination-b-a4-s4-frozen-r-raw-4"
@@ -273,7 +273,7 @@ function a4_s4_fixed_coordinate_fixture(kind::Symbol;
     length(indices_i) == length(indices_j) == length(values) || throw(ArgumentError("fixture sparse triplets disagree"))
     labels = [_a4s4_string(x, "fixture precision.node_labels") for x in _a4s4_vector(precision, "node_labels", "fixture precision")]
     phy = PrecisionPhy(indices_i, indices_j, values, n_aug, n_leaves, labels, log_det, scale, map_zero .+ 1)
-    phy = GLLVM._validate_precision_fit_input(phy)
+    phy = GLLVModels._validate_precision_fit_input(phy)
     species_id = [_a4s4_integer(x, "fixture species_id") for x in _a4s4_vector(bundle, "species_id", "fixture bundle")]
     species_id == repeat(collect(1:8); inner = 2) || throw(ArgumentError("fixture must retain the repeated 16-observation species map"))
     reference = _a4s4_json_read(read(reference_path, String))
@@ -330,7 +330,7 @@ function _a4s4_validate_summary(summary)
     values = [_a4s4_finite(x, "summary.theta_r.values") for x in _a4s4_vector(theta, "values", "summary.theta_r")]
     names == _A4S4_R_NAMES && length(values) == 7 || throw(ArgumentError("R theta must be [b_fix(3), log_sigma_eps, theta_rr_phy(3)]"))
     r_nll = _a4s4_finite(_a4s4_get(row, "r_nll", "summary.rows[1]"), "summary.rows[1].r_nll")
-    abs(r_nll) < GLLVM._NLL_SENTINEL || throw(ArgumentError("R NLL is an objective sentinel"))
+    abs(r_nll) < GLLVModels._NLL_SENTINEL || throw(ArgumentError("R NLL is an objective sentinel"))
     _a4s4_finite(_a4s4_get(row, "raw_r_repeated_marginal_nll", "summary.rows[1]"), "summary.rows[1].raw_r_repeated_marginal_nll") == r_nll || throw(ArgumentError("raw R repeated NLL differs from R NLL"))
     artifact = _a4s4_object(_a4s4_get(row, "raw_artifact", "summary.rows[1]"), "summary.rows[1].raw_artifact")
     _a4s4_exact_keys(artifact, ("path", "sha256", "attestation_status"), "summary.rows[1].raw_artifact")
@@ -427,9 +427,9 @@ function evaluate_a4_s4_fixed_coordinate(summary;
     fixture = a4_s4_fixed_coordinate_fixture(Symbol(_A4S4_ROWS[row_id].kind); core070 = core070)
     _a4s4_validate_fixture_binding(row, fixture)
     theta_julia = [theta_r[1:3]; theta_r[5:7]; theta_r[4]]
-    julia_nll = GLLVM._precision_multivariate_nll(fixture.Y, fixture.phy, theta_julia;
+    julia_nll = GLLVModels._precision_multivariate_nll(fixture.Y, fixture.phy, theta_julia;
         rank = 1, mode = :barelowrank, residual_mode = :shared, species_id = fixture.species_id)
-    isfinite(julia_nll) && abs(julia_nll) < GLLVM._NLL_SENTINEL || throw(ArgumentError("Julia kernel returned an objective sentinel"))
+    isfinite(julia_nll) && abs(julia_nll) < GLLVModels._NLL_SENTINEL || throw(ArgumentError("Julia kernel returned an objective sentinel"))
     return Dict(
         "schema_version" => "destination-b-a4-s4-fixed-coordinate-kernel-cross-evaluation-2",
         "status" => "fixed_coordinate_kernel_cross_evaluation_unqualified",
@@ -481,7 +481,7 @@ function _a4s4_runner_provenance(input_path::AbstractString)
     kernels = Dict{String,String}()
     for name in ("precision_multivariate_fit.jl", "precision_multivariate.jl")
         path = joinpath(source_root, name)
-        isfile(path) || throw(ArgumentError("required GLLVM kernel source $(name) is unavailable"))
+        isfile(path) || throw(ArgumentError("required GLLVModels kernel source $(name) is unavailable"))
         kernels[name] = bytes2hex(sha256(read(path)))
     end
     absolute_input = abspath(input_path)

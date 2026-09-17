@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
 
 # Generalized Poisson type-1 (GP-1, Famoye mean parameterization): log link,
 # E[y] = μ, Var = μ(1+αμ)², signed dispersion α (α=0 ⇒ Poisson, α>0 over-, α<0
@@ -8,8 +8,8 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
 # post-fit API; Wald CI.
 
 @testset "Generalized Poisson type-1 (GP-1)" begin
-    GP1 = GLLVM.GeneralizedPoisson1
-    pmf(α, μ, y) = exp(GLLVM._glm_logpdf(GP1(α), μ, 1, y))
+    GP1 = GLLVModels.GeneralizedPoisson1
+    pmf(α, μ, y) = exp(GLLVModels._glm_logpdf(GP1(α), μ, 1, y))
     ymax(α) = α < 0 ? floor(Int, -1 / α - 1e-9) : 2000
     function rand_gp1(α, μ)
         u = rand(); c = 0.0
@@ -45,8 +45,8 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         β = 0.3 .* randn(p) .+ 1.0
         μ = exp.(β)
         Y = [rand(Poisson(μ[t])) for t in 1:p, _ in 1:n]
-        ll = GLLVM.gp1_marginal_loglik_laplace(Y, zeros(p, K), β, α)
-        ref = sum(GLLVM._glm_logpdf(GP1(α), μ[t], 1, Y[t, s]) for t in 1:p, s in 1:n)
+        ll = GLLVModels.gp1_marginal_loglik_laplace(Y, zeros(p, K), β, α)
+        ref = sum(GLLVModels._glm_logpdf(GP1(α), μ[t], 1, Y[t, s]) for t in 1:p, s in 1:n)
         @test ll ≈ ref atol = 1e-8
     end
 
@@ -62,8 +62,8 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
                 Y[t, s] = rand(Poisson(exp(η[t])))
             end
         end
-        ll_gp1 = GLLVM.gp1_marginal_loglik_laplace(Y, Λ, β, 1e-8)
-        ll_pois = GLLVM.poisson_marginal_loglik_laplace(Y, Λ, β)
+        ll_gp1 = GLLVModels.gp1_marginal_loglik_laplace(Y, Λ, β, 1e-8)
+        ll_pois = GLLVModels.poisson_marginal_loglik_laplace(Y, Λ, β)
         @test ll_gp1 ≈ ll_pois atol = 1e-3
     end
 
@@ -71,19 +71,19 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         for α in (0.2, 0.5, -0.05), (μ, y) in [(2.0, 0), (2.0, 3), (5.0, 7), (0.7, 1)]
             (1 + α * y > 0 && 1 + α * μ > 0) || continue       # respect GP-1 support
             η = log(μ); me = μ                                  # log link: dμ/dη = μ
-            lp(ηv) = GLLVM._glm_logpdf(GP1(α), exp(ηv), 1, y)
+            lp(ηv) = GLLVModels._glm_logpdf(GP1(α), exp(ηv), 1, y)
             s_ad = ForwardDiff.derivative(lp, η)
-            s_an = GLLVM._glm_score(GP1(α), μ, 1, me, y)
+            s_an = GLLVModels._glm_score(GP1(α), μ, 1, me, y)
             @test s_an ≈ s_ad atol = 1e-7
         end
     end
 
     @testset "Fisher weight = μ/(1+αμ)² (exact); equals E[s²] away from truncation" begin
         for α in (0.0, 0.2, 0.5, -0.05), μ in (1.0, 3.0, 8.0)
-            W = GLLVM._glm_weight(GP1(α), μ, 1, μ)
+            W = GLLVModels._glm_weight(GP1(α), μ, 1, μ)
             @test W ≈ μ / (1 + α * μ)^2 rtol = 1e-10
             if α ≥ 0 || abs(α) * μ ≤ 0.3                        # not the underdispersion wall
-                Es2 = sum(GLLVM._glm_score(GP1(α), μ, 1, μ, y)^2 * pmf(α, μ, y) for y in 0:ymax(α))
+                Es2 = sum(GLLVModels._glm_score(GP1(α), μ, 1, μ, y)^2 * pmf(α, μ, y) for y in 0:ymax(α))
                 @test W ≈ Es2 rtol = 2e-3
             end
         end
@@ -96,8 +96,8 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         p, K, n, αtrue = 6, 1, 250, 0.4
         β = 0.4 .* randn(p) .+ 1.2
         Y = [rand_gp1(αtrue, exp(β[t])) for t in 1:p, _ in 1:n]
-        fit = GLLVM.fit_gp1_gllvm(Y; K = K, iterations = 150)
-        @test fit isa GLLVM.GP1Fit
+        fit = GLLVModels.fit_gp1_gllvm(Y; K = K, iterations = 150)
+        @test fit isa GLLVModels.GP1Fit
         @test isfinite(fit.loglik)
         @test isapprox(fit.α, αtrue; atol = 0.15)
         @test fit.α < 1.0                                       # NOT pegged at α_bound=2.0
@@ -114,8 +114,8 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
         Λt = 0.4 .* randn(p, K)
         Z = randn(K, n)
         Y = [rand_gp1(αtrue, exp(β[t] + (Λt * Z[:, s])[t])) for t in 1:p, s in 1:n]
-        fit = GLLVM.fit_gp1_gllvm(Y; K = K, iterations = 150)
-        @test fit isa GLLVM.GP1Fit
+        fit = GLLVModels.fit_gp1_gllvm(Y; K = K, iterations = 150)
+        @test fit isa GLLVModels.GP1Fit
         @test fit.α > 0
         @test length(fit.β) == p && size(fit.Λ) == (p, K)
         @test cor(fit.β, β) > 0.5
@@ -143,9 +143,9 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra, ForwardDiff
                 Y[t, s] = rand_gp1(0.3, exp(η[t]))
             end
         end
-        fit = GLLVM.fit_gp1_gllvm(Y; K = K, iterations = 120)
+        fit = GLLVModels.fit_gp1_gllvm(Y; K = K, iterations = 120)
         ci = confint(fit, Y; method = :wald)
-        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 1   # β + Λ + α
+        @test length(ci.term) == p + GLLVModels.rr_theta_len(p, K) + 1   # β + Λ + α
         @test any(t -> t == "alpha", ci.term)
         for i in eachindex(ci.term)
             if isfinite(ci.lower[i]) && isfinite(ci.upper[i])

@@ -57,8 +57,8 @@ def run():
     shutil.copytree(ROOT/'src',package/'src')
     shutil.copy2(ROOT/'Project.toml',package/'Project.toml')
     shutil.copy2(ENVIRONMENT/'Manifest.toml',package/'Manifest.toml')
-    script='''using GLLVM, Test
-@assert realpath(pathof(GLLVM)) == realpath(joinpath(@__DIR__,"src/GLLVM.jl"))
+    script='''using GLLVModels, Test
+@assert realpath(pathof(GLLVModels)) == realpath(joinpath(@__DIR__,"src/GLLVModels.jl"))
 println("JULIA_VERSION ",VERSION)
 struct FamilyResponseRead <: Exception end
 struct FamilyMatrix <: AbstractMatrix{Int} end

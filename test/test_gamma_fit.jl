@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "fit_gamma_gllvm" begin
     @testset "recovers β, ΛΛ', and shape α" begin

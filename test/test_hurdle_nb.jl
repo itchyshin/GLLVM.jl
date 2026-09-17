@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions
 
 function _rztnb(μ, r)
     nb = NegativeBinomial(r, r / (r + μ))
@@ -19,7 +19,7 @@ end
         for t in 1:p, s in 1:n
             rand() < π[t] && (Y[t, s] = _rztnb(μ[t], r))
         end
-        ll = GLLVM.hurdle_nb_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, r)
+        ll = GLLVModels.hurdle_nb_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, r)
         ref = 0.0
         for t in 1:p, s in 1:n
             if Y[t, s] > 0
@@ -44,8 +44,8 @@ end
                 Y[t, s] = k
             end
         end
-        ll_nb = GLLVM.hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, 1e6)
-        ll_pois = GLLVM.hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc)
+        ll_nb = GLLVModels.hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, 1e6)
+        ll_pois = GLLVModels.hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc)
         @test ll_nb ≈ ll_pois rtol = 1e-3
     end
 
@@ -68,14 +68,14 @@ end
         # r is only weakly identified alongside latent factors (both absorb
         # overdispersion); check a positive, finite, non-degenerate estimate.
         @test isfinite(fit.r) && fit.r > 0.5
-        @test size(GLLVM.getLV(fit, Y; rotate = false)) == (n, K)
-        @test all(GLLVM.predict(fit, Y; type = :response) .≥ 0)
-        @test all(GLLVM.predict(fit, Y; type = :positive) .≥ 1)
-        r = GLLVM.residuals(fit, Y; rng = MersenneTwister(3))
+        @test size(GLLVModels.getLV(fit, Y; rotate = false)) == (n, K)
+        @test all(GLLVModels.predict(fit, Y; type = :response) .≥ 0)
+        @test all(GLLVModels.predict(fit, Y; type = :positive) .≥ 1)
+        r = GLLVModels.residuals(fit, Y; rng = MersenneTwister(3))
         @test all(isfinite, r)
         k = 2p + (p * K - div(K * (K - 1), 2)) + 1
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Hurdle-NB", s)
     end

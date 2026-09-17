@@ -4,7 +4,7 @@
 #    (weight-independent ⇒ validates the probit density wiring; atol 1e-8).
 # 3) Probit smoke fit: runs, finite loglik, ordered τ̂, returns the probit link.
 
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Ordinal cumulative-link selection (logit default + probit)" begin
     rng = Random.MersenneTwister(20260606)
@@ -33,9 +33,9 @@ using GLLVM, Test, Random, Distributions, Statistics
     Λ = 0.4 .* randn(rng, p, K)
 
     @testset "regression: default link ≡ explicit LogitLink()" begin
-        ll_default = GLLVM.ordinal_marginal_loglik_laplace(Y, Λ, τtrue)
-        ll_logit   = GLLVM.ordinal_marginal_loglik_laplace(Y, Λ, τtrue;
-                                                           link = GLLVM.LogitLink())
+        ll_default = GLLVModels.ordinal_marginal_loglik_laplace(Y, Λ, τtrue)
+        ll_logit   = GLLVModels.ordinal_marginal_loglik_laplace(Y, Λ, τtrue;
+                                                           link = GLLVModels.LogitLink())
         @test ll_default == ll_logit                # byte-for-byte identical
         @test isfinite(ll_default)
     end
@@ -51,20 +51,20 @@ using GLLVM, Test, Random, Distributions, Statistics
             Flo = c == 1 ? 0.0 : Φ(τtrue[c - 1])
             ll_closed += log(Fhi - Flo)
         end
-        ll_probit = GLLVM.ordinal_marginal_loglik_laplace(Y, Λ0, τtrue;
-                                                          link = GLLVM.ProbitLink())
+        ll_probit = GLLVModels.ordinal_marginal_loglik_laplace(Y, Λ0, τtrue;
+                                                          link = GLLVModels.ProbitLink())
         @test isapprox(ll_probit, ll_closed; atol = 1e-8)
         # Sanity: at Λ=0 probit differs from logit (distinct CDFs).
-        ll_logit0 = GLLVM.ordinal_marginal_loglik_laplace(Y, Λ0, τtrue;
-                                                          link = GLLVM.LogitLink())
+        ll_logit0 = GLLVModels.ordinal_marginal_loglik_laplace(Y, Λ0, τtrue;
+                                                          link = GLLVModels.LogitLink())
         @test ll_probit != ll_logit0
     end
 
     @testset "probit smoke fit" begin
-        fit = GLLVM.fit_ordinal_gllvm(Y; K = K, link = GLLVM.ProbitLink(),
+        fit = GLLVModels.fit_ordinal_gllvm(Y; K = K, link = GLLVModels.ProbitLink(),
                                       iterations = 40)
         @test isfinite(fit.loglik)
-        @test fit.link isa GLLVM.ProbitLink
+        @test fit.link isa GLLVModels.ProbitLink
         @test issorted(fit.τ)                       # ordered cutpoints
         @test length(fit.τ) == C - 1
         @test size(fit.Λ) == (p, K)

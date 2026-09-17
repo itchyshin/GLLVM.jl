@@ -1,4 +1,4 @@
-# test_studentt_parity.jl — Student-t GLLVM logLik vs gllvmTMB
+# test_studentt_parity.jl — Student-t GLLVModels logLik vs gllvmTMB
 # (twin fid 9)
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
@@ -32,7 +32,7 @@
 # Twin Δ rule: no number is quoted unless this cell runs live under
 # GLLVM_PARITY_TESTS=1 against a real gllvmTMB. Never invent, never carry over.
 
-using GLLVM, RCall, Test, Random, Distributions
+using GLLVModels, RCall, Test, Random, Distributions
 
 # parity_helpers.jl is included once by runparity.jl
 
@@ -40,7 +40,7 @@ using GLLVM, RCall, Test, Random, Distributions
 # taken; see test_delta_lognormal_parity.jl / test_delta_gamma_parity.jl).
 const _ST_SEED = 71
 
-@testset "Student-t GLLVM parity: GLLVM.jl vs gllvmTMB (twin fid 9)" begin
+@testset "Student-t GLLVModels parity: GLLVModels.jl vs gllvmTMB (twin fid 9)" begin
 
     Random.seed!(_ST_SEED)
     p, K, n = 5, 1, 130
