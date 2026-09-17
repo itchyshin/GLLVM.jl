@@ -22,7 +22,7 @@ Paste packet (canonical): [`../owed/2026-09-16-post-397-paste-packet.md`](../owe
 | Ledger gap | **DONE** (inventory) |
 | §2 A (delta dispersion) | **PASTE-GATED** |
 | #347 | **DONE** (shared-η); species paste-gated |
-| #357 | **FOREIGN** leave alone |
+| #357 | **DONE** MERGED @ `5ee6dc596` (do not revert) |
 | Leftover ours green PRs | **none** (#363/#314 DRAFT CONFLICTING) |
 
 ## Paste gates still needed
@@ -49,6 +49,6 @@ After paste: optional Totoro #323 Track A under D-139.
 
 ## Foreign / fences
 
-- **#357** OPEN foreign bridge logLik receipts: leave alone (even if MERGEABLE / CI green).
+- **#357** bridge logLik receipts **MERGED** on `main` @ `5ee6dc596` (do not revert).
 - Skip unrelated DRAFTs **#363** / **#314** (both CONFLICTING).
 - No Stage 1 / S4 / Totoro / Delta / GP-1 / free-ν / Λ raw / `Project.toml` bump / gllvmTMB engine surgery without the matching paste.

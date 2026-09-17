@@ -1,3 +1,12 @@
+## 2026-09-17 — Rose tip + #357 coordination (`docs/rose-tip-357-20260917`)
+
+- **origin/main** @ **`e590eb9ec`** (#418) before edit. Rose WARN @ `0f1f8422`: tip SHA drift +
+  stale “leave #357 alone”. Updated board, post-#402 paste packet, `LOOP/checkpoint.md`, AGENTS
+  phase snapshot, morning + Mac handover #357 fences → **MERGED** @ **`5ee6dc596`** (do not revert).
+  DRAFT **#399/#409/#410/#411** unchanged (still DRAFT until paste). No engine / `Project.toml`.
+  Goal **not** complete.
+- Commands: `git fetch origin main`; `git rev-parse origin/main`; `rg 'leave.*357|487e2cb74|62091750d' docs LOOP AGENTS.md`.
+
 ## 2026-09-16 — Four DRAFT paste harnesses on canonical packet (`docs/four-draft-paste-packet-20260916`)
 
 - **origin/main** @ **`576cd927d`** before merge. Board + [`owed/2026-09-16-post-402-paste-packet.md`](owed/2026-09-16-post-402-paste-packet.md) list DRAFT **#399/#409/#410/#411** (do not merge without paste). Goal **not** complete.
