@@ -94,6 +94,9 @@ using Pkg
 Pkg.add(url = "https://github.com/itchyshin/GLLVModels.jl")
 using GLLVModels
 
+# `using GLLVM` cannot resolve after the package rename. After loading
+# GLLVModels, `GLLVModels.GLLVM` is a temporary deprecated source-level alias.
+
 # Simulate the per-response-residual Gaussian model used for the R comparison
 using Random
 Random.seed!(0)
