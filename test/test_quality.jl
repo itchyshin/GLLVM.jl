@@ -15,7 +15,10 @@ _HAS_JET  && @eval using JET
         if _HAS_AQUA
             # ambiguities=false: method ambiguities here originate in
             # dependencies, not GLLVModels, so they are noise for this hygiene gate.
-            Aqua.test_all(GLLVModels; ambiguities = false)
+            # persistent_tasks=false avoids Aqua's fresh temporary resolver before
+            # unregistered GLLVModels can be resolved through General; all other
+            # Aqua hygiene checks remain active.
+            Aqua.test_all(GLLVModels; ambiguities = false, persistent_tasks = false)
         else
             @info "Aqua not in this environment — run `Pkg.test()` for the full battery"
             @test_skip false
