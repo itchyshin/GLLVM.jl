@@ -57,6 +57,8 @@
 - Branch `feat/d3-stage1-harness-draft-20260916`: paste-gated driver
   `tools/loading_profile/run_d3_stage1_scaffold.jl` +
   `d3_stage1_harness.jl`; test `test/test_loading_profile_stage1_harness.jl`.
+  Deepened: `src/loading_profile_confirmatory_internal.jl` (not exported),
+  `test/test_loading_profile_confirmatory.jl` (refit smoke paste-gated).
   **No** public `loading_profile` export; **no** ledger rebind; **no** Stage 1 done claim.
 - Commands: `julia --project=. test/test_loading_profile_stage1_harness.jl`
 
