@@ -33,7 +33,7 @@ using GLLVModels: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stde
         @test ct isa GllvmCoefTable
 
         s = summary(fit_gauss)
-        @test occursin("Gaussian GLLVModels fit", s)
+        @test occursin("Gaussian GLLVM fit", s)
         @test occursin("logLik", s)
     end
 
@@ -76,7 +76,7 @@ using GLLVModels: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stde
         @test length(StatsAPI.coef(fit_bin)) == p # β intercepts
 
         s = summary(fit_bin)
-        @test occursin("Binomial GLLVModels fit", s)
+        @test occursin("Binomial GLLVM fit", s)
     end
 
     # 3. PoissonFit
@@ -93,7 +93,7 @@ using GLLVModels: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stde
         @test length(StatsAPI.coef(fit_pois)) == p
 
         s = summary(fit_pois)
-        @test occursin("Poisson GLLVModels fit", s)
+        @test occursin("Poisson GLLVM fit", s)
     end
 
     # 4. NBFit
@@ -118,7 +118,7 @@ using GLLVModels: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stde
         @test StatsAPI.nobs(fit_beta, Y_beta) == pn
 
         s = summary(fit_beta)
-        @test occursin("Beta GLLVModels fit", s)
+        @test occursin("Beta GLLVM fit", s)
     end
 
     # 6. GammaFit
@@ -131,7 +131,7 @@ using GLLVModels: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stde
         @test StatsAPI.nobs(fit_gamma, Y_gamma) == pn
 
         s = summary(fit_gamma)
-        @test occursin("Gamma GLLVModels fit", s)
+        @test occursin("Gamma GLLVM fit", s)
     end
 
     # 7. Covariates fit (GllvmCovFit)
@@ -144,7 +144,7 @@ using GLLVModels: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stde
         @test length(StatsAPI.coef(fit_cov)) == length(fit_cov.γ)
         @test StatsAPI.nobs(fit_cov, Y_pois) == pn
         s = summary(fit_cov)
-        @test occursin("GLLVModels Covariates fit", s)
+        @test occursin("GLLVM Covariates fit", s)
     end
 
     # 8. OrdinalFit
@@ -163,7 +163,7 @@ using GLLVModels: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stde
         @test StatsAPI.nobs(fit_ord, Y_ord) == pn
         @test length(StatsAPI.coef(fit_ord)) == length(fit_ord.τ)
         s = summary(fit_ord)
-        @test occursin("Ordinal GLLVModels fit", s)
+        @test occursin("Ordinal GLLVM fit", s)
     end
 
     # 9. TweedieFit
@@ -175,7 +175,7 @@ using GLLVModels: StatsAPI, coef, vcov, nobs, dof, loglikelihood, aic, bic, stde
         @test StatsAPI.aic(fit_tw) ≈ 2 * StatsAPI.dof(fit_tw) - 2 * fit_tw.loglik
         @test StatsAPI.nobs(fit_tw, Y_tw) == pn
         s = summary(fit_tw)
-        @test occursin("Tweedie GLLVModels fit", s)
+        @test occursin("Tweedie GLLVM fit", s)
     end
 
     # 10. Re-exported symbols check
