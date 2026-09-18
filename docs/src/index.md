@@ -147,8 +147,13 @@ per-response-residual teaching route above.
 
 ## Citing
 
-GLLVModels.jl does not yet have its own software citation. For now, cite the methods
-it builds on: Hadfield & Nakagawa (2010, *J. Evol. Biol.*) for the sparse
+If you use `GLLVModels.jl` in published work, please cite:
+
+> Nakagawa, S. (2026). GLLVModels.jl: Generalised Linear Latent Variable Models in
+> Julia. <https://github.com/itchyshin/GLLVModels.jl>
+
+When relevant, also cite the methods it builds on: Hadfield & Nakagawa
+(2010, *J. Evol. Biol.*) for the sparse
 phylogenetic precision; Tipping & Bishop (1999, *JRSS-B*) for the
 probabilistic-PCA initialiser; and Bates et al. (2015, *J. Stat. Soft.*) for
 the profile-out and sparse mixed-model machinery. The edge-incidence
