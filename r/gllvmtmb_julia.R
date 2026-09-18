@@ -94,7 +94,7 @@ if (!exists(".jl_value", mode = "function")) {
 }
 
 # ---------------------------------------------------------------------------------
-# Family + link mapping (gllvm string -> GLLVM.jl marker / fitter metadata).
+# Family + link mapping (gllvm string -> GLLVModels.jl marker / fitter metadata).
 # ---------------------------------------------------------------------------------
 # `julia_family` is the Distributions.jl marker constructor name to use with the
 # unified fit_gllvm dispatch (where supported); `disp` names the dispersion concept
@@ -123,7 +123,7 @@ if (!exists(".jl_value", mode = "function")) {
   identity= "IdentityLink"
 )
 
-# Sensible default link per family (matches gllvm/GLLVM.jl defaults).
+# Sensible default link per family (matches gllvm/GLLVModels.jl defaults).
 .default_link <- function(family) {
   switch(family,
     gaussian = "identity",
@@ -169,7 +169,7 @@ if (!exists(".jl_value", mode = "function")) {
       list(name = "phi", value = as.numeric(.jl_value(julia_fit[["φ"]])),
            power = as.numeric(.jl_value(julia_fit$p)))         # identity (set p_init=1.1 to match gllvm path)
     },
-    # Gaussian per-species SD: gllvm reports per-species phi_j (SD). GLLVM.jl pervar
+    # Gaussian per-species SD: gllvm reports per-species phi_j (SD). GLLVModels.jl pervar
     # fit stores per-species VARIANCES; gllvm convention is SD, so sqrt them.
     gaussian_sd = {
       ## VERIFY: field name for the per-species variance vector on GaussianPerVarFit
@@ -190,12 +190,12 @@ if (!exists(".jl_value", mode = "function")) {
 #' Fit a GLLVM in Julia with a gllvmTMB-style call.
 #'
 #' @param y          n x p response matrix (SITES in rows, SPECIES in columns) —
-#'                   the gllvm orientation. Transposed to p x n for GLLVM.jl.
+#'                   the gllvm orientation. Transposed to p x n for GLLVModels.jl.
 #' @param X          (reserved) site covariate matrix/data.frame. NOT YET wired
 #'                   through this legacy direct `gllvm_julia()` scaffold —
 #'                   passing a non-NULL X errors. The current `gllvmTMB(...,
 #'                   engine = "julia")` bridge has its own capability ledger and
-#'                   admits a tested subset of `X` models through `GLLVM.bridge_fit`.
+#'                   admits a tested subset of `X` models through `GLLVModels.bridge_fit`.
 #' @param family     gllvm family string; one of names(.family_map).
 #' @param num.lv     number of latent variables (gllvm name; -> Julia `K`).
 #' @param row.eff    "none" (default), "fixed", or "random".
@@ -205,7 +205,7 @@ if (!exists(".jl_value", mode = "function")) {
 #'                   Only meaningful for families with a dispersion parameter.
 #' @param link       link string (see .link_map); default per family.
 #' @param method     "LA" (Laplace, default) or "VA" (variational). gllvm's default
-#'                   is "VA"; GLLVM.jl's default path is Laplace. Pin to match.
+#'                   is "VA"; GLLVModels.jl's default path is Laplace. Pin to match.
 #' @param N          n x p trial-count matrix for binomial (default Bernoulli).
 #' @param p_init     Tweedie only: optimiser start for the power (set 1.1 to match gllvm).
 #' @param ...        forwarded to the underlying Julia fitter (e.g. g_tol, iterations).
@@ -235,13 +235,13 @@ gllvm_julia <- function(y, X = NULL, family = "negative.binomial", num.lv = 2L,
 
   if (!is.null(X))
     stop("X (site covariates) is not yet wired through this bridge scaffold; ",
-         "use GLLVM.jl's fit_gllvm_cov / @formula directly, or extend gllvm_julia. ",
+         "use GLLVModels.jl's fit_gllvm_cov / @formula directly, or extend gllvm_julia. ",
          "See r/README_bridge.md 'known-unsupported combos'.")
 
   K <- as.integer(num.lv)
   if (is.na(K) || K < 1L) stop("num.lv must be a positive integer")
 
-  # Orientation + storage mode. gllvm y is n x p; GLLVM.jl wants p x n.
+  # Orientation + storage mode. gllvm y is n x p; GLLVModels.jl wants p x n.
   Y <- t(as.matrix(y))                                    # now p x n
   storage.mode(Y) <- if (isTRUE(fmap$int)) "integer" else "double"
   Nt <- if (!is.null(N)) { Nm <- t(as.matrix(N)); storage.mode(Nm) <- "integer"; Nm } else NULL
@@ -258,7 +258,7 @@ gllvm_julia <- function(y, X = NULL, family = "negative.binomial", num.lv = 2L,
   # ---- VA vs LA guardrails (the available VA fitters) ----
   va_ok <- family %in% c("poisson", "negative.binomial", "binomial", "beta", "Gamma", "gamma")
   if (method == "VA" && !va_ok)
-    stop(sprintf("method='VA' is not available for family '%s' in GLLVM.jl ", family),
+    stop(sprintf("method='VA' is not available for family '%s' in GLLVModels.jl ", family),
          "(VA fitters exist for poisson / negative.binomial / binomial / beta / gamma). ",
          "Use method='LA'.")
   if (method == "VA" && (per_species || row.eff != "none"))
@@ -434,7 +434,7 @@ gllvm_julia_predict <- function(fit, type = "response") {
 
 # Pretty printer.
 print.gllvm_julia <- function(x, ...) {
-  cat(sprintf("GLLVM.jl fit (via JuliaConnectoR) — family=%s, link=%s, method=%s\n",
+  cat(sprintf("GLLVModels.jl fit (via JuliaConnectoR) — family=%s, link=%s, method=%s\n",
               x$family, x$link, x$method))
   cat(sprintf("  num.lv = %d, row.eff = %s, dispersion structure = %s\n",
               x$num.lv, x$row.eff, x$disp.structure))

@@ -1,4 +1,4 @@
-# parity_check.R — numerical-parity harness: R gllvm vs GLLVM.jl (via the bridge).
+# parity_check.R — numerical-parity harness: R gllvm vs GLLVModels.jl (via the bridge).
 #
 # `compare_gllvm(y, ...)` fits the SAME data with
 #   (a) R gllvm::gllvm(...)        — if {gllvm} is installed, and
@@ -10,7 +10,7 @@
 #
 # REQUIREMENTS (NOT available in the authoring environment — run locally):
 #   * R package {gllvm} (the gllvmTMB engine) installed, AND
-#   * a Julia with GLLVM.jl available + {JuliaConnectoR} in R.
+#   * a Julia with GLLVModels.jl available + {JuliaConnectoR} in R.
 # This script was authored WITHOUT either runtime; treat numbers/tolerances as a
 # starting point and verify in a live R + Julia session.
 #
@@ -65,7 +65,7 @@
        loadings = fit$loadings, disp = fit$dispersion$value)
 }
 
-#' Compare an R gllvm fit and a GLLVM.jl bridge fit on the same data.
+#' Compare an R gllvm fit and a GLLVModels.jl bridge fit on the same data.
 #'
 #' @param y       n x p response matrix (gllvm orientation: sites x species).
 #' @param family  gllvm family string (passed to BOTH engines).
@@ -97,7 +97,7 @@ compare_gllvm <- function(y, family = "negative.binomial", num.lv = 2L,
             "install.packages('gllvm') for a true side-by-side parity check.")
   }
 
-  # ---- (b) GLLVM.jl via the bridge ----
+  # ---- (b) GLLVModels.jl via the bridge ----
   if (!exists("gllvm_julia", mode = "function"))
     stop("gllvm_julia() not found — source('r/gllvmtmb_julia.R') first.")
   j_fit <- gllvm_julia(y, family = family, num.lv = num.lv, method = method,
@@ -105,7 +105,7 @@ compare_gllvm <- function(y, family = "negative.binomial", num.lv = 2L,
   j <- .extract_julia(j_fit)
 
   # ---- side-by-side report ----
-  cat("\n=== GLLVM parity: R gllvm vs GLLVM.jl ===\n")
+  cat("\n=== GLLVM parity: R gllvm vs GLLVModels.jl ===\n")
   cat(sprintf("family=%s  num.lv=%d  method=%s  row.eff=%s  disp=%s\n\n",
               family, as.integer(num.lv), method, row.eff,
               if (is.null(disp.formula)) "per-species(NULL)" else deparse(disp.formula)))

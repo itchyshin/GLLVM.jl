@@ -3,7 +3,7 @@
 This directory contains a historical **gllvm-style direct R scaffold** for
 low-level parity smoke checks. It is not the current `gllvmTMB(...,
 engine = "julia")` admission surface; the current R package bridge is guarded
-by `GLLVM.bridge_capabilities()` and lives in `gllvmTMB`. You call something
+by `GLLVModels.bridge_capabilities()` and lives in `gllvmTMB`. You call something
 that looks like `gllvm::gllvm(...)` — same family strings, `num.lv`, `row.eff`,
 `disp.formula` — and the scaffold runs the fit in GLLVModels.jl via
 [JuliaConnectoR](https://github.com/stefan-m-lenz/JuliaConnectoR), then returns
@@ -29,7 +29,7 @@ a list in **gllvm parameter conventions** (e.g. NB dispersion as `phi = 1/r`).
 
 | File | Purpose |
 |------|---------|
-| `gllvmjl.R`        | low-level accessor wrappers (`coef_table`, `getLV`, `getLoadings`, `predict`, …) calling GLLVM.jl per-family fitters directly. |
+| `gllvmjl.R`        | low-level accessor wrappers (`coef_table`, `getLV`, `getLoadings`, `predict`, …) calling GLLVModels.jl per-family fitters directly. |
 | `gllvmtmb_julia.R` | the `gllvm_julia(...)` front door + dispersion conversions; **builds on** `gllvmjl.R`. |
 | `parity_check.R`   | `compare_gllvm(y, ...)` numerical-parity harness (R gllvm vs the bridge). |
 | `README_bridge.md` | this file. |
@@ -109,7 +109,7 @@ scores (n × K) in gllvm orientation.
 Source of truth: `docs/src/gllvmtmb-parity.md` → "R bridge: parameterization map".
 The bridge applies these **on the way out**, so `fit$dispersion` is already in gllvm units.
 
-| Quantity | gllvm (R) | GLLVM.jl | Bridge rule (applied in `.convert_dispersion`) |
+| Quantity | gllvm (R) | GLLVModels.jl | Bridge rule (applied in `.convert_dispersion`) |
 |----------|-----------|----------|-----------|
 | NB2 dispersion | `φ`, `Var = μ + μ²φ` | `r` (size), `Var = μ + μ²/r` | **`φ = 1/r`** (also ZINB / Hurdle-NB / grouped-NB) |
 | NB1 dispersion | `φ`, `Var = μ + μφ` | `φ`, `Var = μ(1+φ)` | identity |
@@ -121,17 +121,17 @@ The bridge applies these **on the way out**, so `fit$dispersion` is already in g
 
 ## Method note (LA vs VA)
 
-gllvm's default estimation method is **`"VA"`** (variational); GLLVM.jl's default path
+gllvm's default estimation method is **`"VA"`** (variational); GLLVModels.jl's default path
 is **Laplace**. They differ in finite samples, so for a parity check **pin matching
 methods** on both sides (`compare_gllvm(..., method=)` passes the same string to each).
-VA fitters in GLLVM.jl exist for **poisson, negative.binomial, binomial, beta, gamma**
+VA fitters in GLLVModels.jl exist for **poisson, negative.binomial, binomial, beta, gamma**
 only, and only for the plain (shared-dispersion, no-row-effect) case.
 
 ## Known-unsupported combos in this legacy direct scaffold
 
 This `r/` directory is a historical direct `gllvm_julia()` scaffold for parity
 smoke tests. It is not the current `gllvmTMB(..., engine = "julia")` admission
-surface. The current R package bridge is guarded by `GLLVM.bridge_capabilities()`
+surface. The current R package bridge is guarded by `GLLVModels.bridge_capabilities()`
 and admits a subset of fixed-effect `X` models through `gllvmTMB`; keep this
 scaffold conservative unless it is deliberately rewired to that same contract.
 
@@ -140,9 +140,9 @@ scaffold conservative unless it is deliberately rewired to that same contract.
   `p × n × q` array needs a live-session check). Passing non-NULL `X` errors.
 - **`method="VA"` + (grouped dispersion | row effects | unsupported family)** — errors;
   use `method="LA"`.
-- **Families with no GLLVM.jl path** (`ZNIB`, correlated LVs `lvCor`, structured row
+- **Families with no GLLVModels.jl path** (`ZNIB`, correlated LVs `lvCor`, structured row
   effects `corAR1/corExp/corCS`) — out of scope per `docs/src/gllvmtmb-parity.md`.
-- **Ordinal species-specific cutpoints** — GLLVM.jl uses common ordered cutpoints.
+- **Ordinal species-specific cutpoints** — GLLVModels.jl uses common ordered cutpoints.
 
 ## Validating parity
 
