@@ -2,7 +2,7 @@ using GLLVModels
 using Test
 using Random
 
-@testset "spatial × dep Arc 0 admission" begin
+@testset "spatial × dep admission" begin
     Random.seed!(14)
     p, n = 4, 25
     Y = randn(p, n)
@@ -17,7 +17,7 @@ using Random
         catch e
             sprint(showerror, e)
         end
-        @test occursin("not implemented in Arc 0", msg)
+        @test occursin("not implemented yet", msg)
         @test occursin("mesh", msg)
         @test occursin("SPDE", msg)
     end
