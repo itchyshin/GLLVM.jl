@@ -1,5 +1,5 @@
 # Ordinal (ordered categorical, C levels) — proportional-odds cumulative-link
-# GLLVModels. y ∈ {1,…,C}; latent η = (Λ z)_t with z ~ N(0, I_K); common ordered
+# GLLVM. y ∈ {1,…,C}; latent η = (Λ z)_t with z ~ N(0, I_K); common ordered
 # cutpoints τ₁<…<τ_{C-1} (shared across species) absorb the category levels, so
 # there is no separate species intercept. Cumulative model (McCullagh 1980),
 # with link CDF F (F = logistic for logit, F = Φ for probit):
@@ -21,7 +21,7 @@
     Ordinal
 
 Family marker for the ordered-categorical (proportional-odds cumulative-logit)
-GLLVModels. `Distributions` has no ordinal type, so GLLVModels defines its own. Categories
+GLLVM. `Distributions` has no ordinal type, so GLLVModels defines its own. Categories
 are coded `1:C`; the number of levels `C` is inferred from the data (`maximum(Y)`)
 by the fitter, and equals `length(τ) + 1` in the marginal.
 """
@@ -109,7 +109,7 @@ end
 """
     ordinal_loglik_site(y, Λ, τ; maxiter=100, tol=1e-9) -> Float64
 
-Laplace log-marginal for one site of a cumulative-logit ordinal GLLVModels:
+Laplace log-marginal for one site of a cumulative-logit ordinal GLLVM:
 `ℓ(ẑ) − ½ẑ'ẑ − ½logdet(Λ'WΛ + I)`. `y` length-p ordinal responses (`1:C`),
 `Λ` p×K, `τ` the `C−1` ordered cutpoints.
 """
@@ -140,7 +140,7 @@ end
     ordinal_marginal_loglik_laplace(Y, Λ, τ; link=LogitLink(), kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a proportional-odds
-cumulative ordinal GLLVModels. `Y` is the p×n matrix of ordinal responses coded
+cumulative ordinal GLLVM. `Y` is the p×n matrix of ordinal responses coded
 `1:C`; `Λ` p×K; `τ` the `C−1` ordered cutpoints (shared across species). `link`
 selects the cumulative-link CDF `F` (`LogitLink()` default, `ProbitLink()`). With
 `Λ = 0` (η ≡ 0) the latent variable drops out and this reduces to the exact
@@ -279,7 +279,7 @@ OrdinalFit(Λ::Matrix{Float64}, τ::Vector{Float64}, C::Int, link::Link,
 """
     OrdinalPerTraitFit
 
-Ordinal GLLVModels fit with trait-specific ordered cutpoints. `τ` is a
+Ordinal GLLVM fit with trait-specific ordered cutpoints. `τ` is a
 `p × max(C_t - 1)` matrix padded with `NaN` after each trait's last cutpoint, and
 `C` is the per-trait category count. This is the native `gllvmTMB` parity shape
 used by the R bridge; [`OrdinalFit`](@ref) remains the shared-cutpoint shape.
@@ -411,7 +411,7 @@ end
 """
     fit_ordinal_gllvm(Y; K, link=LogitLink(), X_lv=nothing, alpha_lv_init=nothing, …) -> OrdinalFit
 
-Fit a proportional-odds cumulative ordinal GLLVModels by L-BFGS over
+Fit a proportional-odds cumulative ordinal GLLVM by L-BFGS over
 `[vec(Λ); ψ]`, where the `C−1` ordered cutpoints are the unconstrained increments
 `τ₁ = ψ₁, τ_c = τ_{c-1} + exp(ψ_c)` (so ordering holds for free) and the marginal
 is [`ordinal_marginal_loglik_laplace`](@ref). `link` selects the cumulative-link
@@ -557,7 +557,7 @@ end
 """
     fit_ordinal_gllvm_pertrait(Y; K, link=LogitLink(), …) -> OrdinalPerTraitFit
 
-Fit a cumulative ordinal GLLVModels with one ordered cutpoint vector per trait. The
+Fit a cumulative ordinal GLLVM with one ordered cutpoint vector per trait. The
 cutpoint contribution to the degrees of freedom is `sum(C_t - 1)`, matching the
 native `gllvmTMB` ordinal bridge target. Only `LogitLink()` and `ProbitLink()`
 are supported; other links throw `ArgumentError` before response access. The shared-cutpoint
@@ -654,7 +654,7 @@ end
     fit_ordinal_gllvm_pertrait_cov(Y; X, K, link=LogitLink(), mask=nothing,
                                    γ_fixed=nothing, …) -> OrdinalPerTraitCovFit
 
-Fit a cumulative ordinal GLLVModels with **per-trait cutpoints** (τ₁=0 fixed; K−2
+Fit a cumulative ordinal GLLVM with **per-trait cutpoints** (τ₁=0 fixed; K−2
 free log-spacings per trait) and **shared site covariates** `X` (`p×n×q`).
 Working vector `[β; γ_free; pack(Λ); ψ]` with ψ the unconstrained per-trait
 log-spacings; offset `O = Xγ` enters the per-trait Laplace marginal as

@@ -57,7 +57,7 @@ _laplace_mode_should_backtrack(::TruncatedPoisson) = true
 """
     truncated_poisson_marginal_loglik_laplace(Y, Λ, β, link=LogLink(); kwargs...) -> Float64
 
-Laplace log-marginal for a zero-truncated Poisson GLLVModels. `Y` must be integer
+Laplace log-marginal for a zero-truncated Poisson GLLVM. `Y` must be integer
 counts with every observed cell `≥ 1` (zeros are invalid under this family).
 """
 truncated_poisson_marginal_loglik_laplace(Y::AbstractMatrix,
@@ -90,7 +90,7 @@ end
 """
     fit_truncated_poisson_gllvm(Y; K, link=LogLink(), …) -> TruncatedPoissonFit
 
-Fit a zero-truncated Poisson GLLVModels by Laplace + LBFGS (finite-difference
+Fit a zero-truncated Poisson GLLVM by Laplace + LBFGS (finite-difference
 outer gradient). Twin-aligned: log link on untruncated `μ`, support `y ≥ 1`.
 Throws if any observed cell is `< 1`.
 """

@@ -1,4 +1,4 @@
-# Gradient-free EM for the Gaussian phylogenetic GLLVModels (phylo_unique config).
+# Gradient-free EM for the Gaussian phylogenetic GLLVM (phylo_unique config).
 #
 # This is the phylo extension of `em_fa.jl`. It fits the SAME model that
 # `fit_gaussian_gllvm(y; K, has_phy_unique = true, Σ_phy = Σ_phy)` fits via
@@ -680,7 +680,7 @@ end
                  tol=1e-9, max_iter=1000, assert_monotone=true,
                  phy=nothing, force_dense_estep=false) -> EMPhyloFit
 
-Gradient-free EM fit of the Gaussian phylo_unique GLLVModels: `K_B` site latent
+Gradient-free EM fit of the Gaussian phylo_unique GLLVM: `K_B` site latent
 factors plus one per-trait phylogenetic random effect with covariance
 `(σ_phy σ_phy') ∘ Σ_phy`. Matches `fit_gaussian_gllvm(y; K = K_B,
 has_phy_unique = true, Σ_phy = Σ_phy)`.

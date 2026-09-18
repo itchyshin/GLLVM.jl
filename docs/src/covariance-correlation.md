@@ -9,14 +9,14 @@
 </div>
 ```
 
-A fitted Gaussian GLLVModels gives you more than latent ordination axes — it gives
+A fitted Gaussian GLLVM gives you more than latent ordination axes — it gives
 the full **among-response covariance** `Σ_y` those axes imply, and the
 ecological quantities you read off it: how much of each response's variation is
 *shared* (communality), and which responses *move together* (correlation).
 
 ## The model-implied covariance
 
-For a Gaussian GLLVModels with `K` latent factors and loadings `Λ`, the responses at
+For a Gaussian GLLVM with `K` latent factors and loadings `Λ`, the responses at
 a site have covariance
 
 ```math

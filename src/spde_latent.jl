@@ -1,9 +1,9 @@
 # SPDE / Matérn-GMRF spatial field as a *latent variable* inside a (non-Gaussian)
-# multi-species GLLVModels — the joint-Laplace path over the spatial GMRF.
+# multi-species GLLVM — the joint-Laplace path over the spatial GMRF.
 #
 # Where src/spde_fit.jl fits a single Gaussian response as μ + A·u + ε (one field,
 # conjugate, closed-form marginal), this module lets the spatial field carry the
-# latent variables of a *multi-species* GLLVModels under an arbitrary response family.
+# latent variables of a *multi-species* GLLVM under an arbitrary response family.
 #
 # Model (p species × M sites; mesh with N nodes):
 #
@@ -15,7 +15,7 @@
 # So the K latent variables are *spatially smooth* across sites (gllvm's
 # `corLV = "spatial"`), with smoothness/range set by the sparse SPDE precision
 # Q(κ, τ) from spde_precision. As Q → I and A → I the fields become i.i.d.
-# N(0, I) per site and the model collapses to the ordinary independent-site GLLVModels.
+# N(0, I) per site and the model collapses to the ordinary independent-site GLLVM.
 #
 # Marginal by joint Laplace over the stacked field U = [u_1 … u_K] ∈ ℝ^{N×K}.
 # With prior precision P = I_K ⊗ Q and data log-likelihood ℓ_data(U), let
@@ -122,7 +122,7 @@ end
     spde_latent_marginal_loglik(family, Y, N, Λ, β, link, A, Q;
                                 maxiter=50, tol=1e-9) -> Float64
 
-Joint-Laplace marginal log-likelihood of a GLLVModels whose `K = size(Λ, 2)` latent
+Joint-Laplace marginal log-likelihood of a GLLVM whose `K = size(Λ, 2)` latent
 variables are SPDE/Matérn-GMRF spatial fields on a mesh with `N = size(A, 2)`
 nodes. `Y` is the p×M response (species × sites), `N` the matching trial-count
 matrix (ones for families without trials), `Λ` the p×K loadings, `β` the length-p
@@ -236,7 +236,7 @@ end
                           g_tol=1e-5, iterations=300,
                           newton_maxiter=50, newton_tol=1e-9) -> SPDELatentFit
 
-Fit a spatially-structured GLLVModels whose `K` latent variables are SPDE/Matérn-GMRF
+Fit a spatially-structured GLLVM whose `K` latent variables are SPDE/Matérn-GMRF
 fields, by L-BFGS on [`spde_latent_marginal_loglik`](@ref). `Y` is p×M (species ×
 sites) observed at the M rows of `locs`, over the triangular mesh (`nodes`,
 `tris`). The FEM matrices and the projector `A` are built once; each evaluation

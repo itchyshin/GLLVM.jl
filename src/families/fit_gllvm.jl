@@ -1,10 +1,10 @@
-# Unified GLLVModels fit entry point — dispatches on the response family.
+# Unified GLLVM fit entry point — dispatches on the response family.
 
 """
     fit_gllvm(Y; family = Normal(), K, num_lv = nothing,
               row_eff = :none, disp_group = nothing, pervar = false, kwargs...)
 
-Fit a GLLVModels, dispatching on the response `family` — a Distributions.jl
+Fit a GLLVM, dispatching on the response `family` — a Distributions.jl
 distribution used as a marker (the GLM.jl convention):
 
 - `Normal()`   → [`fit_gaussian_gllvm`](@ref) — closed-form Gaussian marginal

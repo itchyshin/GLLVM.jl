@@ -1,6 +1,6 @@
 # Ordination-score uncertainty — per-site latent-score intervals for biplots.
 #
-# A fitted GLLVModels places each SITE at a latent score ẑ_s = the per-site Laplace
+# A fitted GLLVM places each SITE at a latent score ẑ_s = the per-site Laplace
 # mode (or Gaussian posterior mean) given that site's response y_s and the fitted
 # parameters (Λ, β, link, dispersion); see `getLV`. The score is a point estimate,
 # but a biplot usually wants the *spread* around each point — the CI ellipse you
@@ -76,7 +76,7 @@ end
                            rng=Random.default_rng(), N=nothing)
         -> NamedTuple
 
-Per-site latent-score uncertainty for a fitted GLLVModels, by a conditional
+Per-site latent-score uncertainty for a fitted GLLVM, by a conditional
 (posterior-predictive) parametric bootstrap of the ordination scores. The fitted
 parameters `(Λ, β, link, dispersion)` are held fixed; for each of `n_boot`
 replicates the response matrix is resampled at the fitted means

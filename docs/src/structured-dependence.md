@@ -23,7 +23,7 @@ equivalent.
 
 Let `y` be a p × n matrix of continuous traits (or outcomes) measured on
 `p` entities (species, individuals, sites) at `n` occasions (sites, visits).
-The Gaussian GLLVModels with a structured random effect is:
+The Gaussian GLLVM with a structured random effect is:
 
 ```
 y[:, s] = Λ_B η_s + u + ε[:, s]

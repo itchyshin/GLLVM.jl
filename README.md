@@ -157,7 +157,7 @@ with sparse random-effect design matrices. `GLLVModels.jl` solves a
 | Model | Engine |
 |-------|--------|
 | `(1 | site)` random intercept, no latent factors | MixedModels.jl |
-| GLLVModels with K ≥ 1 latent factors | GLLVModels.jl |
+| GLLVM with K ≥ 1 latent factors | GLLVModels.jl |
 
 ## Features
 

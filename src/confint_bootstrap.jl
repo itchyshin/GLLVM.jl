@@ -1,4 +1,4 @@
-# Parametric bootstrap confidence intervals for the Gaussian GLLVModels.
+# Parametric bootstrap confidence intervals for the Gaussian GLLVM.
 #
 # Sample y_b ~ N(μ̂, Σ̂_y) for b = 1..n_boot, refit each, then take
 # percentiles of the resulting parameter (or derived-quantity) distributions.

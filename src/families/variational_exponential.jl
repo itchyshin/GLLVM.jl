@@ -1,4 +1,4 @@
-# Gaussian-variational (VA / ELBO) marginal for the Exponential GLLVModels (log link).
+# Gaussian-variational (VA / ELBO) marginal for the Exponential GLLVM (log link).
 # Companion to families/variational.jl. The Exponential is the dispersion-free
 # special case of the Gamma (shape α ≡ 1; families/exponential.jl), so — exactly as
 # for Gamma, and unlike Binomial/NB — the VA ELBO is CLOSED FORM (no Gauss–Hermite).
@@ -77,7 +77,7 @@ end
     exponential_marginal_loglik_va(Y, Λ, β; maxiter=100, tol=1e-9) -> Float64
 
 Gaussian-variational (VA) log-marginal lower bound (ELBO) over the `n` sites
-(columns) of an Exponential GLLVModels with log link — `Y` the p×n positive matrix, `Λ`
+(columns) of an Exponential GLLVM with log link — `Y` the p×n positive matrix, `Λ`
 p×K, `β` length-p. The per-site posterior `q(z_s)=N(m_s, diag(v_s))` is profiled out;
 the Exponential ELBO is closed-form (no quadrature). The value is a **lower bound**
 on the true log-marginal; as `Λ→0` it equals the independent-Exponential loglik
@@ -98,7 +98,7 @@ end
 """
     fit_exponential_gllvm_va(Y; K, link=LogLink(), …) -> ExponentialFit
 
-Fit an Exponential GLLVModels by maximising the **variational** lower bound
+Fit an Exponential GLLVM by maximising the **variational** lower bound
 ([`exponential_marginal_loglik_va`](@ref)) over `[β; vec(Λ)]` with L-BFGS — the VA
 counterpart of [`fit_exponential_gllvm`](@ref) (which maximises the Laplace
 marginal). Same warm start (log row-mean intercepts + SVD loadings) and

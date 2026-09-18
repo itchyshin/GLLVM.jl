@@ -258,7 +258,7 @@ link_residual(family, link::Link, μ̂::Real, dispersion) =
     link_residual(fit, Y; N=nothing) -> Vector{Float64}
 
 Per-trait link-implicit residual variance σ²_d (length `p`) for a fitted
-non-Gaussian GLLVModels (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
+non-Gaussian GLLVM (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
 or `OrdinalFit`). `Y` is the response matrix the fit was computed on (the fits do
 not store the data); `N` (Binomial only) the trial counts.
 
@@ -360,7 +360,7 @@ end
     sigma_y_site(fit, Y; N=nothing) -> Matrix
 
 Latent-scale trait covariance `Σ_latent = Λ Λᵀ + diag(σ²_d)` for a fitted
-non-Gaussian GLLVModels (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
+non-Gaussian GLLVM (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
 `OrdinalFit`). The loadings `Λ Λᵀ` are on the LINK scale; the per-trait
 link-implicit residual `σ²_d` (see [`link_residual`](@ref)) puts all traits on a
 common latent scale. `Y` is the response matrix the fit was computed on; `N`
@@ -386,7 +386,7 @@ end
     communality(fit, Y; N=nothing) -> Vector
 
 Per-trait communality `c²[t] = (Λ Λᵀ)[t,t] / Σ_latent[t,t]` on the latent scale
-for a fitted non-Gaussian GLLVModels — the share of the latent-scale trait variance
+for a fitted non-Gaussian GLLVM — the share of the latent-scale trait variance
 carried by the shared loadings, with `Σ_latent = Λ Λᵀ + diag(σ²_d)` (see
 [`sigma_y_site`](@ref)). Values are in [0, 1]. `Y` is the response matrix the fit
 was computed on; `N` (Binomial only) the trial counts.
@@ -421,7 +421,7 @@ end
     correlation(fit, Y; N=nothing) -> Matrix
 
 Latent-scale cross-trait correlation `R = D^{-1/2} Σ_latent D^{-1/2}` for a
-fitted non-Gaussian GLLVModels, with `Σ_latent = Λ Λᵀ + diag(σ²_d)` (see
+fitted non-Gaussian GLLVM, with `Σ_latent = Λ Λᵀ + diag(σ²_d)` (see
 [`sigma_y_site`](@ref)). Diagonal entries are exactly 1.0; off-diagonals are in
 [-1, 1] and driven by the shared loadings on the common latent (link) scale. The
 construction is rotation-invariant and family-agnostic (matches gllvmTMB

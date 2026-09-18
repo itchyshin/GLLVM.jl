@@ -193,7 +193,7 @@ end
 """
     GllvmCovFit
 
-Result of [`fit_gllvm_cov`](@ref): a GLLVModels fit with fixed-effect covariates. Fields:
+Result of [`fit_gllvm_cov`](@ref): a GLLVM fit with fixed-effect covariates. Fields:
 `family` (the Distributions marker), per-species intercepts `β` (length p), shared
 covariate coefficients `γ` (length q, including fixed-zero entries), `γ_fixed`
 (Bool vector marking fixed-zero entries), loadings `Λ` (p×K), `dispersion`
@@ -226,7 +226,7 @@ end
 """
     fit_gllvm_cov(Y; family, X, K, link=nothing, N=nothing, γ_fixed=nothing, …) -> GllvmCovFit
 
-Fit a non-Gaussian GLLVModels **with fixed-effect covariates** by L-BFGS over
+Fit a non-Gaussian GLLVM **with fixed-effect covariates** by L-BFGS over
 `[β; γ; vec(Λ); (log-dispersion)]` on the offset-augmented Laplace marginal, where
 the linear predictor is `η_{ts} = β_t + Σ_k X[t,s,k]·γ_k + (Λ z_s)_t`.
 

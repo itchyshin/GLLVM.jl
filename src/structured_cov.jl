@@ -1,6 +1,6 @@
 # Structured covariance builders for non-tree random effects.
 #
-# The Gaussian GLLVModels marginal likelihood (likelihood.jl) accepts any p × p
+# The Gaussian GLLVM marginal likelihood (likelihood.jl) accepts any p × p
 # positive-definite species covariance Σ_phy via the keyword argument of the
 # same name. The functions here build Σ_phy from coordinates (spatial) or a
 # precomputed relatedness / genomic-relationship matrix (animal model); both
@@ -99,7 +99,7 @@ end
 Validate and return a p × p relatedness / genomic-relationship matrix (GRM) as
 a `Symmetric{Float64}` suitable for passing as `Σ_phy` to `fit_gaussian_gllvm`.
 
-The animal model uses the same covariance structure as the phylogenetic GLLVModels —
+The animal model uses the same covariance structure as the phylogenetic GLLVM —
 the only difference is that Σ_phy is a relatedness matrix rather than a
 phylogenetic variance-covariance matrix. `A` must be a precomputed square,
 (approximately) symmetric positive-semidefinite matrix. Typical sources:

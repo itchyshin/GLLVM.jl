@@ -486,7 +486,7 @@ end
                     order_axes = true, sign_anchor = :auto,
                     anchor_traits = nothing) -> NamedTuple
 
-Rotate a fitted GLLVModels's loadings, mirroring `gllvmTMB::rotate_loadings`
+Rotate a fitted GLLVM's loadings, mirroring `gllvmTMB::rotate_loadings`
 (`rotate-loadings.R:90-217`). `method`: `:varimax` (orthogonal, Kaiser-
 normalized), `:promax` (oblique, `m = 4`), or `:none` (identity — also the
 automatic short-circuit at `d = 1`). `order_axes = true` reorders axes by
@@ -1024,7 +1024,7 @@ function Base.summary(fit::GllvmFit, Y::AbstractMatrix;
 end
 
 function Base.show(io::IO, s::GllvmSummary)
-    println(io, "GllvmSummary — Gaussian GLLVModels (p=$(s.p), K_B=$(s.K_B), K_W=$(s.K_W))")
+    println(io, "GllvmSummary — Gaussian GLLVM (p=$(s.p), K_B=$(s.K_B), K_W=$(s.K_W))")
     println(io, "  estimator: $(s.estimator)   logLik: $(round(s.logLik; sigdigits = 6))" *
                 "   converged: $(s.converged) ($(s.n_iter) iters)   se_status: $(s.se_status)")
     println(io, "  fixef: $(length(s.fixef)) coefficient(s)")

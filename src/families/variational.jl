@@ -1,4 +1,4 @@
-# Gaussian-variational (VA / EVA-style) marginal for the non-Gaussian GLLVModels.
+# Gaussian-variational (VA / EVA-style) marginal for the non-Gaussian GLLVM.
 #
 # Companion to families/laplace.jl. Where Laplace plugs in the posterior mode and a
 # Hessian curvature, VA fits a Gaussian posterior q(z_s) = N(m_s, diag(v_s)) per
@@ -80,7 +80,7 @@ end
     poisson_marginal_loglik_va(Y, Λ, β; maxiter=100, tol=1e-9) -> Float64
 
 Gaussian-variational (VA) log-marginal lower bound (ELBO) over the `n` sites
-(columns) of a Poisson GLLVModels with log link — `Y` the p×n integer count matrix, `Λ`
+(columns) of a Poisson GLLVM with log link — `Y` the p×n integer count matrix, `Λ`
 p×K, `β` length-p. The per-site variational posterior `q(z_s)=N(m_s, diag(v_s))` is
 profiled out by coordinate ascent. The returned value is a **lower bound** on the
 true log-marginal (≤ it for any `q`); as `Λ→0` it equals the independent-Poisson
@@ -101,7 +101,7 @@ end
 """
     fit_poisson_gllvm_va(Y; K, β_init=nothing, Λ_init=nothing, …) -> PoissonFit
 
-Fit a Poisson GLLVModels by maximising the **variational** lower bound
+Fit a Poisson GLLVM by maximising the **variational** lower bound
 ([`poisson_marginal_loglik_va`](@ref)) over `[β; vec(Λ)]` with L-BFGS — the VA
 counterpart of [`fit_poisson_gllvm`](@ref) (which maximises the Laplace marginal).
 Same warm start (empirical log-mean intercepts + SVD loadings) and finite-difference

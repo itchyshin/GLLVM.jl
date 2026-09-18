@@ -35,7 +35,7 @@ ordination biplot — sites as points, species as labeled vectors:
 
 ![Model-based ordination biplot](assets/ordination_biplot.png)
 
-*Simulated two-block data, two-factor Gaussian GLLVModels. Species loading on the same
+*Simulated two-block data, two-factor Gaussian GLLVM. Species loading on the same
 latent factor point the same way; the grey cloud is the site scores `getLV(fit, y)`.*
 
 For supported one-part non-Gaussian fits, `ordination_uncertainty` gives per-site
@@ -72,7 +72,7 @@ mean, and spatial latent fits use `predict_spatial` for new locations.
 ## Residual diagnostics
 
 `residuals` gives **Dunn–Smyth** randomized quantile residuals by default — the
-GLLVModels standard, approximately `N(0, 1)` under a correct model and comparable
+GLLVM standard, approximately `N(0, 1)` under a correct model and comparable
 across families. For discrete families the randomization uses an `rng`; pass a
 seeded one to reproduce:
 

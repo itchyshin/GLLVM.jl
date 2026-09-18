@@ -449,7 +449,7 @@ the fitted Matérn field to `new_locs`:
 μ_new = predict_spatial(fs, Y, locs, new_locs; type = :response)   # p×M′
 ```
 
-### Phylogenetic GLLVModels
+### Phylogenetic GLLVM
 
 `fit_phylo_glm` fits a per-species phylogenetic random intercept correlated
 across species by a tree, via an augmented-state joint Laplace over the sparse

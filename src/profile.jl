@@ -1,4 +1,4 @@
-# Profile-likelihood Gaussian GLLVModels NLL — MixedModels.jl-style speed pass.
+# Profile-likelihood Gaussian GLLVM NLL — MixedModels.jl-style speed pass.
 #
 # Inspired by Bates et al.'s `LinearMixedModel.objective!` (MixedModels.jl,
 # JuliaStats): the residual variance σ²_eps is profiled out analytically,

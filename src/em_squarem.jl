@@ -1,5 +1,5 @@
 # SQUAREM acceleration for the gradient-free EM fit of the Gaussian phylo
-# GLLVModels (`em_phylo.jl`).
+# GLLVM (`em_phylo.jl`).
 #
 # ---------------------------------------------------------------------------
 # Why

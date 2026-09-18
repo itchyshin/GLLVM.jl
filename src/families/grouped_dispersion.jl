@@ -198,7 +198,7 @@ end
     nb_grouped_marginal_loglik_laplace(Y, Λ, β, rvec; link=LogLink(), mask=nothing,
                                        offset=nothing, hessian=:observed, kwargs...) -> Float64
 
-Total Laplace log-marginal of a negative-binomial GLLVModels with **per-species**
+Total Laplace log-marginal of a negative-binomial GLLVM with **per-species**
 dispersion `rvec` (length p; `Var_t = μ_t + μ_t²/rvec[t]`). `Y` is the p×n integer
 count matrix; `Λ` p×K; `β` length-p. With a constant `rvec = fill(r, p)` this
 equals the shared-dispersion [`nb_marginal_loglik_laplace`](@ref) to machine
@@ -325,7 +325,7 @@ end
     fit_nb_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing,
                          hessian=:observed, …) -> NBGroupedFit
 
-Fit a negative-binomial GLLVModels with grouped / species-specific dispersion (gllvm's
+Fit a negative-binomial GLLVM with grouped / species-specific dispersion (gllvm's
 `disp.group`): species `t` shares dispersion `r_group[group[t]]`. `group` is a
 length-p vector of group ids (relabelled to `1..G` internally). L-BFGS over
 `[β; vec(Λ); log r_1 … log r_G]`; finite-difference gradient; warm start from
@@ -464,7 +464,7 @@ end
     fit_nb_gllvm_grouped_cov(Y; X, K, group=1:p, link=LogLink(), mask=nothing,
                              γ_fixed=nothing, hessian=:observed, …) -> NBGroupedCovFit
 
-Fit a negative-binomial GLLVModels with **grouped / per-trait dispersion** and
+Fit a negative-binomial GLLVM with **grouped / per-trait dispersion** and
 **shared site covariates** `X` (`p×n×q`). Working vector
 `[β; γ_free; pack(Λ); log r_1 … log r_G]`; offset `O = Xγ` is passed into the
 grouped Laplace marginal. Default `hessian=:observed` matches TMB; identity
@@ -619,7 +619,7 @@ end
     beta_grouped_marginal_loglik_laplace(Y, Λ, β, φvec; link=LogitLink(), mask=nothing,
                                          offset=nothing, hessian=:observed, kwargs...) -> Float64
 
-Total Laplace log-marginal of a Beta GLLVModels with **per-species** precision `φvec`
+Total Laplace log-marginal of a Beta GLLVM with **per-species** precision `φvec`
 (length p; `Var_t = μ_t(1−μ_t)/(1+φvec[t])`). `Y` is the p×n matrix of proportions
 in (0,1); `Λ` p×K; `β` length-p. With a constant `φvec = fill(φ, p)` this equals the
 shared-precision [`beta_marginal_loglik_laplace`](@ref) to machine precision when
@@ -716,7 +716,7 @@ end
     fit_beta_gllvm_grouped(Y; K, group, link=LogitLink(), mask=nothing, offset=nothing,
                            hessian=:observed, …) -> BetaGroupedFit
 
-Fit a Beta GLLVModels with grouped / species-specific precision (gllvm's `disp.group`):
+Fit a Beta GLLVM with grouped / species-specific precision (gllvm's `disp.group`):
 species `t` shares precision `φ[group[t]]`. `group` is a length-p vector of group
 ids (relabelled to `1..G` internally; default `1:p` = per-species). L-BFGS over
 `[β; vec(Λ); log φ_1 … log φ_G]`; finite-difference gradient; warm start from
@@ -856,7 +856,7 @@ end
     fit_beta_gllvm_grouped_cov(Y; X, K, group=1:p, link=LogitLink(), mask=nothing,
                                γ_fixed=nothing, hessian=:observed, …) -> BetaGroupedCovFit
 
-Fit a Beta GLLVModels with **grouped / per-trait precision** and **shared site
+Fit a Beta GLLVM with **grouped / per-trait precision** and **shared site
 covariates** `X` (`p×n×q`). Working vector `[β; γ_free; pack(Λ); log φ_1 … log φ_G]`;
 offset `O = Xγ` is passed into the grouped Laplace marginal. Default
 `hessian=:observed` matches TMB; identity checks against shared
@@ -1007,7 +1007,7 @@ end
     gamma_grouped_marginal_loglik_laplace(Y, Λ, β, αvec; link=LogLink(), mask=nothing,
                                           offset=nothing, hessian=:fisher, kwargs...) -> Float64
 
-Total Laplace log-marginal of a Gamma GLLVModels with **per-species** shape `αvec`
+Total Laplace log-marginal of a Gamma GLLVM with **per-species** shape `αvec`
 (length p; `Var_t = μ_t²/αvec[t]`). `Y` is the p×n matrix of positive reals; `Λ`
 p×K; `β` length-p. With a constant `αvec = fill(α, p)` this equals the shared-shape
 [`gamma_marginal_loglik_laplace`](@ref) to machine precision when
@@ -1104,7 +1104,7 @@ end
     fit_gamma_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing,
                             hessian=:observed, …) -> GammaGroupedFit
 
-Fit a Gamma GLLVModels with grouped / species-specific shape (gllvm's `disp.group`):
+Fit a Gamma GLLVM with grouped / species-specific shape (gllvm's `disp.group`):
 species `t` shares shape `α[group[t]]`. `group` is a length-p vector of group ids
 (relabelled to `1..G` internally; default `1:p` = per-species). L-BFGS over
 `[β; vec(Λ); log α_1 … log α_G]`; finite-difference gradient; warm start from log
@@ -1244,7 +1244,7 @@ end
     fit_gamma_gllvm_grouped_cov(Y; X, K, group=1:p, link=LogLink(), mask=nothing,
                                 γ_fixed=nothing, hessian=:observed, …) -> GammaGroupedCovFit
 
-Fit a Gamma GLLVModels with **grouped / per-trait shape** and **shared site
+Fit a Gamma GLLVM with **grouped / per-trait shape** and **shared site
 covariates** `X` (`p×n×q`). Working vector `[β; γ_free; pack(Λ); log α_1 … log α_G]`;
 offset `O = Xγ` is passed into the grouped Laplace marginal. Default
 `hessian=:observed` matches TMB; identity checks against shared
@@ -1400,7 +1400,7 @@ end
     nb1_grouped_marginal_loglik_laplace(Y, Λ, β, φvec; link=LogLink(), mask=nothing,
                                         offset=nothing, hessian=:observed, kwargs...) -> Float64
 
-Total Laplace log-marginal of a negative-binomial type-1 (NB1) GLLVModels with
+Total Laplace log-marginal of a negative-binomial type-1 (NB1) GLLVM with
 **per-species** dispersion `φvec` (length p; linear variance `Var_t = μ_t(1+φvec[t])`).
 `Y` is the p×n integer count matrix; `Λ` p×K; `β` length-p. With a constant
 `φvec = fill(φ, p)` and `hessian=:fisher` this equals the shared-dispersion
@@ -1499,7 +1499,7 @@ end
     fit_nb1_gllvm_grouped(Y; K, group, link=LogLink(), mask=nothing, offset=nothing,
                           hessian=:observed, …) -> NB1GroupedFit
 
-Fit a negative-binomial type-1 (NB1) GLLVModels with grouped / species-specific
+Fit a negative-binomial type-1 (NB1) GLLVM with grouped / species-specific
 dispersion (gllvm's `disp.group`): species `t` shares dispersion `φ[group[t]]`
 (linear variance `Var_t = μ_t(1+φ[group[t]])`). `group` is a length-p vector of
 group ids (relabelled to `1..G` internally; default `1:p` = per-species). L-BFGS over
@@ -1652,7 +1652,7 @@ end
     fit_nb1_gllvm_grouped_cov(Y; X, K, group=1:p, link=LogLink(), mask=nothing,
                               γ_fixed=nothing, hessian=:observed, …) -> NB1GroupedCovFit
 
-Fit an NB1 GLLVModels with **grouped / per-trait linear-variance φ** and **shared site
+Fit an NB1 GLLVM with **grouped / per-trait linear-variance φ** and **shared site
 covariates** `X` (`p×n×q`). Working vector
 `[β; γ_free; pack(Λ); log φ_1 … log φ_G]`; offset `O = Xγ` is passed into the
 grouped Laplace marginal. Default `hessian=:observed` matches TMB; identity
@@ -1820,7 +1820,7 @@ end
     tweedie_grouped_marginal_loglik_laplace(Y, Λ, β, φvec, power; link=LogLink(),
                                             mask=nothing, offset=nothing, kwargs...) -> Float64
 
-Total Laplace log-marginal of a Tweedie GLLVModels with **per-species** dispersion `φvec`
+Total Laplace log-marginal of a Tweedie GLLVM with **per-species** dispersion `φvec`
 (length p) and a single SHARED `power` ∈ (1,2) (`Var_t = φvec[t]·μ_t^power`). `Y` is
 the p×n matrix of non-negative reals (point mass at 0 allowed); `Λ` p×K; `β` length-p.
 With a constant `φvec = fill(φ, p)` (same `power`) and `hessian=:fisher` this
@@ -1996,7 +1996,7 @@ _tweedie_power(ξ::Real) = 1.0 + 1.0 / (1.0 + exp(-ξ))
     fit_tweedie_gllvm_grouped(Y; K, group, power=nothing, power_group=:shared,
                               power_init=1.5, link=LogLink(), …)
 
-Fit a Tweedie GLLVModels with grouped / species-specific dispersion (gllvm's `disp.group`):
+Fit a Tweedie GLLVM with grouped / species-specific dispersion (gllvm's `disp.group`):
 species `t` shares dispersion `φ[group[t]]`. `group` is a length-p vector of group
 ids (relabelled to `1..G` internally; default `1:p` = per-species). The three power
 contracts are explicit: `power=p0` fixes a common `p0 ∈ (1,2)`; with

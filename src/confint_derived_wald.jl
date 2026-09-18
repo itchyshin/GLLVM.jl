@@ -1,5 +1,5 @@
 # Transformed-scale Wald confidence intervals for *derived bounded
-# quantities* of a fitted Gaussian GLLVModels.
+# quantities* of a fitted Gaussian GLLVM.
 #
 # Motivation
 # ----------

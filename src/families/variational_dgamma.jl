@@ -1,4 +1,4 @@
-# Gaussian-variational (VA / ELBO) marginal for the Delta-Gamma two-part GLLVModels
+# Gaussian-variational (VA / ELBO) marginal for the Delta-Gamma two-part GLLVM
 # (occurrence Bernoulli × positive Gamma, log-link mean). Companion to
 # families/twopart.jl (the Laplace path) and families/variational_gamma.jl (the
 # closed-form Gamma VA). With the v1 convention Λ_z = 0 the occurrence part is
@@ -95,7 +95,7 @@ end
     delta_gamma_marginal_loglik_va(Y, Λc, βz, βc, α; maxiter=100, tol=1e-9) -> Float64
 
 Gaussian-variational (VA) log-marginal lower bound (ELBO) over the `n` sites
-(columns) of a Delta-Gamma two-part GLLVModels: occurrence probability
+(columns) of a Delta-Gamma two-part GLLVM: occurrence probability
 `π = logistic(β^z)` (intercept-only, `Λ_z = 0` — constant in the latent z) times a
 positive Gamma with mean `μ = exp(β^c + Λ_c z)` and shape `α > 0`. `Y` is p×n with
 `0` for absences and positive reals for the positive part, `Λc` is p×K, `βz`/`βc`
@@ -122,7 +122,7 @@ end
 """
     fit_delta_gamma_gllvm_va(Y; K, link=LogLink(), …) -> DeltaGammaFit
 
-Fit a Delta-Gamma two-part GLLVModels by maximising the **variational** lower bound
+Fit a Delta-Gamma two-part GLLVM by maximising the **variational** lower bound
 ([`delta_gamma_marginal_loglik_va`](@ref)) over `[βz; βc; vec(Λc); log α]` with
 L-BFGS, jointly estimating the shape `α` — the VA counterpart of
 [`fit_delta_gamma_gllvm`](@ref) (which maximises the Laplace marginal). Same warm

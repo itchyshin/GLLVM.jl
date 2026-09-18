@@ -12,7 +12,7 @@
 #
 #     η_{ts} = β_t + (Λ̃ w_s)_t,   Λ̃ = [Λ | σ_row·𝟙_p]  (p×(K+1)),   w_s = [z_s; u_s].
 #
-# i.e. it is EXACTLY a standard (K+1)-latent GLLVModels whose last loading column is the
+# i.e. it is EXACTLY a standard (K+1)-latent GLLVM whose last loading column is the
 # constant vector σ_row·𝟙_p, with w_s ~ N(0, I_{K+1}). The random-row marginal is
 # therefore the existing generic marginal evaluated at Λ̃ — no new mode-finder, no new
 # Hessian. The ordination loadings (Λ, p×K) and the row-effect scale (σ_row ≥ 0) are
@@ -27,7 +27,7 @@
     row_random_marginal_loglik_laplace(family, Y, N, Λ, β, σ_row; link=default_link(family),
                                        maxiter=100, tol=1e-9, mask=nothing, offset=nothing) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of a non-Gaussian GLLVModels with
+Total Laplace log-marginal over the `n` sites (columns) of a non-Gaussian GLLVM with
 a **random row effect** (per-site random intercept) of standard deviation `σ_row ≥ 0`:
 `η_{ts} = β_t + ρ_s + (Λ z_s)_t` with `ρ_s ~ N(0, σ_row²)`.
 
@@ -58,7 +58,7 @@ end
 """
     RowRandomFit
 
-Result of [`fit_row_random_gllvm`](@ref): a GLLVModels fit with a **random row effect**
+Result of [`fit_row_random_gllvm`](@ref): a GLLVM fit with a **random row effect**
 (per-site random intercept). Fields: `family` (the Distributions marker), per-species
 intercepts `β` (length p), the ordination loadings `Λ` (p×K, WITHOUT the row column),
 the row-effect SD `σ_row` (≥ 0), `dispersion` (`r`/`φ`/`α`, or `NaN` when the family
@@ -101,7 +101,7 @@ _augment_lambda(Λ::AbstractMatrix, σ_row::Real) = hcat(Λ, fill(float(σ_row),
                          σ_row_init=1.0, g_tol=1e-5, iterations=500,
                          newton_maxiter=100, newton_tol=1e-9) -> RowRandomFit
 
-Fit a non-Gaussian GLLVModels **with a random row effect** (per-site random intercept) by
+Fit a non-Gaussian GLLVM **with a random row effect** (per-site random intercept) by
 L-BFGS over `[β; pack_lambda(Λ); log σ_row; (log-dispersion)]` on the Laplace marginal,
 where `η_{ts} = β_t + ρ_s + (Λ z_s)_t` and `ρ_s ~ N(0, σ_row²)`.
 

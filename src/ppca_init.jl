@@ -1,4 +1,4 @@
-# Probabilistic PCA closed-form ML initialisation for the Gaussian GLLVModels.
+# Probabilistic PCA closed-form ML initialisation for the Gaussian GLLVM.
 # Reference: Tipping & Bishop (1999) "Probabilistic Principal Component
 # Analysis", J. R. Statist. Soc. B 61(3): 611-622, equations 8-11.
 #
@@ -79,7 +79,7 @@ end
 Rotate a p × K loading matrix (p ≥ K) so its top K × K block is lower
 triangular with positive diagonals — the canonical sign / orientation
 used by the engine's packing convention. The rotation is orthogonal
-(K × K), so Λ Λ' is preserved and any GLLVModels likelihood depending only
+(K × K), so Λ Λ' is preserved and any GLLVM likelihood depending only
 on Λ Λ' is invariant.
 
 Convention used here: QR-decompose Λ' (a K × p matrix). The thin Q

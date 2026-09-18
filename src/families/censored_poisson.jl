@@ -135,7 +135,7 @@ end
 """
     censored_poisson_marginal_loglik_laplace(Y, N, Λ, β, link=LogLink(); kwargs...)
 
-Laplace log-marginal for a right-censored Poisson GLLVModels. `N[t,s] == 0` marks an
+Laplace log-marginal for a right-censored Poisson GLLVM. `N[t,s] == 0` marks an
 uncensored count `Y[t,s]`; `N[t,s] == C ≥ 1` marks a right-censored observation
 at limit `C`. Prefer [`censored_bounds_to_YN`](@ref) from `(lower, upper)`.
 
@@ -179,7 +179,7 @@ end
 """
     fit_censored_poisson_gllvm(Y; K, censored=nothing, lower=nothing, upper=nothing, …)
 
-Fit a right-censored Poisson GLLVModels by Laplace + LBFGS (finite-difference outer
+Fit a right-censored Poisson GLLVM by Laplace + LBFGS (finite-difference outer
 gradient). **Julia-forward** — twin constructor-only; no twin Δ.
 
 Censor encoding (interval-ready):

@@ -167,7 +167,7 @@ _laplace_mode_should_backtrack(::TruncatedNegBin2) = true
     truncated_nbinom2_marginal_loglik_laplace(Y, Λ, β, r; link=LogLink(),
                                               hessian=:observed, kwargs...) -> Float64
 
-Laplace log-marginal for a zero-truncated NB2 GLLVModels with shared dispersion `r`.
+Laplace log-marginal for a zero-truncated NB2 GLLVM with shared dispersion `r`.
 `Y` must be integer counts with every observed cell `≥ 1`.
 
 `hessian=:observed` (the default) uses TMB's observed Laplace curvature;
@@ -222,7 +222,7 @@ end
 """
     fit_truncated_nbinom2_gllvm(Y; K, link=LogLink(), …) -> TruncatedNegBin2Fit
 
-Fit a zero-truncated NB2 GLLVModels by Laplace + LBFGS (finite-difference outer
+Fit a zero-truncated NB2 GLLVM by Laplace + LBFGS (finite-difference outer
 gradient) over `[β; pack(Λ); log r]` (shared scalar `r`; length `p+rr+1`).
 Twin per-trait `log_phi_truncnb2` is [`fit_truncated_nbinom2_gllvm_pertrait`](@ref)
 (Arc1b). Twin-aligned: log link on untruncated `μ`, support `y ≥ 1`.
@@ -341,7 +341,7 @@ end
 """
     truncated_nbinom2_pertrait_marginal_loglik_laplace(Y, Λ, β, rvec; link=LogLink(), kwargs...) -> Float64
 
-Laplace log-marginal for a zero-truncated NB2 GLLVModels with **per-trait**
+Laplace log-marginal for a zero-truncated NB2 GLLVM with **per-trait**
 dispersion `rvec` (length p; `r_t` ≡ twin `φ_t = exp(log_phi_truncnb2[t])`).
 Equal `r_t` reduces to the shared-`r` [`truncated_nbinom2_marginal_loglik_laplace`](@ref).
 `Y` must be integer counts with every observed cell `≥ 1`. Mode-finding reuses
@@ -397,7 +397,7 @@ end
     fit_truncated_nbinom2_gllvm_pertrait(Y; K, link=LogLink(), hessian=:observed, …)
         -> TruncatedNegBin2PerTraitFit
 
-Fit a zero-truncated NB2 GLLVModels with **per-trait** dispersion by Laplace + LBFGS
+Fit a zero-truncated NB2 GLLVM with **per-trait** dispersion by Laplace + LBFGS
 over `[β; pack(Λ); log r_1 … log r_p]` (length `p+rr+p`). Twin-aligned:
 `r_t` ≡ `φ_t = exp(log_phi_truncnb2[t])`; log link on untruncated `μ`;
 support `y ≥ 1`. Score keeps `a = r_t/(r_t+μ)` (Sol 2026-08-15).

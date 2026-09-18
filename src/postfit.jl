@@ -748,27 +748,27 @@ StatsAPI.coeftable(fit::AnyGllvmFit, Y::AbstractMatrix; kwargs...) = coef_table(
 """
     summary(fit) -> String
 
-Return a concise string summary of a fitted GLLVModels model.
+Return a concise string summary of a fitted GLLVM model.
 """
-Base.summary(fit::GllvmFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "exact Gaussian/Laplace ($(fit.integration.reason)) ") * "Gaussian GLLVModels fit (p=$(fit.model.p), K=$(fit.model.K), logLik=$(round(fit.logLik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::BinomialFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Binomial GLLVModels fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::PoissonFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Poisson GLLVModels fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::NBFit) = "NegativeBinomial GLLVModels fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::NB1Fit) = "NB1 GLLVModels fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::GP1Fit) = "GP1 GLLVModels fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::BetaFit) = "Beta GLLVModels fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::GammaFit) = "Gamma GLLVModels fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::OrdinalFit) = "Ordinal GLLVModels fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::TweedieFit) = "Tweedie GLLVModels fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::GllvmFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "exact Gaussian/Laplace ($(fit.integration.reason)) ") * "Gaussian GLLVM fit (p=$(fit.model.p), K=$(fit.model.K), logLik=$(round(fit.logLik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::BinomialFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Binomial GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::PoissonFit) = (fit.integration===nothing ? "" : fit.integration.actual===:aghq ? "AGHQ(k=$(fit.integration.k)) " : "Laplace ($(fit.integration.reason)) ") * "Poisson GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::NBFit) = "NegativeBinomial GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::NB1Fit) = "NB1 GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::GP1Fit) = "GP1 GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::BetaFit) = "Beta GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::GammaFit) = "Gamma GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::OrdinalFit) = "Ordinal GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::TweedieFit) = "Tweedie GLLVM fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
 Base.summary(fit::GaussianREMLFit) = "Gaussian REML fit (p=$(size(fit.Λ, 1)), K=$(size(fit.Λ, 2)), reml_loglik=$(round(fit.reml_loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
 Base.summary(fit::PhyloGaussianFit) = "PhyloGaussian fit (logLik=$(round(-fit.negll; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::GllvmCovFit) = "GLLVModels Covariates fit (logLik=$(round(fit.loglik; sigdigits=5)), dof=$(_nparams(fit)), AIC=$(round(aic(fit); sigdigits=5)))"
-Base.summary(fit::TwoLevelFit) = "TwoLevel GLLVModels fit (p=$(size(fit.Λ_B, 1)), K_B=$(size(fit.Λ_B, 2)), K_W=$(size(fit.Λ_W, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::GllvmCovFit) = "GLLVM Covariates fit (logLik=$(round(fit.loglik; sigdigits=5)), dof=$(_nparams(fit)), AIC=$(round(aic(fit); sigdigits=5)))"
+Base.summary(fit::TwoLevelFit) = "TwoLevel GLLVM fit (p=$(size(fit.Λ_B, 1)), K_B=$(size(fit.Λ_B, 2)), K_W=$(size(fit.Λ_W, 2)), logLik=$(round(fit.loglik; sigdigits=5)), AIC=$(round(aic(fit); sigdigits=5)))"
 
 
 # Rich REPL display (the idiomatic "summary").
 function Base.show(io::IO, ::MIME"text/plain", fit::GllvmFit)
-    println(io, "Gaussian GLLVModels fit")
+    println(io, "Gaussian GLLVM fit")
     if fit.integration!==nothing
         i=fit.integration
         println(io,"  integration = ",i.actual===:aghq ? "AGHQ(k=$(i.k), observed, unpenalized)" : "exact Gaussian/Laplace ($(i.reason))")
@@ -931,7 +931,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::PoissonFit)
     p, K = size(fit.Λ)
-    println(io, "Poisson GLLVModels fit")
+    println(io, "Poisson GLLVM fit")
     if fit.integration!==nothing
         i=fit.integration
         println(io,"  integration = ",i.actual===:aghq ? "AGHQ(k=$(i.k), observed, unpenalized)" : "Laplace ($(i.reason))")
@@ -1047,7 +1047,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::NBFit)
     p, K = size(fit.Λ)
-    println(io, "Negative-binomial GLLVModels fit")
+    println(io, "Negative-binomial GLLVM fit")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)), ", dispersion r = ", round(fit.r; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -1127,7 +1127,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::NB1Fit)
     p, K = size(fit.Λ)
-    println(io, "Negative-binomial type-1 (NB1) GLLVModels fit")
+    println(io, "Negative-binomial type-1 (NB1) GLLVM fit")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)), ", dispersion φ = ", round(fit.φ; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -1206,7 +1206,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::GP1Fit)
     p, K = size(fit.Λ)
-    println(io, "Generalized-Poisson type-1 (GP-1) GLLVModels fit")
+    println(io, "Generalized-Poisson type-1 (GP-1) GLLVM fit")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)), ", dispersion α = ", round(fit.α; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -1310,7 +1310,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::BetaFit)
     p, K = size(fit.Λ)
-    println(io, "Beta GLLVModels fit")
+    println(io, "Beta GLLVM fit")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)), ", precision φ = ", round(fit.φ; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -1528,7 +1528,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::OrdinalFit)
     p, K = size(fit.Λ)
-    println(io, "Ordinal GLLVModels fit (cumulative logit)")
+    println(io, "Ordinal GLLVM fit (cumulative logit)")
     println(io, "  responses p = ", p, ", latent factors K = ", K, ", categories C = ", fit.C)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
@@ -1536,7 +1536,7 @@ function Base.show(io::IO, ::MIME"text/plain", fit::OrdinalFit)
 end
 function Base.show(io::IO, ::MIME"text/plain", fit::OrdinalPerTraitFit)
     p, K = size(fit.Λ)
-    println(io, "Ordinal GLLVModels fit (per-trait cutpoints)")
+    println(io, "Ordinal GLLVM fit (per-trait cutpoints)")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", categories C = ", fit.C)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -1687,7 +1687,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::ExponentialFit)
     p, K = size(fit.Λ)
-    println(io, "Exponential GLLVModels fit")
+    println(io, "Exponential GLLVM fit")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -1697,7 +1697,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::GammaFit)
     p, K = size(fit.Λ)
-    println(io, "Gamma GLLVModels fit")
+    println(io, "Gamma GLLVM fit")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)), ", shape α = ", round(fit.α; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -1787,7 +1787,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::DeltaLogNormalFit)
     p, K = size(fit.Λc)
-    println(io, "Delta-lognormal GLLVModels fit (two-part)")
+    println(io, "Delta-lognormal GLLVM fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", log-SD σ = ", round(fit.σ; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -1874,7 +1874,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::HurdlePoissonFit)
     p, K = size(fit.Λc)
-    println(io, "Hurdle-Poisson GLLVModels fit (two-part)")
+    println(io, "Hurdle-Poisson GLLVM fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
@@ -1958,7 +1958,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::HurdleNBFit)
     p, K = size(fit.Λc)
-    println(io, "Hurdle-NB GLLVModels fit (two-part)")
+    println(io, "Hurdle-NB GLLVM fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", dispersion r = ", round(fit.r; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -2046,7 +2046,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::DeltaGammaFit)
     p, K = size(fit.Λc)
-    println(io, "Delta-Gamma GLLVModels fit (two-part)")
+    println(io, "Delta-Gamma GLLVM fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", shape α = ", round(fit.α; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -2245,7 +2245,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::ZIPFit)
     p, K = size(fit.Λc)
-    println(io, "Zero-inflated Poisson GLLVModels fit (two-part)")
+    println(io, "Zero-inflated Poisson GLLVM fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
@@ -2254,7 +2254,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::ZINBFit)
     p, K = size(fit.Λc)
-    println(io, "Zero-inflated NB GLLVModels fit (two-part)")
+    println(io, "Zero-inflated NB GLLVM fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", dispersion r = ", round(fit.r; sigdigits = 4))
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
@@ -2370,7 +2370,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::ZIBFit)
     p, K = size(fit.Λc)
-    println(io, "Zero-inflated binomial GLLVModels fit (two-part)")
+    println(io, "Zero-inflated binomial GLLVM fit (two-part)")
     println(io, "  responses p = ", p, ", latent factors K = ", K, ", trials N = ", fit.N)
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),
             ", AIC = ", round(aic(fit); sigdigits = 7))
@@ -2463,7 +2463,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::TweedieFit)
     p, K = size(fit.Λ)
-    println(io, "Tweedie GLLVModels fit")
+    println(io, "Tweedie GLLVM fit")
     println(io, "  responses p = ", p, ", latent factors K = ", K,
             ", link = ", nameof(typeof(fit.link)),
             ", φ = ", round(fit.φ; sigdigits = 4), ", power = ", round(fit.p; sigdigits = 4))
@@ -2551,7 +2551,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", fit::GllvmCovFit)
     p, K = size(fit.Λ); q = length(fit.γ)
-    println(io, "GLLVModels fit with covariates (", nameof(typeof(fit.family)), ", Laplace)")
+    println(io, "GLLVM fit with covariates (", nameof(typeof(fit.family)), ", Laplace)")
     println(io, "  responses p = ", p, ", covariates q = ", q, ", latent factors K = ", K,
             isnan(fit.dispersion) ? "" : ", dispersion = $(round(fit.dispersion; sigdigits = 4))")
     println(io, "  logLik = ", round(fit.loglik; sigdigits = 7),

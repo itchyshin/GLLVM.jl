@@ -209,7 +209,7 @@ end
 """
     laplace_loglik_site_mi(family, y, n, Λ, β, link; x, b, μ, Lx) -> Float64
 
-Per-site Laplace marginal for a non-Gaussian GLLVModels with a VECTOR of site-level
+Per-site Laplace marginal for a non-Gaussian GLLVM with a VECTOR of site-level
 predictors `x` (length `q`; entries may be `missing`/`NaN`), slope vector `b`,
 predictor model `x ~ N(μ, Σ_x)` with `Σ_x = Lx Lxᵀ` (`Lx` a q×q lower-triangular
 Cholesky factor). Observed coordinates of `x` are conditioned on; missing ones are
@@ -244,7 +244,7 @@ end
 """
     marginal_loglik_laplace_mi(family, Y, N, Λ, β, link; X, b, μ, Lx) -> Float64
 
-Total Laplace log-marginal over sites for a non-Gaussian GLLVModels with a VECTOR of
+Total Laplace log-marginal over sites for a non-Gaussian GLLVM with a VECTOR of
 site-level predictors integrated by FIML (the mi() vector axis). `X` is `n × q`
 (entries may be `missing`/`NaN`); `b`, `μ` are length-`q`; `Lx` is the q×q
 lower-triangular Cholesky factor of `Σ_x`. Each site contributes the joint
@@ -331,7 +331,7 @@ end
 """
     fit_gllvm_mi_multi(family, Y, X; K, N=nothing, link=canonical, ...) -> NamedTuple
 
-Fit a non-Gaussian GLLVModels with a VECTOR of site-level continuous predictors `X`
+Fit a non-Gaussian GLLVM with a VECTOR of site-level continuous predictors `X`
 (`n × q`, entries may be `missing`/`NaN`), where the missing predictor cells are
 integrated out jointly by full-information ML (the augmented `(z, x_missing)`
 Laplace of `marginal_loglik_laplace_mi`). Supported families:

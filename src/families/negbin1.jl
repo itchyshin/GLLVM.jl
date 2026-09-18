@@ -21,7 +21,7 @@
 """
     NB1(φ = 1.0)
 
-Family marker for the negative-binomial type-1 (linear-variance) GLLVModels,
+Family marker for the negative-binomial type-1 (linear-variance) GLLVM,
 `Var = μ(1 + φ)` — R gllvm's `negative.binomial1`. Pass it to
 [`fit_gllvm`](@ref) or [`gllvm`](@ref):
 
@@ -81,7 +81,7 @@ _glm_logpdf(f::NB1, μ, n, y)    = logpdf(NegativeBinomial(μ / f.φ, 1 / (1 + f
     nb1_marginal_loglik_laplace(Y, Λ, β, φ; link=LogLink(), kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a negative-binomial
-type-1 (NB1) GLLVModels with dispersion `φ` (linear variance `Var = μ(1+φ)`) — a thin
+type-1 (NB1) GLLVM with dispersion `φ` (linear variance `Var = μ(1+φ)`) — a thin
 wrapper over the family-generic `marginal_loglik_laplace` with the `NB1(φ)` marker.
 `Y` is the p×n integer count matrix; `Λ` p×K; `β` length-p. With `Λ = 0` this
 reduces exactly to the independent NB1 log-likelihood; as `φ → 0` it tends to the
@@ -145,7 +145,7 @@ _laplace_mode_should_backtrack(::NB1) = true
 """
     fit_nb1_gllvm(Y; K, link=LogLink(), mask=nothing, offset=nothing, φ_init=nothing, …) -> NB1Fit
 
-Fit a negative-binomial type-1 (NB1) GLLVModels by L-BFGS over `[β; vec(Λ); log φ]` on
+Fit a negative-binomial type-1 (NB1) GLLVM by L-BFGS over `[β; vec(Λ); log φ]` on
 the Laplace marginal ([`nb1_marginal_loglik_laplace`](@ref)), jointly estimating
 the linear-variance dispersion `φ` (`Var = μ(1+φ)`). `Y` is a p×n integer count
 matrix (may contain `missing`); `K` the latent dimension. Finite-difference

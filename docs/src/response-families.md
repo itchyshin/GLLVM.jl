@@ -1,6 +1,6 @@
 # Response families
 
-A GLLVModels links its latent factors to the responses through a **response family**
+A GLLVM links its latent factors to the responses through a **response family**
 and a **link**. GLLVModels.jl follows the Julia convention (as in GLM.jl): the family
 is a `Distributions.jl` distribution, chosen with the `family =` keyword to
 `fit_gllvm`.
@@ -119,7 +119,7 @@ the dispersion families) over the sparse phylogenetic precision.
 fit = fit_gllvm(Y; family = Normal(), K = 2)
 ```
 
-The Gaussian GLLVModels admits a **closed-form marginal** (no Laplace approximation).
+The Gaussian GLLVM admits a **closed-form marginal** (no Laplace approximation).
 The latent integral is conjugate, so the optimiser works directly on the exact
 log-likelihood. This is the fastest and most accurate path. The response matrix
 `Y` is `p × n` (responses × sites).
@@ -616,9 +616,9 @@ fit = fit_gllvm(Y; family = Lognormal(), K = 2)   # Y > 0; log link on E[log y] 
 fit = fit_lognormal_gllvm(Y; K = 2)               # same route, called directly
 ```
 
-A one-part lognormal GLLVModels (twin `lognormal()`, family_id 3): `log(y) ~
+A one-part lognormal GLLVM (twin `lognormal()`, family_id 3): `log(y) ~
 Normal(η, σ²)` with `η = β + Λz`. On the log scale this is exactly the
-Gaussian GLLVModels, so `fit_lognormal_gllvm` **reuses the closed-form Gaussian
+Gaussian GLLVM, so `fit_lognormal_gllvm` **reuses the closed-form Gaussian
 fitter** on `log(Y)` rather than a Laplace approximation: per-trait intercepts
 `β_t = mean_s log(Y[t,s])` are removed first, then `fit_gaussian_gllvm`
 estimates `(Λ, σ)` on the centred log scale. The reported `loglik` is on the
@@ -903,7 +903,7 @@ same call, and unsupported families fail with an `ArgumentError`.
 fit = fit_gaussian_pervar_gllvm(Y; K = 2)   # heteroscedastic Gaussian
 ```
 
-A heteroscedastic Gaussian GLLVModels with a **separate residual variance per species**
+A heteroscedastic Gaussian GLLVM with a **separate residual variance per species**
 (gllvm's heteroscedastic default), in contrast to the single shared `σ_eps` of
 `fit_gaussian_gllvm`. With `X=nothing`, trait intercepts are profiled as row means of the `p × n`
 response matrix. Supply `X` of shape `(p, n, q)` to fit a complete fixed-effect

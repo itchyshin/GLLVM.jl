@@ -1,6 +1,6 @@
 # Latent-dimension selection — a practical workflow tool.
 #
-# Fits the same GLLVModels at a sweep of latent dimensions K = 1:Kmax via the
+# Fits the same GLLVM at a sweep of latent dimensions K = 1:Kmax via the
 # unified `fit_gllvm` dispatcher, records the information criteria (using the
 # same `_nparams`/`_loglik` path that `aic`/`bic` use), and picks the K that
 # minimises the chosen criterion. Each fit is guarded so a single failing K

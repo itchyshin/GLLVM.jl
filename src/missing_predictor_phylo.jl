@@ -1,4 +1,4 @@
-# Phylogenetic missing-predictor FIML for the Gaussian GLLVModels — the mi() axis,
+# Phylogenetic missing-predictor FIML for the Gaussian GLLVM — the mi() axis,
 # design Phase 3 (the high-value evolutionary feature).
 #
 # A species-level continuous predictor x (length p, one value per species/row,
@@ -90,7 +90,7 @@ end
 """
     fit_gaussian_mi_phylo(y, x, A; K, g_tol=1e-8, iterations=1000) -> NamedTuple
 
-Fit a Gaussian GLLVModels with a **species-level** continuous predictor `x` (length
+Fit a Gaussian GLLVM with a **species-level** continuous predictor `x` (length
 `p`, one value per species/row of `y`, may contain `missing`/`NaN`) under a
 phylogenetic covariate model `x ~ N(α 1, σ_x² A)`, where `A` is the `p × p`
 phylogenetic correlation matrix. The missing `x_t` are integrated out by

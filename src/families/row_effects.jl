@@ -31,7 +31,7 @@ end
 """
     RowEffectFit
 
-Result of [`fit_roweffect_gllvm`](@ref): a GLLVModels fit with a community row effect
+Result of [`fit_roweffect_gllvm`](@ref): a GLLVM fit with a community row effect
 (per-site intercept). Fields: `family` (the Distributions marker), per-species
 intercepts `β` (length p), site/row effects `ρ` (length n, with the reference
 `ρ[1] = 0`), loadings `Λ` (p×K), `dispersion` (`r`/`φ`/`α`, or `NaN` when the family
@@ -116,7 +116,7 @@ end
 """
     fit_roweffect_gllvm(Y; family, K, link=nothing, N=nothing, …) -> RowEffectFit
 
-Fit a non-Gaussian GLLVModels **with a community row effect** (per-site intercept) by
+Fit a non-Gaussian GLLVM **with a community row effect** (per-site intercept) by
 L-BFGS over `[β; ρ_free; vec(Λ); (log-dispersion)]` on the offset-augmented Laplace
 marginal, where the linear predictor is `η_{ts} = β_t + ρ_s + (Λ z_s)_t`.
 

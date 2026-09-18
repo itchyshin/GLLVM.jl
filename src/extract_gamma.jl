@@ -20,7 +20,7 @@
     extract_Gamma(fit::GllvmFit; row_traits, col_traits) -> Matrix{Float64}
 
 Cross-lineage coevolution block `Γ = (Λ_phy Λ_phyᵀ)[row_traits, col_traits]`
-from a Gaussian GLLVModels fit that carries a phylo-latent tier (`K_phy > 0`) with a
+from a Gaussian GLLVM fit that carries a phylo-latent tier (`K_phy > 0`) with a
 cross kernel `Σ_phy = K*` (see `make_cross_kernel`). `row_traits` and
 `col_traits` are integer index vectors into the stacked two-lineage entity set
 (host first, partner second), e.g. `row_traits = 1:n_H`,

@@ -1756,7 +1756,7 @@ end
 """
     confint_speciescov(fit::GllvmSpeciesCovFit, Y, X; level=0.95, parm=nothing, N=nothing) -> NamedTuple
 
-Wald CIs for the species-specific-covariate GLLVModels. `X` is the p×n×q design used in the fit.
+Wald CIs for the species-specific-covariate GLLVM. `X` is the p×n×q design used in the fit.
 """
 function confint_speciescov(fit::GllvmSpeciesCovFit, Y::AbstractMatrix, X::AbstractArray{<:Real,3};
         level::Real = 0.95, parm = nothing, N::Union{Nothing,AbstractMatrix} = nothing,
@@ -1792,7 +1792,7 @@ end
 """
     confint_fourthcorner(fit::FourthCornerFit, Y, Xenv, TR; level=0.95, parm=nothing, N=nothing) -> NamedTuple
 
-Wald CIs for the fourth-corner trait–environment GLLVModels (`Xenv` n×q, `TR` p×r).
+Wald CIs for the fourth-corner trait–environment GLLVM (`Xenv` n×q, `TR` p×r).
 """
 function confint_fourthcorner(fit::FourthCornerFit, Y::AbstractMatrix,
         Xenv::AbstractMatrix, TR::AbstractMatrix;
@@ -2889,7 +2889,7 @@ end
             profile_iterations = 200, profile_g_tol = 1e-4,
             profile_max_expand = 20, profile_max_bisect = 30) -> NamedTuple
 
-Confidence intervals for a non-Gaussian family GLLVModels fit — the scalar-μ GLM
+Confidence intervals for a non-Gaussian family GLLVM fit — the scalar-μ GLM
 families (`PoissonFit`, `BinomialFit`, `NBFit`, `BetaFit`, `GammaFit`,
 `TweedieFit`, `BetaBinomialFit`, `LognormalFit`, `TruncatedPoissonFit`,
 `TruncatedNegBin2Fit`, fixed-ν `StudentTFit`), shared-cutpoint `OrdinalFit`, per-trait
@@ -3036,7 +3036,7 @@ end
     confint_spde_latent(fit::SPDELatentFit, Y, locs; level=0.95, parm=nothing,
                         α=2, newton_maxiter=50, newton_tol=1e-9) -> NamedTuple
 
-Wald confidence intervals for the SPDE-latent GLLVModels. `Y` (p×M) and `locs` (M×2) must
+Wald confidence intervals for the SPDE-latent GLLVM. `Y` (p×M) and `locs` (M×2) must
 match the fit. β and Λ are reported on their natural scale; κ, τ, and any dispersion
 on the positive scale. SEs come from the observed information (finite-difference
 Hessian of the θ-marginal, which rebuilds the Matérn precision each evaluation).

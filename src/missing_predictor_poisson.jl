@@ -1,6 +1,6 @@
 # Non-Gaussian missing predictor (mi() axis) — augmented (z, x) Laplace.
 #
-# A non-Gaussian GLLVModels with ONE missing site-level continuous predictor x_s and a
+# A non-Gaussian GLLVM with ONE missing site-level continuous predictor x_s and a
 # broadcast slope b_x, x_s ~ N(μ_x, σ_x²), integrated by full-information ML:
 #   y[t,s] ~ family(link⁻¹(η[t,s])),  η[t,s] = β_t + b_x x_s + (Λ z_s)_t,  z_s ~ N(0,I_K)
 # Supported families: Poisson/log and Binomial/logit (canonical, where the Fisher and
@@ -219,7 +219,7 @@ _xs_supported(family, link) =
 """
     laplace_loglik_site_xs(family, y, n, Λ, β, link; x_obs, b_x, μ_x, σ_x2) -> Float64
 
-Per-site Laplace marginal for a non-Gaussian GLLVModels with one site-level predictor
+Per-site Laplace marginal for a non-Gaussian GLLVM with one site-level predictor
 `x_s` (observed value `x_obs`, or `nothing` if missing-and-integrated), broadcast
 slope `b_x`, predictor model `x_s ~ N(μ_x, σ_x²)`. Canonical families:
 `Poisson()` + `LogLink` and `Binomial()` + `LogitLink`.
@@ -236,7 +236,7 @@ end
 """
     marginal_loglik_laplace_xs(family, Y, N, Λ, β, link; x, b_x, μ_x, σ_x2) -> Float64
 
-Total Laplace log-marginal over sites for a non-Gaussian GLLVModels with one missing
+Total Laplace log-marginal over sites for a non-Gaussian GLLVM with one missing
 site-level continuous predictor integrated by FIML (mi() axis). Supported families:
 Poisson/log and Binomial/logit (canonical), plus the dispersion families
 NegativeBinomial/log, Gamma/log, and Beta/logit (the dispersion `r`/`α`/`φ` is
@@ -306,7 +306,7 @@ end
 """
     fit_gllvm_mi(family, Y, x; K, N=nothing, link=canonical, ...) -> NamedTuple
 
-Fit a non-Gaussian GLLVModels with one site-level continuous predictor `x` (length
+Fit a non-Gaussian GLLVM with one site-level continuous predictor `x` (length
 `n`, entries may be `missing`/`NaN`), where the missing `x_s` are integrated out
 by full-information ML (the augmented (z,x) Laplace of
 `marginal_loglik_laplace_xs`). Supported families: `Poisson()`+`LogLink` and

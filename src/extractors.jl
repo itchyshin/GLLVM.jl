@@ -99,7 +99,7 @@ end
     extract_Sigma(fit::GllvmFit; level::Symbol = :unit, part::Symbol = :total)
         -> NamedTuple
 
-Implied trait covariance at one tier of a fitted Gaussian GLLVModels, mirroring
+Implied trait covariance at one tier of a fitted Gaussian GLLVM, mirroring
 `gllvmTMB::extract_Sigma()`. `level`:
 
   - `:unit`     — between-unit (species/site, "B") tier,
@@ -493,7 +493,7 @@ extract_ordination(fit, Y::AbstractMatrix; rotate::Bool = true) = ordination(fit
     extract_cutpoints(fit::OrdinalFit) -> (τ = Vector, C = Int)
 
 Shared ordered cutpoints `τ₁ < … < τ_{C-1}` (common across species) from a
-fitted ordinal GLLVModels. Mirrors `gllvmTMB::extract_cutpoints()`.
+fitted ordinal GLLVM. Mirrors `gllvmTMB::extract_cutpoints()`.
 """
 extract_cutpoints(fit::OrdinalFit) = (τ = copy(fit.τ), C = fit.C)
 

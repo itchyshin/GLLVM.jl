@@ -161,7 +161,7 @@ package; every numerical addition is gated by deterministic tests.
 ### Spatial & missing data
 - **IN:** SPDE / Matérn-GMRF spatial field (Lindgren–Rue–Lindström 2011) —
   `fit_spde_gaussian` and the SPDE field as a latent variable inside the
-  non-Gaussian GLLVModels (`fit_spde_latent_gllvm`), with kriging prediction
+  non-Gaussian GLLVM (`fit_spde_latent_gllvm`), with kriging prediction
   (`predict_spatial`) and auto-meshing (`spde_mesh_grid` / `spde_mesh_delaunay`).
 - **IN:** NA handling in the Laplace core (`marginal_loglik_laplace(...; mask)`),
   with `observed_mask(Y)` and `missing` support in the GLM fitters.
@@ -172,7 +172,7 @@ package; every numerical addition is gated by deterministic tests.
 
 ## GLLVModels.jl v0.1.0
 
-- **IN:** Gaussian + phylogenetic GLLVModels engine — closed-form marginal
+- **IN:** Gaussian + phylogenetic GLLVM engine — closed-form marginal
   likelihood, PPCA / EM initialisation, multiple phylogenetic representations
   (sparse precision, Felsenstein contrasts, edge-incidence) agreeing to machine
   precision.

@@ -1,4 +1,4 @@
-# Profile-likelihood confidence intervals for the Gaussian GLLVModels.
+# Profile-likelihood confidence intervals for the Gaussian GLLVM.
 #
 # For parameter θ_i with MLE θ̂_i and full log-likelihood ℓ̂,
 # the profile log-lik at candidate value c is

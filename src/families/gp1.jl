@@ -111,7 +111,7 @@ end
     gp1_marginal_loglik_laplace(Y, Λ, β, α; link=LogLink(), kwargs...) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a generalized-Poisson
-type-1 (GP-1, Famoye) GLLVModels with SIGNED dispersion `α` (`Var = μ(1+α μ)²`,
+type-1 (GP-1, Famoye) GLLVM with SIGNED dispersion `α` (`Var = μ(1+α μ)²`,
 `μ = exp(η)`) — a thin wrapper over the family-generic `marginal_loglik_laplace`
 with the `GeneralizedPoisson1(α)` marker. `Y` is the p×n integer count matrix; `Λ`
 p×K; `β` length-p. As `α → 0` this tends to the Poisson marginal.
@@ -160,7 +160,7 @@ end
 """
     fit_gp1_gllvm(Y; K, link=LogLink(), α_init=nothing, …) -> GP1Fit
 
-Fit a generalized-Poisson type-1 (GP-1) GLLVModels, jointly estimating the SIGNED dispersion
+Fit a generalized-Poisson type-1 (GP-1) GLLVM, jointly estimating the SIGNED dispersion
 `α` (`Var = μ(1+α μ)²`) with the intercepts `β` and loadings `Λ`. `Y` is a p×n integer
 count matrix (may contain `missing`); `K` the latent dimension.
 

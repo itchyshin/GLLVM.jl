@@ -1,4 +1,4 @@
-# Read-only diagnostics / model-comparison layer over already-fitted GLLVModels
+# Read-only diagnostics / model-comparison layer over already-fitted GLLVM
 # objects. Ports of the gllvmTMB R diagnostics cluster — see each
 # docstring for the exact R source file this mirrors
 # (`.unlazy/core070-aghq/oracle-source/readback/R/…`). These are
@@ -179,7 +179,7 @@ end
 """
     sanity_multi(fit; y=nothing, X=nothing, Σ_phy=nothing, grad_tol=1e-3) -> NamedTuple
 
-Structural / convergence sanity checks over a fitted GLLVModels, in the
+Structural / convergence sanity checks over a fitted GLLVM, in the
 spirit of R's `sanity()` adapted to the multi-response fit. Checks that
 compose from what GLLVModels.jl already computes on the fit object:
 

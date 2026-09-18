@@ -1,5 +1,5 @@
 # Profile-likelihood and parametric-bootstrap confidence intervals for
-# *derived quantities* of a fitted Gaussian GLLVModels.
+# *derived quantities* of a fitted Gaussian GLLVM.
 #
 # The Wald CI machinery in src/confint.jl, the profile CI in
 # src/confint_profile.jl, and the bootstrap CI in src/confint_bootstrap.jl
@@ -462,7 +462,7 @@ end
         -> NamedTuple
 
 Parametric bootstrap percentile CI for a scalar-valued *derived
-quantity* of a fitted Gaussian GLLVModels. Wraps the parametric bootstrap
+quantity* of a fitted Gaussian GLLVM. Wraps the parametric bootstrap
 in src/confint_bootstrap.jl: simulate y_b ~ N(μ̂, Σ̂_y) for b = 1..n_boot,
 refit, evaluate `derived_fn` on each replicate, return percentile CIs.
 

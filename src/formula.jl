@@ -123,7 +123,7 @@ end
     gllvm(formula, Y, data; family = Normal(), K, sources = nothing,
           contrasts = Dict(), kwargs...)
 
-Fit a GLLVModels from an R-`gllvmTMB`-style `@formula` over a wide species×site response
+Fit a GLLVM from an R-`gllvmTMB`-style `@formula` over a wide species×site response
 matrix `Y` (`p × n`) and a `Tables`-compatible `data` of **site-level** covariates
 (one row per site = per column of `Y`).
 

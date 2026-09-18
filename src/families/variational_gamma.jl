@@ -1,4 +1,4 @@
-# Gaussian-variational (VA / ELBO) marginal for the Gamma GLLVModels (log link, shape α).
+# Gaussian-variational (VA / ELBO) marginal for the Gamma GLLVM (log link, shape α).
 # Companion to families/variational.jl. The Gamma log-density is linear in η and in
 # e^{-η}, both of which have closed-form Gaussian expectations, so — like Poisson,
 # and unlike Binomial/NB — the VA ELBO is CLOSED FORM (no Gauss–Hermite needed).
@@ -78,7 +78,7 @@ end
     gamma_marginal_loglik_va(Y, Λ, β, α; maxiter=100, tol=1e-9) -> Float64
 
 Gaussian-variational (VA) log-marginal lower bound (ELBO) over the `n` sites
-(columns) of a Gamma GLLVModels with log link and shape `α > 0` — `Y` the p×n positive
+(columns) of a Gamma GLLVM with log link and shape `α > 0` — `Y` the p×n positive
 matrix, `Λ` p×K, `β` length-p. The per-site posterior `q(z_s)=N(m_s, diag(v_s))` is
 profiled out; the Gamma ELBO is closed-form (no quadrature). The value is a **lower
 bound** on the true log-marginal; as `Λ→0` it equals the independent-Gamma loglik
@@ -100,7 +100,7 @@ end
 """
     fit_gamma_gllvm_va(Y; K, link=LogLink(), …) -> GammaFit
 
-Fit a Gamma GLLVModels by maximising the **variational** lower bound
+Fit a Gamma GLLVM by maximising the **variational** lower bound
 ([`gamma_marginal_loglik_va`](@ref)) over `[β; vec(Λ); log α]` with L-BFGS, jointly
 estimating the shape `α` — the VA counterpart of [`fit_gamma_gllvm`](@ref) (which
 maximises the Laplace marginal). Same warm start (log row-mean intercepts + SVD

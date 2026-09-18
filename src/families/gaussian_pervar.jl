@@ -1,4 +1,4 @@
-# Per-species (heteroscedastic) Gaussian GLLVModels marginal log-likelihood + fit.
+# Per-species (heteroscedastic) Gaussian GLLVM marginal log-likelihood + fit.
 #
 # This variant places a per-species residual SD φ_j on each trait. It does not
 # reproduce R's fixed-residual plus unique-variance decomposition unless the
@@ -27,7 +27,7 @@ using LinearAlgebra
 """
     gaussian_pervar_marginal_loglik(y, Λ, φ²vec; X=nothing, β=nothing) -> Real
 
-Gaussian GLLVModels marginal log-likelihood with **per-species** (heteroscedastic)
+Gaussian GLLVM marginal log-likelihood with **per-species** (heteroscedastic)
 residual variances. `y` is `p × n_sites`, `Λ` is `p × K` unit-tier loadings, and
 `φ²vec` is the length-`p` vector of per-species residual **variances** `V_j = φ_j²`
 (NOT SDs).
@@ -105,7 +105,7 @@ end
 """
     GaussianPerVarFit
 
-Result of [`fit_gaussian_pervar_gllvm`](@ref): the heteroscedastic Gaussian GLLVModels
+Result of [`fit_gaussian_pervar_gllvm`](@ref): the heteroscedastic Gaussian GLLVM
 fit with a per-species residual variance.
 
 Fields:
@@ -185,7 +185,7 @@ end
                              aghq=false, aghq_control=(;), g_tol=1e-5, iterations=1000)
         -> GaussianPerVarFit
 
-Fit a heteroscedastic (per-species variance) Gaussian GLLVModels by EM or L-BFGS.
+Fit a heteroscedastic (per-species variance) Gaussian GLLVM by EM or L-BFGS.
 
 `Y` is `p × n_sites`. Optimises `θ = [vec(packed Λ); log φ²_1 … log φ²_p]` with
 fixed effects profiled out analytically. With `X=nothing`, the `p` trait intercepts

@@ -142,7 +142,7 @@ end
 """
     tweedie_marginal_loglik_laplace(Y, Λ, β, φ, p; mask=nothing, link=LogLink(), kwargs...) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of a Tweedie GLLVModels with
+Total Laplace log-marginal over the `n` sites (columns) of a Tweedie GLLVM with
 dispersion `φ` and power `p ∈ (1,2)` — responses `Y ≥ 0` with a point mass at 0,
 mean `μ = exp(η)` (log link), `Var = φ μ^p`. A thin wrapper over the
 family-generic `marginal_loglik_laplace` with the `TweedieED(φ, p)` marker.
@@ -283,7 +283,7 @@ end
 """
     fit_tweedie_gllvm(Y; K, link=LogLink(), φ_init=1.0, p_init=1.5, …) -> TweedieFit
 
-Fit a Tweedie GLLVModels by L-BFGS over `[β; pack_lambda(Λ); log φ; ξ]` on the Laplace
+Fit a Tweedie GLLVM by L-BFGS over `[β; pack_lambda(Λ); log φ; ξ]` on the Laplace
 marginal (`tweedie_marginal_loglik_laplace`), jointly estimating the dispersion
 `φ` and power `p`. The power is mapped to `(1,2)` by `p = 1 + 1/(1+exp(-ξ))`
 (so `ξ = 0 ⇒ p = 1.5`). `Y` is a p×n matrix of non-negative reals (a point mass

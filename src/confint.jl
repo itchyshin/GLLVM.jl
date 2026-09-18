@@ -207,7 +207,7 @@ end
             y=nothing, X=nothing, Σ_phy=nothing) -> NamedTuple
 
 Wald confidence intervals for the parameters of a fitted Gaussian
-GLLVModels. Returns a NamedTuple with fields:
+GLLVM. Returns a NamedTuple with fields:
 
   - `term::Vector{String}`     — parameter names
   - `estimate::Vector{Float64}` — point estimates (raw scale for SDs)

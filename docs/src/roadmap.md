@@ -28,7 +28,7 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
 
 ## What works today
 
-- Gaussian + phylogenetic GLLVModels fitting (closed-form Gaussian marginal).
+- Gaussian + phylogenetic GLLVM fitting (closed-form Gaussian marginal).
 - An **O(p)** phylogenetic gradient — exact, linear-in-species scaling.
 - Wald / profile-likelihood / parametric-bootstrap confidence intervals,
   including derived quantities (Sigma_y, communality, phylogenetic signal), where

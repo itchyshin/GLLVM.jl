@@ -1,4 +1,4 @@
-# Mixed-family GLLVModels (A2b headline).
+# Mixed-family GLLVM (A2b headline).
 #
 # A single shared latent block Λ (p×K) drives p traits, but EACH trait may carry
 # its OWN response family/link. This is the capability neither gllvmTMB nor DRM.jl
@@ -272,7 +272,7 @@ end
 """
     mixed_marginal_loglik_laplace(families, links, Y, N, Λ, β; kwargs...) -> Real
 
-Total Laplace log-marginal over the `n` sites (columns) of a MIXED-family GLLVModels.
+Total Laplace log-marginal over the `n` sites (columns) of a MIXED-family GLLVM.
 `families`/`links` are length-`p` per-trait recipes (dispersion baked into the
 family markers); `Y`, `N` are p×n response and trial-count matrices; `Λ` p×K;
 `β` length-p. Reuses the family-generic per-observation dispatch of
@@ -307,7 +307,7 @@ end
 """
     MixedFamilyFit
 
-Result of [`fit_mixed_gllvm`](@ref): a mixed-family GLLVModels where each of the `p`
+Result of [`fit_mixed_gllvm`](@ref): a mixed-family GLLVM where each of the `p`
 traits carries its own response family/link but all share one latent block `Λ`.
 
 Fields:
@@ -395,7 +395,7 @@ end
 """
     fit_mixed_gllvm(Y; families, links=default, K, N=nothing, …) -> MixedFamilyFit
 
-Fit a MIXED-family GLLVModels by L-BFGS on the mixed dense-Laplace marginal
+Fit a MIXED-family GLLVM by L-BFGS on the mixed dense-Laplace marginal
 log-likelihood. Each of the `p` rows of `Y` (traits) carries its own response
 `families[t]` and `links[t]`, but all share one `K`-dimensional latent block
 `Λ`. This yields a true cross-family trait correlation on the common latent

@@ -9,7 +9,7 @@
 </div>
 ```
 
-This page walks through one end-to-end fit: simulate a Gaussian GLLVModels with one
+This page walks through one end-to-end fit: simulate a Gaussian GLLVM with one
 residual variance per response, fit it with `fit_gaussian_pervar_gllvm`, inspect the recovered parameters, build
 three flavours of confidence interval, and visualise the recovered
 `Σ_y` against the truth. It concludes with an R `gllvmTMB` ⟷ Julia `GLLVModels.jl`
@@ -38,7 +38,7 @@ K         = 2                  # rank of the latent factor block
 # Latent factor scores per site (n_sites × K)
 η = randn(n_sites, K)
 
-# Response matrix y (n_species × n_sites) — diagonal-residual Gaussian GLLVModels
+# Response matrix y (n_species × n_sites) — diagonal-residual Gaussian GLLVM
 y = Λ_true * η' .+ sqrt.(ψ_true) .* randn(n_species, n_sites)
 ```
 
@@ -136,7 +136,7 @@ species-by-species surface.
 | Task / Feature | R (`gllvm` / `gllvmTMB`) | Julia (`GLLVModels.jl`) | Notes |
 |:---|:---|:---|:---|
 | **Matrix shape** | `Y` is $n \times p$ (sites $\times$ species) | `Y` is $p \times n$ (species $\times$ sites) | **Transpose R matrices (`Y'`) when loading into Julia** |
-| **Gaussian GLLVModels** | `gllvm(Y, family = "gaussian", num.lv = 2)` | `fit_gaussian_gllvm(Y; K = 2)` or `fit_gllvm(Y; family = Normal(), K = 2)` | ~340× faster closed-form profile path (single-σ² Gaussian only; see [Benchmarks](benchmarks.md)) |
+| **Gaussian GLLVM** | `gllvm(Y, family = "gaussian", num.lv = 2)` | `fit_gaussian_gllvm(Y; K = 2)` or `fit_gllvm(Y; family = Normal(), K = 2)` | ~340× faster closed-form profile path (single-σ² Gaussian only; see [Benchmarks](benchmarks.md)) |
 | **Poisson count JSDM** | `gllvm(Y, family = "poisson", num.lv = 2)` | `fit_gllvm(Y; family = Poisson(), K = 2)` or `fit_poisson_gllvm(Y; K = 2)` | Laplace approximation with exact gradients |
 | **Negative Binomial (NB2)** | `gllvm(Y, family = "negative.binomial", num.lv = 2)` | `fit_gllvm(Y; family = NegativeBinomial(), K = 2)` or `fit_nb_gllvm(Y; K = 2)` | Quadratic variance $V(\mu) = \mu + \phi \mu^2$ |
 | **Negative Binomial 1 (NB1)** | `gllvm(Y, family = "NB1", num.lv = 2)` | `fit_nb1_gllvm(Y; K = 2)` | Linear variance $V(\mu) = (1 + \phi)\mu$ |
@@ -153,11 +153,11 @@ species-by-species surface.
 | **Environmental covariates** | `gllvm(Y, X = X, formula = ~ x1 + x2, num.lv = 2)` | `fit_gllvm(Y; family = ..., X = X, K = 2)` or `@formula(Y ~ x1 + x2)` | Fixed effects for environmental predictors |
 | **Species-specific slopes** | `gllvm(Y, X = X, formula = ~ (x1 \| species), ...)` | `fit_gllvm_speciescov(Y, X; K = 2)` | Species-specific environmental responses |
 | **Fourth-corner models** | `gllvm(Y, X = X, TR = TR, formula = Y ~ ...)` | `fit_fourthcorner_gllvm(Y, X, TR; K = 2)` | Trait $\times$ environment interactions |
-| **Phylogenetic GLLVModels** | `gllvm(Y, tree = phy, ...)` | `fit_phylo_gaussian(Y, phy; K = 2)` or `fit_phylo_glm(Y, phy; family = Poisson(), K = 2)` | Hadfield & Nakagawa sparse precision |
+| **Phylogenetic GLLVM** | `gllvm(Y, tree = phy, ...)` | `fit_phylo_gaussian(Y, phy; K = 2)` or `fit_phylo_glm(Y, phy; family = Poisson(), K = 2)` | Hadfield & Nakagawa sparse precision |
 | **Phylogenetic signal $H^2$** | (derived from variance components) | `phylo_signal(fit)`, `phylo_signal_wald_ci(fit)` | Transformed-Wald CIs with exact boundary bounds |
 | **Confidence intervals** | `confint(fit)` | `confint(fit)`, `profile_ci(fit, "par")`, `bootstrap_ci(fit)` | Wald, profile likelihood, and parametric bootstrap |
 
-For complete worked workflows, explore the [Community Abundance Vignette](vignettes/community-abundance.md) and the [Phylogenetic GLLVModels Vignette](vignettes/phylogenetic-gllvm.md).
+For complete worked workflows, explore the [Community Abundance Vignette](vignettes/community-abundance.md) and the [Phylogenetic GLLVM Vignette](vignettes/phylogenetic-gllvm.md).
 
 For ordinal fits, choose `LogitLink()` or `ProbitLink()` explicitly when translating
 a model. The frozen gllvmTMB 0.7.0 ordinal route uses probit; Julia defaults to logit.

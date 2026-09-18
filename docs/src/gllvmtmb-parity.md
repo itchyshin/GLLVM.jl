@@ -152,7 +152,7 @@ remains `planned`; that is transport only, not row promotion. Enumerated fences:
 | Phylogenetic random effect | ✅ ⚡ | fast **O(p)** sparse path, benchmarked to p = 10⁴ |
 | Animal model (relatedness / GRM) | ✅ Gaussian | `relatedness_cov`, via the `Σ_phy` input |
 | Spatial (Matérn / exponential) | ✅ Gaussian | `spatial_cov`, via the `Σ_phy` input |
-| Structured dependence × non-Gaussian | ✅ phylo · 🔨 spatial-latent / animal | phylogenetic GLM landed (`fit_phylo_glm`, augmented-state joint Laplace); SPDE / Matérn spatial latent field (`fit_spde_latent_gllvm`) for the non-Gaussian GLLVModels |
+| Structured dependence × non-Gaussian | ✅ phylo · 🔨 spatial-latent / animal | phylogenetic GLM landed (`fit_phylo_glm`, augmented-state joint Laplace); SPDE / Matérn spatial latent field (`fit_spde_latent_gllvm`) for the non-Gaussian GLLVM |
 | Random slopes `(1 + x \| g)` | 🔨 | formula front-end (c) |
 | Per-species / grouped dispersion (`disp.group`) | ✅ all 5 dispersion families | `fit_{nb,beta,gamma,nb1,tweedie}_gllvm_grouped(Y; K, group)` give each species (or group) its own dispersion; reduces exactly to the shared fit at `G=1`. **gllvm's default is per-species** dispersion, so for parity route Julia through a grouped fitter with `group = 1:p` (or set gllvm `disp.formula = ~1` for the shared model) |
 | Row effects (fixed **and random**) | ✅ | fixed per-site intercepts (`fit_roweffect_gllvm`) **and** random `ρ_s ~ N(0, σ_row²)` (`fit_row_random_gllvm`, gllvmTMB `row.eff="random"`); `σ_row→0` reduces exactly to no-row-effect |
@@ -384,7 +384,7 @@ be built *with* validation rather than shipped unverified:
 
 - **Structured dependence × non-Gaussian (animal / spatial extensions)** — the
   phylogenetic GLM has landed (`fit_phylo_glm`, an augmented-state joint Laplace),
-  and the SPDE / Matérn spatial latent field is wired into the non-Gaussian GLLVModels
+  and the SPDE / Matérn spatial latent field is wired into the non-Gaussian GLLVM
   (`fit_spde_latent_gllvm`). The remaining work is the general dense-`S_u`
   species random effect `u ~ N(0, σ²Σ)` shared across sites and the scalable
   large-`p` determinant. Spec:

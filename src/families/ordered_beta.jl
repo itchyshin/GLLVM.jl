@@ -171,7 +171,7 @@ end
 """
     ordered_beta_marginal_loglik_laplace(Y, Λ, β, c0, c1, φ; mask=nothing, maxiter=100, tol=1e-9) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of an ordered-beta GLLVModels.
+Total Laplace log-marginal over the `n` sites (columns) of an ordered-beta GLLVM.
 `Y` is a p×n matrix of responses in `[0,1]` (with exact 0s and 1s allowed); `Λ`
 p×K loadings; `β` length-p intercepts; `c0 < c1` the ordered cutpoints; `φ` the
 Beta precision. Runs its own per-site Laplace (identity-on-η link). At `Λ = 0`
@@ -281,7 +281,7 @@ end
 """
     fit_ordered_beta_gllvm(Y; K, c0_init=-1.0, c1_init=1.0, φ_init=nothing, …) -> OrderedBetaFit
 
-Fit an ordered-beta GLLVModels by L-BFGS on the Laplace marginal
+Fit an ordered-beta GLLVM by L-BFGS on the Laplace marginal
 (`ordered_beta_marginal_loglik_laplace`), jointly estimating the cutpoints
 `c0 < c1` (parameterised `c1 = c0 + exp(Δ)` to keep the order) and the Beta
 precision `φ`. `Y` is a p×n matrix of responses in `[0,1]`; `K` the latent

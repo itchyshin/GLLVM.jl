@@ -221,7 +221,7 @@ end
     compoisson_marginal_loglik_laplace(Y, Λ, β, ν; mask=nothing, link=LogLink(), maxiter=100, tol=1e-9) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a Conway–Maxwell–Poisson
-GLLVModels with dispersion `ν` (rate parameterisation, log link `λ = exp(η)`). `Y` is the
+GLLVM with dispersion `ν` (rate parameterisation, log link `λ = exp(η)`). `Y` is the
 p×n integer count matrix; `Λ` p×K loadings; `β` length-p intercepts. Runs its own
 per-site Laplace (single latent η). At `Λ = 0` this reduces exactly to the sum of
 the independent CMP `logp`; at `ν = 1` it equals the Poisson marginal (the anchor).
@@ -331,7 +331,7 @@ end
 """
     fit_compoisson_gllvm(Y; K, link=LogLink(), ν_init=1.0, …) -> COMPoissonFit
 
-Fit a Conway–Maxwell–Poisson GLLVModels by L-BFGS over `[β; vec(Λ); log ν]` on the
+Fit a Conway–Maxwell–Poisson GLLVM by L-BFGS over `[β; vec(Λ); log ν]` on the
 Laplace marginal ([`compoisson_marginal_loglik_laplace`](@ref)), jointly estimating
 the dispersion exponent `ν > 0` (optimised on the log scale). `Y` is a p×n integer
 count matrix; `K` the latent dimension. Finite-difference gradient (the Laplace

@@ -3,7 +3,7 @@
 # Model (site s): y_{ts} > 0 with  log(y_{ts}) ~ Normal(η_{ts}, σ²),
 #     η_{ts} = β_t + (Λ z_s)_t,  z_s ~ N(0, I_K).
 # Equivalently y = exp(η + σ·ε), ε ~ N(0,1). On the LOG (link) scale the model is
-# exactly the Gaussian GLLVModels, so the closed-form Gaussian machinery
+# exactly the Gaussian GLLVM, so the closed-form Gaussian machinery
 # (likelihood.jl, fit.jl, profile.jl) is REUSED on Z = log(Y); the only extra
 # term is the change-of-variables Jacobian −Σ log(y) that converts the log-scale
 # Gaussian density to the y-scale lognormal density (twin cpp fid==3).
@@ -28,7 +28,7 @@ default_link(::Lognormal) = LogLink()
 """
     lognormal_marginal_loglik(Y, Λ, β, σ; kwargs...) -> Float64
 
-Marginal log-likelihood (y-scale) of a one-part lognormal GLLVModels at explicit
+Marginal log-likelihood (y-scale) of a one-part lognormal GLLVM at explicit
 parameters: intercepts `β` (length `p`), loadings `Λ` (`p×K`), and log-scale
 residual SD `σ` (`Var(log y) = σ²`). `Y` must be strictly positive.
 
@@ -92,7 +92,7 @@ lognormal_response_mean(η::Real, σ::Real) = exp(η + σ^2 / 2)
 """
     fit_lognormal_gllvm(Y; K, link=LogLink(), …) -> LognormalFit
 
-Fit a one-part lognormal GLLVModels (`log(y) ~ Normal(η, σ²)`, log link only) by
+Fit a one-part lognormal GLLVM (`log(y) ~ Normal(η, σ²)`, log link only) by
 reusing the closed-form Gaussian fitter on centred log-responses. `Y` is a
 `p×n` matrix of strictly positive responses; `K` the latent dimension.
 

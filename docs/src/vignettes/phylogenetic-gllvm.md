@@ -1,4 +1,4 @@
-# Vignette: Phylogenetic GLLVModels & Evolutionary Covariance Partitioning
+# Vignette: Phylogenetic GLLVM & Evolutionary Covariance Partitioning
 
 ```@raw html
 <div class="gllvm-route gllvm-route--applied">
@@ -34,9 +34,9 @@ In evolutionary biology, comparative analyses across species must account for sh
 
 Standard Phylogenetic Comparative Methods (PCMs) often analyze traits individually (e.g. Pagel's $\lambda$, Blomberg's $K$) or via unconstrained multivariate Brownian motion. However, multivariate traits often share **low-rank functional syndromes** (e.g. pace-of-life, leaf economics spectrum) alongside phylogenetic structure.
 
-### The Phylogenetic GLLVModels Decomposition
+### The Phylogenetic GLLVM Decomposition
 
-For $p$ species observed across $n$ individuals, populations, or traits, the Gaussian Phylogenetic GLLVModels models the $p \times n$ response matrix $Y$ as:
+For $p$ species observed across $n$ individuals, populations, or traits, the Gaussian Phylogenetic GLLVM models the $p \times n$ response matrix $Y$ as:
 
 $$Y = A + \Lambda \eta^\top + E$$
 
@@ -94,7 +94,7 @@ println("Simulated phylogenetic response matrix: ", size(Y)) # (32, 50)
 `GLLVModels.jl` leverages the sparse precision matrix $Q_{\text{phy}} = C_{\text{phy}}^{-1}$ (Hadfield & Nakagawa 2010), achieving high-performance fitting without inverting large dense matrices:
 
 ```julia
-# Fit Gaussian Phylogenetic GLLVModels
+# Fit Gaussian Phylogenetic GLLVM
 fit_phy = fit_phylo_gaussian(Y, phy; K = K)
 
 println("Estimated σ_phy: ", round(fit_phy.pars.sigma_phy, digits = 4))

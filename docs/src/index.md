@@ -75,7 +75,7 @@ c² = diag(fit.Λ * fit.Λ') ./ diag(Σ)       # shared-variance fraction
 R = Diagonal(1 ./ sqrt.(diag(Σ))) * Σ * Diagonal(1 ./ sqrt.(diag(Σ)))
 ```
 
-![Model-implied cross-response correlations from a simulated two-factor GLLVModels fit](assets/correlation_heatmap.png)
+![Model-implied cross-response correlations from a simulated two-factor GLLVM fit](assets/correlation_heatmap.png)
 
 The heatmap is a simulated two-factor Gaussian fit. Its off-diagonal structure
 is what the explicit `R` calculation reports: responses that share a latent axis correlate,
@@ -116,7 +116,7 @@ For the per-response residual fit used above, use the explicit `Σ`, `c²`, and
 - Choose a workflow: [Choose R, Julia, or the bridge](choose-r-julia-bridge.md).
 - First Gaussian fit & Cheat Sheet: [Quick start](quickstart.md).
 - Applied JSDM Vignette: [Community Abundance](vignettes/community-abundance.md).
-- Applied Evolutionary Vignette: [Phylogenetic GLLVModels](vignettes/phylogenetic-gllvm.md).
+- Applied Evolutionary Vignette: [Phylogenetic GLLVM](vignettes/phylogenetic-gllvm.md).
 - Model equation and estimands: [Model](model.md).
 - Ordination, predictions, residuals, AIC, and BIC:
   [Working with a fit](working-with-a-fit.md).

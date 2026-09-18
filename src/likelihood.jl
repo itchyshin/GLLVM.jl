@@ -1,4 +1,4 @@
-# Gaussian GLLVModels marginal log-likelihood (closed-form).
+# Gaussian GLLVM marginal log-likelihood (closed-form).
 #
 # Single-tier (J1):  y[t,s] = (Λ_B η_s)[t] + X[t,s,:]' β + ε[t,s]
 # With W tier and diagonal random effects (J2-A-WD), the engine adds
@@ -46,7 +46,7 @@
                               Σ_phy=nothing) -> Real
 
 Marginal log-likelihood of `y` (size p × n_sites) under the Gaussian
-GLLVModels with unit-tier loadings `Λ_B` (p × K_B), residual SD `σ_eps`,
+GLLVM with unit-tier loadings `Λ_B` (p × K_B), residual SD `σ_eps`,
 and optional W tier (`Λ_W`, p × K_W) and per-trait diagonal random
 effects (`σ²_B`, `σ²_W`, length p, positive variances).
 
@@ -407,7 +407,7 @@ end
 #   z_total[s, :] = X_lv[s, :] * alpha_lv + z_innovation[s, :]
 #   y[:, s]       = X[:, s, :] * β + Λ_B * z_total[s, :] + ε[:, s]
 #
-# Marginally this is an ordinary Gaussian GLLVModels with the same covariance and a
+# Marginally this is an ordinary Gaussian GLLVM with the same covariance and a
 # constrained fixed mean term `Λ_B * alpha_lv' * X_lv[s, :]`. The alpha
 # coefficients are rotation-dependent; the product `B_lv = Λ_B * alpha_lv'` is
 # the rotation-stable trait-effect estimand.

@@ -34,7 +34,7 @@ makedocs(;
         ],
         "Vignettes" => [
             "Community Abundance (JSDM)" => "vignettes/community-abundance.md",
-            "Phylogenetic GLLVModels"         => "vignettes/phylogenetic-gllvm.md",
+            "Phylogenetic GLLVM"               => "vignettes/phylogenetic-gllvm.md",
             "Morphometrics"              => "morphometrics.md",
         ],
         "Guides & Methods" => [

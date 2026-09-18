@@ -221,7 +221,7 @@ end
 """
     delta_lognormal_marginal_loglik_laplace(Y, Λc, βz, βc, σ; Λz=nothing, kwargs...) -> Float64
 
-Total two-part Laplace log-marginal for a Delta-lognormal GLLVModels: occurrence
+Total two-part Laplace log-marginal for a Delta-lognormal GLLVM: occurrence
 probability `π = logistic(β^z + Λ_z z)` (intercept-only by default, `Λ_z = 0`)
 times a positive lognormal with meanlog `η^c = β^c + Λ_c z` and sdlog `σ`. `Y` is
 p×n with `0` for absences and positive reals for the positive part. With `Λ_c = 0`
@@ -305,7 +305,7 @@ end
 """
     fit_delta_lognormal_gllvm(Y; K, …) -> DeltaLogNormalFit
 
-Fit a Delta-lognormal two-part GLLVModels by L-BFGS on the two-part Laplace marginal
+Fit a Delta-lognormal two-part GLLVM by L-BFGS on the two-part Laplace marginal
 ([`delta_lognormal_marginal_loglik_laplace`](@ref)). `Y` is p×n with `0` for
 absences and positive reals otherwise. Finite-difference gradient; warm start =
 `logit(empirical P(y>0))` occurrence intercepts + mean / SVD of the positive-part
@@ -480,7 +480,7 @@ end
 """
     hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc; Λz=nothing, kwargs...) -> Float64
 
-Total two-part Laplace log-marginal for a Hurdle-Poisson GLLVModels (occurrence
+Total two-part Laplace log-marginal for a Hurdle-Poisson GLLVM (occurrence
 `π=logistic(β^z)`, intercept-only by default; zero-truncated Poisson count with
 `μ=exp(β^c+Λ_c z)`). `Y` is p×n integer counts (`0`=absence). `Λc=0` ⇒ exact
 independent hurdle-Poisson loglik.
@@ -518,7 +518,7 @@ end
 """
     fit_hurdle_poisson_gllvm(Y; K, …) -> HurdlePoissonFit
 
-Fit a Hurdle-Poisson two-part GLLVModels by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0).
+Fit a Hurdle-Poisson two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0).
 `Y` p×n integer counts. Finite-difference gradient; warm start =
 `logit(empirical P(y>0))` + `log` mean positive count + SVD loadings.
 
@@ -631,7 +631,7 @@ end
 """
     hurdle_nb_marginal_loglik_laplace(Y, Λc, βz, βc, r; Λz=nothing, kwargs...) -> Float64
 
-Two-part Laplace log-marginal for a Hurdle-NB GLLVModels. `Λc=0` ⇒ exact independent
+Two-part Laplace log-marginal for a Hurdle-NB GLLVM. `Λc=0` ⇒ exact independent
 hurdle-NB loglik; as `r→∞` tends to the Hurdle-Poisson marginal.
 """
 function hurdle_nb_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
@@ -668,7 +668,7 @@ end
 """
     fit_hurdle_nb_gllvm(Y; K, …) -> HurdleNBFit
 
-Fit a Hurdle-NB two-part GLLVModels by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
+Fit a Hurdle-NB two-part GLLVM by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
 
 `hessian` selects the two-part Laplace log-det curvature (`:observed` default /
 `:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
@@ -793,7 +793,7 @@ end
 """
     delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; Λz=nothing, kwargs...) -> Float64
 
-Total two-part Laplace log-marginal for a Delta-Gamma GLLVModels: occurrence probability
+Total two-part Laplace log-marginal for a Delta-Gamma GLLVM: occurrence probability
 `π = logistic(β^z + Λ_z z)` (intercept-only by default, `Λ_z = 0`) times a positive
 Gamma with mean `μ = exp(β^c + Λ_c z)` and shape `α` (`Var = μ²/α`). `Y` is p×n with
 `0` for absences and positive reals for the positive part. With `Λ_c = 0` (and
@@ -872,7 +872,7 @@ end
 """
     fit_delta_gamma_gllvm(Y; K, …) -> DeltaGammaFit
 
-Fit a Delta-Gamma two-part GLLVModels by L-BFGS on the two-part Laplace marginal
+Fit a Delta-Gamma two-part GLLVM by L-BFGS on the two-part Laplace marginal
 ([`delta_gamma_marginal_loglik_laplace`](@ref)), jointly estimating the shape
 `α`. `Y` is p×n with `0` for absences and positive reals otherwise.
 Finite-difference gradient; warm start = `logit(empirical P(y>0))` occurrence
@@ -1092,7 +1092,7 @@ end
 """
     zip_marginal_loglik_laplace(Y, Λc, βz, βc; Λz=nothing, kwargs...) -> Float64
 
-Two-part Laplace log-marginal for a zero-inflated Poisson GLLVModels (structural-zero
+Two-part Laplace log-marginal for a zero-inflated Poisson GLLVM (structural-zero
 `π=logistic(β^z)`, intercept-only by default; Poisson count with `μ=exp(β^c+Λ_c z)`).
 `Y` is p×n integer counts. `Λc=0` ⇒ exact independent ZIP loglik; `β^z→−∞` ⇒ the
 Poisson marginal.
@@ -1158,7 +1158,7 @@ end
 """
     fit_zip_gllvm(Y; K, …) -> ZIPFit
 
-Fit a zero-inflated Poisson GLLVModels by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0).
+Fit a zero-inflated Poisson GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0).
 `Y` p×n integer counts. Finite-difference gradient; warm start from the
 excess-zero fraction + positive-count log-means + SVD loadings.
 
@@ -1232,7 +1232,7 @@ end
 """
     fit_zip_gllvm_cov(Y; X, K, γ_fixed=nothing, …) -> ZIPCovFit
 
-Fit a zero-inflated Poisson GLLVModels **with shared site covariates** under the
+Fit a zero-inflated Poisson GLLVM **with shared site covariates** under the
 ACCEPTED ZIP+X Identity (`docs/dev-log/decisions/2026-08-09-zip-x-identity.md`):
 
 - structural-zero logit: `η^z_{ts} = β^z_t + Σ_k X[t,s,k]·γ^z_k` (`Λ_z = 0`)
@@ -1336,7 +1336,7 @@ end
 """
     zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; Λz=nothing, kwargs...) -> Float64
 
-Two-part Laplace log-marginal for a zero-inflated NB2 GLLVModels. `Λc=0` ⇒ exact
+Two-part Laplace log-marginal for a zero-inflated NB2 GLLVM. `Λc=0` ⇒ exact
 independent ZINB loglik; `r→∞` ⇒ the ZIP marginal.
 """
 function zinb_marginal_loglik_laplace(Y::AbstractMatrix, Λc::AbstractMatrix,
@@ -1373,7 +1373,7 @@ end
 """
     fit_zinb_gllvm(Y; K, …) -> ZINBFit
 
-Fit a zero-inflated NB2 GLLVModels by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
+Fit a zero-inflated NB2 GLLVM by L-BFGS over `[βz; βc; vec(Λc); log r]` (Λz=0).
 
 `hessian` selects the two-part Laplace log-det curvature (`:observed` default /
 `:fisher`); the mode search is always Fisher-scored. NOTE (2026-08-28): for this
@@ -1457,7 +1457,7 @@ end
 """
     fit_zinb_gllvm_cov(Y; X, K, γ_fixed=nothing, …) -> ZINBCovFit
 
-Fit a zero-inflated NB2 GLLVModels **with shared site covariates** under the
+Fit a zero-inflated NB2 GLLVM **with shared site covariates** under the
 ACCEPTED ZINB+X Identity (`docs/dev-log/decisions/2026-08-13-zinb-x-identity.md`):
 
 - structural-zero logit: `η^z_{ts} = β^z_t + Σ_k X[t,s,k]·γ^z_k` (`Λ_z = 0`)
@@ -1609,7 +1609,7 @@ end
 """
     zib_marginal_loglik_laplace(Y, Λc, βz, βc, N; Λz=nothing, kwargs...) -> Float64
 
-Two-part Laplace log-marginal for a zero-inflated binomial GLLVModels (`N` trials).
+Two-part Laplace log-marginal for a zero-inflated binomial GLLVM (`N` trials).
 `Y` is p×n with counts in `0:N`. `Λc = 0` ⇒ exact independent ZIB loglik;
 `β^z → −∞` ⇒ the plain Binomial marginal.
 """
@@ -1677,7 +1677,7 @@ end
 """
     fit_zib_gllvm(Y; K, N, …) -> ZIBFit
 
-Fit a zero-inflated binomial GLLVModels by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0),
+Fit a zero-inflated binomial GLLVM by L-BFGS over `[βz; βc; vec(Λc)]` (Λz=0),
 with a shared number of trials `N`. `Y` p×n with counts in `0:N`. Finite-difference
 gradient; warm start from the excess-zero share + positive-part success logits +
 SVD loadings.
@@ -1753,7 +1753,7 @@ end
 """
     fit_zib_gllvm_cov(Y; X, K, N, γ_fixed=nothing, …) -> ZIBCovFit
 
-Fit a zero-inflated binomial GLLVModels **with shared site covariates** under the
+Fit a zero-inflated binomial GLLVM **with shared site covariates** under the
 ACCEPTED ZIB+X Identity (`docs/dev-log/decisions/2026-08-15-zib-x-identity.md`):
 
 - structural-zero logit: `η^z_{ts} = β^z_t + Σ_k X[t,s,k]·γ^z_k` (`Λ_z = 0`)

@@ -67,7 +67,7 @@ include("likelihood_contrasts.jl")       # Gaussian marginal log-lik on contrast
 include("edge_incidence.jl")             # Edge-node incidence sparse representation (Bolker phylog.rmd)
 include("likelihood_edge_incidence.jl")  # Gaussian marginal log-lik via edge-node incidence
 include("phylo_branch_re.jl")            # Single-variance branch random-effects model
-include("em_phylo.jl")                   # Gradient-free EM for Gaussian phylogenetic GLLVModels
+include("em_phylo.jl")                   # Gradient-free EM for Gaussian phylogenetic GLLVM
 include("em_squarem.jl")                 # SQUAREM acceleration for phylogenetic EM
 include("relaxed_clock.jl")              # Relaxed-clock per-branch evolution rates
 
@@ -122,7 +122,7 @@ include("families/covariates.jl")        # fixed-effect covariates (Xβ) for the
 include("families/species_covariates.jl") # species-specific covariate coefficients (XB) for the Laplace families
 include("families/constrained_ordination.jl") # constrained ordination (RRR of latent vars on env predictors)
 include("families/rrr.jl")                # reduced-rank regression (num.RR) — deterministic constrained ordination
-include("families/quadratic.jl")          # quadratic-response GLLVModels (species optima/tolerances)
+include("families/quadratic.jl")          # quadratic-response GLLVM (species optima/tolerances)
 include("families/fourthcorner.jl")       # fourth-corner trait–environment interaction for the Laplace families
 include("families/row_effects.jl")        # community row effects (per-site intercepts) for the Laplace families
 include("families/row_random.jl")          # random row effects (ρ_s ~ N(0,σ_row²), gllvmTMB row.eff="random")
@@ -135,12 +135,12 @@ include("families/variational_beta.jl")  # VA/ELBO marginal — Beta (Gauss–He
 include("families/variational_dgamma.jl") # VA/ELBO marginal — Delta-Gamma two-part (closed form)
 include("families/variational_exponential.jl") # VA/ELBO marginal — Exponential (closed form, Gamma α=1)
 
-# SPDE/Matérn-GMRF field as a latent variable inside a non-Gaussian GLLVModels
+# SPDE/Matérn-GMRF field as a latent variable inside a non-Gaussian GLLVM
 # (joint Laplace over the spatial GMRF). Depends on the SPDE FEM machinery
 # (src/spde.jl) and the family Laplace pieces above.
 include("spde_latent.jl")
 include("spde_latent_postfit.jl")
-include("phylo_glm.jl")                   # phylogenetic GLLVModels for non-Gaussian families (issue #61, working fit)
+include("phylo_glm.jl")                   # phylogenetic GLLVM for non-Gaussian families (issue #61, working fit)
 include("phylo_poisson_xlv.jl")           # internal S1 proof: phylo + Poisson + predictor-informed LV
 include("phylo_binomial_xlv.jl")          # internal S1 proof: phylo + Binomial + predictor-informed LV
 include("phylo_nb_xlv.jl")                # internal S1 proof: phylo + NB2 + predictor-informed LV
@@ -171,7 +171,7 @@ include("confint_derived_wald.jl")       # transformed-Wald CIs for bounded deri
 include("link_residual.jl")
 include("extractors.jl")                # extract_*/get* post-fit extractor family (core070 Cluster 1)
 include("re_sd.jl")                      # latent_score_sd (renamed from getREsd): TMB-sdreport-style conditional-on-θ̂ random-effect SDs (core070 E-cluster)
-include("families/mixed.jl")             # mixed-family GLLVModels (cross-family VCV): fit_mixed_gllvm + MixedFamilyFit. AFTER link_residual + the family fitters so all dispatch targets exist.
+include("families/mixed.jl")             # mixed-family GLLVM (cross-family VCV): fit_mixed_gllvm + MixedFamilyFit. AFTER link_residual + the family fitters so all dispatch targets exist.
 include("boundary_inference.jl")         # χ̄² boundary LRT + boundary-aware profile CI for variance components
 include("confint_family.jl")             # Wald / profile / bootstrap CIs for non-Gaussian families
 include("marginal_target_intervals.jl")  # internal marginal intervals for grouped/precision candidates

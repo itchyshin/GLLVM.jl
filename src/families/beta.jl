@@ -29,7 +29,7 @@ _glm_logpdf(f::Beta, μ, n, y) = logpdf(Beta(μ * f.α, (1 - μ) * f.α), y)
 """
     beta_marginal_loglik_laplace(Y, Λ, β, φ; link=LogitLink(), kwargs...) -> Float64
 
-Total Laplace log-marginal over the `n` sites (columns) of a Beta GLLVModels with
+Total Laplace log-marginal over the `n` sites (columns) of a Beta GLLVM with
 precision `φ` — responses `Y ∈ (0,1)`, mean `μ = logistic(η)`, per-observation
 `Beta(μφ, (1−μ)φ)` (`Var = μ(1−μ)/(1+φ)`). A thin wrapper over the family-generic
 `marginal_loglik_laplace` with the `Beta(φ, ·)` marker.
@@ -141,7 +141,7 @@ _default_hessian(::Beta, ::LogitLink) = :observed
 """
     fit_beta_gllvm(Y; K, link=LogitLink(), φ_init=nothing, …) -> BetaFit
 
-Fit a Beta GLLVModels by L-BFGS over `[β; vec(Λ); log φ]` on the Laplace marginal
+Fit a Beta GLLVM by L-BFGS over `[β; vec(Λ); log φ]` on the Laplace marginal
 (`beta_marginal_loglik_laplace`), jointly estimating the precision `φ`
 (`Var = μ(1−μ)/(1+φ)`). `Y` is a p×n matrix of proportions in (0,1); `K` the latent
 dimension. The default analytic Laplace gradient is used on the plain

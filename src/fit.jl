@@ -1,4 +1,4 @@
-# Optim.jl-driven L-BFGS minimisation of the Gaussian GLLVModels marginal
+# Optim.jl-driven L-BFGS minimisation of the Gaussian GLLVM marginal
 # negative log-likelihood. Matches the R engine's initial values and
 # convergence tolerances; the head-to-head benchmark depends on this.
 #
@@ -19,7 +19,7 @@
 """
     GllvmModel(p, K; K_W=0, has_diag=false, K_phy=0, has_phy_unique=false)
 
-Immutable spec describing a Gaussian GLLVModels. `p` traits, `K` (= K_B)
+Immutable spec describing a Gaussian GLLVM. `p` traits, `K` (= K_B)
 unit-tier latent factors, plus optional W tier (`K_W`), per-trait
 diagonal random effects (`has_diag`), and phylogenetic block
 (`K_phy` axes of `Λ_phy` and/or per-trait `σ_phy` when
@@ -151,7 +151,7 @@ function _fit_gaussian_gllvm_exact(y::AbstractMatrix;
     @assert K ≥ 1
     @assert K_W ≥ 0
     @assert K_phy ≥ 0
-    @assert n ≥ p "Need n_sites ≥ p for a well-posed Gaussian GLLVModels"
+    @assert n ≥ p "Need n_sites ≥ p for a well-posed Gaussian GLLVM"
 
     if (K_phy > 0 || has_phy_unique) && Σ_phy === nothing
         throw(ArgumentError(

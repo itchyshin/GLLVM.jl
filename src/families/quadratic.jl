@@ -1,6 +1,6 @@
-# Quadratic-response GLLVModels (species optima / tolerances).
+# Quadratic-response GLLVM (species optima / tolerances).
 #
-# In the linear Laplace GLLVModels (src/families/laplace.jl) each species responds to
+# In the linear Laplace GLLVM (src/families/laplace.jl) each species responds to
 # the latent gradient through a *linear* predictor η_t(z) = β_t + Σ_k Λ_tk z_k.
 # The quadratic-response model adds a per-species quadratic term:
 #
@@ -11,7 +11,7 @@
 # the curvature; D_tk > 0 gives a U-shaped (anti-optimum) response. This is the
 # ecological "optimum/tolerance" parameterisation popularised by canonical and
 # quadratic ordination (van der Aart & Smeenk-Enserink; ter Braak's Gaussian
-# response model), here as a latent-variable GLLVModels.
+# response model), here as a latent-variable GLLVM.
 #
 # Mathematically this is *the linear Laplace model with a z-dependent Jacobian*:
 #     J_tk(z) = ∂η_t/∂z_k = Λ_tk + 2·D_tk·z_k.
@@ -54,7 +54,7 @@ end
 """
     quadratic_loglik_site(family, y, n, Λ, D, β, link; maxiter=100, tol=1e-9) -> Float64
 
-Laplace-approximated log-marginal for one site of a quadratic-response GLLVModels. The
+Laplace-approximated log-marginal for one site of a quadratic-response GLLVM. The
 latent predictor is `η_t(z) = β_t + Σ_k Λ_tk z_k + Σ_k D_tk z_k²`. `Λ`, `D` are
 both p×K (`D` are the per-species quadratic coefficients). Returns
 `ℓ(ẑ) − ½ẑ'ẑ − ½logdet(J'WJ + I)`, with the Jacobian `J[t,k] = Λ_tk + 2 D_tk ẑ_k`
@@ -92,7 +92,7 @@ end
     quadratic_marginal_loglik_laplace(family, Y, N, Λ, D, β, link; maxiter=100, tol=1e-9) -> Float64
 
 Total Laplace log-marginal over the `n` sites (columns) of a **quadratic-response**
-GLLVModels, where the latent predictor carries a per-species quadratic term:
+GLLVM, where the latent predictor carries a per-species quadratic term:
 
     η_{ts}(z_s) = β_t + Σ_k Λ_tk z_{sk} + Σ_k D_tk z_{sk}²,   z_s ~ N(0, I_K).
 
@@ -123,7 +123,7 @@ end
 """
     QuadraticFit
 
-Result of [`fit_quadratic_gllvm`](@ref): a quadratic-response GLLVModels fit. Fields:
+Result of [`fit_quadratic_gllvm`](@ref): a quadratic-response GLLVM fit. Fields:
 `family` (the Distributions marker), per-species intercepts `β` (length p), linear
 loadings `Λ` (p×K), quadratic coefficients `D` (p×K), `dispersion` (`r`/`φ`/`α`, or
 `NaN` when the family has none), `link`, the maximised Laplace `loglik`,
@@ -206,7 +206,7 @@ end
 """
     fit_quadratic_gllvm(Y; family=Poisson(), K, link=nothing, N=nothing, …) -> QuadraticFit
 
-Fit a **quadratic-response** GLLVModels by L-BFGS over `θ = [β; pack_lambda(Λ); vec(D); (log-dispersion)]`
+Fit a **quadratic-response** GLLVM by L-BFGS over `θ = [β; pack_lambda(Λ); vec(D); (log-dispersion)]`
 on the quadratic Laplace marginal (`quadratic_marginal_loglik_laplace`). The latent
 predictor is `η_{ts} = β_t + Σ_k Λ_tk z_{sk} + Σ_k D_tk z_{sk}²` with `z_s ~ N(0, I_K)`;
 the per-species quadratic coefficients `D` (p×K) encode species optima/tolerances

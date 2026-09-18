@@ -444,7 +444,7 @@ end
                trait_names=nothing, unit_names=nothing, phylo=nothing,
                options=Dict())
 
-Plain-data R->Julia bridge (JuliaCall transport). Fits a one-part GLLVModels for the
+Plain-data R->Julia bridge (JuliaCall transport). Fits a one-part GLLVM for the
 requested `family` and returns a flat, JuliaCall-convertible NamedTuple (see the
 file header for the key->type contract). `y` is a `p x n` response matrix
 (traits x units); `d` is the latent dimension `K`; `N` (Binomial trials, `p x n`
@@ -1904,7 +1904,7 @@ function _bridge_fit_mixed(y, family_strs::AbstractVector, K::Integer, N,
         converged = fit.converged, iterations = fit.iterations,
         loadings = Matrix{Float64}(fit.Λ * _svd_rotation(fit.Λ)),  # canonical SVD-rotated p×K loadings
         families = keys_norm,
-        note = "mixed-family GLLVModels: one shared latent block across distinct response " *
+        note = "mixed-family GLLVM: one shared latent block across distinct response " *
                "families; `correlation` is the cross-distribution latent-scale " *
                "correlation. `families` is the per-trait family vector.", ci = ci,
         # gradient_max: NaN — MixedFamilyFit has no _family_ci adapter (no packed
