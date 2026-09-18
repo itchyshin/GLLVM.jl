@@ -1,10 +1,10 @@
 # CLAUDE.md — guidance for AI coding agents in this repo
 
-This file orients AI coding agents (Claude Code, Codex, etc.) to the GLLVM.jl repo conventions and current state. The maintainer is Shinichi Nakagawa (itchyshin).
+This file orients AI coding agents (Claude Code, Codex, etc.) to the GLLVModels.jl repo conventions and current state. The maintainer is Shinichi Nakagawa (itchyshin).
 
 ## What this package is
 
-GLLVM.jl is a Julia implementation of the Generalised Linear Latent Variable Model (GLLVM) class across a broad, status-tracked GLM response-family surface, plus phylogenetic and spatial (SPDE/Matérn) random-effect structures. It is a from-scratch reimplementation of R's `gllvm`/`gllvmTMB`, prioritising fitting speed at moderate-to-large p (species count) and rigorous inference. Headline result on the Gaussian path: median 265.1× (range 161–698×) on the published Gaussian closed-form profile grid over R/`gllvmTMB` while reproducing point estimates and likelihoods to at least six significant digits on the benchmarked single-variance grid (worst case `|Δ logLik| = 2.343e-07`; Core070 FREE=0 ≠ true parity — see `docs/src/gllvmtmb-parity.md`).
+GLLVModels.jl is a Julia implementation of the Generalised Linear Latent Variable Model (GLLVM) class across a broad, status-tracked GLM response-family surface, plus phylogenetic and spatial (SPDE/Matérn) random-effect structures. It is a from-scratch reimplementation of R's `gllvm`/`gllvmTMB`, prioritising fitting speed at moderate-to-large p (species count) and rigorous inference. Headline result on the Gaussian path: median 265.1× (range 161–698×) on the published Gaussian closed-form profile grid over R/`gllvmTMB` while reproducing point estimates and likelihoods to at least six significant digits on the benchmarked single-variance grid (worst case `|Δ logLik| = 2.343e-07`; Core070 FREE=0 ≠ true parity — see `docs/src/gllvmtmb-parity.md`).
 
 **Status**: v0.3.0 development has broad engine coverage, but public R-user capability is governed by the capability/bridge matrix rather than a blanket parity claim. The Gaussian path uses the closed-form marginal; the non-Gaussian families use a shared Laplace-approximated marginal (with a Gaussian-variational/ELBO alternative for several). Implemented or scaffolded engine rows include Gaussian (incl. per-species variance), Poisson, NB2, NB1, Binomial/Bernoulli, beta-binomial, Beta, Gamma, Exponential, Ordinal (logit/probit), Tweedie, Conway–Maxwell–Poisson, and the two-part/zero families (Delta-lognormal, Delta-Gamma, Hurdle-Poisson, Hurdle-NB, beta-hurdle, ordered-beta, ZIP, ZINB, ZIB). Plus per-species/grouped dispersion, fixed/species-specific covariates, fourth-corner, fixed and random row effects, quadratic response, the ordination trio (unconstrained / concurrent `num.lv.c` / constrained `num.RR`), a phylogenetic GLM, and an SPDE/Matérn spatial latent field. Treat each row as `covered`, `partial`, `experimental`, `planned`, or `unsupported` according to the live matrix and the `gllvmTMB` bridge gate.
 
@@ -34,7 +34,7 @@ GLLVM.jl is a Julia implementation of the Generalised Linear Latent Variable Mod
 The listing below covers the main groups; it is representative, not exhaustive (77 source files). The non-Gaussian families live under `src/families/`.
 
 Core engine:
-- `GLLVM.jl` — module + includes
+- `GLLVModels.jl` — module + includes
 - `packing.jl` — Λ pack/unpack (lower-triangular convention)
 - `likelihood.jl` — Gaussian marginal log-likelihood (closed-form, dense reference)
 - `lowrank_cholesky.jl` — Woodbury-based Cholesky for ΛΛᵀ + diag

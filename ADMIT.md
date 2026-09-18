@@ -7,7 +7,7 @@
 
 Admit conductor owns shared choke points. Please apply (surgical):
 
-## `src/GLLVM.jl`
+## `src/GLLVModels.jl`
 
 1. After `studentt.jl` (or near other continuous families), add:
    ```julia

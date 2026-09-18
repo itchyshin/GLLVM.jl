@@ -9,7 +9,7 @@
   The GitHub repository rename and Pages migration remain separate maintainer
   gates; historical development records retain their original spelling.
 
-All notable changes to GLLVM.jl are documented here.
+All notable changes to GLLVModels.jl are documented here.
 
 ## Unreleased
 
@@ -327,7 +327,7 @@ gradient-vs-finite-difference checks), validated on Linux/macOS/Windows.
 - **Confidence intervals** extended to ZIB, beta-binomial, and random-row fits;
   **aic/bic** for all the new fit types.
 - **JuliaConnectoR R-bridge scaffold** (`r/gllvmtmb_julia.R`, `r/parity_check.R`)
-  mapping gllvmTMB-style calls to GLLVM.jl with the documented parameterization
+  mapping gllvmTMB-style calls to GLLVModels.jl with the documented parameterization
   conversions (NB `r=1/φ`, …) + an R-vs-Julia parity harness.
 - **Performance** — strictly bit-exact allocation reductions in the Laplace and
   two-part mode-finders and the Poisson/NB fit objective (no result change; the

@@ -1,6 +1,6 @@
-# GLLVM.jl capability status (twin of gllvmTMB)
+# GLLVModels.jl capability status (twin of gllvmTMB)
 
-Mission Control input for `/p/gllvmTMB/julia-surface`. **GLLVM.jl is a twin of
+Mission Control input for `/p/gllvmTMB/julia-surface`. **GLLVModels.jl is a twin of
 gllvmTMB**: public capability rows use the **same R vocabulary**
 (sources × modes, families, intervals, slopes) so the board shows R↔Julia
 alignment. The *code behind* a row may be Julia (closed-form / dense Laplace /
@@ -94,8 +94,8 @@ per-trait diagonal paths; full unstructured `dep()` without LV is still a gap.
 
 **`none × dep` promotion (2026-08-28, maintainer decision gate 6).** Promoted
 from `planned` on the evidence: `fit_dep_gllvm` is implemented
-(`src/none_dep.jl`), exported (`src/GLLVM.jl:226`), included
-(`src/GLLVM.jl:76`), and tested (`test/test_none_dep.jl`, 29 assertions, in
+(`src/none_dep.jl`), exported (`src/GLLVModels.jl:226`), included
+(`src/GLLVModels.jl:76`), and tested (`test/test_none_dep.jl`, 29 assertions, in
 `runtests.jl`). It forces `K = p` (full-rank packed Λ, `p(p+1)/2` free
 parameters, Σ = LLᵀ) — the same estimand as the twin's
 `latent(0 + trait | g, d = T)`.
@@ -215,7 +215,7 @@ scope fence matters:
 - Related: the twin's df profile CI is off by one (reports df−1 as df; see
   `docs/dev-log/decisions/2026-08-28-studentt-parameterisation.md`), so any
   future ν-interval comparison must account for that before attributing a
-  mismatch to GLLVM.jl.
+  mismatch to GLLVModels.jl.
 - Known limitation of `disp_group = :species` on this family: the postfit
   helpers in `link_residual.jl` / `simulate_fit.jl` assume a scalar σ and now
   raise a clean `MethodError` under per-trait σ — a fail-fast boundary, not
@@ -323,7 +323,7 @@ slice. No twin light Δ.
 `implemented` on `origin/main`; this pass **pins test evidence** after
 true-parity map T13 drift audit (exports existed; receipt was implicit). Exports:
 `fit_gaussian_mi_fiml`, `fit_gaussian_mi_phylo`, `fit_gllvm_mi`, `fit_gllvm_mi_multi`
-(`src/GLLVM.jl`). Focused run (single Julia process, files included in order):
+(`src/GLLVModels.jl`). Focused run (single Julia process, files included in order):
 
 ```sh
 ~/.juliaup/bin/julia --project=. -e 'using Test; include("test/test_mi_fitter.jl"); …'
@@ -392,7 +392,7 @@ Same twin surface, transport layer. Status = code + bridge/parity test exist;
 
 **This section exists because the row above is a compound of two halves with different
 truth values.** The capability-ledger half is genuinely implemented and tested
-(`bridge_capabilities()` at `src/bridge.jl:632`, exported `src/GLLVM.jl:251`, test wired
+(`bridge_capabilities()` at `src/bridge.jl:632`, exported `src/GLLVModels.jl:251`, test wired
 at `test/runtests.jl:206`). **The drift probe is RED**, and nothing in either repo's CI
 reports it.
 
@@ -426,7 +426,7 @@ R mirror against itself.
 
 **User-visible consequence.** An R user on `engine = "julia"` cannot reach six families the
 Julia engine ships — including the zero-inflated trio and lognormal, which are precisely
-the families where GLLVM.jl is *ahead* of the twin. The bridge that would expose that lead
+the families where GLLVModels.jl is *ahead* of the twin. The bridge that would expose that lead
 does not know they exist.
 
 Reported upstream at `gllvmTMB#488`, the issue that predicted this bug class and asked for
@@ -442,7 +442,7 @@ the precision a reader would assume, for a reason orthogonal to capability.
 
 `gllvmTMB` is built on TMB, whose `MakeADFun(..., random = ...)` differentiates
 the coded joint negative log-likelihood — so its Laplace log-determinant uses the
-**observed** joint Hessian, structurally, without ever choosing. GLLVM.jl
+**observed** joint Hessian, structurally, without ever choosing. GLLVModels.jl
 hand-codes its Laplace kernels, and several used the **Fisher (expected)**
 information in that role. The two coincide at canonical links (Poisson/log,
 Binomial/logit) where the curvature is free of `y`, which is why the launch
