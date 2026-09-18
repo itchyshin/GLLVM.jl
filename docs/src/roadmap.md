@@ -5,11 +5,8 @@ GLLVModels.jl is being built as a fast Julia **companion to
 where paired, usable directly in Julia and through a **narrow** R bridge
 (`engine = "julia"`). A closed spreadsheet ledger is accounting, not true
 parity — see [Capability parity](gllvmtmb-parity.md). A full 0.7.1
-surface port (column_coef, slopes, formula grid) is out of scope unless a new
-arc opens it. The live, detailed roadmap is tracked on
-GitHub:
-
-➡️ **[GLLVModels.jl roadmap](https://github.com/itchyshin/GLLVModels.jl/issues/11)**
+surface port (column_coef, slopes, formula grid) is not part of the current
+release scope.
 
 Current sequencing is R-first. Native `gllvmTMB` functionality and the R user
 workflow define the oracle; `GLLVModels.jl` mirrors admitted rows, supplies parity
@@ -67,4 +64,4 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
   fit-specific prediction routes, richer diagnostics, and parity evidence for
   every promoted row.
 
-This roadmap evolves; the GitHub roadmap is always current.
+This roadmap evolves as new model routes earn their evidence.

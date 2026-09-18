@@ -1,7 +1,7 @@
 # Structured-term fitting
 
-`fit_gaussian_structured` is a public entry point (maintainer decision
-round2-3 #6) for GLLVModels.jl's structured-covariance source grammar — the same
+`fit_gaussian_structured` is a public entry point for GLLVModels.jl's
+structured-covariance source grammar — the same
 `indep`/`dep`/`scalar`/`kernel_indep`/`kernel_dep`/`kernel_scalar`/
 `kernel_latent` term vocabulary that `fit_gaussian_sources` already fits, now
 reachable without hand-assembling `SourceCovariance` objects yourself.

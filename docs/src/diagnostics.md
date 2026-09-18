@@ -80,7 +80,7 @@ compare_fits_indep_vs_two_psi
 Five functions in `src/diagnostics.jl` and `src/re_sd.jl` were renamed away
 from names that shadowed an R function with **different semantics** — the R
 function reads a different quantity or has a different call shape — freeing
-those names for a future true R-mirror (maintainer decision round2-3 #5):
+those names for a future true R-mirror:
 
 | Old name | New name | Why it moved |
 | --- | --- | --- |

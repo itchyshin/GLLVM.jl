@@ -42,13 +42,9 @@ is one-way: **R → Julia**. It does not run Julia models back through R, and
 it does not cover phylogeny, spatial, animal, kernel, or iSDM structure, nor
 the full `traits()` formula grammar.
 
-Current bridge status is tracked on GitHub, not on this page:
-
-- [R bridge: run gllvmTMB models through Julia (`engine="julia"`)](https://github.com/itchyshin/GLLVModels.jl/issues/10)
-
-This page links that tracker. It does not replace it. For the
-admitted bridge surface versus the wider engine, see
-[Capability parity](gllvmtmb-parity.md).
+For the admitted bridge surface versus the wider engine, see
+[Capability parity](gllvmtmb-parity.md). The bridge rejects unsupported
+structures explicitly rather than silently changing the model.
 
 ## What this page does not claim
 
@@ -56,8 +52,4 @@ admitted bridge surface versus the wider engine, see
 - Calibrated interval coverage on either side.
 - R-site navigation, which is maintained separately.
 
-Related work remains independently tracked in the
-[project roadmap](https://github.com/itchyshin/GLLVModels.jl/issues/11),
-[cross-project learning plan](https://github.com/itchyshin/GLLVModels.jl/issues/13),
-[comparator-fixture index](https://github.com/itchyshin/GLLVModels.jl/issues/276),
-and [reader-journey plan](https://github.com/itchyshin/GLLVModels.jl/issues/302).
+For planned capability work, see the package [Roadmap](roadmap.md).

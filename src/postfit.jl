@@ -594,8 +594,7 @@ StatsAPI.aic(fit::AnyGllvmFit) = 2 * StatsAPI.dof(fit) - 2 * StatsAPI.loglikelih
 Bayesian information criterion `k·log(n) − 2ℓ`. `n` is a directly supplied
 observation count (pass [`nobs`](@ref) explicitly if a non-default count is
 wanted); the `bic(fit, Y)` form infers it as `nobs(fit, Y; mask)` — R's p·n
-cell-count convention (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md
-#1), not the number of sites.
+cell-count convention, not the number of sites.
 """
 StatsAPI.bic(fit::AnyGllvmFit, n::Integer) = StatsAPI.dof(fit) * log(n) - 2 * StatsAPI.loglikelihood(fit)
 StatsAPI.bic(fit::AnyGllvmFit, Y::AbstractMatrix; mask = nothing) =
@@ -604,8 +603,7 @@ StatsAPI.bic(fit::AnyGllvmFit, Y::AbstractMatrix; mask = nothing) =
 """
     nobs(fit, [Y]; mask = nothing) -> Integer
 
-Number of observed response cells: R's `p·n` cell-count convention
-(docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md #1), i.e.
+Number of observed response cells: R's `p·n` cell-count convention, i.e.
 `length(Y)` minus any missing/masked cells — matching `nobs.gllvmTMB_multi`,
 which counts `is_y_observed == 1` cells rather than the number of sites.
 

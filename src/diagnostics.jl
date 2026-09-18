@@ -360,8 +360,7 @@ end
 Port of R's `diagnostic_table()` (`diagnostic-tables.R:53-151`), a flat
 row-per-check table over [`check_gllvmTMB`](@ref)'s components — the
 Julia-idiomatic column-vectors-of-a-NamedTuple shape rather than a
-`data.frame`. Renamed from `diagnostic_table` (maintainer decision
-docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5):
+`data.frame`. Renamed from `diagnostic_table` because
 R's `diagnostic_table(x, table=)` requires `x` to already carry
 `gllvmTMB_diagnostic` metadata attached by a prior call to
 `predictive_check()`/`residuals()` — a different call shape from this
@@ -497,8 +496,7 @@ implied `Σ_y = ΛΛᵀ + diag(σ_eps²)` of two fits of the same number of
 traits `p`. Rotation/sign of Λ are not identified, so this compares
 `Σ_y` itself (a tcrossprod invariant), never signed loading entries.
 
-Renamed from `compare_Sigma_table` (maintainer decision
-docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5):
+Renamed from `compare_Sigma_table` because
 R's `compare_Sigma_table(x, truth, ...)` compares a fit's implied Σ_y
 against a supplied GROUND-TRUTH matrix, not two fits against each other —
 a different signature and purpose from this two-fit bridge.
@@ -563,8 +561,7 @@ sites (BIC's sample size — passed explicitly because
 `StatsAPI.nobs(fit)` requires the response matrix, which this
 comparison does not otherwise need).
 
-Renamed from `compare_dep_vs_two_psi` (maintainer decision
-docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5):
+Renamed from `compare_dep_vs_two_psi` because
 R's `compare_dep_vs_two_psi(fit_two_psi, ...)` takes a SINGLE fitted
 phylogenetic "two-ψ" model and internally refits an alternative "dep"
 model itself — a phylo-specific identifiability cross-check for a named

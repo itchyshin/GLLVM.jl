@@ -755,8 +755,7 @@ quantity. Building a curve variant for THAT quantity needs the identical
 penalty-profile plumbing `confint_derived.jl` already owns; duplicating it
 here would create two divergent implementations of the same profile, so
 this function is deliberately scoped to the packed `sigma_phy[t]` term —
-the raw SCALE parameter, not the derived SIGNAL ratio. See
-`docs/dev-log/core070/se-machinery-slice-notes.md` for the full gap note.
+the raw SCALE parameter, not the derived SIGNAL ratio.
 """
 function profile_phylo_signal(fit::GllvmFit, t::Integer; kwargs...)
     fit.model.has_phy_unique || throw(ArgumentError(
@@ -769,9 +768,9 @@ end
 """
     profile_targets(args...; kwargs...)
 
-Deprecated forwarding shim: renamed to [`profile_curve_targets`](@ref) per
-maintainer decision round2-3 #5 (the name `profile_targets` is reserved for a
-future mirror of R's readiness-registry surface, a different function).
+Deprecated forwarding shim: renamed to [`profile_curve_targets`](@ref). The
+name `profile_targets` is reserved for a future R-style readiness registry,
+which would be a different function.
 """
 function profile_targets(args...; kwargs...)
     Base.depwarn("profile_targets is deprecated: renamed to profile_curve_targets; the name profile_targets is reserved for a future R-mirroring readiness-registry surface", :profile_targets)

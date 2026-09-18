@@ -663,9 +663,8 @@ end
                                         …) -> BetaBinomialGroupedCovFit
 
 Fit a beta-binomial GLLVM with **grouped / per-trait Beta precision** and
-**shared site covariates** `X` (`p×n×q`) — the twin default under X (decision
-`docs/dev-log/decisions/2026-08-05-betabinomial-x-dispersion-identity.md`,
-API B: per-trait `φ_t` twin to gllvmTMB's `log_phi_betabinom` + shared `γ`).
+**shared site covariates** `X` (`p×n×q`). This parameterisation uses per-trait
+`φ_t`, matching gllvmTMB's `log_phi_betabinom`, together with shared `γ`.
 Working vector `[β; γ_free; pack(Λ); log φ_1 … log φ_G]`; offset `O = Xγ` is
 passed into `betabinomial_grouped_marginal_loglik_laplace`.
 Finite-difference outer L-BFGS gradient (G0 lock; no `hessian=:observed`

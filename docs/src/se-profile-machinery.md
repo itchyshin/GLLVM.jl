@@ -28,7 +28,7 @@ covariance is not the single-node object this function assumes. Ordinal and
 every other family are not covered; calling `latent_score_sd` there is a
 `MethodError`, not a silently wrong number.
 
-This function is renamed from `getREsd` (maintainer decision round2-3 #5): R's
+This function is renamed from `getREsd`: R's
 `getREsd(fit, block=)` reads auxiliary TMB random-effect blocks
 (`diag_unit`, `phylo`, `re_int`, ...), a different quantity than the latent
 factor-score SD this function computes. The old name still resolves via a

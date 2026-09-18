@@ -246,8 +246,7 @@ Restrictions
 
 Keyword arguments
 -----------------
-* `correlation::Bool = false` (phylo transport S2, opt-in — see
-  `docs/dev-log/core070/phylo-transport-questions-2026-09-02.md` Q1) — when
+* `correlation::Bool = false` (opt-in) — when
   `true`, requires the tree to be ultrametric (within `sqrt(eps())` of a
   common root-to-tip height, mirroring `phylo-tree-precision.R:140-146`;
   raises `GJL-GATE-PHYLO-NONULTRAMETRIC` otherwise) and rescales
@@ -361,7 +360,7 @@ If `root_index < 0` it is auto-detected as the unique node that is not a
 child in any edge.
 
 `correlation::Bool = false` — same opt-in unit-height rescale + ultrametric
-gate as `augmented_phy` (see its docstring; phylo transport S2).
+gate as `augmented_phy` (see its docstring).
 
 This bypasses the Newick parser — useful for tests and for trees that
 arrive from another tool already as edge lists.

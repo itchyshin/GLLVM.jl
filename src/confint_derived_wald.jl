@@ -532,8 +532,7 @@ end
         -> Vector{NamedTuple}
 
 Per-entry confidence intervals on the reduced-rank loading matrix, one row
-per `(trait, axis)` — the Julia analogue of R's `loading_ci()`
-(`.unlazy/core070-aghq/oracle-source/readback/R/loading-ci.R`).
+per `(trait, axis)` — the Julia analogue of R's `loading_ci()`.
 
   - `level`: `:unit` (default, R's shared/between tier) or `:unit_obs` (the
     within tier; requires the fit to carry a `Λ_W` block).
@@ -719,8 +718,7 @@ end
     standard_errors(fit::GllvmFit, y; X=nothing, Σ_phy=nothing, level=0.95)
         -> NamedTuple
 
-Julia analogue of R gllvmTMB's `standard_errors()` (`.unlazy/core070-aghq/
-oracle-source/readback/R/standard-errors.R`). R's version lazily defers
+Julia analogue of R gllvmTMB's `standard_errors()`. R's version lazily defers
 TMB's `sdreport()` to a later call when a fit was made with `control =
 gllvmTMBcontrol(se = FALSE)` — a "fit fast now, get SEs later" door.
 GLLVModels.jl's `GllvmFit` has no such deferred-SE control: the observed-
@@ -787,16 +785,13 @@ is validated on; a large-`p` production call should lower `n_boot` or
 restrict to a subset of entries computed with direct `bootstrap_ci_derived`
 calls instead of the full table.
 
-GAP (honestly recorded, matching the required-source-case-map disposition
-for the sibling `loading_ci` / `loading_profile_exploratory` rows): R's
-`bootstrap_Sigma()` also bootstraps `R` (correlation), `communality`, `ICC`,
+R's `bootstrap_Sigma()` also bootstraps `R` (correlation), `communality`, `ICC`,
 and `cross_corr` in the SAME call, over multiple covariance tiers. This
 driver covers only the `Sigma` entries at the single `:unit` tier GLLVModels.jl
 has. The other summaries are already independently reachable via
 `bootstrap_ci_derived(fit, fb -> communality(fb)[t]; ...)` /
 `bootstrap_ci_derived(fit, fb -> correlation(fb)[i,j]; ...)`; a unified
-multi-summary table matching R's return shape is future work, not built in
-this slice — see `docs/dev-log/core070/se-machinery-slice-notes.md`.
+multi-summary table matching R's return shape is not yet available.
 """
 function bootstrap_Sigma(fit::GllvmFit;
                          level::Symbol = :unit,
