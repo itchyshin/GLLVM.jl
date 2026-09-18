@@ -34,6 +34,16 @@
 - Commands: lane preflight; `git fetch --prune origin`; `gh run list --workflow Documenter.yml`;
   `gh run view 35148351157 --log`; `gh run view 35148337444 --log`; `rg 'deploydocs|gh-pages|DOCUMENTER_KEY|docs/make|Documenter'`.
 
+## 2026-09-17 — Mac Ada: ranks 2/4/5 score + DRAFT #399 rebase (@ `83f2e5224`)
+
+- **origin/main** @ **`83f2e5224`** (#420). Adversarial: rank **2** SO batch **exhausted** on main
+  (#374/#376/#378/#391); Delta species remainder **paste-gated** (#399). Rank **4** bridge mirror
+  = gllvmTMB `julia-bridge.R` admission (**foreign**; no engine surgery from Julia lane). Rank **5**
+  grouping = multi-family engine (**large / Shannon lease**). **No** ungated mergeable engine slice.
+- **DRAFT #399:** rebased onto `83f2e5224`; `test/test_second_order_delta_followup.jl` **34 pass /
+  1 broken**; public Delta coerce **unchanged** (paste TODO @ `fit_gllvm.jl:219`). Goal **not** complete.
+- Commands: `git rebase origin/main` on `feat/delta-dispersion-a-scaffold-20260916`; focused delta test.
+
 ## 2026-09-17 — Post-#419 paste packet tip (`docs/post-419-paste-packet-tip-20260917`)
 
 - **origin/main** @ **`8a751b55d`** (#419). Four DRAFT harnesses already rebased on tip
@@ -51,6 +61,13 @@
   DRAFT **#399/#409/#410/#411** unchanged (still DRAFT until paste). No engine / `Project.toml`.
   Goal **not** complete.
 - Commands: `git fetch origin main`; `git rev-parse origin/main`; `rg 'leave.*357|487e2cb74|62091750d' docs LOOP AGENTS.md`.
+
+## 2026-09-16 — DRAFT #399 pre-paste deepen (postfit + D1 runbook)
+
+- Branch `feat/delta-dispersion-a-scaffold-20260916` (DRAFT **#399**): vector σ/α postfit,
+  `fit_gllvm(..., disp_group=)` Delta routing, paste-gate ACCEPTED HTML draft, D1 remeasure runbook.
+  **No** ACCEPTED block live; **no** public default coerce; **no** merge. Goal **not** complete.
+- Commands: `julia --project=. test/test_second_order_delta_followup.jl` → **34 pass / 1 broken**.
 
 ## 2026-09-16 — Four DRAFT paste harnesses on canonical packet (`docs/four-draft-paste-packet-20260916`)
 
@@ -82,13 +99,25 @@
   fired. Goal **not** complete.
 - Commands: `git rev-parse origin/main`; `gh pr view 399 401 402 --json state,isDraft,mergeable`.
 
+## 2026-09-16 — DRAFT Option A scaffold (delta species CI + SO cells)
+
+- Branch `feat/delta-dispersion-a-scaffold-20260916` rebased onto `origin/main` @ `576cd927d`
+  (#408). Pre-paste engineering for `accept delta dispersion A`: `_family_ci` `:species` for
+  DeltaLogNormalFit / DeltaGammaFit; `core070_second_order` Delta cells use
+  `disp_group=:species`; `_nparams` respects ndisp. Decision doc stays **PENDING** (no
+  ACCEPTED block). Public fitter default stays `:shared` (postfit vector-σ deferred).
+  **≠** D1 pass / programme complete. No Stage 1 / S4 / Totoro / #357 / Project.toml.
+- Checks: `julia --project=. test/test_second_order_delta_followup.jl` (local, no R).
+- Files: `src/confint_family.jl`, `src/postfit.jl`, `tools/core070_second_order/cells.jl`,
+  `test/test_second_order_delta_followup.jl`, decision fence note, after-task.
+
 ## 2026-09-16 — Cloud babysit STOP → Mac handoff (`cursor/cloud-babysit-handoff-4a16`)
 
 - Cloud babysit lane **STOPPING**; Mac owns true-parity programme. Tip:
   `docs/dev-log/handover/2026-09-16-cloud-babysit-handoff-to-mac.md`.
 - Cloud merges: #398,#400,#403,#404,#405,**#401** @ `c33745302`. Mac merged #357
   (left alone). Paste-gated remain #399/#402.
-- Goal **not** complete. No Stage1/S4/Totoro/Delta without paste.
+- Goal **not** complete. No Stage1/S4/Tornado/Delta without paste.
 - Commands: `gh pr view 401 --json state,mergeCommit`; `gh pr list --state open`.
 
 ## 2026-09-16 — Post-#399 paste packet tip (`docs/post-399-delta-a-paste-tip-20260916`)
