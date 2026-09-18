@@ -26,7 +26,7 @@
   aspect-ratio: 412 / 468;
   /* An alpha-masked rendition of the supplied master with a regular navy
      exterior rim: no white export canvas survives at badge edges. */
-  background: url("/gllvmjl-full-logo-transparent.png") center / contain no-repeat;
+  background: url("/gllvmodelsjl-full-logo-transparent.png") center / contain no-repeat;
   pointer-events: none;
 }
 
@@ -90,7 +90,7 @@
   height: 4.25rem;
   width: calc(4.25rem * 277 / 304);
   /* Preserve the compact master's native 277 × 304 aspect ratio. */
-  background: url("/assets/gllvmjl-icon-transparent.png") center / contain no-repeat;
+  background: url("/assets/gllvmodelsjl-icon-transparent.png") center / contain no-repeat;
   content: "";
 }
 
