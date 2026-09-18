@@ -1,17 +1,17 @@
-# GLLVM.jl — R interface (via JuliaConnectoR)
+# GLLVModels.jl — R interface (via JuliaConnectoR)
 
 A thin **R front end** to the fast Julia engine, so R users (the gllvm/ecology
-community) can drive GLLVM.jl without leaving R — the same idea as the DRM.jl bridge.
+community) can drive GLLVModels.jl without leaving R — the same idea as the DRModels.jl bridge.
 
-> **Status: scaffold, not yet verified.** `gllvmjl.R` was written without an R or
-> Julia runtime available, so it has **not been executed**. Treat it as a starting
-> point and verify each function in a real R + Julia environment. Once the DRM.jl R
-> bridge is available to mirror, parts of this can be aligned to its conventions.
+> **Status: scaffold, transport not yet re-verified.** The canonical loader was
+> checked against the renamed Julia checkout on 2026-09-18; live R-to-Julia
+> transport still needs a fresh R + Julia session. Treat this as a starting point
+> and verify each function in that environment.
 
 ## How it works
 
 [`JuliaConnectoR`](https://github.com/stefan-m-lenz/JuliaConnectoR) starts a Julia
-process and calls GLLVM.jl functions directly. R matrices marshal to Julia arrays
+process and calls GLLVModels.jl functions directly. R matrices marshal to Julia arrays
 automatically; results come back through the package's **array/table-returning
 accessors** (`coef_table`, `getLV`, `getLoadings`, `ordiplot`, `predict`,
 `residuals`, `aic`, `bic`), which convert cleanly to R `data.frame`s / matrices.
@@ -22,9 +22,9 @@ The fit object itself stays an opaque Julia reference that you pass back in.
 ```r
 install.packages("JuliaConnectoR")
 ```
-Install GLLVM.jl in Julia (>= 1.10):
+Install GLLVModels.jl in Julia (>= 1.10):
 ```julia
-using Pkg; Pkg.add(url = "https://github.com/itchyshin/GLLVM.jl")
+using Pkg; Pkg.add(url = "https://github.com/itchyshin/GLLVModels.jl")
 ```
 
 ## Usage

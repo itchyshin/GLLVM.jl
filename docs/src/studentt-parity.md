@@ -49,8 +49,8 @@ Thus a small difference between two separately optimized log likelihoods is
 not sufficient evidence of parity. The original fixture and fit-health gates
 remain required; no df cap or weakened tolerance has been substituted.
 
-The numerical record and exact oracle provenance are in
-`docs/dev-log/decisions/2026-08-30-core070-studentt.md` in the source checkout.
+The numerical record retains the exact oracle provenance alongside the source
+used for the comparison.
 
 A public fixed-to-free warm start on this same fixture improves likelihood
 agreement but still fails the raw-gradient and same-parameter density checks.

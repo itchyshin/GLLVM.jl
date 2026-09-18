@@ -31,19 +31,17 @@ Legend: ✅ available · 🔨 in progress · ⬜ planned · ⚡ GLLVModels.jl ad
 
 "Parity" on this page is **harness parity**, not **true parity**: agreement on
 small, toy fixtures (`p ≤ 5`, `n ≤ 150`), not agreement on a real-workflow
-acceptance case run end-to-end as a user would
-(`docs/dev-log/core070/true-parity-decision-map.md` §Destination).
+acceptance case run end-to-end as a user would.
 **First-order** receipts (log-likelihood at each optimum, cross-objective
 identity) exist for the batch of five paired families now entering
 second-order work — Gaussian, Poisson-log, Binomial-logit, Beta-logit,
 NB2-log (`second-order-parity-contract.md` §6). **Second-order** receipts
 (standard errors, the fixed-effect `vcov` block, Wald CI endpoints) exist
-only as a **5-cell toy pre-run** on those same families
-(`docs/dev-log/core070/second-order-prerun-2026-09-02.md`) — explicitly *not
-a parity claim*, no tolerance asserted or gated. **Realistic-size cells**
+only as a **5-cell toy pre-run** on those same families — explicitly *not a
+parity claim*, with no tolerance asserted or gated. **Realistic-size cells**
 (p ≥ 20, n ≥ 500) carry no receipts of either order yet. **Interval
 *coverage* is not part of parity** — it is a separate Julia-only diagnostic
-programme (the DRAC / arcG coverage grids). Empirical undercoverage there is
+programme. Empirical undercoverage there is
 **evidence**, not a calibrated-coverage certificate and not an R↔Julia
 comparison. R's own 0.7.1 interval claim is three pinned Wald cells only;
 gllvmTMB withdrew the old total-variance “0.94 coverage floor” wording
@@ -53,71 +51,63 @@ gllvmTMB withdrew the old total-variance “0.94 coverage floor” wording
 
 **Programme §7 / true second-order parity: NOT DONE.** The second-order
 contract's §7 boundary still applies: a toy pre-run or a partial batch does
-not close the programme. See `second-order-parity-contract.md` §7 and
-`docs/dev-log/core070/true-parity-decision-map.md`.
+not close the programme. See the second-order parity contract and decision map.
 
 **Matched-coordinates tier: NOT implemented.** The shipped receipt tier remains
-**each-own-optimum only**. A batch-1 pilot (merged #285;
-`docs/dev-log/core070/second-order-matched-pilot-batch1-20260905.md`) measured
+**each-own-optimum only**. A five-cell pilot measured
 **3 pass / 2 blocked** on five cells — gaussian, poisson, and binomial_logit
 pass at R-anchored θ; **beta_logit** and **nb2_log** are **blocked** on θ-map
-(R per-trait dispersion vs Julia shared log-dispersion). Disposition:
-`docs/dev-log/core070/second-order-matched-coordinates-2026-09-04.md`. Do not
-read 3/5 pilot pass as programme completion or as a live matched-coordinates
-tier.
+(R per-trait dispersion vs Julia shared log-dispersion). Do not read 3/5 pilot
+pass as programme completion or as a live matched-coordinates tier.
 
 The qualification claim itself is **one-directional**: R workflows against
-Julia, at the frozen `gllvmTMB` 0.7.0 oracle
-(`docs/dev-log/decisions/2026-09-02-maintainer-decisions-true-parity.md`).
-**Capabilities are tracked both ways**: what Julia has that R lacks is a
-written, tool-produced list (`tools/parity_ledger.py`; **FORWARD = 62**
-R exports with no Julia twin, **REVERSE = 91** Julia exports with no R
-twin, at the frozen oracle — after #350 disposition and #355 `TWIN_ALIAS`
-`ALIASES` batch; three ambiguous twins remain genuinely owed) — a record, not
-an obligation owed by this repo.
+Julia, at the frozen `gllvmTMB` 0.7.0 oracle. **Capabilities are tracked both
+ways**: the current record has 62 R exports with no Julia twin and 91 Julia
+exports with no R twin at that oracle, after the later alias review; three
+ambiguous twins remain genuinely owed. This is a record, not an obligation
+owed by this repository.
 
 ### Ledger accounting ≠ true parity
 
-**Core070 FREE=0** means every required ledger row is bound or dispositioned — the
-**spreadsheet programme is closed**, not that true parity is achieved. True parity
-(additional gates: second-order contract, realistic-size cells, real-data workflows,
-grouping-level pairing, signed dispositions) is tracked in
-`docs/dev-log/core070/true-parity-decision-map.md`. Do not read FREE=0 as permission
-to claim "R workflows run identically through Julia."
+When every required ledger row is bound or dispositioned, the **spreadsheet
+programme is closed**, not that true parity is achieved. True parity still needs
+the second-order contract, realistic-size cells, real-data workflows,
+grouping-level pairing, and signed dispositions. Do not read ledger closure as
+permission to claim "R workflows run identically through Julia."
 
 ### Bridge scope (what `engine = "julia"` is)
 
 One-way **R → Julia** only: a subset of cross-sectional reduced-rank models through
-JuliaCall (`JUL-01` / `JUL-01A` = `partial`). Admits 11 families, unit-tier
+JuliaCall. It admits 11 families, unit-tier
 `latent(d=K)` and no-latent paths. **Does not** cover phylo/spatial/animal/kernel/iSDM,
 `traits()` formula grammar, mixed-family vectors at full depth, or column_coef / slope
-families. PR #1236 expansion remains open.
+families. Further bridge expansion remains open.
 
 ### Explicitly OUT of the parity claim
 
-From `true-parity-decision-map.md` §Out of scope (plain language):
+In plain language, the following remain out of scope:
 
 - Two-directional qualification (Julia→R as owed work here)
 - Full 0.7.1 surface port (column_coef, slopes, formula grid) without a new arc
 - Spatial/slopes engines before phylo transport completes
 - Interval *coverage* certification as an R↔Julia comparison
-- MSPL programme (D-157 park); foreign R lanes
+- The MSPL programme and unrelated R work
 - Re-freezing the oracle at 0.7.1 before the second-order contract lands
 - fitted/predict/residuals and recovery-to-truth as parity *gates* (measured separately)
 
-Export-level gap honesty (FORWARD=62 @ frozen oracle after #355 aliases): `docs/dev-log/core070/export-gap-honesty-2026-09-04.md` (historical 77-row inventory) and `docs/dev-log/after-task/2026-09-15-parity-ledger-aliases.md` (Δ −15).
+The historical export inventory records 62 R exports without a Julia twin and
+91 Julia exports without an R twin at the frozen oracle; the later alias review
+reduced the former count by 15.
 
 ### Twin capability matrix — six DIFFER rows
 
-The joined capability ledger (Julia `docs/design/capability-status.md` vs twin
-`tools/parity_ledger.R`) reports **6 DIFFER** rows alongside 48 matched. Those
-six are **not** covered twin capability — status words disagree by design or by
+The joined capability matrix reports **6 differing** rows alongside 48 matched.
+Those six are **not** covered twin capability — status words disagree by design or by
 gap (`spatial × dep`, Phylo Model A `lv` intervals, multinomial depth, broad
 simulation coverage certificate, public AGHQ, full mixed-family vector). The
 R bridge may admit a **partial** mixed-family point-fit while the matrix row
-remains `planned`; that is transport only, not row promotion. Enumerated fences:
-`docs/design/capability-status.md` § *Twin join — six DIFFER rows* and
-`docs/dev-log/after-task/2026-09-15-capability-differ-honesty-fence.md`.
+remains `planned`; that is transport only, not row promotion. The detailed
+fences appear in the capability-status documentation.
 
 ## Response families
 
@@ -334,18 +324,16 @@ why the discrepancy went unnoticed. They differ everywhere else.
 - **Fixed and on `main`:** NB1 (grouped route), `truncated_nbinom2`,
   `Exponential`, `DeltaGamma`, **`Gamma`** — the one that sat on the public
   default path `fit_gllvm(Y; family = Gamma())` — and, as of 2026-08-28, the
-  shared **Tweedie** route (`fit_tweedie_gllvm`) and **`Binomial`/probit**
-  (maintainer decision batch,
-  `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`: TMB structurally
-  differentiates the joint nll, so its log-det is observed for every family it
-  ships, not a per-family exception).
+  shared **Tweedie** route (`fit_tweedie_gllvm`) and **`Binomial`/probit**.
+  TMB structurally differentiates the joint nll, so its log-det is observed
+  for every family it ships, not a per-family exception.
 - **Still using the Fisher weight, by decision rather than oversight:** only
   **GP-1** (adjudicated 2026-08-28, Fisher retained — a minority of cells
   derail badly under the observed weight; `src/families/laplace.jl:235`, no
   per-family override in `src/families/gp1.jl`). A log-likelihood from GP-1
   will not match `gllvmTMB` to machine precision. (NB2, Beta, NB1 and
-  Student-t all flipped to observed 2026-08-27 on the curvature-adjudication
-  campaign evidence — decision A; Exponential's registry default was
+  Student-t all flipped to observed 2026-08-27 on a curvature-adjudication
+  study — decision A; Exponential's registry default was
   declared the same day.)
 - **Resolved since the last pass, not still open:** `Binomial` at the
   **cloglog** link now defaults to `:observed`
@@ -360,7 +348,7 @@ why the discrepancy went unnoticed. They differ everywhere else.
   exactly to the shared Tweedie route under its own default when `G = 1`.
 - **Not a uniform improvement.** Against numerical quadrature, the observed
   curvature is decisively closer for Gamma (12/12 seeds, 20–60× smaller error)
-  and for NB2 (87% of 150 curvature-adjudication campaign cells, 2026-08-27),
+  and for NB2 (87% of 150 curvature-adjudication study cells, 2026-08-27),
   but *not* for Beta, and measurably worse for GP-1's dispersion recovery. So
   each family is decided on its own evidence. Matching TMB is the goal;
   "the numbers get better" would be an overstatement.

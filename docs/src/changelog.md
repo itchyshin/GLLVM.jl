@@ -45,7 +45,7 @@ Notable changes to GLLVModels.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
   shared estimated and per-species estimated power; `TweediePerTraitPowerFit`
   stores the latter. Student fits record whether degrees of freedom were estimated
   so information-criterion parameter counts are correct. These changes do not
-  establish full Core070 parity: the original Student-t R health gate remains
+  establish full parity: the original Student-t R health gate remains
   failed, and final candidate requalification is pending.
 - Branch-RE uses an equivalent dense marginal fallback when the auxiliary sparse
   precision is numerically unsafe. This preserves valid marginal models without
@@ -92,7 +92,7 @@ Notable changes to GLLVModels.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 - **IN:** phylogenetic GLM (`fit_phylo_glm` / `PhyloGLMFit`) — a per-species
   phylogenetic random intercept for the non-Gaussian families (Poisson / NB /
   Binomial) via an augmented-state joint Laplace over the sparse phylogenetic
-  precision (issue #61).
+  precision.
 - **IN:** zero-inflated binomial (`fit_zib_gllvm` / `ZIBFit`), with Wald /
   profile / bootstrap confidence intervals.
 - **IN:** negative-binomial type-1 (NB1, linear variance `Var = μ(1+φ)`;
@@ -101,7 +101,7 @@ Notable changes to GLLVModels.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 ### Documentation
 - **IN:** pkgdown-style documentation site (DocumenterVitepress) — dropdown
   navbar, full-text search, light/dark mode; homepage mirrors `gllvmTMB`'s with
-  a Julia flavour. (#4)
+  a Julia flavour.
 
 ### Quality & infrastructure
 - **IN:** `Pkg.test()` adopted as the full-suite command; Aqua (package

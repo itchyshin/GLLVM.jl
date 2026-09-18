@@ -33,7 +33,7 @@ fit_gaussian_structured
 ```
 
 The recognizer internals this wrapper drives (`_recognize_source_term`,
-`_source_term_covariance`, `SourceTermSpec`, and friends) are lane-internal
+`_source_term_covariance`, `SourceTermSpec`, and friends) are internal
 and documented on the [Low-level reference](low-level-reference.md) page —
 they are not part of the public contract and can change without notice.
 

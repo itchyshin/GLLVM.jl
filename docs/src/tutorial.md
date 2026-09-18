@@ -498,9 +498,8 @@ fitted with `correlation = false`, for the same actual model — the two give
 **identical log-likelihoods**, only the variance parameterisation differs.
 Native Julia fits default to `correlation = false` (opt-in — a default flip
 would silently change every existing user's `σ²_phy` by a tree-dependent
-factor); see `docs/dev-log/core070/phylo-transport-design.md` and
-`docs/dev-log/core070/phylo-transport-questions-2026-09-02.md` for the full
-rationale.
+factor). This keeps established Julia estimates on the same scale while making
+the R-compatible convention an explicit choice.
 
 ## 7. Choosing a family
 

@@ -539,8 +539,8 @@ fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
     The shared routes of Beta/logit, NB1/log and Student-t/identity now
     default to the **observed** conditional curvature in the Laplace
     log-determinant, matching TMB / `gllvmTMB` (their grouped fitters already
-    did). Decided on the 900-cell curvature-adjudication campaign: the
-    observed curvature's estimates are closer to the exact-ML optimum in
+    did). In a 900-cell comparison with the exact-ML optimum, the observed
+    curvature's estimates are closer in
     90–100% of realistic cells for all three; its reported log-likelihood is
     measurably more biased for these families — that trade-off was accepted
     deliberately. **Reported logliks, AIC/BIC and Wald SEs change**;
@@ -554,8 +554,8 @@ fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
     curvature `−∂²ℓ/∂η² = μ·r·(r+y)/(r+μ)²` in the Laplace log-determinant,
     matching TMB / `gllvmTMB`. The grouped per-trait route already did.
     **Reported log-likelihoods and Wald SEs change**; point estimates move
-    little. Decided on the 900-cell curvature-adjudication campaign
-    (2026-08-27), where NB2 preferred the observed curvature on both the
+    little. A 900-cell comparison (2026-08-27) found that NB2 preferred the
+    observed curvature on both the
     estimator-quality and approximation-accuracy metrics. The previous
     behaviour stays reachable via `hessian = :fisher`.
 
@@ -585,7 +585,7 @@ fit = fit_gllvm(Yp; family = Gamma(), K = 2)   # Yp > 0; shared α (no-X)
     so each is decided on its own measurements.
 
 !!! note "Laplace curvature: TweedieED and Binomial-probit use the observed Hessian (changed 2026-08-28)"
-    Maintainer decision batch (`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`):
+    A 2026-08-28 maintenance decision established that
     the shared Tweedie route (`fit_tweedie_gllvm`) and Binomial/probit both
     default to the **observed** conditional curvature in the Laplace
     log-determinant, matching TMB / `gllvmTMB` structurally — TMB
@@ -807,9 +807,8 @@ R-parity claim.
 `:shared`. gllvmTMB's `delta_lognormal()` ties occurrence and the positive
 part to ONE shared linear predictor (`gllvmTMB.cpp:2816-2830`); `predictor =
 :shared` reproduces that — `βz ≡ βc`, `Λz ≡ Λc` — as a twin-parity-oriented
-mode, not a general recommendation over `:separate` (occurrence log-odds and
-log-abundance move together by construction under `:shared`). See
-`docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`.
+mode, not a general recommendation over `:separate`: occurrence log-odds and
+log-abundance move together by construction under `:shared`.
 
 ### Delta-Gamma — `DeltaGamma()`
 
@@ -1106,9 +1105,8 @@ capabilities: no `gllvmTMB` twin exists for any of the three at the frozen
 0.7.0 oracle, so there is nothing to run a parity comparison against (the
 maintainer has since decided the R side will gain `zip`/`zinb`/`zib` as
 native families, planned on the R side, no date set). The evidence backing
-these three fitters is therefore an **ADEMP simulation-based recovery**
-campaign, not a parity receipt
-(`docs/dev-log/core070/zi-ademp-recovery-findings.md`; K = 1 latent factor,
+these three fitters is therefore an **ADEMP simulation-based recovery study**,
+not a parity receipt (K = 1 latent factor,
 intercept-only zero-inflation, i.e. `Λ_z = 0` by construction; 500 seeds per
 cell):
 
@@ -1137,7 +1135,7 @@ similarly degraded `βz`. The count/conditional part (`βc`) and the
 rotation-invariant loading crossproduct stay reasonable at that corner — the
 difficulty is concentrated in the zero-inflation intercept, not a global fit
 collapse. Treat `zip`/`zinb` at `p ≈ 25, n ≈ 50` as a documented limitation,
-not a supported capability. This campaign used K = 1 and intercept-only
+not a supported capability. This study used K = 1 and intercept-only
 zero-inflation only, evaluated point-estimate bias/RMSE and the fitter's own
 convergence gate — **no coverage or SE evaluation was done**, so it says
 nothing about interval calibration for any of the three families.

@@ -1,6 +1,6 @@
-# GLLVM.jl Agent Instructions
+# GLLVModels.jl Agent Instructions
 
-`GLLVM.jl` is a Julia implementation of the Gaussian + phylogenetic
+`GLLVModels.jl` is a Julia implementation of the Gaussian + phylogenetic
 Generalised Linear Latent Variable Model, built as a Julia companion to R's
 `gllvmTMB` engine (Core070 ledger accounting ≠ true parity; see
 `docs/src/gllvmtmb-parity.md`).
@@ -368,7 +368,7 @@ defined in §7 of the reference plan.
 
 This is a pure Julia library — there is **no service, server, or UI to run**.
 "Running the app" means loading the package and fitting a model, e.g.
-`using GLLVM; fit_gaussian_gllvm(y; K = 2)` (see the README Quick start).
+`using GLLVModels; fit_gaussian_gllvm(y; K = 2)` (see the README Quick start).
 
 - **Julia toolchain.** Julia (1.10 LTS, the CI primary) is installed via
   `juliaup` at `~/.juliaup/bin`. It is on `PATH` only through `~/.bashrc` /

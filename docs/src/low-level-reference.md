@@ -97,7 +97,7 @@ GLLVModels._fit_gaussian_gllvm_exact
 
 ## Structured-term grammar recognizer
 
-Lane-internal machinery behind the public
+Internal machinery behind the public
 [`fit_gaussian_structured`](structured-term-fitting.md) wrapper: walks raw,
 unevaluated `Expr` trees for the `indep`/`dep`/`scalar`/`kernel_*` term
 vocabulary (StatsModels' `@formula` macro rejects the `lhs | group` bar

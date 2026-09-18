@@ -42,11 +42,11 @@ is one-way: **R → Julia**. It does not run Julia models back through R, and
 it does not cover phylogeny, spatial, animal, kernel, or iSDM structure, nor
 the full `traits()` formula grammar.
 
-Status lives on the open tracker, not on this page:
+Current bridge status is tracked on GitHub, not on this page:
 
-- [R-bridge: run gllvmTMB models through Julia (`engine="julia"`)](https://github.com/itchyshin/GLLVModels.jl/issues/10)
+- [R bridge: run gllvmTMB models through Julia (`engine="julia"`)](https://github.com/itchyshin/GLLVModels.jl/issues/10)
 
-This page links that issue. It does not close it or replace it. For the
+This page links that tracker. It does not replace it. For the
 admitted bridge surface versus the wider engine, see
 [Capability parity](gllvmtmb-parity.md).
 
@@ -54,14 +54,10 @@ admitted bridge surface versus the wider engine, see
 
 - Universal parity, or that every R workflow has an identical Julia counterpart.
 - Calibrated interval coverage on either side.
-- Ownership of the separate `gllvmtmb-navigation-renewal` lane (R site
-  navigation stays there).
+- R-site navigation, which is maintained separately.
 
-Related trackers that stay independent:
-[#11](https://github.com/itchyshin/GLLVModels.jl/issues/11) (roadmap),
-[#13](https://github.com/itchyshin/GLLVModels.jl/issues/13) (cross-project
-learning),
-[#276](https://github.com/itchyshin/GLLVModels.jl/issues/276)
-(comparator-fixture index), and
-[#302](https://github.com/itchyshin/GLLVModels.jl/issues/302)
-(this reader-journey tracker).
+Related work remains independently tracked in the
+[project roadmap](https://github.com/itchyshin/GLLVModels.jl/issues/11),
+[cross-project learning plan](https://github.com/itchyshin/GLLVModels.jl/issues/13),
+[comparator-fixture index](https://github.com/itchyshin/GLLVModels.jl/issues/276),
+and [reader-journey plan](https://github.com/itchyshin/GLLVModels.jl/issues/302).

@@ -1,6 +1,6 @@
-# gllvmjl.R — an R front end to GLLVM.jl via JuliaConnectoR.
+# gllvmjl.R — an R front end to GLLVModels.jl via JuliaConnectoR.
 #
-# Goal: let R users drive the fast Julia engine (GLLVM.jl) without leaving R —
+# Goal: let R users drive the fast Julia engine (GLLVModels.jl) without leaving R —
 # the same idea as the DRM.jl R bridge. Data go R -> Julia as plain matrices;
 # results come back through the package's array/table-returning accessors
 # (coef_table, getLV, getLoadings, ordiplot, predict, residuals), which
@@ -13,7 +13,7 @@
 #
 # Setup (once):
 #   install.packages("JuliaConnectoR")
-#   # Julia >= 1.10 with GLLVM.jl installed:  using Pkg; Pkg.add(url="https://github.com/itchyshin/GLLVM.jl")
+#   # Julia >= 1.10 with GLLVModels.jl installed: using Pkg; Pkg.add(url="https://github.com/itchyshin/GLLVModels.jl")
 #
 # Usage:
 #   source("gllvmjl.R"); gllvm_jl_init()
@@ -32,15 +32,24 @@ library(JuliaConnectoR)
   paste0("\"", gsub('(["\\\\])', "\\\\\\1", x), "\"")
 }
 
-#' Import GLLVM.jl into the session (call once).
+#' Import GLLVModels.jl into the session (call once).
 gllvm_jl_init <- function(jl_path = Sys.getenv("GLLVM_JL_PATH", "")) {
   if (!identical(jl_path, "")) {
     jl_path <- normalizePath(jl_path, winslash = "/", mustWork = TRUE)
-    juliaEval(sprintf("import Pkg; Pkg.activate(%s); using GLLVM, Distributions",
-                      .jl_string(jl_path)))
+    juliaEval(sprintf("import Pkg; Pkg.activate(%s)", .jl_string(jl_path)))
     .gllvm_env$jl_path <- jl_path
   }
-  .gllvm_env$GLLVM <- juliaImport("GLLVM")
+  module_name <- juliaEval(paste(
+    'if Base.find_package("GLLVModels") !== nothing',
+    '  "GLLVModels"',
+    'elseif Base.find_package("GLLVM") !== nothing',
+    '  "GLLVM"',
+    'else',
+    '  error("Install GLLVModels.jl in the active Julia environment.")',
+    'end',
+    sep = "\n"
+  ))
+  .gllvm_env$GLLVM <- juliaImport(module_name)
   juliaEval("using Distributions")
   invisible(TRUE)
 }

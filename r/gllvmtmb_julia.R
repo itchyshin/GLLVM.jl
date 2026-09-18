@@ -1,4 +1,4 @@
-# gllvmtmb_julia.R — a gllvmTMB-style R front end to GLLVM.jl via JuliaConnectoR.
+# gllvmtmb_julia.R — a gllvmTMB-style R front end to GLLVModels.jl via JuliaConnectoR.
 #
 # This is the "engine = julia" bridge: it lets R `gllvm`/`gllvmTMB` users drive the
 # fast Julia engine with a call that *looks like* gllvm::gllvm(...) — same family
@@ -6,7 +6,7 @@
 # parameter conventions. It mirrors the drmTMB <-> DRM.jl pattern.
 #
 # It BUILDS ON the low-level accessor wrappers in r/gllvmjl.R (coef table, getLV,
-# loadings, predict, residuals). Those wrappers call GLLVM.jl's per-family fitters
+# loadings, predict, residuals). Those wrappers call GLLVModels.jl's per-family fitters
 # directly with `K =` (the real Julia keyword); this file adds the gllvmTMB-flavoured
 # *front door* + the parameterization conversions documented in
 # docs/src/gllvmtmb-parity.md ("R bridge: parameterization map").
@@ -21,7 +21,7 @@
 # IMPORTANT API NOTES (verified against src/ at authoring time)
 # ---------------------------------------------------------------------------------
 # * Orientation. gllvm/gllvmTMB take y as n x p (SITES in rows, SPECIES in columns).
-#   GLLVM.jl takes Y as p x n (SPECIES in rows, SITES in columns). We TRANSPOSE on
+#   GLLVModels.jl takes Y as p x n (SPECIES in rows, SITES in columns). We TRANSPOSE on
 #   the way in, and the returned loadings (p x K) / scores (n x K) are already in
 #   gllvm's (species, site) orientation after transpose handling.
 # * The unified `fit_gllvm(Y; family, K, ...)` only covers the plain families
@@ -66,11 +66,20 @@ if (!exists("gllvm_jl_init", mode = "function")) {
   gllvm_jl_init <- function(jl_path = Sys.getenv("GLLVM_JL_PATH", "")) {
     if (!identical(jl_path, "")) {
       jl_path <- normalizePath(jl_path, winslash = "/", mustWork = TRUE)
-      juliaEval(sprintf("import Pkg; Pkg.activate(%s); using GLLVM, Distributions",
-                        .jl_string(jl_path)))
+      juliaEval(sprintf("import Pkg; Pkg.activate(%s)", .jl_string(jl_path)))
       .gllvm_env$jl_path <- jl_path
     }
-    .gllvm_env$GLLVM <- juliaImport("GLLVM")
+    module_name <- juliaEval(paste(
+      'if Base.find_package("GLLVModels") !== nothing',
+      '  "GLLVModels"',
+      'elseif Base.find_package("GLLVM") !== nothing',
+      '  "GLLVM"',
+      'else',
+      '  error("Install GLLVModels.jl in the active Julia environment.")',
+      'end',
+      sep = "\n"
+    ))
+    .gllvm_env$GLLVM <- juliaImport(module_name)
     juliaEval("using Distributions")
     invisible(TRUE)
   }

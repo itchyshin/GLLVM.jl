@@ -1,23 +1,29 @@
-# GLLVM.jl legacy R bridge scaffold — `gllvm_julia()`
+# GLLVModels.jl legacy R bridge scaffold — `gllvm_julia()`
 
 This directory contains a historical **gllvm-style direct R scaffold** for
 low-level parity smoke checks. It is not the current `gllvmTMB(...,
 engine = "julia")` admission surface; the current R package bridge is guarded
 by `GLLVM.bridge_capabilities()` and lives in `gllvmTMB`. You call something
 that looks like `gllvm::gllvm(...)` — same family strings, `num.lv`, `row.eff`,
-`disp.formula` — and the scaffold runs the fit in GLLVM.jl via
+`disp.formula` — and the scaffold runs the fit in GLLVModels.jl via
 [JuliaConnectoR](https://github.com/stefan-m-lenz/JuliaConnectoR), then returns
 a list in **gllvm parameter conventions** (e.g. NB dispersion as `phi = 1/r`).
 
 > **Status: SCAFFOLD, ONE PARITY SMOKE GREEN.** The JuliaConnectoR path starts
-> Julia, activates the local `GLLVM.jl` project when `GLLVM_JL_PATH` or `jl_path`
-> is supplied, loads `GLLVM` + `Distributions`, constructs family markers, and
+> Julia, activates the selected local project when `GLLVM_JL_PATH` or `jl_path`
+> is supplied, loads canonical `GLLVModels` (falling back only for an installed
+> legacy `GLLVM`) plus `Distributions`, constructs family markers, and
 > extracts scalar/vector fields that JuliaConnectoR may already have converted to
 > R values. A live Poisson `method="LA"` no-row-effect smoke check on 2026-06-14
 > matched R `{gllvm}` to tight tolerances (`|ΔlogLik| = 2.09e-11`, max beta diff
 > `1.76e-7`, Procrustes loading diff `6.56e-7`) after scaling R `{gllvm}` loadings
 > by `sigma.lv`. **Full numerical parity is still open** for other families,
 > dispersion structures, covariates, missingness, and CI payloads.
+
+> **Transition correction (2026-09-18).** The canonical package is now
+> `GLLVModels`; the loader selects it first and falls back to an installed legacy
+> `GLLVM` package only when the canonical package is absent. `GLLVM_JL_PATH`
+> remains the accepted environment variable for local-checkout compatibility.
 
 ## Files
 
@@ -35,11 +41,11 @@ a list in **gllvm parameter conventions** (e.g. NB dispersion as `phi = 1/r`).
    install.packages("JuliaConnectoR")
    install.packages("gllvm")          # only needed for parity_check.R
    ```
-2. **Julia side.** Install GLLVM.jl (Julia ≥ 1.10):
+2. **Julia side.** Install GLLVModels.jl (Julia ≥ 1.10):
    ```julia
    using Pkg
-   Pkg.add(url = "https://github.com/itchyshin/GLLVM.jl")   # or:
-   Pkg.develop(path = "/path/to/GLLVM.jl")                   # for local dev
+   Pkg.add(url = "https://github.com/itchyshin/GLLVModels.jl") # or:
+   Pkg.develop(path = "/path/to/checkout")                    # for local dev
    ```
 3. **Point R at Julia** (if `julia` isn't on PATH) by setting `JULIA_BINDIR` to the
    directory containing the `julia` binary *before* loading JuliaConnectoR:
@@ -48,7 +54,7 @@ a list in **gllvm parameter conventions** (e.g. NB dispersion as `phi = 1/r`).
    ```
 4. **Point R at this checkout** when validating local code:
    ```r
-   Sys.setenv(GLLVM_JL_PATH = "/path/to/GLLVM.jl")
+   Sys.setenv(GLLVM_JL_PATH = "/path/to/checkout")
    ```
 
 ## Calling `gllvm_julia`
@@ -94,7 +100,7 @@ pred <- gllvm_julia_predict(fit, "response")   # n x p fitted means
 | `method="LA"` (default) | Laplace fitters | |
 | `method="VA"` | `fit_*_gllvm_va` | poisson / NB2 / binomial / beta / gamma only |
 
-**Orientation:** gllvm uses `y` as **n × p** (sites × species); GLLVM.jl uses **p × n**
+**Orientation:** gllvm uses `y` as **n × p** (sites × species); GLLVModels.jl uses **p × n**
 (species × sites). The bridge transposes internally and returns loadings (p × K) and
 scores (n × K) in gllvm orientation.
 

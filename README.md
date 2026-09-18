@@ -135,7 +135,7 @@ non-Gaussian models.
 ## Confidence intervals
 
 Three methods, matching the surface of R's `confint()` from the
-`gllvmTMB` package (PR #307):
+`gllvmTMB` package:
 
 ```julia
 GLLVModels.confint(fit)                                    # Wald (default)

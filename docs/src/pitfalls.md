@@ -86,8 +86,7 @@ docs are written unqualified because they assume `using GLLVModels` alone.
 !!! note "This is a known wart, not a design choice"
     Re-rooting these six onto the StatsAPI generics would remove the clash
     entirely and let generic ecosystem code work with a `GllvmFit`. That is an
-    API change and is queued as such — see
-    `docs/dev-log/pending/2026-08-25-statsapi-shadowing-defect.md`.
+    API change, so the present behaviour remains explicit and predictable.
 
 The one genuinely deliberate name clash is `Multinomial`, which is documented
 separately under [Response families](response-families.md) — always write
