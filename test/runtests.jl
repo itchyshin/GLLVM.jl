@@ -51,6 +51,7 @@ println(_SHARD === nothing ?
         @test GLLVModels.GLLVM === GLLVModels
     end
 
+    _shard_include("test_package_rename_alias.jl")
     _shard_include("test_shard_selection.jl")
     _shard_include("test_likelihood.jl")
     _shard_include("test_packing.jl")

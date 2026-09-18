@@ -6,10 +6,6 @@ module GLLVModels
 # resolution happens before this module is loaded.
 const GLLVM = GLLVModels
 
-function __init__()
-    @warn "`GLLVM` is deprecated; use `GLLVModels` instead. `using GLLVM` is not available after the package rename."
-end
-
 using LinearAlgebra, Optim, ForwardDiff, Random, SparseArrays, Statistics, SHA
 using SpecialFunctions: digamma, trigamma, besselk, gamma, loggamma
 import StatsModels: coef, vcov, nobs, dof, loglikelihood, aic, bic, coeftable, stderror, confint, predict, residuals, fitted, StatsAPI, deviance
