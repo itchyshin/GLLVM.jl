@@ -398,7 +398,7 @@ RHS). `common`/`unique` are literal booleans, `nothing` when not applicable
 to `kind`. `name` defaults to `:source` (non-kernel kinds) or `:kernel`
 (kernel kinds). `K` carries the *raw, unresolved* kernel-matrix expression
 for `kernel_*` kinds (`nothing` otherwise); `d` is the requested rank for
-`kernel_latent` (`nothing` otherwise). Lane-internal; not exported.
+`kernel_latent` (`nothing` otherwise). Internal and not exported.
 """
 struct SourceTermSpec
     kind::Symbol
@@ -595,7 +595,7 @@ end
 """Resolve a recognized `K=` reference (a bare `Symbol`/`QuoteNode` captured
 by [`GLLVModels._recognize_source_term`](@ref)) against `kernel_env` — a
 `NamedTuple`/`Dict`-like environment supplied by the caller, mirroring R's
-calling-environment lookup for `K=A`. Lane-internal."""
+calling-environment lookup for `K=A`. Internal helper."""
 function _resolve_kernel(K, kernel_env)
     key = K isa Symbol ? K :
           (K isa QuoteNode && K.value isa Symbol) ? K.value :

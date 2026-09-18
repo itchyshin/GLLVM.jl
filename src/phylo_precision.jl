@@ -114,8 +114,7 @@ function _phylo_check_ultrametric_height(phy::AugmentedPhy)
         throw(ArgumentError("GJL-GATE-PHYLO-NONULTRAMETRIC: tree is not " *
             "ultrametric within sqrt(eps())*height (root-to-tip heights " *
             "range over $(extrema(leaf_heights))); correlation = true " *
-            "requires an ultrametric tree (see " *
-            "docs/dev-log/core070/phylo-transport-questions-2026-09-02.md Q4)."))
+            "requires an ultrametric tree."))
     return h
 end
 

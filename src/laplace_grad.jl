@@ -107,7 +107,7 @@ implicit-function "one Newton step at the optimum" construction (see file header
 (p×n Bool, or `nothing` = all observed) drops unobserved responses per site, so the
 gradient is of the masked marginal over the observed cells only. The result matches a
 finite-difference gradient of the (masked) marginal to ~AD precision, at a fraction
-of the cost (issue #65). This is the default gradient of `fit_poisson_gllvm`
+of the cost. This is the default gradient of `fit_poisson_gllvm`
 (`gradient = :analytic`); a masked or offset fit falls back to `autodiff = :finite`.
 """
 function poisson_laplace_grad(Y::AbstractMatrix, Λ::AbstractMatrix, β::AbstractVector;

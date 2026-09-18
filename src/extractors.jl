@@ -309,8 +309,7 @@ end
 
 Per-trait communality at ONE tier, `c²_t = (Λ_tier Λ_tierᵀ)_tt /
 Σ_tier,total_tt`, mirroring `gllvmTMB::extract_communality(level = ...)`.
-This is now the DEFAULT (`level = :unit`; maintainer decision round 1, item
-3 — see `docs/dev-log/estimand-alignment-notes.md`), matching R's
+This is now the DEFAULT (`level = :unit`), matching R's
 tier-scoped denominator exactly: `σ_eps²` (the Gaussian observation
 residual) never enters, because it is not one of R's `B`/`W`/`phy` tier
 components. `level = :unit_obs` is the within-unit (W) twin.
@@ -362,8 +361,7 @@ extract_communality(fit::Union{_NonGaussianLatentFit, BinomialFit, OrdinalFit,
 Cross-trait correlation at ONE tier, `cov2cor(Σ_tier,total)`, mirroring
 `gllvmTMB::extract_correlations(tier = ...)`'s point-only route
 (`extract_Sigma(fit, level = tier, part = "total")\$R`). This is now the
-DEFAULT (`level = :unit`; maintainer decision round 1, item 3 — see
-`docs/dev-log/estimand-alignment-notes.md`): `σ_eps²` never enters the
+DEFAULT (`level = :unit`): `σ_eps²` never enters the
 tier total, matching R exactly (same tier-scoping as
 [`extract_communality`](@ref)). `level = :unit_obs` is the within-unit (W)
 twin.
@@ -522,8 +520,7 @@ fit genuinely carries (`shared_unit` + `unique_unit` + `shared_unit_obs` +
 `unique_unit_obs`, whichever are present — `σ_eps²` is never one of them,
 same tier-scoping as [`extract_communality`](@ref) /
 [`extract_correlations`](@ref)). This tier-scoped `:shared` route is now the
-DEFAULT (maintainer decision round 1, item 3 — see
-`docs/dev-log/estimand-alignment-notes.md`); on a fit with only a `:unit`
+DEFAULT; on a fit with only a `:unit`
 tier and no diagonal (e.g. `has_diag = false`), it degenerates to `1.0` for
 every trait, matching R's own degenerate behaviour on such a fit.
 
@@ -608,8 +605,7 @@ genuinely carries — the phylogenetic block (`Λ_phy_aug Λ_phy_augᵀ` when
 `gllvmTMB::extract_Omega()` with `tiers = NULL` (auto-detected) and
 `link_residual = "none"` (Gaussian `GllvmFit` has no implicit link residual
 to add). This tier-presence-gated composition is now the DEFAULT
-(`level = :auto`; maintainer decision round 1, item 3 — see
-`docs/dev-log/estimand-alignment-notes.md`): the previous default
+(`level = :auto`): the previous default
 unconditionally summed `extract_Sigma(level=:unit_obs, part=:total)`, which
 folds in `σ_eps²` even when the fit carries no genuine W tier at all — a
 confirmed cross-engine bug (R oracle diff ≈ `σ_eps²` exactly on a

@@ -14,8 +14,8 @@ fixed p × p relatedness / GRM matrix passed as `Σ_phy` internally, with a
 minimal unit-tier factor (`K = 1`). Same estimand class as twin
 `animal_dep(0 + trait | id, A = A)` / `animal_latent(..., d = T)`.
 
-This is a **Gaussian matrix** fitter. `@formula` `animal_dep()` sugar is not in
-this slice.
+This is a **Gaussian matrix** fitter. `@formula` `animal_dep()` syntax is not
+currently available.
 
 `A` must be a square p × p (precomputed) numerator-relationship or genomic-
 relationship matrix. `Y` is traits × sites with `size(Y, 1) == size(A, 1)`.

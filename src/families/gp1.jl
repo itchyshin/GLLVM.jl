@@ -172,8 +172,8 @@ Instead we profile `α`: for each value on a warm-start-chained grid we fit `(β
 fixed `α` (a well-conditioned, Poisson-like problem), then Brent-refine `α` on the profile
 and re-fit `(β,Λ)` at the optimum. The Laplace marginal is `gp1_marginal_loglik_laplace`;
 warm start = empirical log-mean intercepts + an SVD (PPCA-style) loadings init. The inner
-solves use finite-difference gradients; an analytic-gradient joint fit is a documented
-follow-up (issue #104).
+solves use finite-difference gradients; an analytic-gradient joint fit is not
+currently available.
 
 `α_bound` caps `|α|` (default 2.0 ⇒ extreme overdispersion `Var = μ(1+2μ)²`); raise it if a
 fit saturates near the cap. `α_init`, if given, is added to the profile grid as a seed.

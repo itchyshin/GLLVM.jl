@@ -14,8 +14,8 @@ No centering, ridge, covariance estimation, optimization or missing-data handlin
 is performed. This dense evaluator requires O((p*n)^2) memory and O((p*n)^3)
 factorization work. It is not the matrix-normal coevolution model.
 
-See `docs/dev-log/decisions/2026-08-30-gaussian-source-evaluator.md` for the
-mathematical contract and current evidence boundaries.
+This evaluator uses the documented mathematical contract and current evidence
+boundaries.
 """
 function _gaussian_source_loglik(Y::AbstractMatrix{<:Real},
         beta::AbstractVector{<:Real}, loadings::AbstractMatrix{<:Real},

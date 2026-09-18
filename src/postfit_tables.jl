@@ -214,7 +214,7 @@ mask)` at that cell.
 
 Deviation from R: the `ordinal_probit` `type = "response"` expected-category
 replacement (`methods-gllvmTMB.R:4076-4083`) and the experimental `se=`
-routes (core070 spec §3.8, not ported) are out of scope for this slice.
+routes are not currently available.
 """
 function predict_missing(fit, Y::AbstractMatrix;
                          mask::Union{Nothing, AbstractMatrix{Bool}} = nothing,
@@ -498,7 +498,7 @@ skips sign-fixing. Permutation and sign are folded into the returned `T` so
 `Λ_rotated ≈ Λ * T` and, for orthogonal `T`, `scores ≈ getLV(fit, Y) * T`
 (`scores ≈ getLV(fit, Y) * inv(T)'` for the oblique `:promax` case).
 
-Scope reduction (this slice): `fit::GllvmFit` at `level = :unit` only — the
+Current scope: `fit::GllvmFit` at `level = :unit` only — the
 R contract's `TwoLevelFit`-level mapping (`:unit`/`:unit_obs`) is not built.
 `Y` must match what was passed to the fit (as everywhere else in
 `GLLVModels.jl` — the fit does not store its data).
@@ -786,7 +786,7 @@ does not store it): `estimate` is `fitmi.eblup_x` (the observed value where
 `missing`/`NaN` — free from the fit, `fit_gaussian_mi_fiml` already computes
 it), and `observed` flags exactly the non-missing entries of `x`.
 
-Scope reduction (this slice, core070 spec §1.12): conditional standard
+Current scope: conditional standard
 errors (`gll_imputed_missing_predictor_se`, `:2731-2755`, an extra
 per-site Hessian-block computation over the augmented latent) are NOT
 computed — every row reports `std_error = NaN`, `status = :se_not_computed`,
@@ -795,7 +795,7 @@ honestly, rather than a stub SE. `fit_gllvm_mi` (non-Gaussian response,
 either — out of scope here.
 
 Returns `(variable, level, estimate, observed, std_error, status)` —
-`variable` is `:x` on every row (this slice supports one predictor);
+`variable` is `:x` on every row (one predictor is currently supported);
 `level` is the 1-based site index.
 """
 function imputed(fitmi, x::AbstractVector)
@@ -995,7 +995,7 @@ end
 
 Post-fit summary, mirroring `gllvmTMB::summary.gllvmTMB_multi`
 (`methods-gllvmTMB.R:744-863`) — see the scope-reduction note above
-`GllvmSummary` for what is (and is not) covered in this slice. `Y` must
+`GllvmSummary` for the supported output. `Y` must
 match what was passed to `fit_gaussian_gllvm` (the fit does not store its
 data — as everywhere else in `GLLVModels.jl`). `X` is REQUIRED (matching what
 was passed to `fit_gaussian_gllvm`) whenever the fit has fixed effects —

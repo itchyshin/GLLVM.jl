@@ -313,7 +313,6 @@ is left unchanged. Nonfinite inputs fail; no loading penalty is introduced.
 
 This constructor is outside differentiation of the frozen-node surrogate.
 It neither certifies stationarity nor replaces the outer adaptation algorithm.
-Provenance: `docs/dev-log/core070/aghq-frozen-contract.md`.
 """
 function aghq_adaptation(mode::AbstractVector, observed_hessian::AbstractMatrix)
     d = length(mode)

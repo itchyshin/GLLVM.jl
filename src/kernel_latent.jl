@@ -19,18 +19,18 @@ When `d == p` this is the same estimand as kernel × dep (full-rank loadings on
 `K`; twin `kernel_latent(..., d = T)`).
 
 `unique = false` (default) is loadings-only on the kernel block. `unique = true`
-(twin folded `kernel_latent(..., unique = TRUE)` with diag(psi)) is **not** in Arc 0 —
-fail-loud.
+(twin folded `kernel_latent(..., unique = TRUE)` with diag(psi)) is not yet
+available and raises an error.
 
 This is a **Gaussian matrix** fitter via [`fit_gaussian_sources`](@ref). It does
 **not** estimate `K`, apply `rho` attenuation, or parse long-format grouping
-columns. `@formula` `kernel_latent()` sugar is not in this slice.
+columns. `@formula` `kernel_latent()` syntax is not currently available.
 
 `Y` is traits × units (`size(Y, 1) == p`, `size(Y, 2) == length(groups)`). `K` must
 be square PD; `groups[i]` maps unit `i` to a row of `K`. Require `1 ≤ d ≤ p`.
 
 Engine knobs `K`, `num_lv`, `K_phy`, `Σ_phy`, and `sources` are fail-loud. Non-
-default twin `rho` is fail-loud in Arc 0.
+default twin `rho` is not available.
 
 ```julia
 p, n = 3, 12
@@ -62,10 +62,10 @@ function fit_kernel_latent_gllvm(Y::AbstractMatrix, K::AbstractMatrix, groups, d
     sym_name = name isa Symbol ? name : Symbol(name)
     unique && throw(ArgumentError(
         "fit_kernel_latent_gllvm: unique = true (kernel × latent with diag(psi) " *
-        "on the kernel tier) is not in Arc 0; use unique = false."))
+        "on the kernel tier) is not available; use unique = false."))
     if !(rho === 1 || rho == 1)
         throw(ArgumentError(
-            "fit_kernel_latent_gllvm: rho attenuation is not in Arc 0; omit rho or pass 1."))
+            "fit_kernel_latent_gllvm: rho attenuation is not available; omit rho or pass 1."))
     end
     for sym in (:K, :num_lv, :K_W, :has_diag, :K_phy, :has_phy_unique, :Σ_phy, :sources,
                 :family, :common, :rank)
