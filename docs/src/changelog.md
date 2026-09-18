@@ -6,6 +6,10 @@ Notable changes to GLLVModels.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 ## GLLVModels.jl (development version)
 
 ### Changed
+- **CHANGED:** the package and module are now named `GLLVModels`; the public
+  fitting API remains unchanged. After the rename, `using GLLVM` cannot resolve
+  a package. Once `GLLVModels` is loaded, `GLLVModels.GLLVM` is only a temporary
+  qualified alias; it does not provide import compatibility and is deprecated.
 - **Development:** fixed Gaussian source fits accept a complete mean design `X`.
   Explicit-source wide/long formulas expose trait intercepts, shared slopes,
   categorical contrasts and interactions. Fits retain the copied design, response
