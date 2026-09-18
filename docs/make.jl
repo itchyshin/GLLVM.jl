@@ -20,7 +20,7 @@ makedocs(;
     authors  = "Shinichi Nakagawa",
     modules  = [GLLVM],
     format   = MarkdownVitepress(
-        repo      = "github.com/itchyshin/GLLVM.jl",
+        repo      = "github.com/itchyshin/GLLVModels.jl",
         devbranch = "main",
         devurl    = "dev",
     ),
@@ -85,7 +85,7 @@ end
 # the site under dev/1/ with base=/dev/ — every asset/nav link then 404s.
 if !("--local" in ARGS)
     DocumenterVitepress.deploydocs(;
-    repo         = "github.com/itchyshin/GLLVM.jl.git",
+    repo         = "github.com/itchyshin/GLLVModels.jl.git",
     target       = joinpath(@__DIR__, "build"),
     devbranch    = "main",
     branch       = "gh-pages",
