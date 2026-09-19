@@ -16,7 +16,7 @@ general "size" axis that loads on every trait, and a "shape" axis that contrasts
 two groups of traits:
 
 ```julia
-using GLLVM, Random
+using GLLVModels, Random
 Random.seed!(7)
 
 n, p, K = 150, 8, 2

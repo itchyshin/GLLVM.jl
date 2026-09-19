@@ -1,8 +1,8 @@
 # Same original Student fixture: public R controls only, diagnostic until healthy.
-using GLLVM, RCall, Random, Distributions, SHA, TOML, Test
+using GLLVModels, RCall, Random, Distributions, SHA, TOML, Test
 ARGS in (String[], ["--bfgs"]) || error("only optional --bfgs is accepted")
 bfgs = ARGS == ["--bfgs"]
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd())
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(pwd())
 include(joinpath(pwd(), "test/parity/parity_helpers.jl"))
 fixture = "test/parity/test_studentt_parity.jl"
 fixture_hash = bytes2hex(sha256(read(fixture)))
@@ -37,9 +37,9 @@ R"""
  """
 native = fit_studentt_gllvm(Y; K=K, nu=nothing, disp_group=:species, iterations=400)
 θ = vcat(vec(native.Λ), native.β, log.(native.σ), log.(native.ν .- 1))
-objective(x) = -GLLVM.studentt_marginal_loglik_laplace(
+objective(x) = -GLLVModels.studentt_marginal_loglik_laplace(
     Y, reshape(x[1:5], 5, 1), x[6:10], exp.(x[11:15]); ν=1 .+ exp.(x[16:20]))
-native_gradient = GLLVM.ForwardDiff.gradient(objective, θ)
+native_gradient = GLLVModels.ForwardDiff.gradient(objective, θ)
 report = Dict{String,Any}(
     "scope" => "ORIGINAL_STUDENT_PUBLIC_CONTROL_DIAGNOSTIC_NOT_FULL_PARITY",
     "fixture_sha256"=>fixture_hash, "data_sha256"=>data_hash,

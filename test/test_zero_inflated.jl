@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Zero-inflated families (ZIP / ZINB / ZIB)" begin
     @testset "ZIP: Λ = 0 reduces to independent ZIP loglik (exact)" begin
@@ -11,7 +11,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         for t in 1:p, s in 1:n
             Y[t, s] = rand() < π[t] ? 0 : rand(Poisson(μ[t]))
         end
-        ll = GLLVM.zip_marginal_loglik_laplace(Y, zeros(p, K), βz, βc)
+        ll = GLLVModels.zip_marginal_loglik_laplace(Y, zeros(p, K), βz, βc)
         ref = 0.0
         for t in 1:p, s in 1:n
             ref += Y[t, s] == 0 ? log(π[t] + (1 - π[t]) * exp(-μ[t])) :
@@ -33,8 +33,8 @@ using GLLVM, Test, Random, Distributions, Statistics
             end
         end
         βz_low = fill(-30.0, p)               # π ≈ 0
-        ll_zip = GLLVM.zip_marginal_loglik_laplace(Y, Λc, βz_low, βc)
-        ll_pois = GLLVM.poisson_marginal_loglik_laplace(Y, Λc, βc)
+        ll_zip = GLLVModels.zip_marginal_loglik_laplace(Y, Λc, βz_low, βc)
+        ll_pois = GLLVModels.poisson_marginal_loglik_laplace(Y, Λc, βc)
         @test ll_zip ≈ ll_pois atol = 1e-4
     end
 
@@ -49,7 +49,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         for t in 1:p, s in 1:n
             Y[t, s] = rand() < π[t] ? 0 : rand(NegativeBinomial(r, r / (r + μ[t])))
         end
-        ll = GLLVM.zinb_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, r)
+        ll = GLLVModels.zinb_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, r)
         ref = 0.0
         for t in 1:p, s in 1:n
             p0 = (r / (r + μ[t]))^r
@@ -59,8 +59,8 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test ll ≈ ref atol = 1e-8
 
         # large r ⇒ ZINB marginal ≈ ZIP marginal
-        ll_big = GLLVM.zinb_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, 1e5)
-        ll_zip = GLLVM.zip_marginal_loglik_laplace(Y, zeros(p, K), βz, βc)
+        ll_big = GLLVModels.zinb_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, 1e5)
+        ll_zip = GLLVModels.zip_marginal_loglik_laplace(Y, zeros(p, K), βz, βc)
         @test ll_big ≈ ll_zip atol = 1e-2
     end
 
@@ -135,7 +135,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         end
 
         # Λc = 0 ⇒ exact independent ZIB loglik (the Laplace integral is trivial).
-        ll = GLLVM.zib_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, Ntr)
+        ll = GLLVModels.zib_marginal_loglik_laplace(Y, zeros(p, K), βz, βc, Ntr)
         ref = 0.0
         for t in 1:p, s in 1:n
             p0 = (1 - μ[t])^Ntr
@@ -154,8 +154,8 @@ using GLLVM, Test, Random, Distributions, Statistics
             end
         end
         βz_low = fill(-30.0, p)
-        ll_zib = GLLVM.zib_marginal_loglik_laplace(Y2, Λc, βz_low, βc, Ntr)
-        ll_bin = GLLVM.marginal_loglik_laplace(Binomial(), Y2, fill(Ntr, p, n),
+        ll_zib = GLLVModels.zib_marginal_loglik_laplace(Y2, Λc, βz_low, βc, Ntr)
+        ll_bin = GLLVModels.marginal_loglik_laplace(Binomial(), Y2, fill(Ntr, p, n),
                                                Λc, βc, LogitLink())
         @test ll_zib ≈ ll_bin atol = 1e-4
     end

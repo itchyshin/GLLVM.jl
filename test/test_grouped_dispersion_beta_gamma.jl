@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # Grouped / species-specific dispersion for Beta (precision φ) and Gamma (shape α),
 # mirroring the NB disp.group path. Anchors:
@@ -23,11 +23,11 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 Y[t, s] = rand(Beta(μ[t] * φ, (1 - μ[t]) * φ))
             end
         end
-        ll_shared  = GLLVM.beta_marginal_loglik_laplace(Y, Λ, β, φ)
-        ll_grouped = GLLVM.beta_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p))
+        ll_shared  = GLLVModels.beta_marginal_loglik_laplace(Y, Λ, β, φ)
+        ll_grouped = GLLVModels.beta_grouped_marginal_loglik_laplace(Y, Λ, β, fill(φ, p))
         @test ll_grouped ≈ ll_shared atol = 1e-10
         # mixed per-species precision also evaluates finitely.
-        @test isfinite(GLLVM.beta_grouped_marginal_loglik_laplace(Y, Λ, β, [4.0, 8.0, 12.0, 20.0, 30.0]))
+        @test isfinite(GLLVModels.beta_grouped_marginal_loglik_laplace(Y, Λ, β, [4.0, 8.0, 12.0, 20.0, 30.0]))
     end
 
     @testset "Gamma: constant αvec == shared-α marginal (exact)" begin
@@ -55,11 +55,11 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         # 1e-13 → 0.000e+00 EXACTLY. The identity is exact; the default mode
         # tolerance was simply not tight enough to observe it once the log-det
         # became mode-sensitive. Fixing the cause, not the tolerance.
-        ll_shared  = GLLVM.gamma_marginal_loglik_laplace(Y, Λ, β, α; tol = 1e-13)
-        ll_grouped = GLLVM.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, fill(α, p); tol = 1e-13)
+        ll_shared  = GLLVModels.gamma_marginal_loglik_laplace(Y, Λ, β, α; tol = 1e-13)
+        ll_grouped = GLLVModels.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, fill(α, p); tol = 1e-13)
         @test ll_grouped ≈ ll_shared atol = 1e-10
         # mixed per-species shape also evaluates finitely.
-        @test isfinite(GLLVM.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, [1.5, 3.0, 5.0, 8.0, 12.0]))
+        @test isfinite(GLLVModels.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, [1.5, 3.0, 5.0, 8.0, 12.0]))
     end
 
     @testset "fit_beta_gllvm_grouped: one group ≈ fit_beta_gllvm" begin
@@ -74,7 +74,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         Y = [rand(Beta(μ[t, i] * φtrue, (1 - μ[t, i]) * φtrue)) for t in 1:p, i in 1:n]
 
         fg = fit_beta_gllvm_grouped(Y; K = K, group = ones(Int, p), iterations = 40)
-        @test fg isa GLLVM.BetaGroupedFit
+        @test fg isa GLLVModels.BetaGroupedFit
         @test length(fg.φ) == 1
         @test all(fg.φ .> 0)
         @test isfinite(fg.loglik)
@@ -95,7 +95,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         Y = [rand(Gamma(αtrue, μ[t, i] / αtrue)) for t in 1:p, i in 1:n]
 
         fg = fit_gamma_gllvm_grouped(Y; K = K, group = ones(Int, p), iterations = 40)
-        @test fg isa GLLVM.GammaGroupedFit
+        @test fg isa GLLVModels.GammaGroupedFit
         @test length(fg.α) == 1
         @test all(fg.α .> 0)
         @test isfinite(fg.loglik)
@@ -115,7 +115,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         Y = [rand(Beta(μ[t, i] * 10.0, (1 - μ[t, i]) * 10.0)) for t in 1:p, i in 1:n]
 
         fg = fit_beta_gllvm_grouped(Y; K = K, iterations = 40)  # default group = 1:p
-        @test fg isa GLLVM.BetaGroupedFit
+        @test fg isa GLLVModels.BetaGroupedFit
         @test length(fg.φ) == p
         @test all(fg.φ .> 0)
         @test isfinite(fg.loglik)
@@ -133,7 +133,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         Y = [rand(Gamma(3.0, μ[t, i] / 3.0)) for t in 1:p, i in 1:n]
 
         fg = fit_gamma_gllvm_grouped(Y; K = K, iterations = 40)  # default group = 1:p
-        @test fg isa GLLVM.GammaGroupedFit
+        @test fg isa GLLVModels.GammaGroupedFit
         @test length(fg.α) == p
         @test all(fg.α .> 0)
         @test isfinite(fg.loglik)

@@ -12,18 +12,18 @@
 This page walks through one end-to-end fit: simulate a Gaussian GLLVM with one
 residual variance per response, fit it with `fit_gaussian_pervar_gllvm`, inspect the recovered parameters, build
 three flavours of confidence interval, and visualise the recovered
-`Σ_y` against the truth. It concludes with an R `gllvmTMB` ⟷ Julia `GLLVM.jl`
+`Σ_y` against the truth. It concludes with an R `gllvmTMB` ⟷ Julia `GLLVModels.jl`
 cheat sheet.
 
 !!! warning "Matrix Orientation: $p \times n$ in Julia vs $n \times p$ in R"
-    **GLLVM.jl expects species/traits in rows and sites/observations in columns ($p \times n$).**
+    **GLLVModels.jl expects species/traits in rows and sites/observations in columns ($p \times n$).**
 
-    If you are importing data formatted for R packages such as `gllvm` or `gllvmTMB` (which use the $n \times p$ convention with sites in rows and species in columns), you must transpose your matrix (`Y'`) before passing it to `fit_gllvm`, `fit_gaussian_gllvm`, or any other GLLVM.jl fitter.
+    If you are importing data formatted for R packages such as `gllvm` or `gllvmTMB` (which use the $n \times p$ convention with sites in rows and species in columns), you must transpose your matrix (`Y'`) before passing it to `fit_gllvm`, `fit_gaussian_gllvm`, or any other GLLVModels.jl fitter.
 
 ## 1. Simulate a fixture
 
 ```julia
-using GLLVM, Random, LinearAlgebra
+using GLLVModels, Random, LinearAlgebra
 
 Random.seed!(20260528)
 
@@ -114,7 +114,7 @@ Gaussian special case; its agreement and speed results do not establish
 per-response-residual or non-Gaussian performance.
 
 To visualise it, with Plots.jl installed separately (`Pkg.add("Plots")` — it is
-not a GLLVM.jl dependency):
+not a GLLVModels.jl dependency):
 
 ```julia
 using Plots
@@ -131,9 +131,9 @@ species-by-species surface.
 
 ---
 
-## Cheat Sheet: R `gllvm` / `gllvmTMB` ⟷ Julia `GLLVM.jl`
+## Cheat Sheet: R `gllvm` / `gllvmTMB` ⟷ Julia `GLLVModels.jl`
 
-| Task / Feature | R (`gllvm` / `gllvmTMB`) | Julia (`GLLVM.jl`) | Notes |
+| Task / Feature | R (`gllvm` / `gllvmTMB`) | Julia (`GLLVModels.jl`) | Notes |
 |:---|:---|:---|:---|
 | **Matrix shape** | `Y` is $n \times p$ (sites $\times$ species) | `Y` is $p \times n$ (species $\times$ sites) | **Transpose R matrices (`Y'`) when loading into Julia** |
 | **Gaussian GLLVM** | `gllvm(Y, family = "gaussian", num.lv = 2)` | `fit_gaussian_gllvm(Y; K = 2)` or `fit_gllvm(Y; family = Normal(), K = 2)` | ~340× faster closed-form profile path (single-σ² Gaussian only; see [Benchmarks](benchmarks.md)) |
@@ -170,7 +170,7 @@ quadrature (AGHQ), which integrates over latent scores using a grid adapted to
 each site's conditional mode. Responses are rows and sites are columns:
 
 ```@example poisson_aghq
-using GLLVM
+using GLLVModels
 Y = [1 2 3 4 1 3 2 2; 3 2 4 5 1 3 2 4]
 fit = fit_poisson_gllvm(Y; K=1, aghq=3)
 fit.integration.actual                 # :aghq or :laplace
@@ -205,7 +205,7 @@ route accepts logit, probit and complementary-log-log links, with the same
 node controls and frozen-node convergence rule as the Poisson route.
 
 ```@example binomial_aghq
-using GLLVM
+using GLLVModels
 Y = [0 1 2 3 1 2 0 1; 1 2 3 1 0 2 1 3]
 N = fill(3, size(Y))
 fit = fit_binomial_gllvm(Y; K=1, N=N, aghq=3,
@@ -236,7 +236,7 @@ The default Gaussian fitter integrates exactly and assumes zero mean without
 there is no implicit extra intercept. The residual SD is shared across traits.
 
 ```@example gaussian_aghq
-using GLLVM, Random
+using GLLVModels, Random
 rng = MersenneTwister(714)
 Y = reshape([0.8, 0.4, -0.3], 3, 1) * randn(rng, 1, 36) + 0.7randn(rng, 3, 36)
 f = fit_gaussian_gllvm(Y; K=1, aghq=3)

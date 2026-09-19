@@ -17,12 +17,12 @@
 # Full diagnosis (per-site gap decomposition, quadrature ground truth,
 # probe scripts): docs/dev-log/core070/cloglog-leaf-notes.md.
 
-using GLLVM, Test, Distributions
+using GLLVModels, Test, Distributions
 
 @testset "Binomial/cloglog Laplace likelihood defect (fixed)" begin
 
     @testset "default is :observed" begin
-        @test GLLVM._default_hessian(Binomial(), CLogLogLink()) === :observed
+        @test GLLVModels._default_hessian(Binomial(), CLogLogLink()) === :observed
     end
 
     @testset "R-oracle regression: seed-81012 retained fixture (p=4, n=120, K=1)" begin
@@ -49,12 +49,12 @@ using GLLVM, Test, Distributions
                     p, K)
         r_loglik = -307.8958232820915
 
-        obj = GLLVM.binomial_marginal_loglik_laplace(Y, ones(p, n), Λ, β, CLogLogLink())
+        obj = GLLVModels.binomial_marginal_loglik_laplace(Y, ones(p, n), Λ, β, CLogLogLink())
         @test obj ≈ r_loglik atol = 1e-8            # ~1e-9 in practice, per the probe
 
         # The stale :fisher value should no longer be the default and should
         # still be off by the confirmed ~2.1 nats when forced explicitly.
-        obj_fisher = GLLVM.binomial_marginal_loglik_laplace(Y, ones(p, n), Λ, β, CLogLogLink();
+        obj_fisher = GLLVModels.binomial_marginal_loglik_laplace(Y, ones(p, n), Λ, β, CLogLogLink();
                                                              hessian = :fisher)
         @test abs(obj_fisher - r_loglik) > 2.0
     end
@@ -74,15 +74,15 @@ using GLLVM, Test, Distributions
         function quad_marginal_k1(y, Λ, β, link; lo = -12.0, hi = 12.0, m = 20001)
             zs = range(lo, hi; length = m); dz = step(zs)
             f(z) = exp(sum(
-                logpdf(Binomial(1, clamp(GLLVM.linkinv(link, β[t] + Λ[t, 1] * z), 1e-12, 1 - 1e-12)),
+                logpdf(Binomial(1, clamp(GLLVModels.linkinv(link, β[t] + Λ[t, 1] * z), 1e-12, 1 - 1e-12)),
                        Int(y[t]))
                 for t in eachindex(y))) * pdf(Normal(), z)
             return log(sum(f, zs) * dz)
         end
 
         q = quad_marginal_k1(y, Λ, β, link)
-        lap_fisher   = GLLVM.laplace_loglik_site(y, ones(p), Λ, β, link; hessian = :fisher)
-        lap_observed = GLLVM.laplace_loglik_site(y, ones(p), Λ, β, link; hessian = :observed)
+        lap_fisher   = GLLVModels.laplace_loglik_site(y, ones(p), Λ, β, link; hessian = :fisher)
+        lap_observed = GLLVModels.laplace_loglik_site(y, ones(p), Λ, β, link; hessian = :observed)
 
         @test abs(lap_observed - q) < abs(lap_fisher - q)   # observed strictly closer to truth
         @test abs(lap_observed - q) < 0.05                  # Laplace approximation error only

@@ -42,8 +42,7 @@ Each fit is wrapped in a `try`/`catch` so one bad `K` (non-convergence,
 singular intermediate) is skipped rather than aborting the whole sweep; at
 least one `K` must succeed or an error is thrown. The information criteria are
 read straight off the fits via [`aic`](@ref) and [`bic`](@ref) (BIC uses
-`nobs(fit, Y)`, R's p·n observed-cell count —
-docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md #1), so the
+`nobs(fit, Y)`, R's p·n observed-cell count), so the
 parameter counting matches the single-fit accessors exactly.
 
 `family` is a Distributions.jl marker (the [`fit_gllvm`](@ref) convention);
@@ -93,7 +92,7 @@ end
 
 # Tidy table display, best row marked with '*'.
 function Base.show(io::IO, ::MIME"text/plain", sel::LVSelection)
-    println(io, "GLLVM latent-dimension selection (best K = ", sel.best_k, ")")
+    println(io, "GLLVModels latent-dimension selection (best K = ", sel.best_k, ")")
     println(io, "      K   nparams        logLik           AIC           BIC")
     for i in eachindex(sel.K)
         mark = sel.K[i] == sel.best_k ? "*" : " "

@@ -1,5 +1,5 @@
 # Bounded stopping diagnostic; preserve each fit as an indivisible record.
-using GLLVM, RCall, Test, LinearAlgebra, TOML, SHA
+using GLLVModels, RCall, Test, LinearAlgebra, TOML, SHA
 length(ARGS) == 3 || error("expected case ID, retained receipt directory, fresh output directory")
 id, input, output = ARGS
 get(ENV,"CORE070_PARITY_REQUIRED","") == "1" || error("required mode missing")

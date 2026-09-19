@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 @testset "Tweedie family" begin
     # ---------------------------------------------------------------------

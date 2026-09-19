@@ -17,7 +17,7 @@
 # the fit's own packed θ̂, equals −fit.loglik — the CI machinery differentiates
 # THE SAME objective the fit maximised, whichever curvature that was.
 
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "confint rebuilds the fit's own objective (hessian consistency)" begin
     Random.seed!(11)
@@ -28,27 +28,27 @@ using GLLVM, Test, Random, Distributions
     Yex = [rand(Exponential(exp(H[t, s]))) for t in 1:p, s in 1:n]
 
     @testset "the fit records its selector" begin
-        @test GLLVM.fit_gamma_gllvm(Yg; K = K).hessian === :observed
-        @test GLLVM.fit_gamma_gllvm(Yg; K = K, hessian = :fisher).hessian === :fisher
-        @test GLLVM.fit_nb_gllvm(Ynb; K = K).hessian === :observed
-        @test GLLVM.fit_exponential_gllvm(Yex; K = K).hessian === :observed
-        @test GLLVM.fit_exponential_gllvm(Yex; K = K, hessian = :fisher).hessian === :fisher
+        @test GLLVModels.fit_gamma_gllvm(Yg; K = K).hessian === :observed
+        @test GLLVModels.fit_gamma_gllvm(Yg; K = K, hessian = :fisher).hessian === :fisher
+        @test GLLVModels.fit_nb_gllvm(Ynb; K = K).hessian === :observed
+        @test GLLVModels.fit_exponential_gllvm(Yex; K = K).hessian === :observed
+        @test GLLVModels.fit_exponential_gllvm(Yex; K = K, hessian = :fisher).hessian === :fisher
     end
 
     # The objective-identity contract. `_family_ci` exposes the rebuilt nll;
     # at the fit's own θ̂ it must reproduce −loglik to solver tolerance for
     # BOTH selectors — the :fisher case is exactly what the old code failed.
     function nll_at_thetahat(fit, Y)
-        ad = GLLVM._family_ci(fit, Y)
+        ad = GLLVModels._family_ci(fit, Y)
         return ad.nll(ad.θ)
     end
     @testset "rebuilt nll(θ̂) == −loglik under both selectors" begin
         for h in (:observed, :fisher)
-            fg = GLLVM.fit_gamma_gllvm(Yg; K = K, hessian = h)
+            fg = GLLVModels.fit_gamma_gllvm(Yg; K = K, hessian = h)
             @test isapprox(nll_at_thetahat(fg, Yg), -fg.loglik; atol = 1e-8)
-            fn = GLLVM.fit_nb_gllvm(Ynb; K = K, hessian = h)
+            fn = GLLVModels.fit_nb_gllvm(Ynb; K = K, hessian = h)
             @test isapprox(nll_at_thetahat(fn, Ynb), -fn.loglik; atol = 1e-8)
-            fe = GLLVM.fit_exponential_gllvm(Yex; K = K, hessian = h)
+            fe = GLLVModels.fit_exponential_gllvm(Yex; K = K, hessian = h)
             @test isapprox(nll_at_thetahat(fe, Yex), -fe.loglik; atol = 1e-8)
         end
     end
@@ -58,9 +58,9 @@ using GLLVM, Test, Random, Distributions
     # fit's rebuilt objective must NOT equal the :observed fit's at a common
     # point — otherwise the threading is decorative.
     @testset "the selector reaches the CI objective" begin
-        fo = GLLVM.fit_gamma_gllvm(Yg; K = K, hessian = :observed)
-        ff = GLLVM.fit_gamma_gllvm(Yg; K = K, hessian = :fisher)
-        ao = GLLVM._family_ci(fo, Yg); af = GLLVM._family_ci(ff, Yg)
+        fo = GLLVModels.fit_gamma_gllvm(Yg; K = K, hessian = :observed)
+        ff = GLLVModels.fit_gamma_gllvm(Yg; K = K, hessian = :fisher)
+        ao = GLLVModels._family_ci(fo, Yg); af = GLLVModels._family_ci(ff, Yg)
         @test !isapprox(ao.nll(ao.θ), af.nll(ao.θ); atol = 1e-6)
     end
 end

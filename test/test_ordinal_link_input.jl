@@ -1,6 +1,6 @@
-using GLLVM, Test
+using GLLVModels, Test
 module Core070OrdinalLinkInput
-using GLLVM, Test
+using GLLVModels, Test
 struct ResponseRead <: Exception end
 struct NoRead <: AbstractMatrix{Int} end
 Base.size(::NoRead)=(3,5)

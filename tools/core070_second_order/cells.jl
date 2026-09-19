@@ -103,9 +103,9 @@ function cell_gaussian()
     fit = fit_gaussian_gllvm(y; K = K)
     wall_fit = time() - t0
 
-    terms, kinds = GLLVM._confint_all_term_names(fit)
+    terms, kinds = GLLVModels._confint_all_term_names(fit)
     θ̂ = fit.pars.θ_packed
-    nll = GLLVM._confint_reconstruct_nll(fit, y, nothing, nothing)
+    nll = GLLVModels._confint_reconstruct_nll(fit, y, nothing, nothing)
     H = try
         ForwardDiff.hessian(nll, θ̂)
     catch
@@ -198,8 +198,8 @@ function cell_poisson()
     fit = fit_poisson_gllvm(Y; K = K, hessian = :observed)
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald)
-    ad = GLLVM._family_ci(fit, Float64.(Y); objective = :laplace)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); objective = :laplace)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Float64.(Y), K; family = :poisson)
@@ -221,7 +221,7 @@ function cell_binomial(link::Symbol, seed::Int)
     Y = if link == :logit
         [rand() < 1 / (1 + exp(-η[t, s])) ? 1 : 0 for t in 1:p, s in 1:n]
     elseif link == :probit
-        [rand() < GLLVM._ord_F(η[t, s], ProbitLink()) ? 1 : 0 for t in 1:p, s in 1:n]
+        [rand() < GLLVModels._ord_F(η[t, s], ProbitLink()) ? 1 : 0 for t in 1:p, s in 1:n]
     elseif link == :cloglog
         [rand() < (1 - exp(-exp(clamp(η[t, s], -8.0, 8.0)))) ? 1 : 0 for t in 1:p, s in 1:n]
     else
@@ -229,13 +229,13 @@ function cell_binomial(link::Symbol, seed::Int)
     end
 
     jl_link = link == :logit ? LogitLink() : link == :probit ? ProbitLink() : CLogLogLink()
-    hessian_override = link == :logit ? :observed : GLLVM._default_hessian(GLLVM.Binomial(), jl_link)
+    hessian_override = link == :logit ? :observed : GLLVModels._default_hessian(GLLVModels.Binomial(), jl_link)
     t0 = time()
     fit = fit_binomial_gllvm(Y; K = K, link = jl_link, hessian = hessian_override)
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald)
-    ad = GLLVM._family_ci(fit, Float64.(Y); objective = :laplace)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); objective = :laplace)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Float64.(Y), K; family = :binomial, binomial_link = link)
@@ -266,11 +266,11 @@ function cell_beta()
     end for t in 1:p, s in 1:n]
 
     t0 = time()
-    fit = fit_gllvm(Y; family = GLLVM.Beta(), K = K, g_tol = 1e-7, iterations = 800)
+    fit = fit_gllvm(Y; family = GLLVModels.Beta(), K = K, g_tol = 1e-7, iterations = 800)
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y; objective = :laplace)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y; objective = :laplace)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Y, K; family = :beta)
@@ -298,11 +298,11 @@ function cell_nb2()
     end
 
     t0 = time()
-    fit = fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = K, g_tol = 1e-7, iterations = 800)
+    fit = fit_gllvm(Y; family = GLLVModels.NegativeBinomial(), K = K, g_tol = 1e-7, iterations = 800)
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald)
-    ad = GLLVM._family_ci(fit, Float64.(Y); objective = :laplace)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); objective = :laplace)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Float64.(Y), K; family = :negbinomial)
@@ -332,8 +332,8 @@ function cell_gamma_grouped()
     fit = fit_gamma_gllvm_grouped(Y; K = K, group = collect(1:p))
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y; objective = :laplace)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y; objective = :laplace)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Y, K; family = :gamma)
@@ -364,8 +364,8 @@ function cell_nb1_grouped()
     fit = fit_nb1_gllvm_grouped(Y; K = K, group = collect(1:p))
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald)
-    ad = GLLVM._family_ci(fit, Float64.(Y); objective = :laplace)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); objective = :laplace)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Float64.(Y), K; family = :nb1)
@@ -398,8 +398,8 @@ function cell_betabinomial_grouped()
     fit = fit_beta_binomial_gllvm_grouped(Y; K = K, N = N, group = collect(1:p))
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald, N = N)
-    ad = GLLVM._family_ci(fit, Float64.(Y); N = N)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); N = N)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Float64.(Y), K; family = :betabinomial, N = N)
@@ -432,8 +432,8 @@ function cell_betabinomial_shared()
     fit = fit_beta_binomial_gllvm(Y; K = K, N = N)
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald, N = N)
-    ad = GLLVM._family_ci(fit, Float64.(Y); N = N)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); N = N)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Float64.(Y), K; family = :betabinomial, N = N)
@@ -472,9 +472,9 @@ function cell_gaussian_x()
     fit = fit_gaussian_gllvm(y; K = K, X = X)
     wall_fit = time() - t0
 
-    terms, kinds = GLLVM._confint_all_term_names(fit)
+    terms, kinds = GLLVModels._confint_all_term_names(fit)
     θ̂ = fit.pars.θ_packed
-    nll = GLLVM._confint_reconstruct_nll(fit, y, X, nothing)
+    nll = GLLVModels._confint_reconstruct_nll(fit, y, X, nothing)
     H = try; ForwardDiff.hessian(nll, θ̂); catch; nothing; end
     Σ = nothing; pdh = false
     if H !== nothing && all(isfinite, H)
@@ -559,11 +559,11 @@ function cell_binomial_x()
     Y = [rand() < 1 / (1 + exp(-η[t, s])) ? 1 : 0 for t in 1:p, s in 1:n]
 
     t0 = time()
-    fit = fit_gllvm_cov(Y; family = GLLVM.Binomial(), X = X, K = K)
+    fit = fit_gllvm_cov(Y; family = GLLVModels.Binomial(), X = X, K = K)
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald, X = X)
-    ad = GLLVM._family_ci(fit, Float64.(Y); X = X)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); X = X)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_x(Float64.(Y), x, K; family = :binomial)
@@ -589,11 +589,11 @@ function cell_poisson_x()
     Y = [_rand_poisson(exp(clamp(η[t, s], -8.0, 8.0))) for t in 1:p, s in 1:n]
 
     t0 = time()
-    fit = fit_gllvm_cov(Y; family = GLLVM.Poisson(), X = X, K = K)
+    fit = fit_gllvm_cov(Y; family = GLLVModels.Poisson(), X = X, K = K)
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald, X = X)
-    ad = GLLVM._family_ci(fit, Float64.(Y); X = X)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); X = X)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_x(Float64.(Y), x, K; family = :poisson)
@@ -623,8 +623,8 @@ function cell_nb2_x()
     fit = fit_nb_gllvm_grouped_cov(Y; X = X, K = K, group = collect(1:p))
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald, X = X)
-    ad = GLLVM._family_ci(fit, Float64.(Y); X = X)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); X = X)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_x(Float64.(Y), x, K; family = :negbinomial)
@@ -657,8 +657,8 @@ function cell_beta_x()
     fit = fit_beta_gllvm_grouped_cov(Y; X = X, K = K, group = collect(1:p))
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald, X = X)
-    ad = GLLVM._family_ci(fit, Y; X = X)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y; X = X)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_x(Y, x, K; family = :beta)
@@ -691,8 +691,8 @@ function cell_gamma_x()
     fit = fit_gamma_gllvm_grouped_cov(Y; X = X, K = K, group = collect(1:p))
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald, X = X)
-    ad = GLLVM._family_ci(fit, Y; X = X)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y; X = X)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_x(Y, x, K; family = :gamma)
@@ -726,8 +726,8 @@ function cell_nb1_x()
     fit = fit_nb1_gllvm_grouped_cov(Y; X = X, K = K, group = collect(1:p))
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald, X = X)
-    ad = GLLVM._family_ci(fit, Float64.(Y); X = X)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); X = X)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_x(Float64.(Y), x, K; family = :nb1)
@@ -763,8 +763,8 @@ function cell_betabinomial_x()
     fit = fit_beta_binomial_gllvm_grouped_cov(Y; X = X, K = K, N = N, group = collect(1:p))
     wall_fit = time() - t0
     ci = confint(fit, Float64.(Y); method = :wald, X = X, N = N)
-    ad = GLLVM._family_ci(fit, Float64.(Y); X = X, N = N)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Float64.(Y); X = X, N = N)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_x(Float64.(Y), x, K; family = :betabinomial, N = N)
@@ -794,7 +794,7 @@ function cell_poisson_speciesx()
     Y = [_rand_poisson(exp(clamp(η[t, s], -8.0, 8.0))) for t in 1:p, s in 1:n]
 
     t0 = time()
-    fit = fit_gllvm_speciescov(Y; family = GLLVM.Poisson(), X = X, K = K)
+    fit = fit_gllvm_speciescov(Y; family = GLLVModels.Poisson(), X = X, K = K)
     wall_fit = time() - t0
     ci = confint_speciescov(fit, Float64.(Y), X)
 
@@ -821,7 +821,7 @@ function cell_binomial_speciesx()
     Y = [rand() < 1 / (1 + exp(-η[t, s])) ? 1 : 0 for t in 1:p, s in 1:n]
 
     t0 = time()
-    fit = fit_gllvm_speciescov(Y; family = GLLVM.Binomial(), X = X, K = K)
+    fit = fit_gllvm_speciescov(Y; family = GLLVModels.Binomial(), X = X, K = K)
     wall_fit = time() - t0
     ci = confint_speciescov(fit, Float64.(Y), X)
 
@@ -853,8 +853,8 @@ function cell_delta_lognormal()
     fit = fit_delta_lognormal_gllvm(Y; K = K, predictor = :shared, hessian = :observed, iterations = 500)
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y; hessian = :observed)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y; hessian = :observed)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_delta(Y, K; family = :delta_lognormal)
@@ -892,8 +892,8 @@ function cell_delta_gamma()
     fit = fit_delta_gamma_gllvm(Y; K = K, predictor = :shared, hessian = :observed, iterations = 500)
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y; hessian = :observed)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y; hessian = :observed)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_delta(Y, K; family = :delta_gamma)
@@ -942,8 +942,8 @@ function cell_lognormal()
     fit = fit_lognormal_gllvm(Y; K = K)
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Y, K; family = :lognormal)
@@ -971,16 +971,16 @@ function cell_ordinal_pertrait_probit()
     Y = Matrix{Int}(undef, p, n)
     for s in 1:n, t in 1:p
         u = rand()
-        Y[t, s] = u < GLLVM._ord_F(τ[1] - η[t, s], ProbitLink()) ? 1 :
-                  u < GLLVM._ord_F(τ[2] - η[t, s], ProbitLink()) ? 2 : 3
+        Y[t, s] = u < GLLVModels._ord_F(τ[1] - η[t, s], ProbitLink()) ? 1 :
+                  u < GLLVModels._ord_F(τ[2] - η[t, s], ProbitLink()) ? 2 : 3
     end
 
     t0 = time()
     fit = fit_ordinal_gllvm_pertrait(Y; K = K, link = ProbitLink(), iterations = 1_000)
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_ordinal_probit(Y, K)
@@ -1010,8 +1010,8 @@ function cell_truncated_poisson()
     fit = fit_truncated_poisson_gllvm(Y; K = K)
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Y, K; family = :truncated_poisson)
@@ -1051,8 +1051,8 @@ function cell_truncated_nbinom2()
     fit = fit_truncated_nbinom2_gllvm(Y; K = K, hessian = :observed)
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y; hessian = :observed)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y; hessian = :observed)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se(Y, K; family = :truncated_nbinom2)
@@ -1083,8 +1083,8 @@ function cell_multinomial_fe()
     wall_fit = time() - t0
     Y = reshape(collect(y), 1, n)
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_multinomial(y, ncat)
@@ -1116,8 +1116,8 @@ function cell_studentt_fixed_nu()
     fit = fit_studentt_gllvm(Y; K = K, nu = ν_true, disp_group = :species, iterations = 400)
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_student(Y, K; df_fixed = ν_true)
@@ -1146,15 +1146,15 @@ function cell_tweedie_fixed()
     μ = exp.(β_true .+ Λ_true * Z)
     Y = zeros(p, n)
     for t in 1:p, s in 1:n
-        Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ_true[t], p_true, Random.default_rng())
+        Y[t, s] = GLLVModels._tweedie_sample(μ[t, s], φ_true[t], p_true, Random.default_rng())
     end
 
     t0 = time()
     fit = fit_tweedie_gllvm_grouped(Y; K = K, power = p_true, hessian = :observed, iterations = 400)
     wall_fit = time() - t0
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_tweedie(Y, K; p_fixed = p_true)
@@ -1181,7 +1181,7 @@ function _tweedie_parity_fixture_y(seed::Integer = 82)
     μ = exp.(β_true .+ Λ_true * Z)
     Y = zeros(p, n)
     for t in 1:p, s in 1:n
-        Y[t, s] = GLLVM._tweedie_sample(μ[t, s], φ_true[t], p_true, Random.default_rng())
+        Y[t, s] = GLLVModels._tweedie_sample(μ[t, s], φ_true[t], p_true, Random.default_rng())
     end
     return Y, p, K, n, seed
 end
@@ -1192,11 +1192,11 @@ function cell_tweedie_shared()
     t0 = time()
     fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :shared, hessian = :observed, iterations = 400)
     wall_fit = time() - t0
-    fit isa GLLVM.TweedieGroupedFit && !fit.power_fixed ||
+    fit isa GLLVModels.TweedieGroupedFit && !fit.power_fixed ||
         error("tweedie_shared: expected TweedieGroupedFit with free shared power")
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_tweedie_shared(Y, K)
@@ -1221,11 +1221,11 @@ function cell_tweedie_species()
     t0 = time()
     fit = fit_tweedie_gllvm_grouped(Y; K = K, power_group = :species, hessian = :observed, iterations = 400)
     wall_fit = time() - t0
-    fit isa GLLVM.TweediePerTraitPowerFit ||
+    fit isa GLLVModels.TweediePerTraitPowerFit ||
         error("tweedie_species: expected TweediePerTraitPowerFit with free per-trait power")
     ci = confint(fit, Y; method = :wald)
-    ad = GLLVM._family_ci(fit, Y)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Y)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Σ = _safe_inv(H)
 
     r = r_fit_se_tweedie_species(Y, K)

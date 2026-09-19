@@ -1,6 +1,6 @@
 # Tweedie power contracts
 
-For a Tweedie response, GLLVM.jl uses
+For a Tweedie response, GLLVModels.jl uses
 
 ```math
 \operatorname{Var}(Y_{ts})=\phi_{g(t)}\mu_{ts}^{p_t},\qquad 1 < p_t < 2,

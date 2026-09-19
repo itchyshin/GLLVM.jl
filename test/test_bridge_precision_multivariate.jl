@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays
+using GLLVModels, Test, LinearAlgebra, SparseArrays
 
 function _pmvb_fixture()
     Q = sparse([4.0 -1.0 -1.0 0.0;
@@ -16,7 +16,7 @@ function _pmvb_fixture()
     loading = reshape([0.4, -0.2, 0.3], 3, 1)
     unique = [0.15, 0.10, 0.2]
     residual = [0.5, 0.7, 0.4]
-    start = vcat(beta, GLLVM.pack_lambda(loading),
+    start = vcat(beta, GLLVModels.pack_lambda(loading),
         log.(sqrt.(unique)), log.(sqrt.(residual)))
     return Y, phy, species_id, start, loading, unique, residual
 end
@@ -33,16 +33,16 @@ end
     )
 
     @testset "flat native and admitted-payload fixed-start routes agree" begin
-        native_fit = GLLVM.fit_precision_multivariate(Y, phy;
+        native_fit = GLLVModels.fit_precision_multivariate(Y, phy;
             rank = 1, mode = :explicitunique, species_id = species_id,
             start = start, iterations = 0, g_tol = 1e-4)
-        native = GLLVM._bridge_fit_precision_multivariate(Y, phy;
+        native = GLLVModels._bridge_fit_precision_multivariate(Y, phy;
             family = "gaussian", d = 1, options = opts)
-        payload = GLLVM.phylo_precision_payload(phy)
-        adapter = GLLVM._bridge_fit_precision_multivariate(Y,
+        payload = GLLVModels.phylo_precision_payload(phy)
+        adapter = GLLVModels._bridge_fit_precision_multivariate(Y,
             Dict{String,Any}(String(k) => getfield(payload, k) for k in keys(payload));
             family = "normal", d = 1, options = opts)
-        routed = GLLVM._bridge_fit_precision_multivariate(Y, phy;
+        routed = GLLVModels._bridge_fit_precision_multivariate(Y, phy;
             family = "gaussian", d = 1,
             options = merge(opts, Dict("phylo_model" => "multivariate")))
 
@@ -86,11 +86,11 @@ end
 
     @testset "complete mean design and Wald arrays remain flat" begin
         X = reshape(collect(1.0:(length(Y))), :, 1)
-        start_x = vcat([0.1], GLLVM.pack_lambda(loading),
+        start_x = vcat([0.1], GLLVModels.pack_lambda(loading),
             log.(sqrt.(unique)), log.(sqrt.(residual)))
         opts_x = merge(opts, Dict("start" => start_x, "ci_method" => "wald",
             "ci_level" => 0.9))
-        bridged = GLLVM._bridge_fit_precision_multivariate(Y, phy;
+        bridged = GLLVModels._bridge_fit_precision_multivariate(Y, phy;
             family = "gaussian", d = 1, X = X, options = opts_x)
         @test size(bridged.mean_design) == (length(Y), 1)
         @test length(bridged.coefficients) == 1
@@ -107,22 +107,22 @@ end
     end
 
     @testset "bridge rejects ambiguous or unsupported requests" begin
-        @test_throws ArgumentError GLLVM._bridge_fit_precision_multivariate(Y, phy;
+        @test_throws ArgumentError GLLVModels._bridge_fit_precision_multivariate(Y, phy;
             family = "poisson", d = 1, options = opts)
-        @test_throws ArgumentError GLLVM._bridge_fit_precision_multivariate(Y, phy;
+        @test_throws ArgumentError GLLVModels._bridge_fit_precision_multivariate(Y, phy;
             family = "gaussian", d = 1, options = Dict("mode" => "barelowrank"))
-        @test_throws ArgumentError GLLVM._bridge_fit_precision_multivariate(Y, phy;
+        @test_throws ArgumentError GLLVModels._bridge_fit_precision_multivariate(Y, phy;
             family = "gaussian", d = 1,
             options = merge(opts, Dict("species_id" => [1, 2, 3, 1])))
-        @test_throws ArgumentError GLLVM._bridge_fit_precision_multivariate(Y[:, 1:3], phy;
+        @test_throws ArgumentError GLLVModels._bridge_fit_precision_multivariate(Y[:, 1:3], phy;
             family = "gaussian", d = 1, options = opts)
-        @test_throws ArgumentError GLLVM._bridge_fit_precision_multivariate(Y, phy;
+        @test_throws ArgumentError GLLVModels._bridge_fit_precision_multivariate(Y, phy;
             family = "gaussian", d = 1,
             options = merge(opts, Dict("ci_method" => "profile")))
-        @test_throws ArgumentError GLLVM._bridge_fit_precision_multivariate(Y, phy;
+        @test_throws ArgumentError GLLVModels._bridge_fit_precision_multivariate(Y, phy;
             family = "gaussian", d = 1,
             options = merge(opts, Dict("phylo_model" => "univariate")))
-        @test_throws ArgumentError GLLVM._bridge_fit_precision_multivariate(Y, phy;
+        @test_throws ArgumentError GLLVModels._bridge_fit_precision_multivariate(Y, phy;
             family = "gaussian", d = 1,
             options = merge(opts, Dict("unrecognised" => true)))
     end

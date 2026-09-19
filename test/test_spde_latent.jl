@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays, Random
+using GLLVModels, Test, LinearAlgebra, SparseArrays, Random
 
 # Build a regular triangulated grid over [0, L]² (same construction as test_spde.jl).
 function _grid_mesh(m, L)
@@ -21,7 +21,7 @@ function _grid_mesh(m, L)
     return nodes, tris
 end
 
-@testset "SPDE latent GLLVM (joint Laplace over the GMRF)" begin
+@testset "SPDE latent GLLVModels (joint Laplace over the GMRF)" begin
 
     # ---- Anchor 1: i.i.d. reduction (Q = I, A = I) == per-site Laplace ------
     # With identity projector and identity precision the K latent fields become
@@ -39,7 +39,7 @@ end
         ℓ_joint = spde_latent_marginal_loglik(Poisson(), Y, ones(Int, p, M),
                                               Λ, β, LogLink(), Aid, Qid;
                                               maxiter = 100, tol = 1e-12)
-        ℓ_site = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, M),
+        ℓ_site = GLLVModels.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, M),
                                          Λ, β, LogLink(); maxiter = 100, tol = 1e-12)
         @test isapprox(ℓ_joint, ℓ_site; atol = 1e-7, rtol = 1e-8)
     end

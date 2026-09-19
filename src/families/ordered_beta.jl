@@ -1,4 +1,4 @@
-# Ordered-beta family (Kubinec 2023) for the GLLVM Laplace path.
+# Ordered-beta family (Kubinec 2023) for the GLLVModels Laplace path.
 #
 # Responses y ∈ [0,1] with point masses at exactly 0 and 1 plus a continuous Beta
 # interior — proportion / cover data. One latent linear predictor η drives all

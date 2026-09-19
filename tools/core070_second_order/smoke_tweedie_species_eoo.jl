@@ -3,7 +3,7 @@
 #
 # Option A: compare b_fix only; Julia Wald plug-ins per-trait power. Record Δ; no D1 claim.
 
-using GLLVM
+using GLLVModels
 using RCall
 using Random
 using LinearAlgebra

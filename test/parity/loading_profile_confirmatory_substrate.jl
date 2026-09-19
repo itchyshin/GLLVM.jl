@@ -1,5 +1,5 @@
 # Stage-0 substrate helpers for confirmatory Λ profiling (D3). Test-only —
-# not part of the public GLLVM.jl API until Stage 1 + maintainer G0.
+# not part of the public GLLVModels.jl API until Stage 1 + maintainer G0.
 
 """
     lambda_constraint_is_pinned(M_user, n_traits, K) -> BitMatrix

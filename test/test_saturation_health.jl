@@ -12,7 +12,7 @@
 # The campaign DGP is embedded VERBATIM (Xoshiro, not StableRNGs — the
 # campaign's own convention) so the acceptance case is the diagnosed one.
 
-using GLLVM, Test, Random, Distributions, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, LinearAlgebra
 
 @testset "Laplace saturation health (Binomial)" begin
 
@@ -25,13 +25,13 @@ using GLLVM, Test, Random, Distributions, LinearAlgebra
         # μ = 1−exp(−e^5) ≈ 1 within 1e-12), trait 2 benign, trait 3 at −40
         # (past the η-clamp).
         β = [5.0, 0.0, -40.0]
-        sat = GLLVM._laplace_saturation_health(Y, N, Λ, β, GLLVM.CLogLogLink(), :fisher)
+        sat = GLLVModels._laplace_saturation_health(Y, N, Λ, β, GLLVModels.CLogLogLink(), :fisher)
         @test sat.n_obs == p * n
         @test sat.n_clamp == 2 * n          # traits 1 and 3, every site
         @test sat.n_wcollapse >= n          # trait 1's weight is collapsed
         # masking trait 1 removes its cells from every count
         mask = trues(p, n); mask[1, :] .= false
-        satm = GLLVM._laplace_saturation_health(Y, N, Λ, β, GLLVM.CLogLogLink(), :fisher; mask = mask)
+        satm = GLLVModels._laplace_saturation_health(Y, N, Λ, β, GLLVModels.CLogLogLink(), :fisher; mask = mask)
         @test satm.n_obs == 2 * n
         @test satm.n_clamp == n             # only trait 3 remains
     end
@@ -51,7 +51,7 @@ using GLLVM, Test, Random, Distributions, LinearAlgebra
             Y[t, s] = rand(rng, Bernoulli(μ)) ? 1 : 0
         end
         f = @test_logs (:warn, r"saturation region") match_mode = :any begin
-            GLLVM.fit_binomial_gllvm(Y; K = 1, link = GLLVM.CLogLogLink())
+            GLLVModels.fit_binomial_gllvm(Y; K = 1, link = GLLVModels.CLogLogLink())
         end
         @test f.converged                      # the optimizer DID converge on the coded objective
         @test norm(f.Λ) > 5.0                  # the runaway is real
@@ -68,13 +68,13 @@ using GLLVM, Test, Random, Distributions, LinearAlgebra
         # (i) benign cloglog truth
         Yc = [rand(Bernoulli(clamp(1 - exp(-exp(H[t, s])), 1e-6, 1 - 1e-6))) ? 1 : 0
               for t in 1:p, s in 1:n]
-        fc = GLLVM.fit_binomial_gllvm(Yc; K = 1, link = GLLVM.CLogLogLink())
+        fc = GLLVModels.fit_binomial_gllvm(Yc; K = 1, link = GLLVModels.CLogLogLink())
         if fc.saturation !== nothing && fc.saturation.n_clamp == 0 && fc.saturation.n_wcollapse == 0
             @test !occursin("SATURATED", sprint(show, fc))
         end
         # (ii) logit and probit own-DGP fits: populated health, quiet
         Yl = [rand(Bernoulli(1 / (1 + exp(-H[t, s])))) ? 1 : 0 for t in 1:p, s in 1:n]
-        fl = GLLVM.fit_binomial_gllvm(Yl; K = 1)
+        fl = GLLVModels.fit_binomial_gllvm(Yl; K = 1)
         @test fl.saturation !== nothing && fl.saturation.n_obs == p * n
         @test fl.saturation.n_clamp == 0
         # (iii) extreme prevalence, trivial Λ: saturation MAY occur through the
@@ -82,19 +82,19 @@ using GLLVM, Test, Random, Distributions, LinearAlgebra
         # diagnostic runs and the counts are consistent (this is the D3 case:
         # the trigger reports, it does not adjudicate).
         Ye = [rand(Bernoulli(t == 1 ? 0.999 : 0.5)) ? 1 : 0 for t in 1:p, s in 1:n]
-        fe = GLLVM.fit_binomial_gllvm(Ye; K = 1, link = GLLVM.CLogLogLink())
+        fe = GLLVModels.fit_binomial_gllvm(Ye; K = 1, link = GLLVModels.CLogLogLink())
         @test fe.saturation === nothing || fe.saturation.n_clamp <= fe.saturation.n_obs
     end
 
     @testset "T4: compat construction and plateau guard" begin
         # 9-arg compat tier (the VA route's shape): saturation = "not computed"
-        f9 = GLLVM.BinomialFit([0.0], zeros(1, 1), GLLVM.LogitLink(), -1.0, true, 3,
+        f9 = GLLVModels.BinomialFit([0.0], zeros(1, 1), GLLVModels.LogitLink(), -1.0, true, 3,
                                nothing, Float64[], :fisher)
         @test f9.saturation === nothing
         # 8-arg tier: default hessian AND nothing-saturation
-        f8 = GLLVM.BinomialFit([0.0], zeros(1, 1), GLLVM.LogitLink(), -1.0, true, 3,
+        f8 = GLLVModels.BinomialFit([0.0], zeros(1, 1), GLLVModels.LogitLink(), -1.0, true, 3,
                                nothing, Float64[])
-        @test f8.hessian === GLLVM._default_hessian(Binomial(), GLLVM.LogitLink())
+        @test f8.hessian === GLLVModels._default_hessian(Binomial(), GLLVModels.LogitLink())
         @test f8.saturation === nothing
     end
 end

@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 
 @testset "bridge capabilities ledger" begin
     caps = bridge_capabilities()

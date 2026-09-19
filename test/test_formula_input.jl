@@ -1,4 +1,4 @@
-using GLLVM, Test
+using GLLVModels, Test
 
 struct FormulaResponseRead <: Exception end
 struct FormulaUnreadResponse <: AbstractMatrix{Float64} end
@@ -7,7 +7,7 @@ Base.getindex(::FormulaUnreadResponse, ::Int, ::Int) = throw(FormulaResponseRead
 
 @testset "Formula site rows checked before response access" begin
     Y = FormulaUnreadResponse()
-    for family in (GLLVM.Normal(),GLLVM.Poisson(),GLLVM.NegativeBinomial(),GLLVM.Beta())
+    for family in (GLLVModels.Normal(),GLLVModels.Poisson(),GLLVModels.NegativeBinomial(),GLLVModels.Beta())
         for m in (7,9), formula in (@formula(y ~ 1),@formula(y ~ 1 + temp))
             @test_throws DimensionMismatch gllvm(formula,Y,(temp=zeros(m),);family=family,K=1)
         end

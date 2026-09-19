@@ -11,7 +11,7 @@
 # test_twopart_substrate.jl (130-131), test_delta_shared_predictor.jl
 # (170-176), and the parity-ladder brief's reserved 42-49/52/53/58.
 
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "delta family: disp_group mode (:shared / :species)" begin
 
@@ -202,7 +202,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         end
 
         f = fit_delta_lognormal_gllvm(Y; K = K, disp_group = :species, iterations = 400)
-        ll_direct = GLLVM.delta_lognormal_marginal_loglik_laplace(Y, f.Λc, f.βz, f.βc, f.σ;
+        ll_direct = GLLVModels.delta_lognormal_marginal_loglik_laplace(Y, f.Λc, f.βz, f.βc, f.σ;
                                                                     offsetc = nothing)
         @test ll_direct ≈ f.loglik atol = 1e-8
     end

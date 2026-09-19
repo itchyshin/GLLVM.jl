@@ -1,6 +1,6 @@
 # Dense reference verification and a rejected native mapping, not production parity.
-using GLLVM, Test, LinearAlgebra, ForwardDiff
-@assert realpath(Base.pkgdir(GLLVM))==realpath(pwd())
+using GLLVModels, Test, LinearAlgebra, ForwardDiff
+@assert realpath(Base.pkgdir(GLLVModels))==realpath(pwd())
 root=ARGS[1]
 readrows(p)=split.(readlines(p)[2:end],'\t')
 readmatrix(p)=reduce(vcat,[permutedims(parse.(Float64,r)) for r in readrows(p)])
@@ -42,8 +42,8 @@ readmatrix(p)=reduce(vcat,[permutedims(parse.(Float64,r)) for r in readrows(p)])
    C=Cs[2];lambda=reshape(θ[li][4:6],3,1);sigma=exp(only(θ[si]))
    Q=kron(C,lambda*lambda')+sigma^2*I(18)
    rr=vec(small);correct=(18log(2π)+logdet(Symmetric(Q))+dot(rr,Q\rr))/2
-   eigenvectors,eigenvalues=GLLVM._coevolution_kron_precompute(C)
-   legacy=GLLVM._coevolution_kron_nll(vcat(vec(lambda),log(sigma)),small,eigenvectors,eigenvalues,3,6,1)
+   eigenvectors,eigenvalues=GLLVModels._coevolution_kron_precompute(C)
+   legacy=GLLVModels._coevolution_kron_nll(vcat(vec(lambda),log(sigma)),small,eigenvectors,eigenvalues,3,6,1)
    @test abs(legacy-correct)>1e-6
    println(id," MATRIX_NORMAL_NOT_EQUIVALENT delta=",legacy-correct)
   end

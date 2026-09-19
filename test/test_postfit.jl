@@ -1,6 +1,6 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions
 
-if !isdefined(GLLVM, :getLoadings)
+if !isdefined(GLLVModels, :getLoadings)
     include(joinpath(@__DIR__, "..", "src", "postfit.jl"))
 end
 
@@ -12,12 +12,12 @@ end
         y = Λt * randn(K, n) .+ 0.5 .* randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
 
-        R = GLLVM.rotation(fit)
+        R = GLLVModels.rotation(fit)
         @test size(R) == (K, K)
         @test R' * R ≈ I(K) atol = 1e-10            # orthogonal
 
-        Lr = GLLVM.getLoadings(fit; rotate = true)
-        L0 = GLLVM.getLoadings(fit; rotate = false)
+        Lr = GLLVModels.getLoadings(fit; rotate = true)
+        L0 = GLLVModels.getLoadings(fit; rotate = false)
         @test size(Lr) == (p, K)
         @test L0 ≈ fit.pars.Λ                         # raw == stored Λ
         @test Lr ≈ L0 * R                             # rotated == Λ·R
@@ -38,7 +38,7 @@ end
         β = [0.2, -0.1, 0.0, 0.3]
         y = reshape([1, 0, 1, 1], p, n)
         N = ones(Int, p, n)
-        ẑ = GLLVM._laplace_mode(view(y, :, 1), view(N, :, 1), Λ, β, LogitLink())
+        ẑ = GLLVModels._laplace_mode(view(y, :, 1), view(N, :, 1), Λ, β, LogitLink())
         @test length(ẑ) == K
         # At the mode the penalised-score stationarity holds: Λ'(working
         # residual) − ẑ ≈ 0 (the inner Newton step is ~0).
@@ -56,12 +56,12 @@ end
         y = Λt * randn(K, n) .+ 0.5 .* randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
 
-        Z = GLLVM.getLV(fit, y; rotate = false)
+        Z = GLLVModels.getLV(fit, y; rotate = false)
         @test size(Z) == (n, K)
 
         # Independent reference: m_s = (I + Λ'Ψ⁻¹Λ)⁻¹ Λ'Ψ⁻¹ y_s, Ψ = Σ_y − ΛΛ'.
         Λ = fit.pars.Λ
-        Σ = GLLVM.sigma_y_site(fit)
+        Σ = GLLVModels.sigma_y_site(fit)
         Ψ = Σ - Λ * Λ'
         ΨiΛ = Ψ \ Λ
         M = Symmetric(I(K) + Λ' * ΨiΛ)
@@ -69,8 +69,8 @@ end
         @test Z ≈ Zref atol = 1e-8
 
         # Rotation consistency: Λ_rot Z_rotᵀ == Λ Z_rawᵀ.
-        Zr = GLLVM.getLV(fit, y; rotate = true)
-        Lr = GLLVM.getLoadings(fit; rotate = true)
+        Zr = GLLVModels.getLV(fit, y; rotate = true)
+        Lr = GLLVModels.getLoadings(fit; rotate = true)
         @test Lr * Zr' ≈ Λ * Z' atol = 1e-8
     end
 
@@ -84,17 +84,17 @@ end
         Y  = Int.(rand(p, n) .< μ)
         fit = fit_binomial_gllvm(Y; K = K)
 
-        Z = GLLVM.getLV(fit, Y; rotate = false)
+        Z = GLLVModels.getLV(fit, Y; rotate = false)
         @test size(Z) == (n, K)
         # Each row equals the per-site Laplace mode.
         N = ones(Int, p, n)
         for s in 1:n
-            ẑ = GLLVM._laplace_mode(view(Y, :, s), view(N, :, s), fit.Λ, fit.β, fit.link)
+            ẑ = GLLVModels._laplace_mode(view(Y, :, s), view(N, :, s), fit.Λ, fit.β, fit.link)
             @test Z[s, :] ≈ ẑ atol = 1e-7
         end
         # Rotation consistency.
-        Zr = GLLVM.getLV(fit, Y; rotate = true)
-        @test GLLVM.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
+        Zr = GLLVModels.getLV(fit, Y; rotate = true)
+        @test GLLVModels.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
     end
 end
 
@@ -106,14 +106,14 @@ end
         y = Λt * randn(K, n) .+ 0.5 .* randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
 
-        η = GLLVM.predict(fit, y; type = :link)
-        μ = GLLVM.predict(fit, y; type = :response)
+        η = GLLVModels.predict(fit, y; type = :link)
+        μ = GLLVModels.predict(fit, y; type = :response)
         @test size(η) == (p, n)
         @test η ≈ μ                                   # identity link
-        Z = GLLVM.getLV(fit, y; rotate = false)
+        Z = GLLVModels.getLV(fit, y; rotate = false)
         @test η ≈ fit.pars.Λ * Z' atol = 1e-10        # no fixed-effect mean
-        @test GLLVM.fitted(fit, y) ≈ μ
-        @test_throws ArgumentError GLLVM.predict(fit, y; type = :bogus)
+        @test GLLVModels.fitted(fit, y) ≈ μ
+        @test_throws ArgumentError GLLVModels.predict(fit, y; type = :bogus)
     end
 
     @testset "predict (Binomial): probabilities in [0,1], logit-consistent" begin
@@ -123,12 +123,12 @@ end
         Y  = Int.(rand(p, n) .< inv.(1 .+ exp.(-η0)))
         fit = fit_binomial_gllvm(Y; K = K)
 
-        ηp = GLLVM.predict(fit, Y; type = :link)
-        pr = GLLVM.predict(fit, Y; type = :response)
+        ηp = GLLVModels.predict(fit, Y; type = :link)
+        pr = GLLVModels.predict(fit, Y; type = :response)
         @test size(pr) == (p, n)
         @test all(0 .≤ pr .≤ 1)
         @test pr ≈ inv.(1 .+ exp.(-ηp))               # logit link
-        @test GLLVM.fitted(fit, Y) ≈ pr
+        @test GLLVModels.fitted(fit, Y) ≈ pr
     end
 end
 
@@ -139,13 +139,13 @@ end
         Λt = 0.8 .* randn(p, K)
         y = Λt * randn(K, n) .+ 0.5 .* randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        rDS = GLLVM.residuals(fit, y; type = :dunnsmyth)
-        rP  = GLLVM.residuals(fit, y; type = :pearson)
+        rDS = GLLVModels.residuals(fit, y; type = :dunnsmyth)
+        rP  = GLLVModels.residuals(fit, y; type = :pearson)
         @test size(rDS) == (p, n)
         @test rDS ≈ rP                                   # continuous CDF
-        μ = GLLVM.predict(fit, y; type = :response)
+        μ = GLLVModels.predict(fit, y; type = :response)
         @test rDS ≈ (y .- μ) ./ fit.pars.σ_eps atol = 1e-10
-        @test_throws ArgumentError GLLVM.residuals(fit, y; type = :bogus)
+        @test_throws ArgumentError GLLVModels.residuals(fit, y; type = :bogus)
     end
 
     @testset "residuals (Binomial): DS reproducible + finite, Pearson formula" begin
@@ -154,8 +154,8 @@ end
         η0 = 0.2 .* randn(p) .+ (0.9 .* randn(p, K)) * randn(K, n)
         Y  = Int.(rand(p, n) .< inv.(1 .+ exp.(-η0)))
         fit = fit_binomial_gllvm(Y; K = K)
-        r1 = GLLVM.residuals(fit, Y; type = :dunnsmyth, rng = MersenneTwister(1))
-        r2 = GLLVM.residuals(fit, Y; type = :dunnsmyth, rng = MersenneTwister(1))
+        r1 = GLLVModels.residuals(fit, Y; type = :dunnsmyth, rng = MersenneTwister(1))
+        r2 = GLLVModels.residuals(fit, Y; type = :dunnsmyth, rng = MersenneTwister(1))
         @test size(r1) == (p, n)
         @test r1 == r2                                    # reproducible with fixed rng
         @test all(isfinite, r1)
@@ -163,8 +163,8 @@ end
         @test abs(mean(r1)) < 0.3
         @test 0.3 < std(r1) < 2.0
         # Pearson formula (N = 1).
-        μ = GLLVM.predict(fit, Y; type = :response)
-        rP = GLLVM.residuals(fit, Y; type = :pearson)
+        μ = GLLVModels.predict(fit, Y; type = :response)
+        rP = GLLVModels.residuals(fit, Y; type = :pearson)
         @test rP ≈ (Y .- μ) ./ sqrt.(μ .* (1 .- μ)) atol = 1e-10
     end
 end
@@ -177,9 +177,9 @@ end
         y = Λt * randn(K, n) .+ 0.5 .* randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
         k = p * K - div(K * (K - 1), 2) + 1          # loadings + σ_eps (no intercepts, X=nothing)
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.logLik
-        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.logLik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.logLik
+        @test GLLVModels.bic(fit, n) ≈ k * log(n) - 2 * fit.logLik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Gaussian", s) && occursin("logLik", s) && occursin("AIC", s)
     end
@@ -191,9 +191,9 @@ end
         Y  = Int.(rand(p, n) .< inv.(1 .+ exp.(-η0)))
         fit = fit_binomial_gllvm(Y; K = K)
         k = p + (p * K - div(K * (K - 1), 2))        # intercepts + loadings
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
-        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVModels.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Binomial", s) && occursin("AIC", s)
     end
@@ -209,36 +209,36 @@ end
     fit = fit_gllvm(Y; family = Poisson(), K = K)
 
     @testset "getLV / getLoadings / rotation" begin
-        Z = GLLVM.getLV(fit, Y; rotate = false)
+        Z = GLLVModels.getLV(fit, Y; rotate = false)
         @test size(Z) == (n, K)
         for s in 1:n
-            ẑ = GLLVM._laplace_mode(Poisson(), view(Y, :, s), ones(Int, p), fit.Λ, fit.β, fit.link)
+            ẑ = GLLVModels._laplace_mode(Poisson(), view(Y, :, s), ones(Int, p), fit.Λ, fit.β, fit.link)
             @test Z[s, :] ≈ ẑ atol = 1e-7
         end
-        @test size(GLLVM.getLoadings(fit)) == (p, K)
-        R = GLLVM.rotation(fit)
+        @test size(GLLVModels.getLoadings(fit)) == (p, K)
+        R = GLLVModels.rotation(fit)
         @test R' * R ≈ I(K) atol = 1e-10
-        Zr = GLLVM.getLV(fit, Y; rotate = true)
-        @test GLLVM.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
+        Zr = GLLVModels.getLV(fit, Y; rotate = true)
+        @test GLLVModels.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
     end
 
     @testset "predict (rates) + residuals + AIC/BIC + show" begin
-        η_hat = GLLVM.predict(fit, Y; type = :link)
-        μ_hat = GLLVM.predict(fit, Y; type = :response)
+        η_hat = GLLVModels.predict(fit, Y; type = :link)
+        μ_hat = GLLVModels.predict(fit, Y; type = :response)
         @test size(μ_hat) == (p, n)
         @test all(μ_hat .≥ 0)
         @test μ_hat ≈ exp.(η_hat)                          # log link
 
-        r1 = GLLVM.residuals(fit, Y; rng = MersenneTwister(2))
-        r2 = GLLVM.residuals(fit, Y; rng = MersenneTwister(2))
+        r1 = GLLVModels.residuals(fit, Y; rng = MersenneTwister(2))
+        r2 = GLLVModels.residuals(fit, Y; rng = MersenneTwister(2))
         @test r1 == r2 && all(isfinite, r1)
-        rp = GLLVM.residuals(fit, Y; type = :pearson)
+        rp = GLLVModels.residuals(fit, Y; type = :pearson)
         @test rp ≈ (Y .- μ_hat) ./ sqrt.(μ_hat) atol = 1e-10
 
         k = p + (p * K - div(K * (K - 1), 2))
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
-        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVModels.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Poisson", s) && occursin("AIC", s)
     end
@@ -256,30 +256,30 @@ end
     fit = fit_nb_gllvm(Y; K = K)
 
     @testset "getLV / getLoadings / rotation" begin
-        Z = GLLVM.getLV(fit, Y; rotate = false)
+        Z = GLLVModels.getLV(fit, Y; rotate = false)
         @test size(Z) == (n, K)
         for s in 1:n
-            ẑ = GLLVM._laplace_mode(NegativeBinomial(fit.r, 0.5), view(Y, :, s),
+            ẑ = GLLVModels._laplace_mode(NegativeBinomial(fit.r, 0.5), view(Y, :, s),
                                     ones(Int, p), fit.Λ, fit.β, fit.link)
             @test Z[s, :] ≈ ẑ atol = 1e-7
         end
-        @test size(GLLVM.getLoadings(fit)) == (p, K)
-        @test GLLVM.rotation(fit)' * GLLVM.rotation(fit) ≈ I(K) atol = 1e-10
+        @test size(GLLVModels.getLoadings(fit)) == (p, K)
+        @test GLLVModels.rotation(fit)' * GLLVModels.rotation(fit) ≈ I(K) atol = 1e-10
     end
 
     @testset "predict (means) + residuals + AIC/BIC + show" begin
-        η_hat = GLLVM.predict(fit, Y; type = :link)
-        μ_hat = GLLVM.predict(fit, Y; type = :response)
+        η_hat = GLLVModels.predict(fit, Y; type = :link)
+        μ_hat = GLLVModels.predict(fit, Y; type = :response)
         @test all(μ_hat .≥ 0)
         @test μ_hat ≈ exp.(η_hat)
-        r1 = GLLVM.residuals(fit, Y; rng = MersenneTwister(3))
-        r2 = GLLVM.residuals(fit, Y; rng = MersenneTwister(3))
+        r1 = GLLVModels.residuals(fit, Y; rng = MersenneTwister(3))
+        r2 = GLLVModels.residuals(fit, Y; rng = MersenneTwister(3))
         @test r1 == r2 && all(isfinite, r1)
-        rp = GLLVM.residuals(fit, Y; type = :pearson)
+        rp = GLLVModels.residuals(fit, Y; type = :pearson)
         @test rp ≈ (Y .- μ_hat) ./ sqrt.(μ_hat .+ μ_hat .^ 2 ./ fit.r) atol = 1e-9
         k = p + (p * K - div(K * (K - 1), 2)) + 1            # + dispersion r
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Negative-binomial", s) && occursin("AIC", s)
     end
@@ -297,36 +297,36 @@ end
     fit = fit_beta_gllvm(Y; K = K)
 
     @testset "getLV / getLoadings / rotation" begin
-        Z = GLLVM.getLV(fit, Y; rotate = false)
+        Z = GLLVModels.getLV(fit, Y; rotate = false)
         @test size(Z) == (n, K)
         for s in 1:n
-            ẑ = GLLVM._laplace_mode(Beta(fit.φ, 1.0), view(Y, :, s),
+            ẑ = GLLVModels._laplace_mode(Beta(fit.φ, 1.0), view(Y, :, s),
                                     ones(Int, p), fit.Λ, fit.β, fit.link)
             @test Z[s, :] ≈ ẑ atol = 1e-7
         end
-        @test size(GLLVM.getLoadings(fit)) == (p, K)
-        @test GLLVM.rotation(fit)' * GLLVM.rotation(fit) ≈ I(K) atol = 1e-10
-        Zr = GLLVM.getLV(fit, Y; rotate = true)
-        @test GLLVM.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
+        @test size(GLLVModels.getLoadings(fit)) == (p, K)
+        @test GLLVModels.rotation(fit)' * GLLVModels.rotation(fit) ≈ I(K) atol = 1e-10
+        Zr = GLLVModels.getLV(fit, Y; rotate = true)
+        @test GLLVModels.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
     end
 
     @testset "predict (proportions) + residuals + AIC/BIC + show" begin
-        η_hat = GLLVM.predict(fit, Y; type = :link)
-        μ_hat = GLLVM.predict(fit, Y; type = :response)
+        η_hat = GLLVModels.predict(fit, Y; type = :link)
+        μ_hat = GLLVModels.predict(fit, Y; type = :response)
         @test size(μ_hat) == (p, n)
         @test all(0 .< μ_hat .< 1)
         @test μ_hat ≈ inv.(1 .+ exp.(-η_hat))                # logit link
         # Continuous CDF ⇒ Dunn–Smyth residual is deterministic (no rng arg).
-        rDS = GLLVM.residuals(fit, Y; type = :dunnsmyth)
+        rDS = GLLVModels.residuals(fit, Y; type = :dunnsmyth)
         @test size(rDS) == (p, n)
         @test all(isfinite, rDS)
-        rp = GLLVM.residuals(fit, Y; type = :pearson)
+        rp = GLLVModels.residuals(fit, Y; type = :pearson)
         @test rp ≈ (Y .- μ_hat) ./ sqrt.(μ_hat .* (1 .- μ_hat) ./ (1 + fit.φ)) atol = 1e-9
-        @test_throws ArgumentError GLLVM.residuals(fit, Y; type = :bogus)
+        @test_throws ArgumentError GLLVModels.residuals(fit, Y; type = :bogus)
         k = p + (p * K - div(K * (K - 1), 2)) + 1            # + precision φ
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
-        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVModels.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Beta", s) && occursin("AIC", s)
     end
@@ -343,37 +343,37 @@ end
     fit = fit_gllvm(Y; family = Gamma(), K = K)
 
     @testset "getLV / getLoadings / rotation" begin
-        Z = GLLVM.getLV(fit, Y; rotate = false)
+        Z = GLLVModels.getLV(fit, Y; rotate = false)
         @test size(Z) == (n, K)
         ones_p = ones(Int, p)
         for s in 1:n
-            ẑ = GLLVM._laplace_mode(Gamma(fit.α, 1.0), view(Y, :, s),
+            ẑ = GLLVModels._laplace_mode(Gamma(fit.α, 1.0), view(Y, :, s),
                                     ones_p, fit.Λ, fit.β, fit.link)
             @test Z[s, :] ≈ ẑ atol = 1e-7
         end
-        @test size(GLLVM.getLoadings(fit)) == (p, K)
-        @test GLLVM.rotation(fit)' * GLLVM.rotation(fit) ≈ I(K) atol = 1e-10
-        Zr = GLLVM.getLV(fit, Y; rotate = true)
-        @test GLLVM.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
+        @test size(GLLVModels.getLoadings(fit)) == (p, K)
+        @test GLLVModels.rotation(fit)' * GLLVModels.rotation(fit) ≈ I(K) atol = 1e-10
+        Zr = GLLVModels.getLV(fit, Y; rotate = true)
+        @test GLLVModels.getLoadings(fit; rotate = true) * Zr' ≈ fit.Λ * Z' atol = 1e-7
     end
 
     @testset "predict (positive) + residuals + AIC/BIC + show" begin
-        η_hat = GLLVM.predict(fit, Y; type = :link)
-        μ_hat = GLLVM.predict(fit, Y; type = :response)
+        η_hat = GLLVModels.predict(fit, Y; type = :link)
+        μ_hat = GLLVModels.predict(fit, Y; type = :response)
         @test size(μ_hat) == (p, n)
         @test all(μ_hat .> 0)
         @test μ_hat ≈ exp.(η_hat)                              # log link
         # Continuous CDF ⇒ Dunn–Smyth residual is deterministic (no rng arg).
-        rDS = GLLVM.residuals(fit, Y; type = :dunnsmyth)
+        rDS = GLLVModels.residuals(fit, Y; type = :dunnsmyth)
         @test size(rDS) == (p, n)
         @test all(isfinite, rDS)
-        rp = GLLVM.residuals(fit, Y; type = :pearson)
+        rp = GLLVModels.residuals(fit, Y; type = :pearson)
         @test rp ≈ (Y .- μ_hat) ./ sqrt.(μ_hat .^ 2 ./ fit.α) atol = 1e-9
-        @test_throws ArgumentError GLLVM.residuals(fit, Y; type = :bogus)
+        @test_throws ArgumentError GLLVModels.residuals(fit, Y; type = :bogus)
         k = p + (p * K - div(K * (K - 1), 2)) + 1            # + shape α
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
-        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVModels.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Gamma", s) && occursin("AIC", s)
     end
@@ -388,7 +388,7 @@ end
     η = Λt * randn(K, n)
     Y = Matrix{Int}(undef, p, n)
     for s in 1:n, t in 1:p
-        pr = [GLLVM._ord_prob(c, η[t, s], τ) for c in 1:C]
+        pr = [GLLVModels._ord_prob(c, η[t, s], τ) for c in 1:C]
         Y[t, s] = rand(Categorical(pr))
     end
     # Shared-cutpoint postfit surface: named fitter (public fit_gllvm(Ordinal)
@@ -396,34 +396,34 @@ end
     fit = fit_ordinal_gllvm(Y; K = K)
 
     @testset "getLV / getLoadings / rotation" begin
-        Z = GLLVM.getLV(fit, Y; rotate = false)
+        Z = GLLVModels.getLV(fit, Y; rotate = false)
         @test size(Z) == (n, K)
         for s in 1:n
-            ẑ = GLLVM._ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ)
+            ẑ = GLLVModels._ordinal_laplace_mode(view(Y, :, s), fit.Λ, fit.τ)
             @test Z[s, :] ≈ ẑ atol = 1e-7
         end
-        @test size(GLLVM.getLoadings(fit)) == (p, K)
-        @test GLLVM.rotation(fit)' * GLLVM.rotation(fit) ≈ I(K) atol = 1e-10
+        @test size(GLLVModels.getLoadings(fit)) == (p, K)
+        @test GLLVModels.rotation(fit)' * GLLVModels.rotation(fit) ≈ I(K) atol = 1e-10
     end
 
     @testset "predict (class/prob/link) + residuals + AIC/BIC + show" begin
-        cls = GLLVM.predict(fit, Y; type = :class)
+        cls = GLLVModels.predict(fit, Y; type = :class)
         @test size(cls) == (p, n)
         @test all(c -> 1 ≤ c ≤ C, cls)
-        P = GLLVM.predict(fit, Y; type = :prob)
+        P = GLLVModels.predict(fit, Y; type = :prob)
         @test size(P) == (p, n, C)
         @test all(≥(0), P)
         @test all(isapprox.(sum(P; dims = 3), 1.0; atol = 1e-8))   # probs sum to 1
-        @test GLLVM.fitted(fit, Y) == cls                          # response == modal class
-        @test size(GLLVM.predict(fit, Y; type = :link)) == (p, n)
-        r1 = GLLVM.residuals(fit, Y; rng = MersenneTwister(5))
-        r2 = GLLVM.residuals(fit, Y; rng = MersenneTwister(5))
+        @test GLLVModels.fitted(fit, Y) == cls                          # response == modal class
+        @test size(GLLVModels.predict(fit, Y; type = :link)) == (p, n)
+        r1 = GLLVModels.residuals(fit, Y; rng = MersenneTwister(5))
+        r2 = GLLVModels.residuals(fit, Y; rng = MersenneTwister(5))
         @test r1 == r2 && all(isfinite, r1)
-        @test_throws ArgumentError GLLVM.residuals(fit, Y; type = :pearson)
+        @test_throws ArgumentError GLLVModels.residuals(fit, Y; type = :pearson)
         k = (p * K - div(K * (K - 1), 2)) + (C - 1)
-        @test GLLVM._nparams(fit) == k
-        @test GLLVM.aic(fit) ≈ 2k - 2 * fit.loglik
-        @test GLLVM.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
+        @test GLLVModels._nparams(fit) == k
+        @test GLLVModels.aic(fit) ≈ 2k - 2 * fit.loglik
+        @test GLLVModels.bic(fit, n) ≈ k * log(n) - 2 * fit.loglik
         s = sprint(show, MIME("text/plain"), fit)
         @test occursin("Ordinal", s) && occursin("AIC", s)
     end

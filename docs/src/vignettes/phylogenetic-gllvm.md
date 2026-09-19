@@ -11,7 +11,7 @@
 
 This vignette demonstrates how to model multivariate trait evolution, estimate
 phylogenetic signal ($H^2$), construct transformed-Wald confidence intervals,
-and partition evolutionary versus environmental covariance using `GLLVM.jl`.
+and partition evolutionary versus environmental covariance using `GLLVModels.jl`.
 
 We cover:
 1. Formulating Phylogenetic GLLVMs (PGLLVM) for comparative biological data.
@@ -22,7 +22,7 @@ We cover:
 ---
 
 !!! warning "Matrix Orientation: $p \times n$ in Julia vs $n \times p$ in R"
-    **GLLVM.jl expects species/taxa in rows and traits/replicates/sites in columns ($p \times n$).**
+    **GLLVModels.jl expects species/taxa in rows and traits/replicates/sites in columns ($p \times n$).**
 
     When importing phylogenetic data from R, ensure that the $p$ tips of the phylogeny match the $p$ rows of the response matrix $Y$.
 
@@ -53,10 +53,10 @@ $$\Sigma_{\text{total}} = \underbrace{\sigma_{\text{phy}}^2 C_{\text{phy}}}_{\te
 
 ## 2. Simulating a Phylogenetic Fixture
 
-`GLLVM.jl` provides built-in utilities for generating tree fixtures using the Hadfield & Nakagawa (2010) augmented-state sparse representation:
+`GLLVModels.jl` provides built-in utilities for generating tree fixtures using the Hadfield & Nakagawa (2010) augmented-state sparse representation:
 
 ```julia
-using GLLVM, Random, LinearAlgebra
+using GLLVModels, Random, LinearAlgebra
 
 Random.seed!(20260829)
 
@@ -91,7 +91,7 @@ println("Simulated phylogenetic response matrix: ", size(Y)) # (32, 50)
 
 ## 3. Fast Phylogenetic Model Fitting
 
-`GLLVM.jl` leverages the sparse precision matrix $Q_{\text{phy}} = C_{\text{phy}}^{-1}$ (Hadfield & Nakagawa 2010), achieving high-performance fitting without inverting large dense matrices:
+`GLLVModels.jl` leverages the sparse precision matrix $Q_{\text{phy}} = C_{\text{phy}}^{-1}$ (Hadfield & Nakagawa 2010), achieving high-performance fitting without inverting large dense matrices:
 
 ```julia
 # Fit Gaussian Phylogenetic GLLVM
@@ -134,7 +134,7 @@ An $H^2$ close to 1 indicates strong phylogenetic conservatism (traits follow Br
 
 Because $H^2$ is bounded on the interval $[0, 1]$, standard symmetric Wald intervals ($\hat{H}^2 \pm 1.96 \cdot \text{SE}$) often produce invalid confidence limits exceeding 1 or dropping below 0.
 
-`GLLVM.jl` solves this by applying a logit-scale Fisher-style transformed Wald interval:
+`GLLVModels.jl` solves this by applying a logit-scale Fisher-style transformed Wald interval:
 
 $$\zeta = \text{logit}(H^2) = \log\left(\frac{H^2}{1 - H^2}\right)$$
 

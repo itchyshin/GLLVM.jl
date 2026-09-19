@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 using Distributions: Categorical
 
 function _dense_leaf_phylo_ordinal_xlv_loglik(Y, Lambda, alpha_lv,
@@ -10,7 +10,7 @@ function _dense_leaf_phylo_ordinal_xlv_loglik(Y, Lambda, alpha_lv,
     leaf_pos = [(lp = phy.leaf_indices[t]; phy.root_index < lp ? lp - 1 : lp) for t in 1:p]
     Sigma_a = sigma2_phy .* (inv(Qc)[leaf_pos, leaf_pos])
     Pa = inv(Sigma_a)
-    mean_eta = GLLVM._lv_mean_eta(Lambda, X_lv, alpha_lv)
+    mean_eta = GLLVModels._lv_mean_eta(Lambda, X_lv, alpha_lv)
 
     eps = zeros(n, K)
     a = zeros(p)
@@ -36,8 +36,8 @@ function _dense_leaf_phylo_ordinal_xlv_loglik(Y, Lambda, alpha_lv,
             for k in 1:K
                 eta_ts += Lambda[t, k] * eps[s, k]
             end
-            score_ts, weight_ts = GLLVM._ord_score_weight(
-                Int(Y[t, s]), GLLVM._clamp_eta(eta_ts), tau, LogitLink())
+            score_ts, weight_ts = GLLVModels._ord_score_weight(
+                Int(Y[t, s]), GLLVModels._clamp_eta(eta_ts), tau, LogitLink())
             aidx = n_z + t
             grad[aidx] += score_ts
             H[aidx, aidx] += weight_ts
@@ -98,7 +98,7 @@ function _dense_leaf_phylo_ordinal_xlv_logpost(
         for k in 1:K
             eta_ts += Lambda[t, k] * eps[s, k]
         end
-        q += log(max(GLLVM._ord_prob(Int(Y[t, s]), GLLVM._clamp_eta(eta_ts),
+        q += log(max(GLLVModels._ord_prob(Int(Y[t, s]), GLLVModels._clamp_eta(eta_ts),
                                      tau, LogitLink()), 1e-12))
     end
     return q
@@ -115,7 +115,7 @@ function _simulate_phylo_ordinal_xlv(Lambda, alpha_lv, tau, X_lv; rng = Random.d
     eta = Lambda * transpose(Z_truth)
     Y = Matrix{Int}(undef, p, n)
     for s in 1:n, t in 1:p
-        probs = [GLLVM._ord_prob(c, eta[t, s], tau, LogitLink()) for c in 1:C]
+        probs = [GLLVModels._ord_prob(c, eta[t, s], tau, LogitLink()) for c in 1:C]
         Y[t, s] = rand(rng, Categorical(probs ./ sum(probs)))
     end
     return Y, Z_truth
@@ -123,7 +123,7 @@ end
 
 @testset "Phylo x shared-cutpoint Ordinal predictor-informed LV S1 likelihood" begin
     rng = MersenneTwister(20260745)
-    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    phy = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p = phy.n_leaves
     n = 8
     K = 1
@@ -136,18 +136,18 @@ end
     Y, _ = _simulate_phylo_ordinal_xlv(Lambda, alpha_lv, tau, X_lv;
                                        rng = rng, epsilon_scale = 0.25)
 
-    ll_joint0 = GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    ll_joint0 = GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y, Lambda, alpha_lv, tau, 1e-8, phy, X_lv;
         maxiter = 120, tol = 1e-10)
-    theta_plain = vcat(vec(alpha_lv), GLLVM.pack_lambda(Lambda),
-                       GLLVM._phylo_ordinal_tau_to_psi(tau))
-    ll_plain = -GLLVM.ordinal_lv_nll_packed(
+    theta_plain = vcat(vec(alpha_lv), GLLVModels.pack_lambda(Lambda),
+                       GLLVModels._phylo_ordinal_tau_to_psi(tau))
+    ll_plain = -GLLVModels.ordinal_lv_nll_packed(
         theta_plain, Y, p, K, LogitLink(), C; X_lv = X_lv, q_lv = q_lv,
         maxiter = 120, tol = 1e-10)
     @test isapprox(ll_joint0, ll_plain; atol = 3e-3)
 
     sigma2 = 0.35
-    ll_sparse_aug = GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    ll_sparse_aug = GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y, Lambda, alpha_lv, tau, sigma2, phy, X_lv;
         maxiter = 120, tol = 1e-10)
     ll_dense_leaf = _dense_leaf_phylo_ordinal_xlv_loglik(
@@ -156,38 +156,38 @@ end
     @test isfinite(ll_sparse_aug)
 
     Lambda0 = zeros(p, K)
-    ll_sparse_phylo_only = GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    ll_sparse_phylo_only = GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y, Lambda0, alpha_lv, tau, sigma2, phy, X_lv;
         maxiter = 120, tol = 1e-10)
     ll_dense_phylo_only = _dense_leaf_phylo_ordinal_xlv_loglik(
         Y, Lambda0, alpha_lv, tau, sigma2, phy, X_lv)
     @test isapprox(ll_sparse_phylo_only, ll_dense_phylo_only; atol = 1e-6)
 
-    @test GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    @test GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y, Lambda, alpha_lv, tau, 0.0, phy, X_lv) == -Inf
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y[1:5, :], Lambda, alpha_lv, tau, sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y, Lambda, alpha_lv, [0.0, -0.1, 1.0], sigma2, phy, X_lv)
     Y_zero = copy(Y)
     Y_zero[1, 1] = 0
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y_zero, Lambda, alpha_lv, tau, sigma2, phy, X_lv)
     Y_high = copy(Y)
     Y_high[1, 1] = C + 1
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y_high, Lambda, alpha_lv, tau, sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y, Lambda, alpha_lv, tau, sigma2, phy, X_lv[1:(end - 1), :])
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y, Lambda, ones(2, K), tau, sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_marginal_loglik(
         Y, Lambda, alpha_lv, tau, sigma2, phy, X_lv; link = IdentityLink())
 end
 
 @testset "Phylo x shared-cutpoint Ordinal B_eta_realized selected-entry canary" begin
     rng = MersenneTwister(20260746)
-    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    phy = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p = phy.n_leaves
     n = 32
     K = 1
@@ -201,7 +201,7 @@ end
                                              rng = rng, epsilon_scale = 0.05)
     @test all([all(vec(sum(Y .== c; dims = 2)) .> 0) for c in 1:(length(tau) + 1)])
 
-    fit = GLLVM._fit_phylo_ordinal_xlv(
+    fit = GLLVModels._fit_phylo_ordinal_xlv(
         Y, phy; K = K, X_lv = X_lv,
         Lambda_init = Lambda, alpha_lv_init = alpha_lv,
         tau_init = tau, sigma2_phy_init = sigma2,
@@ -212,8 +212,8 @@ end
     @test fit.sigma2_phy > 0
     @test all(diff(fit.tau) .> 0)
 
-    eta_target = vec(GLLVM._eta_realized_lv_effects(X_lv, Z_truth, Lambda))
-    prof = GLLVM._phylo_ordinal_xlv_profile_eta_realized(
+    eta_target = vec(GLLVModels._eta_realized_lv_effects(X_lv, Z_truth, Lambda))
+    prof = GLLVModels._phylo_ordinal_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [6], eta_target;
         level = 0.95, profile_iterations = 250,
         profile_max_expand = 5, profile_max_bisect = 6,
@@ -233,16 +233,16 @@ end
     @test prof.cutpoints_ordered
     @test prof.pd_hessian
 
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, Int[], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1, 1], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [p + 1], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target[1:(end - 1)])
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target; profile_iterations = 0)
-    @test_throws ArgumentError GLLVM._phylo_ordinal_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_ordinal_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target; endpoint_step = -0.1)
 end

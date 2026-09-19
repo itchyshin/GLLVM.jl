@@ -1,14 +1,14 @@
 using Test
 
 # StableRNGs is a direct dependency of the isolated numerical-quality test
-# environment, not of GLLVM's lean core project. A bare-core skip is visible
+# environment, not of GLLVModels's lean core project. A bare-core skip is visible
 # and never counts as evidence that this fitted identification gate passed.
 if Base.find_package("StableRNGs") === nothing
     @testset "Destination B joint identification (StableRNGs unavailable)" begin
         @test_skip false
     end
 else
-    using GLLVM
+    using GLLVModels
     using LinearAlgebra
     using Random
     using StableRNGs
@@ -59,15 +59,15 @@ end
     fixture = _destination_b_joint_identification_fixture()
     @test size(fixture.Y) == (2, 36)
     @test all(isfinite, fixture.Y)
-    @test GLLVM._grouping_term_nparams(fixture.terms[1], 2) == 4
-    @test GLLVM._grouping_term_nparams(fixture.terms[2], 2) == 4
+    @test GLLVModels._grouping_term_nparams(fixture.terms[1], 2) == 4
+    @test GLLVModels._grouping_term_nparams(fixture.terms[2], 2) == 4
     @test all(fixture.unit_obs[3j - 2:3j] == fill(j, 3) for j in 1:12)
     @test length(unique(fixture.cluster)) == 4
     @test length(unique(fixture.cluster2)) == 3
 
     # Immutable first receipt: a deliberately modest iteration budget that
     # exposed budget exhaustion. Keep its nonconvergence diagnostic visible.
-    budget_fit = fit_gllvm(fixture.Y; family = GLLVM.Normal(), grouping = fixture.terms,
+    budget_fit = fit_gllvm(fixture.Y; family = GLLVModels.Normal(), grouping = fixture.terms,
         unit = fixture.unit, unit_obs = fixture.unit_obs,
         cluster = fixture.cluster, cluster2 = fixture.cluster2,
         iterations = 100, g_tol = 1e-5)
@@ -81,9 +81,9 @@ end
     # symmetric covariance.  Its computed sign is not portable.
     @test budget_fit.hessian_positive_definite isa Bool
 
-    budget_objective = GLLVM._grouped_gaussian_objective(
+    budget_objective = GLLVModels._grouped_gaussian_objective(
         budget_fit.response, budget_fit.mean_design, budget_fit.terms, budget_fit.incidences)
-    budget_hessian = GLLVM._grouped_fd_hessian(budget_objective, budget_fit.parameters)
+    budget_hessian = GLLVModels._grouped_fd_hessian(budget_objective, budget_fit.parameters)
     budget_spectrum = eigen(Symmetric(budget_hessian))
     budget_minimum = argmin(budget_spectrum.values)
     dominant_coordinate = argmax(abs.(budget_spectrum.vectors[:, budget_minimum]))
@@ -93,7 +93,7 @@ end
 
     # Predeclared repair diagnostic: same DGP and default start, only a larger
     # optimiser budget, to separate budget exhaustion from identification.
-    fit = fit_gllvm(fixture.Y; family = GLLVM.Normal(), grouping = fixture.terms,
+    fit = fit_gllvm(fixture.Y; family = GLLVModels.Normal(), grouping = fixture.terms,
         unit = fixture.unit, unit_obs = fixture.unit_obs,
         cluster = fixture.cluster, cluster2 = fixture.cluster2,
         iterations = 400, g_tol = 1e-5)
@@ -107,8 +107,8 @@ end
     @test fit.stopping_reason === :converged
     @test getfield.(fit.terms, :name) == [:unit, :unit_obs, :cluster, :cluster2]
 
-    fitted_covariances = [GLLVM.extract_Sigma(fit; level = term.name).Sigma for term in fit.terms]
-    fitted_unit_obs_unique2 = GLLVM.extract_Sigma(fit; level = :unit_obs, part = :unique).s[2]
+    fitted_covariances = [GLLVModels.extract_Sigma(fit; level = term.name).Sigma for term in fit.terms]
+    fitted_unit_obs_unique2 = GLLVModels.extract_Sigma(fit; level = :unit_obs, part = :unique).s[2]
     @info "Destination B rank-one-plus-unique identification diagnostic" fitted_unit_obs_unique_variance2 = fitted_unit_obs_unique2 simulated_unit_obs_total_variance2 = fixture.truth.unit_obs[2, 2] simulated_unit_obs_unique_variance2 = :not_defined
     @test fitted_covariances == fit.term_covariances
     @test all(Sigma -> all(isfinite, Sigma) && all(diag(Sigma) .> 0.01), fitted_covariances)
@@ -123,9 +123,9 @@ end
     # The fit-time and interval finite-difference stencils can assign opposite
     # signs to the same near-null redundant direction; neither sign is an
     # identification criterion.
-    interval_objective = GLLVM._grouped_gaussian_objective(
+    interval_objective = GLLVModels._grouped_gaussian_objective(
         fit.response, fit.mean_design, fit.terms, fit.incidences)
-    interval_hessian = GLLVM._fd_hessian(interval_objective, fit.parameters)
+    interval_hessian = GLLVModels._fd_hessian(interval_objective, fit.parameters)
     interval_spectrum = eigen(Symmetric(interval_hessian))
     interval_minimum = argmin(interval_spectrum.values)
     interval_coordinate = argmax(abs.(interval_spectrum.vectors[:, interval_minimum]))
@@ -149,9 +149,9 @@ end
         GroupingTerm(:cluster; mode = :dep),
         GroupingTerm(:cluster2; mode = :indep),
     ]
-    @test GLLVM._grouping_term_nparams(dep_terms[1], 2) == 3
-    @test GLLVM._grouping_term_nparams(dep_terms[2], 2) == 3
-    dep_fit = fit_gllvm(fixture.Y; family = GLLVM.Normal(), grouping = dep_terms,
+    @test GLLVModels._grouping_term_nparams(dep_terms[1], 2) == 3
+    @test GLLVModels._grouping_term_nparams(dep_terms[2], 2) == 3
+    dep_fit = fit_gllvm(fixture.Y; family = GLLVModels.Normal(), grouping = dep_terms,
         unit = fixture.unit, unit_obs = fixture.unit_obs,
         cluster = fixture.cluster, cluster2 = fixture.cluster2,
         iterations = 400, g_tol = 1e-5)
@@ -160,7 +160,7 @@ end
     @test dep_fit.gradient_norm <= 1e-5
     @test abs(dep_fit.loglik - fit.loglik) <= 1e-3
     @info "Destination B identifiable total-covariance diagnostic" rank_one_plus_unique_loglik = fit.loglik dep_loglik = dep_fit.loglik absolute_loglik_difference = abs(dep_fit.loglik - fit.loglik)
-    dep_covariances = [GLLVM.extract_Sigma(dep_fit; level = term.name).Sigma for term in dep_fit.terms]
+    dep_covariances = [GLLVModels.extract_Sigma(dep_fit; level = term.name).Sigma for term in dep_fit.terms]
     @test all(Sigma -> all(isfinite, Sigma) && all(diag(Sigma) .> 0.01), dep_covariances)
     @test dep_covariances[4] ≈ Diagonal(diag(dep_covariances[4])) atol = 1e-12
 

@@ -1,6 +1,6 @@
 """Verify the surface-conversion batch: 20 BLOCKED_NEEDS_JULIA_SURFACE
 ledger rows converted to bound cases (postfit/, namespace/, inference/
-prefixes, evidence naming a function that now exists in src/GLLVM.jl's
+prefixes, evidence naming a function that now exists in src/GLLVModels.jl's
 export list -- the extractors slice, src/extractors.jl, and the derived-CI
 slice, src/confint_derived_wald.jl / src/confint_derived.jl /
 src/twolevel.jl). 21 further target rows are recorded in the contract's

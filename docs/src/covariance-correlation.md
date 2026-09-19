@@ -27,7 +27,7 @@ where `ΛΛᵀ` is the **shared** (latent) part and `Ψ = diag(ψ)` the
 **response-specific** residual part. Three extractors return the pieces:
 
 ```julia
-using GLLVM, Random
+using GLLVModels, Random
 Random.seed!(1)
 p, n, K = 6, 200, 2
 Λtrue = 0.8 .* randn(p, K)

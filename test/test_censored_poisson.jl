@@ -1,15 +1,15 @@
-using GLLVM, Test, Random, Distributions, ForwardDiff, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, ForwardDiff, LinearAlgebra
 
 # Local wiring until the admit conductor adds the include / export / runtests entry.
-if !isdefined(GLLVM, :CensoredPoisson)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "families", "censored_poisson.jl"))
+if !isdefined(GLLVModels, :CensoredPoisson)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "families", "censored_poisson.jl"))
 end
 
 @testset "censored_poisson family (Julia-forward)" begin
 
     @testset "stable μ≪C evaluation (ENGINE-GATE 1)" begin
         μ, C = 0.3, 30
-        logS = GLLVM._censored_poisson_logS(μ, C)
+        logS = GLLVModels._censored_poisson_logS(μ, C)
         @test isfinite(logS)
         @test logS ≈ logcdf(Gamma(C, 1.0), μ) atol = 1e-12
         # Naive survival collapses in this regime — document the hazard.
@@ -38,14 +38,14 @@ end
         end
         cells = [(3.7, 5), (0.3, 30), (0.05, 10), (25.0, 30), (120.0, 100)]
         for (μ, C) in cells
-            G = GLLVM._censored_poisson_G(μ, C)
+            G = GLLVModels._censored_poisson_G(μ, C)
             # score at LogLink: _glm_score returns G
-            s = GLLVM._glm_score(GLLVM.CensoredPoisson(), μ, C, μ, 0)
+            s = GLLVModels._glm_score(GLLVModels.CensoredPoisson(), μ, C, μ, 0)
             @test s ≈ G atol = 1e-14
-            W = GLLVM._glm_weight(GLLVM.CensoredPoisson(), μ, C, μ)
+            W = GLLVModels._glm_weight(GLLVModels.CensoredPoisson(), μ, C, μ)
             @test W ≈ G * (G + μ - C) atol = 1e-10
             @test W ≥ -1e-12
-            ℓ = η -> GLLVM._censored_poisson_logS(exp(η), C)
+            ℓ = η -> GLLVModels._censored_poisson_logS(exp(η), C)
             η = log(μ)
             g2 = G * (C - μ - G)
             @test abs(G - richardson1(ℓ, η, 1e-3)) ≤ 1e-8 * abs(G)
@@ -56,9 +56,9 @@ end
     @testset "non-log link rejected (Identity lock)" begin
         Y = [1 2; 3 4]
         N = zeros(Int, 2, 2)
-        @test_throws ArgumentError GLLVM.censored_poisson_marginal_loglik_laplace(
+        @test_throws ArgumentError GLLVModels.censored_poisson_marginal_loglik_laplace(
             Y, N, zeros(2, 1), zeros(2), IdentityLink())
-        @test isfinite(GLLVM.censored_poisson_marginal_loglik_laplace(
+        @test isfinite(GLLVModels.censored_poisson_marginal_loglik_laplace(
             Y, N, zeros(2, 1), zeros(2), LogLink()))
     end
 
@@ -68,8 +68,8 @@ end
         β = log.([2.0, 3.5, 1.5, 4.0])
         Y = [rand(Poisson(exp(β[t]))) for t in 1:p, s in 1:n]
         N0 = zeros(Int, p, n)
-        ll_c = GLLVM.censored_poisson_marginal_loglik_laplace(Y, N0, zeros(p, K), β)
-        ll_p = GLLVM.poisson_marginal_loglik_laplace(Y, zeros(p, K), β)
+        ll_c = GLLVModels.censored_poisson_marginal_loglik_laplace(Y, N0, zeros(p, K), β)
+        ll_p = GLLVModels.poisson_marginal_loglik_laplace(Y, zeros(p, K), β)
         @test ll_c ≈ ll_p atol = 1e-10
     end
 
@@ -89,7 +89,7 @@ end
                 N[t, s] = 0
             end
         end
-        ll = GLLVM.censored_poisson_marginal_loglik_laplace(Y, N, zeros(p, K), β)
+        ll = GLLVModels.censored_poisson_marginal_loglik_laplace(Y, N, zeros(p, K), β)
         ll_indep = sum(begin
             μ = exp(β[t])
             if N[t, s] == 0
@@ -105,11 +105,11 @@ end
         Y = [2 5; 3 1]
         L = [2 5; 3 1]
         U = [2 typemax(Int); 3 1]   # (1,2) right-censored at 5
-        Y2, N2 = GLLVM.censored_bounds_to_YN(L, U)
+        Y2, N2 = GLLVModels.censored_bounds_to_YN(L, U)
         @test Y2 == [2 5; 3 1]
         @test N2 == [0 5; 0 0]
-        @test_throws ArgumentError GLLVM.censored_bounds_to_YN([1 2], [3 4])  # finite interval
-        @test_throws ArgumentError GLLVM.censored_bounds_to_YN([0 1], [typemax(Int) 1])  # C=0
+        @test_throws ArgumentError GLLVModels.censored_bounds_to_YN([1 2], [3 4])  # finite interval
+        @test_throws ArgumentError GLLVModels.censored_bounds_to_YN([0 1], [typemax(Int) 1])  # C=0
     end
 
     @testset "censored=falses fit matches Poisson smoke" begin
@@ -124,7 +124,7 @@ end
                 Y[t, s] = rand(Poisson(exp(β[t] + (Λ * z)[t])))
             end
         end
-        fit_c = GLLVM.fit_censored_poisson_gllvm(Y; K = K, censored = falses(p, n),
+        fit_c = GLLVModels.fit_censored_poisson_gllvm(Y; K = K, censored = falses(p, n),
                                                  iterations = 60)
         fit_p = fit_poisson_gllvm(Y; K = K, iterations = 60, gradient = :finite)
         @test isfinite(fit_c.loglik)
@@ -192,7 +192,7 @@ end
         end
         @test count(!iszero, N) / length(N) ≥ 0.75   # censored-dominated cell
 
-        fam = GLLVM.CensoredPoisson()
+        fam = GLLVModels.CensoredPoisson()
         worst = 0.0
         worst_grad = 0.0
         min_weight = Inf
@@ -203,7 +203,7 @@ end
                 μ = exp.(β .+ Λ * z)
                 acc = -0.5 * dot(z, z)
                 for t in 1:p
-                    acc += GLLVM._glm_logpdf(fam, μ[t], ns[t], ys[t])
+                    acc += GLLVModels._glm_logpdf(fam, μ[t], ns[t], ys[t])
                 end
                 acc
             end
@@ -227,11 +227,11 @@ end
             # Laplace: q(ẑ) − ½logdet(−∇²q). The (2π)^{K/2} factors cancel against
             # the N(0,I) prior normaliser, matching `laplace_loglik_site`'s form.
             ℓ_oracle = q(ẑ) - 0.5 * logdet(-rhess(q, ẑ, 5e-3))
-            ℓ_engine = GLLVM.laplace_loglik_site(fam, ys, ns, Λ, β, LogLink())
+            ℓ_engine = GLLVModels.laplace_loglik_site(fam, ys, ns, Λ, β, LogLink())
             worst = max(worst, abs(ℓ_oracle - ℓ_engine))
             μ̂ = exp.(β .+ Λ * ẑ)
             for t in 1:p
-                min_weight = min(min_weight, GLLVM._glm_weight(fam, μ̂[t], ns[t], μ̂[t]))
+                min_weight = min(min_weight, GLLVModels._glm_weight(fam, μ̂[t], ns[t], μ̂[t]))
             end
         end
         @test worst_grad ≤ 1e-6
@@ -259,9 +259,9 @@ end
                 end
             end
         end
-        fit = GLLVM.fit_censored_poisson_gllvm(Y; K = K, censored = cens, iterations = 80)
+        fit = GLLVModels.fit_censored_poisson_gllvm(Y; K = K, censored = cens, iterations = 80)
         @test isfinite(fit.loglik)
         @test size(fit.Λ) == (p, K)
-        @test length(fit.theta_packed) == p + GLLVM.rr_theta_len(p, K)
+        @test length(fit.theta_packed) == p + GLLVModels.rr_theta_len(p, K)
     end
 end

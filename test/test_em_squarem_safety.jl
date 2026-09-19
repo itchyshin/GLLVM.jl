@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
 
 # SQUAREM inferior-basin safety check (`em_fit_phylo_squarem` in
 # `src/em_squarem.jl`). SQUAREM's per-cycle monotonicity guarantees it lands on
@@ -14,8 +14,8 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistic
 function _sim_squarem_safety(p, seed; K_B = 1, n = 200,
                              σ_phy_scale = 0.9, σ_eps = 0.5)
     Random.seed!(seed)
-    phy   = GLLVM.random_balanced_tree(p; branch_length = 0.1)
-    Σ_phy = GLLVM.sigma_phy_dense(phy; σ²_phy = 1.0)
+    phy   = GLLVModels.random_balanced_tree(p; branch_length = 0.1)
+    Σ_phy = GLLVModels.sigma_phy_dense(phy; σ²_phy = 1.0)
     Λ_B   = randn(p, K_B)
     for k in 1:K_B, i in 1:(k - 1)
         Λ_B[i, k] = 0.0
@@ -73,10 +73,10 @@ else
         # On a well-behaved fixture SQUAREM and plain EM agree, so the polish
         # gains ~nothing and the guard must NOT fire (fallback_used = false),
         # returning the accelerated SQUAREM result.
-        tree = GLLVM.augmented_phy(
+        tree = GLLVModels.augmented_phy(
             "(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
         p    = tree.n_leaves
-        Σ    = GLLVM.sigma_phy_dense(tree; σ²_phy = 1.0)
+        Σ    = GLLVModels.sigma_phy_dense(tree; σ²_phy = 1.0)
         Random.seed!(30)
         Λ_B  = reshape([0.8, 0.6, 0.4, -0.3, 0.5, -0.2], p, 1)
         η_B  = randn(1, 400)

@@ -105,7 +105,7 @@ function _a4_s4_document()
             "frozen_dll_sha256" => _A4_S4_DLL,
             "julia_source_sha256" => _A4_S4_SHA,
             "julia_source_attestation_status" => "runner_recorded_unverified"),
-        "route" => Dict("entrypoint" => "GLLVM.bridge_fit",
+        "route" => Dict("entrypoint" => "GLLVModels.bridge_fit",
             "phylo_model" => "multivariate",
             "private_candidate_only" => true,
             "public_formula_admission" => "closed"),

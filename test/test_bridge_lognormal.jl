@@ -10,7 +10,7 @@
 using Test
 using Random
 using LinearAlgebra
-using GLLVM
+using GLLVModels
 
 function _bln_sim(p, n, K; seed = 1)
     Random.seed!(seed)
@@ -31,19 +31,19 @@ end
     Y = _bln_sim(3, 40, 1; seed = 318)
 
     @testset "family key and list membership" begin
-        @test GLLVM._bridge_family_key("lognormal") == "lognormal"
-        @test GLLVM._bridge_family_key("Lognormal") == "lognormal"
-        @test "lognormal" in GLLVM._BRIDGE_ONEPART_FAMILIES
-        pois = findfirst(==("poisson"), collect(GLLVM._BRIDGE_ONEPART_FAMILIES))
-        binom = findfirst(==("binomial"), collect(GLLVM._BRIDGE_ONEPART_FAMILIES))
-        ln = findfirst(==("lognormal"), collect(GLLVM._BRIDGE_ONEPART_FAMILIES))
+        @test GLLVModels._bridge_family_key("lognormal") == "lognormal"
+        @test GLLVModels._bridge_family_key("Lognormal") == "lognormal"
+        @test "lognormal" in GLLVModels._BRIDGE_ONEPART_FAMILIES
+        pois = findfirst(==("poisson"), collect(GLLVModels._BRIDGE_ONEPART_FAMILIES))
+        binom = findfirst(==("binomial"), collect(GLLVModels._BRIDGE_ONEPART_FAMILIES))
+        ln = findfirst(==("lognormal"), collect(GLLVModels._BRIDGE_ONEPART_FAMILIES))
         @test ln == pois + 1
         @test ln == binom - 1
-        @test !("lognormal" in GLLVM._BRIDGE_X_FAMILIES)
-        @test !("lognormal" in GLLVM._BRIDGE_XLV_FAMILIES)
-        @test !("lognormal" in GLLVM._BRIDGE_MASK_FAMILIES)
-        @test "lognormal" in GLLVM._BRIDGE_NO_CI_FAMILIES
-        @test "lognormal" in GLLVM._BRIDGE_NO_SCALAR_POSTFIT_FAMILIES
+        @test !("lognormal" in GLLVModels._BRIDGE_X_FAMILIES)
+        @test !("lognormal" in GLLVModels._BRIDGE_XLV_FAMILIES)
+        @test !("lognormal" in GLLVModels._BRIDGE_MASK_FAMILIES)
+        @test "lognormal" in GLLVModels._BRIDGE_NO_CI_FAMILIES
+        @test "lognormal" in GLLVModels._BRIDGE_NO_SCALAR_POSTFIT_FAMILIES
     end
 
     @testset "no-X point route matches fit_lognormal_gllvm" begin
@@ -57,10 +57,10 @@ end
         @test br.n_traits == 3
         @test br.n_units == 40
         @test br.alpha ≈ oracle.β atol = 1e-8
-        L = oracle.Λ * GLLVM._svd_rotation(oracle.Λ)
+        L = oracle.Λ * GLLVModels._svd_rotation(oracle.Λ)
         @test br.loadings ≈ L atol = 1e-8
         @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
-        @test br.df == 3 + GLLVM._bridge_rr_df(3, 1) + 1
+        @test br.df == 3 + GLLVModels._bridge_rr_df(3, 1) + 1
         @test br.dispersion ≈ fill(oracle.σ, 3) atol = 1e-8
         @test isnan(br.sigma_eps)
         @test br.link == fill("LogLink", 3)

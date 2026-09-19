@@ -34,7 +34,7 @@ def check(process, plan, receipt, before, after, log):
     need(receipt['gllvmTMB_path'] == '/home/snakagaw/core070-aghq-20260830/oracle-build-01/library/gllvmTMB',
          'wrong oracle')
     need(receipt['active_project'] == plan['cwd'] + '/test/parity/Project.toml' and
-         receipt['GLLVM_source'] == plan['cwd'] + '/src/GLLVM.jl', 'wrong loaded candidate')
+         receipt['GLLVM_source'] == plan['cwd'] + '/src/GLLVModels.jl', 'wrong loaded candidate')
     need(receipt['roundtrip'] == 6 and receipt['julia_threads'] == receipt['blas_threads'] == 1,
          'roundtrip or thread failure')
     need(receipt['child_preload_environment'] == '' and
@@ -78,7 +78,7 @@ def verify(self_test=False):
                  lambda p,r,b,a: p['results'][1].update(exit_code=1),
                  lambda p,r,b,a: p.update(source_unchanged=False),
                  lambda p,r,b,a: r.update(roundtrip=7),
-                 lambda p,r,b,a: r.update(GLLVM_source='/wrong/src/GLLVM.jl'),
+                 lambda p,r,b,a: r.update(GLLVM_source='/wrong/src/GLLVModels.jl'),
                  lambda p,r,b,a: r.update(julia_threads=2),
                  lambda p,r,b,a: r.update(expected_error='NO_ERROR'),
                  lambda p,r,b,a: a.pop(next(iter(a))),

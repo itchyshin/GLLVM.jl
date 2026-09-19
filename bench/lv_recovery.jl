@@ -13,7 +13,7 @@
 #
 #   LV_REC_N="160,320,640"  LV_REC_S=40  julia --project=. bench/lv_recovery.jl
 
-using GLLVM
+using GLLVModels
 using Random, Statistics, LinearAlgebra, Distributions, Printf
 
 const P      = 5
@@ -34,7 +34,7 @@ gen_gaussian(rng, n, X_lv) =
 
 function gen_binomial(rng, n, X_lv, link)
     eta = eta_matrix([-0.6, -0.25, 0.05, 0.35, 0.65], n, X_lv, rng)
-    mu  = clamp.(GLLVM.linkinv.(Ref(link), eta), 1e-4, 1 - 1e-4)
+    mu  = clamp.(GLLVModels.linkinv.(Ref(link), eta), 1e-4, 1 - 1e-4)
     N   = fill(40, P, n)
     Y   = [rand(rng, Binomial(N[t, s], mu[t, s])) for t in 1:P, s in 1:n]
     return (Float64.(Y), (; N = N))

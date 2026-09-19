@@ -1,4 +1,4 @@
-# test_truncated_poisson_parity.jl — zero-truncated Poisson GLLVM logLik vs gllvmTMB
+# test_truncated_poisson_parity.jl — zero-truncated Poisson GLLVModels logLik vs gllvmTMB
 # (twin fid 10)
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
@@ -21,7 +21,7 @@
 # Twin Δ rule: no number is quoted unless this cell runs live under
 # GLLVM_PARITY_TESTS=1 against a real gllvmTMB. Never invent, never carry over.
 
-using GLLVM, RCall, Test, Random, LinearAlgebra
+using GLLVModels, RCall, Test, Random, LinearAlgebra
 
 # parity_helpers.jl is included once by runparity.jl
 
@@ -52,7 +52,7 @@ function _tp_rand_trunc_poisson(λ::Float64)
     end
 end
 
-@testset "truncated_poisson GLLVM parity: GLLVM.jl vs gllvmTMB (twin fid 10)" begin
+@testset "truncated_poisson GLLVModels parity: GLLVModels.jl vs gllvmTMB (twin fid 10)" begin
 
     Random.seed!(_TP_SEED)
     p, K, n = 5, 2, 60

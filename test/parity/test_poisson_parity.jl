@@ -1,10 +1,10 @@
-# test_poisson_parity.jl — Poisson GLLVM logLik vs gllvmTMB
+# test_poisson_parity.jl — Poisson GLLVModels logLik vs gllvmTMB
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
 # Same-model bar: per-trait intercepts + latent unique=FALSE (no Ψ).
 # Inventory: docs/dev-log/plans/scratch/2026-08-01-correctness-inventory.md
 
-using GLLVM, RCall, Test, Random, LinearAlgebra
+using GLLVModels, RCall, Test, Random, LinearAlgebra
 
 # parity_helpers.jl is included once by runparity.jl
 
@@ -21,7 +21,7 @@ function _rand_poisson(λ::Float64)
     end
 end
 
-@testset "Poisson GLLVM parity: GLLVM.jl vs gllvmTMB" begin
+@testset "Poisson GLLVModels parity: GLLVModels.jl vs gllvmTMB" begin
     Random.seed!(44)
     p, K, n = 5, 2, 60
     β = log.([3.0, 5.0, 2.0, 4.0, 3.5])

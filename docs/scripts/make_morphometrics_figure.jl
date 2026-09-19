@@ -5,7 +5,7 @@
 #
 #   julia --project=/tmp/landingfig docs/scripts/make_morphometrics_figure.jl
 
-using GLLVM, CairoMakie, Random, Statistics
+using GLLVModels, CairoMakie, Random, Statistics
 
 Random.seed!(7)
 n, p, K = 150, 8, 2

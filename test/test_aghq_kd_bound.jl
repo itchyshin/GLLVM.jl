@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 # A4(3) affordability: `_aghq_kd_bound` throw-iff k>1 && d>5.
 # #255 MERGED — the three `!isdefined` absence rows are gone from
@@ -7,8 +7,8 @@ using GLLVM, Test, Random, Distributions
 
 function _bound_site(; k::Integer, d::Integer, kwargs...)
     p = max(d, 3)
-    GLLVM.aghq_stage1a_loglik_site(Poisson(), ones(Int, p), ones(Int, p),
-                                   ones(p, d), zeros(p), GLLVM.LogLink();
+    GLLVModels.aghq_stage1a_loglik_site(Poisson(), ones(Int, p), ones(Int, p),
+                                   ones(p, d), zeros(p), GLLVModels.LogLink();
                                    k = k, kwargs...)
 end
 
@@ -24,9 +24,9 @@ end
 @testset "AGHQ A4(3) k^d / d≤5 affordability bound" begin
 
     @testset "bound(6,3) and (6,2) throw tensor cost, not treewidth" begin
-        err = @test_throws ArgumentError GLLVM._aghq_kd_bound(6, 3)
+        err = @test_throws ArgumentError GLLVModels._aghq_kd_bound(6, 3)
         _bound_err_names_tensor(err.value)
-        err = @test_throws ArgumentError GLLVM._aghq_kd_bound(6, 2)
+        err = @test_throws ArgumentError GLLVModels._aghq_kd_bound(6, 2)
         _bound_err_names_tensor(err.value)
     end
 
@@ -44,10 +44,10 @@ end
     end
 
     @testset "affordable (d,k) pairs return nothing" begin
-        @test GLLVM._aghq_kd_bound(5, 3) === nothing
-        @test GLLVM._aghq_kd_bound(1, 3) === nothing
-        @test GLLVM._aghq_kd_bound(6, 1) === nothing
-        @test GLLVM._aghq_kd_bound(20, 1) === nothing
+        @test GLLVModels._aghq_kd_bound(5, 3) === nothing
+        @test GLLVModels._aghq_kd_bound(1, 3) === nothing
+        @test GLLVModels._aghq_kd_bound(6, 1) === nothing
+        @test GLLVModels._aghq_kd_bound(20, 1) === nothing
     end
 
     @testset "k=1 d=6 site still matches dense Laplace" begin
@@ -57,10 +57,10 @@ end
         Λ = 0.5 .* randn(p, K)
         y = [rand(Poisson(exp(β[t]))) for t in 1:p]
         n = ones(Int, p)
-        link = GLLVM.LogLink()
+        link = GLLVModels.LogLink()
         fam = Poisson()
-        lap = GLLVM.laplace_loglik_site(fam, y, n, Λ, β, link)
-        aghq = GLLVM.aghq_stage1a_loglik_site(fam, y, n, Λ, β, link; k = 1)
+        lap = GLLVModels.laplace_loglik_site(fam, y, n, Λ, β, link)
+        aghq = GLLVModels.aghq_stage1a_loglik_site(fam, y, n, Λ, β, link; k = 1)
         @test isfinite(lap) && isfinite(aghq)
         @test aghq ≈ lap atol = 1e-12
     end

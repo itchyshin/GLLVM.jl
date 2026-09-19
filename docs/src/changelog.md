@@ -1,11 +1,15 @@
 # Changelog
 
-Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
+Notable changes to GLLVModels.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 **IN** (shipped), **PARTIAL** (limited), **PLANNED** (next), with issue/PR refs.
 
-## GLLVM.jl (development version)
+## GLLVModels.jl (development version)
 
 ### Changed
+- **CHANGED:** the package and module are now named `GLLVModels`; the public
+  fitting API remains unchanged. After the rename, `using GLLVM` cannot resolve
+  a package. Once `GLLVModels` is loaded, `GLLVModels.GLLVM` is only a temporary
+  qualified alias; it does not provide import compatibility and is deprecated.
 - **Development:** fixed Gaussian source fits accept a complete mean design `X`.
   Explicit-source wide/long formulas expose trait intercepts, shared slopes,
   categorical contrasts and interactions. Fits retain the copied design, response
@@ -41,7 +45,7 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
   shared estimated and per-species estimated power; `TweediePerTraitPowerFit`
   stores the latter. Student fits record whether degrees of freedom were estimated
   so information-criterion parameter counts are correct. These changes do not
-  establish full Core070 parity: the original Student-t R health gate remains
+  establish full parity: the original Student-t R health gate remains
   failed, and final candidate requalification is pending.
 - Branch-RE uses an equivalent dense marginal fallback when the auxiliary sparse
   precision is numerically unsafe. This preserves valid marginal models without
@@ -88,7 +92,7 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 - **IN:** phylogenetic GLM (`fit_phylo_glm` / `PhyloGLMFit`) — a per-species
   phylogenetic random intercept for the non-Gaussian families (Poisson / NB /
   Binomial) via an augmented-state joint Laplace over the sparse phylogenetic
-  precision (issue #61).
+  precision.
 - **IN:** zero-inflated binomial (`fit_zib_gllvm` / `ZIBFit`), with Wald /
   profile / bootstrap confidence intervals.
 - **IN:** negative-binomial type-1 (NB1, linear variance `Var = μ(1+φ)`;
@@ -97,7 +101,7 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 ### Documentation
 - **IN:** pkgdown-style documentation site (DocumenterVitepress) — dropdown
   navbar, full-text search, light/dark mode; homepage mirrors `gllvmTMB`'s with
-  a Julia flavour. (#4)
+  a Julia flavour.
 
 ### Quality & infrastructure
 - **IN:** `Pkg.test()` adopted as the full-suite command; Aqua (package
@@ -105,7 +109,7 @@ Notable changes to GLLVM.jl. Style mirrors `gllvmTMB`'s NEWS: status labels
 - **IN:** isolated RCall.jl parity scaffold (`test/parity/`, opt-in) for
   checking agreement against R `gllvmTMB`.
 
-## GLLVM.jl v0.2.0
+## GLLVModels.jl v0.2.0
 
 A large expansion from the v0.1.0 Gaussian-only pilot to a broad, gllvmTMB-class
 package; every numerical addition is gated by deterministic tests.
@@ -170,7 +174,7 @@ package; every numerical addition is gated by deterministic tests.
 - **IN:** the `@formula` / `gllvm(...)` front-end (continuous fixed effects, wide
   + long input) and an R interface scaffold (`r/gllvmjl.R`, via JuliaConnectoR).
 
-## GLLVM.jl v0.1.0
+## GLLVModels.jl v0.1.0
 
 - **IN:** Gaussian + phylogenetic GLLVM engine — closed-form marginal
   likelihood, PPCA / EM initialisation, multiple phylogenetic representations

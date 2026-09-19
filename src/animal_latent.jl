@@ -15,11 +15,11 @@ with a minimal unit-tier factor (`K = 1`). When `d == p` this is the same estima
 class as [`fit_animal_dep_gllvm`](@ref) / twin `animal_latent(..., d = T)`.
 
 `unique = false` (default) is loadings-only on the animal block (`has_phy_unique =
-false`). `unique = true` (twin `animal_latent(..., unique = TRUE)`) is **not** in
-Arc 0 — fail-loud.
+false`). `unique = true` (twin `animal_latent(..., unique = TRUE)`) is not yet
+available and raises an error.
 
-This is a **Gaussian matrix** fitter. `@formula` `animal_latent()` sugar is not in
-this slice.
+This is a **Gaussian matrix** fitter. `@formula` `animal_latent()` syntax is not
+currently available.
 
 `A` must be square p × p. `Y` is traits × sites with `size(Y, 1) == size(A, 1)`.
 `d` must satisfy `1 ≤ d ≤ p`.
@@ -50,7 +50,7 @@ function fit_animal_latent_gllvm(Y::AbstractMatrix, A::AbstractMatrix, d::Intege
         "$(nameof(typeof(family))). No formula animal_latent() sugar."))
     unique && throw(ArgumentError(
         "fit_animal_latent_gllvm: unique = true (animal × latent with diag(psi) " *
-        "on the animal tier) is not in Arc 0; use unique = false."))
+        "on the animal tier) is not available; use unique = false."))
     for sym in (:K, :num_lv, :K_W, :has_diag, :K_phy, :has_phy_unique)
         if haskey(kwargs, sym)
             throw(ArgumentError(

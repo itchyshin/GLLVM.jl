@@ -1,18 +1,18 @@
-using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
 
-# Gradient-free EM for the Gaussian phylo_unique GLLVM. NEW FILES not wired
-# into the GLLVM module on this branch (matching the PERF+++++ hard constraint
+# Gradient-free EM for the Gaussian phylo_unique GLLVModels. NEW FILES not wired
+# into the GLLVModels module on this branch (matching the PERF+++++ hard constraint
 # "do NOT modify any existing src/test/Project.toml file"). Pull them in
-# directly for the test. `em_phylo.jl` calls `GLLVM.gaussian_marginal_loglik`
-# and `GLLVM.ppca_init` via the loaded module, and consumes the
-# `AugmentedPhy` from the GLLVM-exported `augmented_phy`.
-# em_phylo.jl is included in GLLVM.jl
+# directly for the test. `em_phylo.jl` calls `GLLVModels.gaussian_marginal_loglik`
+# and `GLLVModels.ppca_init` via the loaded module, and consumes the
+# `AugmentedPhy` from the GLLVModels-exported `augmented_phy`.
+# em_phylo.jl is included in GLLVModels.jl
 
 # Helper: simulate phylo_unique data with K_B site factors plus one shared
 # per-trait phylo random effect z = diag(σ_phy) φ, φ ~ N(0, Σ_phy).
 function _sim_phylo_unique(tree, Λ_B, σ_phy, σ_eps, n; seed = 0)
     Random.seed!(seed)
-    Σ_phy = GLLVM.sigma_phy_dense(tree; σ²_phy = 1.0)
+    Σ_phy = GLLVModels.sigma_phy_dense(tree; σ²_phy = 1.0)
     p, K_B = size(Λ_B)
     η_B = randn(K_B, n)
     φ   = cholesky(Symmetric(Σ_phy)).L * randn(p)
@@ -92,8 +92,8 @@ end
         # The E-step's dominant linear solve is (A + n B)⁻¹ applied to vectors.
         # `solve_AnB` reuses the augmented-state saddle point of
         # `likelihood_sparse_phy.jl` and must equal the dense Cholesky solve.
-        tree_aug = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
-        Σ        = GLLVM.sigma_phy_dense(tree_aug; σ²_phy = 1.0)
+        tree_aug = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+        Σ        = GLLVModels.sigma_phy_dense(tree_aug; σ²_phy = 1.0)
         p        = tree_aug.n_leaves
         Random.seed!(7)
         Λ_B   = randn(p, 2)
@@ -128,7 +128,7 @@ end
         @test length(emf1.blup_phy) == p1
 
         # Sparse augmented-Q BLUP (never forms Σ_phy).
-        tree_aug   = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+        tree_aug   = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
         μ_z_sparse = blup_phylo_sparse(y1, emf1.Λ_B, emf1.σ_eps, emf1.σ_phy, tree_aug)
         @test μ_z_sparse ≈ μ_z_dense rtol = 1e-8 atol = 1e-9
     end
@@ -136,7 +136,7 @@ end
     @testset "EM reproduces dense log-lik when evaluated at EM params" begin
         # The EM trajectory is measured with the SAME dense closed form the
         # gradient fit uses, so the reported logLik equals a fresh evaluation.
-        ll  = GLLVM.gaussian_marginal_loglik(y1, emf1.Λ_B, emf1.σ_eps;
+        ll  = GLLVModels.gaussian_marginal_loglik(y1, emf1.Λ_B, emf1.σ_eps;
                                              σ_phy = emf1.σ_phy, Σ_phy = Σ1)
         @test emf1.logLik ≈ ll rtol = 1e-12
     end

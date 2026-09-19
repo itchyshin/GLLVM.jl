@@ -28,11 +28,11 @@ JuliaCall::julia_setup(JULIA_HOME=Sys.getenv("JULIA_HOME"),installJulia=FALSE,
 cat("INITIALIZE_PUBLIC_GLLVM_SETUP\n")
 gllvmTMB::gllvm_julia_setup(jl_path=Sys.getenv("JULIA_PROJECT"),julia_home=Sys.getenv("JULIA_HOME"))
 version <- JuliaCall::julia_eval("string(VERSION)")
-source <- JuliaCall::julia_eval("pathof(GLLVM)")
+source <- JuliaCall::julia_eval("pathof(GLLVModels)")
 project <- JuliaCall::julia_eval("Base.active_project()")
 roundtrip <- JuliaCall::julia_eval("sum([1.0,2.0,3.0])")
 stopifnot(identical(as.numeric(roundtrip),6))
-stopifnot(normalizePath(source) == normalizePath(file.path(getwd(),"src","GLLVM.jl")))
+stopifnot(normalizePath(source) == normalizePath(file.path(getwd(),"src","GLLVModels.jl")))
 failure <- tryCatch({JuliaCall::julia_eval('error("CORE070_EXPECTED_RUNTIME_ERROR")'); "NO_ERROR"}, error=conditionMessage)
 stopifnot(grepl("CORE070_EXPECTED_RUNTIME_ERROR",failure,fixed=TRUE))
 stopifnot(JuliaCall::julia_eval("1+1")==2)
@@ -40,7 +40,7 @@ receipt <- list(parent_preload=parent_preload,child_preload_environment=Sys.gete
     JuliaCall_path=find.package("JuliaCall"),gllvmTMB_path=find.package("gllvmTMB"),
     active_project=project,GLLVM_source=source,roundtrip=roundtrip,
     julia_threads=JuliaCall::julia_eval("Threads.nthreads()"),
-    blas_threads=JuliaCall::julia_eval("GLLVM.LinearAlgebra.BLAS.get_num_threads()"),
+    blas_threads=JuliaCall::julia_eval("GLLVModels.LinearAlgebra.BLAS.get_num_threads()"),
     libPaths=.libPaths())
 stopifnot(receipt$julia_threads==1,receipt$blas_threads==1)
 dependencies_after <- dependency_snapshot("after")

@@ -10,7 +10,7 @@
 # precondition for launching.
 #
 # argv: family p n seed_start seed_end outdir
-using GLLVM
+using GLLVModels
 using Random
 using LinearAlgebra
 using Statistics
@@ -36,13 +36,13 @@ function draw_Y(rng)
     if family == "gaussian"
         return eta .+ sigma_true .* randn(rng, p, n)
     elseif family == "poisson"
-        return [rand(rng, GLLVM.Distributions.Poisson(exp(min(eta[i, j], 4.0)))) for i in 1:p, j in 1:n]
+        return [rand(rng, GLLVModels.Distributions.Poisson(exp(min(eta[i, j], 4.0)))) for i in 1:p, j in 1:n]
     elseif family == "nbinom2"
-        return [rand(rng, GLLVM.Distributions.NegativeBinomial(2.0, 2.0 / (2.0 + exp(min(eta[i, j], 4.0))))) for i in 1:p, j in 1:n]
+        return [rand(rng, GLLVModels.Distributions.NegativeBinomial(2.0, 2.0 / (2.0 + exp(min(eta[i, j], 4.0))))) for i in 1:p, j in 1:n]
     elseif family == "binomial"
         return [rand(rng) < _inv_logit(eta[i, j]) ? 1 : 0 for i in 1:p, j in 1:n]
     else
-        return [clamp(rand(rng, GLLVM.Distributions.Beta(_inv_logit(eta[i, j]) * phi_true,
+        return [clamp(rand(rng, GLLVModels.Distributions.Beta(_inv_logit(eta[i, j]) * phi_true,
                                                         (1 - _inv_logit(eta[i, j])) * phi_true)),
                       1e-6, 1 - 1e-6) for i in 1:p, j in 1:n]
     end
@@ -54,15 +54,15 @@ function fit_one(Y)
         for j in 1:p
             X[j, :, j] .= 1
         end
-        return GLLVM.fit_gaussian_gllvm(float.(Y); K = K, X = X), X
+        return GLLVModels.fit_gaussian_gllvm(float.(Y); K = K, X = X), X
     elseif family == "poisson"
-        return GLLVM.fit_poisson_gllvm(Int.(Y); K = K), nothing
+        return GLLVModels.fit_poisson_gllvm(Int.(Y); K = K), nothing
     elseif family == "nbinom2"
-        return GLLVM.fit_nb_gllvm(Int.(Y); K = K), nothing
+        return GLLVModels.fit_nb_gllvm(Int.(Y); K = K), nothing
     elseif family == "binomial"
-        return GLLVM.fit_binomial_gllvm(Int.(Y); K = K), nothing
+        return GLLVModels.fit_binomial_gllvm(Int.(Y); K = K), nothing
     else
-        return GLLVM.fit_beta_gllvm(float.(Y); K = K), nothing
+        return GLLVModels.fit_beta_gllvm(float.(Y); K = K), nothing
     end
 end
 
@@ -78,8 +78,8 @@ open(outfile, "w") do io
         row = try
             fit, X = fit_one(Y)
             conv = hasproperty(fit, :converged) ? fit.converged : missing
-            ci = X === nothing ? GLLVM.confint(fit, float.(Y); level = 0.95, parm = "beta") :
-                                 GLLVM.confint(fit, float.(Y); level = 0.95, parm = "beta", X = X)
+            ci = X === nothing ? GLLVModels.confint(fit, float.(Y); level = 0.95, parm = "beta") :
+                                 GLLVModels.confint(fit, float.(Y); level = 0.95, parm = "beta", X = X)
             lo = Float64.(ci.lower); hi = Float64.(ci.upper)
             m = min(length(lo), p)
             covered = count(t -> isfinite(lo[t]) && isfinite(hi[t]) &&

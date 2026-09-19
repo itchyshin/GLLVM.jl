@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra, Random
+using Test, GLLVModels, LinearAlgebra, Random
 
 @testset "Fixed residual and Gaussian unique variances" begin
     rng = MersenneTwister(8103101)
@@ -16,11 +16,11 @@ using Test, GLLVM, LinearAlgebra, Random
     @test all(>=(c^2),fit.φ²)
     @test fit.loglik ≈ gaussian_pervar_marginal_loglik(Y,fit.Λ,fit.ψ² .+ c^2) atol=1e-8
     @test abs(fit.loglik-gaussian_pervar_marginal_loglik(Y,fit.Λ,fit.ψ²)) > 1.0
-    @test GLLVM._nparams(fit)==8
-    theta=vcat(GLLVM.pack_lambda(fit.Λ),log.(fit.ψ²))
-    objective(t)=-gaussian_pervar_marginal_loglik(Y,GLLVM.unpack_lambda(t[1:p],p,1),exp.(t[p+1:end]).+c^2)
+    @test GLLVModels._nparams(fit)==8
+    theta=vcat(GLLVModels.pack_lambda(fit.Λ),log.(fit.ψ²))
+    objective(t)=-gaussian_pervar_marginal_loglik(Y,GLLVModels.unpack_lambda(t[1:p],p,1),exp.(t[p+1:end]).+c^2)
     @test fit.converged
-    @test maximum(abs,GLLVM.ForwardDiff.gradient(objective,theta)) < 1e-4
+    @test maximum(abs,GLLVModels.ForwardDiff.gradient(objective,theta)) < 1e-4
     X=zeros(p,n,p+1)
     for j in 1:p; X[j,:,j].=1; end
     X[:,:,end].=reshape(range(-1,1;length=n),1,n)

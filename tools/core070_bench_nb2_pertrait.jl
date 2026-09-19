@@ -4,7 +4,7 @@
 # shared-r optimum, so this was model mismatch, not an optimizer miss).
 # This rerun fits the matched model: fit_nb_gllvm_grouped with group = 1:p
 # (per-trait dispersion). argv: ARGS[1] = the bench-full output dir.
-using GLLVM
+using GLLVModels
 using DelimitedFiles
 using Statistics
 
@@ -22,7 +22,7 @@ open(joinpath(out, "julia-timings-nb2-pertrait.csv"), "w") do io
         times = Float64[]; ll = NaN; ok = true
         for r in 1:5
             t = @elapsed try
-                fit = GLLVM.fit_nb_gllvm_grouped(Y; K = 2, group = collect(1:p))
+                fit = GLLVModels.fit_nb_gllvm_grouped(Y; K = 2, group = collect(1:p))
                 ll = hasproperty(fit, :logLik) ? fit.logLik : fit.loglik
             catch err
                 ok = false

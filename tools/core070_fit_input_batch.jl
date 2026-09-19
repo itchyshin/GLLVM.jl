@@ -4,8 +4,8 @@
 # and test/parity/test_source_fixed_point.jl (ANIMAL-LATENT, KERNEL-ONE,
 # KERNEL-TWO) into one script, called by tools/core070_fit_input_batch.R via
 # a plain subprocess (no JuliaCall). Not fitted-model or recovery evidence.
-using GLLVM, Test, LinearAlgebra, ForwardDiff
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd())
+using GLLVModels, Test, LinearAlgebra, ForwardDiff
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(pwd())
 root = ARGS[1]
 readrows(p) = split.(readlines(p)[2:end], '\t')
 readmatrix(p) = reduce(vcat, [permutedims(parse.(Float64, r)) for r in readrows(p)])
@@ -48,7 +48,7 @@ total_fail = 0
             end
             function native(t)
                 β, Λ, s, d = quantities(t)
-                -GLLVM.gaussian_marginal_loglik(Y .- β, Λ, s; σ²_B=d)
+                -GLLVModels.gaussian_marginal_loglik(Y .- β, Λ, s; σ²_B=d)
             end
             function dense(t)
                 β, Λ, s, d = quantities(t)

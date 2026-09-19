@@ -1,4 +1,4 @@
-using GLLVM
+using GLLVModels
 include(joinpath(@__DIR__, "core070_cross_objective.jl"))
 
 function json_read(path::AbstractString)
@@ -78,6 +78,6 @@ beta = Float64.(c["coef"])
 lam = Float64.(c["loadings"])
 Lam = reshape(lam, p, K)
 for hess in (:fisher, :observed)
-    obj = GLLVM.binomial_marginal_loglik_laplace(Y, ones(p,n), Lam, beta, GLLVM.CLogLogLink(); hessian=hess)
+    obj = GLLVModels.binomial_marginal_loglik_laplace(Y, ones(p,n), Lam, beta, GLLVModels.CLogLogLink(); hessian=hess)
     println(hess, " => ", obj, "  delta=", abs(obj - c["loglik"]))
 end

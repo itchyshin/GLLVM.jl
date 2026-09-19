@@ -21,7 +21,7 @@
     Ordinal
 
 Family marker for the ordered-categorical (proportional-odds cumulative-logit)
-GLLVM. `Distributions` has no ordinal type, so GLLVM defines its own. Categories
+GLLVM. `Distributions` has no ordinal type, so GLLVModels defines its own. Categories
 are coded `1:C`; the number of levels `C` is inferred from the data (`maximum(Y)`)
 by the fitter, and equals `length(τ) + 1` in the marginal.
 """

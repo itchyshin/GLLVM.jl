@@ -12,7 +12,7 @@
 # (timing + loglik parity per ADEMP cell) needs an R + gllvmTMB runtime — see the
 # companion harness note at the bottom — and is the runtime-session piece of #65.
 
-using GLLVM, Random, Statistics
+using GLLVModels, Random, Statistics
 
 _med_time(f; reps = 5) = begin
     f()                                   # warm-up (compile)

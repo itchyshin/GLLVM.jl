@@ -14,8 +14,8 @@ fixed species covariance `Σ_phy`, with a minimal unit-tier factor (`K = 1`).
 Same estimand class as twin `phylo_dep(0 + trait | species)` /
 `phylo_latent(..., d = T)` (documentary keyword only on the R side).
 
-This is a **Gaussian matrix** fitter. `@formula` `phylo_dep()` sugar is not in
-this slice.
+This is a **Gaussian matrix** fitter. `@formula` `phylo_dep()` syntax is not
+currently available.
 
 `phy` must be an [`AugmentedPhy`](@ref). `Y` is traits × sites with
 `size(Y, 1) == phy.n_leaves`. When `Σ_phy` is omitted, a dense leaf covariance
@@ -62,6 +62,6 @@ end
 
 function fit_phylo_dep_gllvm(Y::AbstractMatrix, phy::PrecisionPhy; kwargs...)
     throw(ArgumentError(
-        "fit_phylo_dep_gllvm: PrecisionPhy transport is not in Arc 0; " *
+        "fit_phylo_dep_gllvm: PrecisionPhy transport is not available; " *
         "pass AugmentedPhy or supply Σ_phy with a dense AugmentedPhy wrapper."))
 end

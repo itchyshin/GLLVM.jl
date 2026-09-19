@@ -1,4 +1,4 @@
-using Test, LinearAlgebra, SparseArrays, JSON3, SHA, GLLVM
+using Test, LinearAlgebra, SparseArrays, JSON3, SHA, GLLVModels
 
 @testset "Destination B height-four frozen tree precision" begin
     path = joinpath(@__DIR__, "..", "docs", "dev-log", "core070",
@@ -45,7 +45,7 @@ using Test, LinearAlgebra, SparseArrays, JSON3, SHA, GLLVM
     ii,jj,vv = findnz(sparse(Q))
     phy = PrecisionPhy(ii,jj,vv,14,8,String.(r.node_labels),
         Float64(r.log_det_Q),4.,observed)
-    nll(p) = -GLLVM.multivariate_phylo_precision_loglik(permutedims(Y),p,
+    nll(p) = -GLLVModels.multivariate_phylo_precision_loglik(permutedims(Y),p,
         loading,fill(residual,3);species_id=species)
     @test nll(phy) ≈ exact atol=1e-10 rtol=1e-10
     conditioned = cholesky(Symmetric(Q[observed,observed])) \ Matrix{Float64}(I,8,8)

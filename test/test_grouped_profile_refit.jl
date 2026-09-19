@@ -1,4 +1,4 @@
-using Test, GLLVM, Random
+using Test, GLLVModels, Random
 
 # Private refit interface, intentionally separate from any LR/root layer:
 #
@@ -41,12 +41,12 @@ end
 
 @testset "private grouped Gaussian profile nuisance refits" begin
     fixture = _profile_refit_fixture()
-    fit = GLLVM.fit_grouped_gaussian(fixture.Y; terms=fixture.terms,
+    fit = GLLVModels.fit_grouped_gaussian(fixture.Y; terms=fixture.terms,
         unit=fixture.group, iterations=100, g_tol=1e-5)
     @test fit.converged
     @test fit.gradient_norm <= 1e-5
 
-    refitter = GLLVM._grouped_profile_refitter(fit, fixture.Y;
+    refitter = GLLVModels._grouped_profile_refitter(fit, fixture.Y;
         selected=(1, 1), iterations=100, gradient_tolerance=1e-5)
     @test refitter isa NamedTuple && refitter.refit isa Function
     @test refitter.selected_label == "unit.log_sd[1]"
@@ -98,7 +98,7 @@ end
     @test zero.evaluator_vector === nothing || all(isfinite, zero.evaluator_vector)
     @test all(attempt -> attempt.selected_coordinate === missing, zero.attempts)
 
-    zero_budget = GLLVM._grouped_profile_refitter(fit, fixture.Y;
+    zero_budget = GLLVModels._grouped_profile_refitter(fit, fixture.Y;
         selected=(1, 1), iterations=0, gradient_tolerance=1e-5).refit(0.0, :lower_boundary)
     @test !zero_budget.accepted
     @test zero_budget.status === :no_accepted_attempt
@@ -106,14 +106,14 @@ end
     @test all(attempt -> attempt.status in (:warm_unavailable, :iteration_limit),
         zero_budget.attempts)
 
-    @test_throws ArgumentError GLLVM._grouped_profile_refitter(
+    @test_throws ArgumentError GLLVModels._grouped_profile_refitter(
         _unconverged_copy(fit), fixture.Y; selected=(1, 1))
-    @test_throws ArgumentError GLLVM._grouped_profile_refitter(
+    @test_throws ArgumentError GLLVModels._grouped_profile_refitter(
         _wrong_loglik_copy(fit), fixture.Y; selected=(1, 1))
-    @test_throws ArgumentError GLLVM._grouped_profile_refitter(
+    @test_throws ArgumentError GLLVModels._grouped_profile_refitter(
         fit, fixture.Y; selected=(1, 1), gradient_tolerance=2e-5)
     @test_throws ArgumentError refitter.refit(BigFloat("1e-10000"), :underflow)
     changed = copy(fixture.Y); changed[1] += 0.01
-    @test_throws ArgumentError GLLVM._grouped_profile_refitter(
+    @test_throws ArgumentError GLLVModels._grouped_profile_refitter(
         fit, changed; selected=(1, 1))
 end

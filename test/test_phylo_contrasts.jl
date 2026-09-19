@@ -1,6 +1,6 @@
-using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
 
-# Felsenstein independent contrasts: included in GLLVM.jl.
+# Felsenstein independent contrasts: included in GLLVModels.jl.
 
 @testset "Felsenstein contrasts" begin
 
@@ -54,7 +54,7 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistic
         y     = Λ_B * η_B .+ reshape(η_phy, p, 1) .+ σ_eps * randn(p, n)
 
         # Dense path: pass σ_phy = ones (so that B = (ones·ones').*Σ_phy = Σ_phy)
-        ll_dense    = GLLVM.gaussian_marginal_loglik(y, Λ_B, σ_eps;
+        ll_dense    = GLLVModels.gaussian_marginal_loglik(y, Λ_B, σ_eps;
                                                      σ_phy = σ_phy_dense,
                                                      Σ_phy = Σ_phy)
         ll_contrast = gaussian_marginal_loglik_contrasts(y, Λ_B, σ_eps;
@@ -83,7 +83,7 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistic
         z_phy = vec(sum(Λ_phy .* η_phy, dims = 2))
         y     = Λ_B * η_B .+ reshape(z_phy, p, 1) .+ σ_eps * randn(p, n)
 
-        ll_dense    = GLLVM.gaussian_marginal_loglik(y, Λ_B, σ_eps;
+        ll_dense    = GLLVModels.gaussian_marginal_loglik(y, Λ_B, σ_eps;
                                                      Λ_phy = Λ_phy,
                                                      Σ_phy = Σ_phy)
         ll_contrast = gaussian_marginal_loglik_contrasts(y, Λ_B, σ_eps;

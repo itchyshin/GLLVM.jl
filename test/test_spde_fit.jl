@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, SparseArrays, Statistics
 
 @testset "SPDE Gaussian spatial fit" begin
     # ---- inline regular triangulated grid over [0, L]² --------------------

@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, StatsModels, Distributions
+using GLLVModels, Test, LinearAlgebra, Random, StatsModels, Distributions
 
 @testset "Source covariance formula fixed effects" begin
     rng=MersenneTwister(8103202);p,n=2,18
@@ -17,7 +17,7 @@ using GLLVM, Test, LinearAlgebra, Random, StatsModels, Distributions
     @test f.response_shape==(p,n)
     for formula in (@formula(y~0),@formula(y~0+x),@formula(y~1),@formula(y~x))
         fit=gllvm(formula,Y,data;opts...)
-        expected=GLLVM._pervar_formula_design(formula.rhs,data,p,n;contrasts=Dict{Symbol,Any}())
+        expected=GLLVModels._pervar_formula_design(formula.rhs,data,p,n;contrasts=Dict{Symbol,Any}())
         hand=fit_gaussian_sources(Y;X=expected,opts...)
         @test fit.loglik≈hand.loglik atol=1e-8
         @test fit.beta≈hand.beta atol=1e-7

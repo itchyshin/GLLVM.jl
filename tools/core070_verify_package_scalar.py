@@ -24,7 +24,7 @@ def verify(e=None,require_fits=False):
    if name!='Manifest.toml':assert sha(ROOT/name)==h,name
   if i in (3,4):assert r['source_pins']['Manifest.toml']==e['manifest_sha256']
  log=(base/'process3/00.log').read_text()
- assert 'PACKAGE_PATH '+str(snapshot/'src/GLLVM.jl') in log
+ assert 'PACKAGE_PATH '+str(snapshot/'src/GLLVModels.jl') in log
  assert 'JULIA_VERSION 1.10.0' in log and 'CORE070_FULL_MODULE_SCALAR_PASS' in log
  assert all(s in log for s in ['205    205','81     81','66     66'])
  assert 'FULL_PACKAGE_LOAD_PASS' in (base/'process2/00.log').read_text()

@@ -1,4 +1,4 @@
-using Test, GLLVM, Random
+using Test, GLLVModels, Random
 
 # Private interval wrapper, not exported and not a public inference claim:
 #
@@ -18,11 +18,11 @@ end
 
 @testset "private grouped Gaussian variance profile wrapper" begin
     fixture = _profile_interval_fixture()
-    fit = GLLVM.fit_grouped_gaussian(fixture.Y; terms=fixture.terms,
+    fit = GLLVModels.fit_grouped_gaussian(fixture.Y; terms=fixture.terms,
         unit=fixture.group, iterations=100, g_tol=1e-5)
     @test fit.converged && fit.gradient_norm <= 1e-5
 
-    profile = GLLVM._grouped_gaussian_variance_profile(fit, fixture.Y;
+    profile = GLLVModels._grouped_gaussian_variance_profile(fit, fixture.Y;
         selected=(1, 1), iterations=100, gradient_tolerance=1e-5,
         max_expand=8, maxiter=24)
     @test profile.status === :available
@@ -46,7 +46,7 @@ end
 
     # No profile endpoint is manufactured when constrained refits have no
     # optimizer iterations; failed receipts are explicit diagnostics.
-    stalled = GLLVM._grouped_gaussian_variance_profile(fit, fixture.Y;
+    stalled = GLLVModels._grouped_gaussian_variance_profile(fit, fixture.Y;
         selected=(1, 1), iterations=0, gradient_tolerance=1e-5,
         max_expand=4, maxiter=8)
     @test stalled.status === :unavailable
@@ -54,11 +54,11 @@ end
     @test stalled.reason in (:invalid_refit, :baseline_not_maximized)
     @test any(!point.refit_accepted for point in stalled.receipts)
 
-    @test_throws ArgumentError GLLVM._grouped_gaussian_variance_profile(
+    @test_throws ArgumentError GLLVModels._grouped_gaussian_variance_profile(
         fit, fixture.Y; selected=(2, 1))
-    unconverged = GLLVM.fit_grouped_gaussian(fixture.Y; terms=fixture.terms,
+    unconverged = GLLVModels.fit_grouped_gaussian(fixture.Y; terms=fixture.terms,
         unit=fixture.group, iterations=0, g_tol=1e-5)
     @test !unconverged.converged
-    @test_throws ArgumentError GLLVM._grouped_gaussian_variance_profile(
+    @test_throws ArgumentError GLLVModels._grouped_gaussian_variance_profile(
         unconverged, fixture.Y; selected=(1, 1))
 end

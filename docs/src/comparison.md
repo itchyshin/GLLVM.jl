@@ -1,4 +1,4 @@
-# Comparison: R, GLLVM.jl, MixedModels.jl
+# Comparison: R, GLLVModels.jl, MixedModels.jl
 
 ```@raw html
 <div class="gllvm-route gllvm-route--evidence">
@@ -10,7 +10,7 @@
 ```
 
 The benchmark study (see [Benchmarks](benchmarks.md)) runs three engines
-on each cell to put GLLVM.jl's speed numbers in context against the
+on each cell to put GLLVModels.jl's speed numbers in context against the
 state-of-the-art Julia LMM port. The third engine is
 [MixedModels.jl](https://github.com/JuliaStats/MixedModels.jl), the
 canonical Julia descendant of `lme4`.
@@ -19,7 +19,7 @@ canonical Julia descendant of `lme4`.
 
 - **R `gllvmTMB`** — fits the GLLVM exactly. The reference engine for
   every grid cell. TMB Laplace + L-BFGS in C++.
-- **GLLVM.jl** — fits the same GLLVM. Closed-form Gaussian marginal +
+- **GLLVModels.jl** — fits the same GLLVM. Closed-form Gaussian marginal +
   `Optim` L-BFGS + `ForwardDiff` gradients, with a PPCA closed-form
   warm start for the no-other-RE path.
 - **MixedModels.jl** — cannot fit a `K ≥ 1` GLLVM directly because it
@@ -41,11 +41,11 @@ head-to-head on the GLLVM.
 
 From PERF+E (full numbers in the benchmark report):
 
-- **GLLVM.jl vs R `gllvmTMB` on the GLLVM**: median speedup of
+- **GLLVModels.jl vs R `gllvmTMB` on the GLLVM**: median speedup of
   **~190x** on the small cells, **~520x** on the mid cells, and
   **~280x** on the large cells. Worst-case `|Δ logLik|` across the
   grid: `2.343e-07`. Both engines converged on every fit.
-- **GLLVM.jl vs MixedModels.jl on the proxy LMM**: MixedModels.jl is
+- **GLLVModels.jl vs MixedModels.jl on the proxy LMM**: MixedModels.jl is
   faster on the larger cells (the proxy is a strictly easier problem),
   but only by a factor of `~1.4–1.8x`. The order of magnitude is the
   same. Where MixedModels.jl is faster, the difference is an *upper

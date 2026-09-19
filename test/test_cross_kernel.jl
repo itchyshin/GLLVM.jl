@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra
+using GLLVModels, Test, LinearAlgebra
 
 # Cross-lineage coevolution kernel (PGLLVM "two lineages", phase C0).
 #

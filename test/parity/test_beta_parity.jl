@@ -1,11 +1,11 @@
-# test_beta_parity.jl — Beta GLLVM logLik vs gllvmTMB
+# test_beta_parity.jl — Beta GLLVModels logLik vs gllvmTMB
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
 # Same-model bar: per-trait intercepts + per-trait precision φ + latent unique=FALSE.
 # Inventory #148: R packs log_phi_beta[p]; Julia public default fit_gllvm(Beta)
 # → per-trait φ (disp_group=:species). Shared-φ remains fit_beta_gllvm (named).
 
-using GLLVM, RCall, Test, Random, LinearAlgebra
+using GLLVModels, RCall, Test, Random, LinearAlgebra
 
 # parity_helpers.jl is included once by runparity.jl
 
@@ -25,7 +25,7 @@ function _rand_beta(a::Float64, b::Float64)
     end
 end
 
-@testset "Beta GLLVM parity: GLLVM.jl vs gllvmTMB" begin
+@testset "Beta GLLVModels parity: GLLVModels.jl vs gllvmTMB" begin
     Random.seed!(45)
     p, K, n = 5, 1, 60
     β = [0.30, -0.20, 0.25, -0.15, 0.05]
@@ -45,7 +45,7 @@ end
     ]
 
     # Public default route — twin-aligned per-trait φ (not named shared-φ fitter).
-    jl_fit = fit_gllvm(Y; family = GLLVM.Beta(), K = K,
+    jl_fit = fit_gllvm(Y; family = GLLVModels.Beta(), K = K,
                        g_tol = 1e-7, iterations = 800)
     @test jl_fit isa BetaGroupedFit
     @test jl_fit.converged

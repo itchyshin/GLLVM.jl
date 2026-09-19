@@ -3,7 +3,7 @@
 # (trait-dummy X mean design, matching value ~ 0 + trait + latent(..., d=2,
 # unique=FALSE)), timing 3 reps each. Same convention as the ns2 batch.
 # argv: ARGS[1] = the pre-run output dir written by core070_bench_prerun.R
-using GLLVM
+using GLLVModels
 using DelimitedFiles
 using Statistics
 
@@ -31,8 +31,8 @@ open(joinpath(out, "julia-timings.csv"), "w") do io
                 # model (no X kwarg) and correspond to R's `0 + trait` means;
                 # the Gaussian path takes the trait-dummy X tensor (ns2 convention).
                 fit = fam == "poisson" ?
-                    GLLVM.fit_poisson_gllvm(Int.(round.(Y)); K = 2) :
-                    GLLVM.fit_gaussian_gllvm(Y; K = 2, X = X)
+                    GLLVModels.fit_poisson_gllvm(Int.(round.(Y)); K = 2) :
+                    GLLVModels.fit_gaussian_gllvm(Y; K = 2, X = X)
                 ll = _loglik(fit)
             end
             push!(times, t)

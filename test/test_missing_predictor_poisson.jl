@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Distributions, ForwardDiff
+using GLLVModels, Test, LinearAlgebra, Random, Distributions, ForwardDiff
 
 # Non-Gaussian missing predictor (mi() Phase 5a): a Poisson-log response with one
 # missing site-level continuous predictor x_s ~ N(μ_x, σ_x²) and a broadcast slope
@@ -21,11 +21,11 @@ using GLLVM, Test, LinearAlgebra, Random, Distributions, ForwardDiff
         N = ones(Int, p, n)
 
         # augmented marginal with ALL x observed
-        ll_xs = GLLVM.marginal_loglik_laplace_xs(Poisson(), Y, N, Λ, β, LogLink();
+        ll_xs = GLLVModels.marginal_loglik_laplace_xs(Poisson(), Y, N, Λ, β, LogLink();
                                                  x = x, b_x = b_x, μ_x = μ_x, σ_x2 = σ_x^2)
         # oracle: plain offset marginal (b_x x_s absorbed) + Σ_s logN(x_s; μ_x, σ_x²)
         offset = (b_x .* reshape(x, 1, n)) .* ones(p)        # p×n, offset[t,s] = b_x x_s
-        ll_off = GLLVM.marginal_loglik_laplace(Poisson(), Y, N, Λ, β, LogLink(); offset = offset)
+        ll_off = GLLVModels.marginal_loglik_laplace(Poisson(), Y, N, Λ, β, LogLink(); offset = offset)
         ll_x = sum(logpdf(Normal(μ_x, σ_x), xs) for xs in x)
         @test ll_xs ≈ ll_off + ll_x atol = 1e-7
     end
@@ -38,10 +38,10 @@ using GLLVM, Test, LinearAlgebra, Random, Distributions, ForwardDiff
         b_x, μ_x, σ_x = 0.6, 0.4, 0.7
         y = rand(Poisson(2.0), p)
         N = ones(Int, p)
-        ll_lap = GLLVM.laplace_loglik_site_xs(Poisson(), y, N, Λ, β, LogLink();
+        ll_lap = GLLVModels.laplace_loglik_site_xs(Poisson(), y, N, Λ, β, LogLink();
                                               x_obs = nothing, b_x = b_x, μ_x = μ_x, σ_x2 = σ_x^2)
         # 2-D Gauss–Hermite reference over (z, x): ∫∫ p(y|z,x) N(z;0,1) N(x;μ_x,σ_x²)
-        nodes, wts = GLLVM._gauss_hermite(80)
+        nodes, wts = GLLVModels._gauss_hermite(80)
         zz = sqrt(2) .* nodes
         wz = wts ./ sqrt(π)
         xx = μ_x .+ sqrt(2) * σ_x .* nodes
@@ -73,7 +73,7 @@ using GLLVM, Test, LinearAlgebra, Random, Distributions, ForwardDiff
             bx = θ[p + p * K + 1]
             mx = θ[p + p * K + 2]
             sx2 = exp(θ[p + p * K + 3])
-            GLLVM.marginal_loglik_laplace_xs(Poisson(), Y, N, Λ, β, LogLink();
+            GLLVModels.marginal_loglik_laplace_xs(Poisson(), Y, N, Λ, β, LogLink();
                                              x = xm, b_x = bx, μ_x = mx, σ_x2 = sx2)
         end
         θ = vcat(β0, vec(Λ0), b_x, μ_x, log(σ_x^2))
@@ -103,10 +103,10 @@ end
         μ = 1 ./ (1 .+ exp.(-η))
         Y = [rand(Binomial(Ntri, μ[t, s])) for t in 1:p, s in 1:n]
         N = fill(Ntri, p, n)
-        ll_xs = GLLVM.marginal_loglik_laplace_xs(Binomial(), Y, N, Λ, β, LogitLink();
+        ll_xs = GLLVModels.marginal_loglik_laplace_xs(Binomial(), Y, N, Λ, β, LogitLink();
                                                  x = x, b_x = b_x, μ_x = μ_x, σ_x2 = σ_x^2)
         offset = (b_x .* reshape(x, 1, n)) .* ones(p)
-        ll_off = GLLVM.marginal_loglik_laplace(Binomial(), Y, N, Λ, β, LogitLink(); offset = offset)
+        ll_off = GLLVModels.marginal_loglik_laplace(Binomial(), Y, N, Λ, β, LogitLink(); offset = offset)
         ll_x = sum(logpdf(Normal(μ_x, σ_x), xs) for xs in x)
         @test ll_xs ≈ ll_off + ll_x atol = 1e-7
     end
@@ -119,9 +119,9 @@ end
         b_x, μ_x, σ_x = 0.5, 0.4, 0.7
         y = [rand(Binomial(Ntri, 0.5)) for _ in 1:p]
         N = fill(Ntri, p)
-        ll_lap = GLLVM.laplace_loglik_site_xs(Binomial(), y, N, Λ, β, LogitLink();
+        ll_lap = GLLVModels.laplace_loglik_site_xs(Binomial(), y, N, Λ, β, LogitLink();
                                               x_obs = nothing, b_x = b_x, μ_x = μ_x, σ_x2 = σ_x^2)
-        nodes, wts = GLLVM._gauss_hermite(80)
+        nodes, wts = GLLVModels._gauss_hermite(80)
         zz = sqrt(2) .* nodes
         wz = wts ./ sqrt(π)
         xx = μ_x .+ sqrt(2) * σ_x .* nodes
@@ -154,7 +154,7 @@ end
             bx = θ[p + p * K + 1]
             mx = θ[p + p * K + 2]
             sx2 = exp(θ[p + p * K + 3])
-            GLLVM.marginal_loglik_laplace_xs(Binomial(), Y, N, Λ, β, LogitLink();
+            GLLVModels.marginal_loglik_laplace_xs(Binomial(), Y, N, Λ, β, LogitLink();
                                              x = xm, b_x = bx, μ_x = mx, σ_x2 = sx2)
         end
         θ = vcat(β0, vec(Λ0), b_x, μ_x, log(σ_x^2))

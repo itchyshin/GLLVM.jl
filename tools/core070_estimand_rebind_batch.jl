@@ -2,7 +2,7 @@
 # (tools/core070_estimand_rebind_batch.R). Reads the R-oracle JSON (path
 # from ENV["CORE070_ESTIMAND_REBIND_R_ORACLE"]), fits gaussian_small
 # NATIVELY (independent optimiser run on the same simulated Y the R
-# process fit, not a replay of R's numbers), calls GLLVM.jl's NEW
+# process fit, not a replay of R's numbers), calls GLLVModels.jl's NEW
 # tier-scoped-default extract_communality/extract_correlations/
 # extract_proportions/extract_Omega (src/extractors.jl, maintainer decision
 # round 1 item 3), and compares against the real R accessor's own output at
@@ -15,7 +15,7 @@
 #
 # Usage: julia --project=. tools/core070_estimand_rebind_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 using LinearAlgebra: diag
 
 # ---------------------------------------------------------------------------
@@ -181,19 +181,19 @@ function julia_quantity(quantity::AbstractString)
     if quantity == "communality"
         # New default: level = :unit (tier-scoped, matches R's real
         # extract_communality(fit, level="unit") exactly).
-        return GLLVM.extract_communality(fit_g)
+        return GLLVModels.extract_communality(fit_g)
     elseif quantity == "correlations"
         # New default: level = :unit. Returns a p x p Matrix; flatten in
         # the SAME column-major order the R side's full-matrix
         # reassembly (diag(p) then symmetric fill) implies for
         # as.numeric() on a p x p R matrix.
-        return vec(GLLVM.extract_correlations(fit_g))
+        return vec(GLLVModels.extract_correlations(fit_g))
     elseif quantity == "proportions"
         # New default: component = :shared, level = :unit.
-        return GLLVM.extract_proportions(fit_g)
+        return GLLVModels.extract_proportions(fit_g)
     elseif quantity == "omega"
         # New default: level = :auto (tier-presence-gated).
-        return vec(GLLVM.extract_Omega(fit_g))
+        return vec(GLLVModels.extract_Omega(fit_g))
     else
         error("BOGUS_QUANTITY: no dispatcher entry for '$(quantity)'")
     end
@@ -248,7 +248,7 @@ neg_ok = neg_bogus_quantity && (neg_bogus_quantity_r == true) && (neg_wrong_fixt
 report = Dict{String, Any}(
     "status" => (all_ok && neg_ok) ? "PASS" : "FAIL",
     "julia_version" => string(VERSION),
-    "package_root" => Base.pkgdir(GLLVM),
+    "package_root" => Base.pkgdir(GLLVModels),
     "case_count" => length(CASE_IDS),
     "all_checks" => all_ok,
     "negative_controls_behaved_as_expected" => neg_ok,

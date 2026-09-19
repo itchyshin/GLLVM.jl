@@ -1,14 +1,14 @@
 using Test
 
 # StableRNGs is intentionally a quality-environment dependency rather than a
-# GLLVM core dependency. Its absence is visible and cannot count as a fitted
+# GLLVModels core dependency. Its absence is visible and cannot count as a fitted
 # integration result.
 if Base.find_package("StableRNGs") === nothing
     @testset "Destination B joint Poisson (StableRNGs unavailable)" begin
         @test_broken false
     end
 else
-    using GLLVM
+    using GLLVModels
     using LinearAlgebra
     using Random
     using StableRNGs
@@ -41,13 +41,13 @@ function _destination_b_joint_poisson_fixture()
         eta = mean_truth[trait] + U[trait, unit[observation]] +
             O[trait, unit_obs[observation]] + C[trait, cluster[observation]] +
             D[trait, cluster2[observation]]
-        Y[trait, observation] = rand(rng, GLLVM.Poisson(exp(eta)))
+        Y[trait, observation] = rand(rng, GLLVModels.Poisson(exp(eta)))
     end
     terms = [
-        GLLVM.GroupingTerm(:unit; mode = :indep, common = true),
-        GLLVM.GroupingTerm(:unit_obs; mode = :indep, common = true),
-        GLLVM.GroupingTerm(:cluster; mode = :indep, common = true),
-        GLLVM.GroupingTerm(:cluster2; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:unit; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:unit_obs; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:cluster; mode = :indep, common = true),
+        GLLVModels.GroupingTerm(:cluster2; mode = :indep, common = true),
     ]
     return (; Y, terms, unit, unit_obs, cluster, cluster2, mean_truth, scales)
 end
@@ -56,8 +56,8 @@ end
     fixture = _destination_b_joint_poisson_fixture()
     @test size(fixture.Y) == (2, 96)
     @test all(isfinite, fixture.Y) && all(>=(0), fixture.Y)
-    @test all(GLLVM._grouping_term_nparams(term, 2) == 1 for term in fixture.terms)
-    @test sum(GLLVM._grouping_term_nparams(term, 2) for term in fixture.terms) + 2 == 6
+    @test all(GLLVModels._grouping_term_nparams(term, 2) == 1 for term in fixture.terms)
+    @test sum(GLLVModels._grouping_term_nparams(term, 2) for term in fixture.terms) + 2 == 6
     @test all(all(fixture.unit_obs[8 * unit_index - 7:8 * unit_index] .==
         repeat(4 * (unit_index - 1) .+ (1:4), inner = 2)) for unit_index in 1:12)
     @test all(length(unique(fixture.cluster[findall(==(unit_index), fixture.unit)])) == 8
@@ -65,12 +65,12 @@ end
     @test length(unique(fixture.cluster2)) == 11
     @test fixture.cluster != fixture.cluster2
 
-    fit = fit_gllvm(fixture.Y; family = GLLVM.Poisson(), grouping = fixture.terms,
+    fit = fit_gllvm(fixture.Y; family = GLLVModels.Poisson(), grouping = fixture.terms,
         unit = fixture.unit, unit_obs = fixture.unit_obs,
         cluster = fixture.cluster, cluster2 = fixture.cluster2,
         iterations = 250, g_tol = 1e-4)
 
-    @test fit isa GLLVM.GroupedNonGaussianFit
+    @test fit isa GLLVModels.GroupedNonGaussianFit
     @test fit.converged
     @test fit.stopping_reason === :converged
     @test fit.inner_status === :ok
@@ -80,14 +80,14 @@ end
     @test getfield.(fit.terms, :name) == [:unit, :unit_obs, :cluster, :cluster2]
 
     for term in fixture.terms
-        Sigma = GLLVM.extract_Sigma(fit; level = term.name).Sigma
+        Sigma = GLLVModels.extract_Sigma(fit; level = term.name).Sigma
         @test Sigma == fit.term_covariances[findfirst(==(term.name), getfield.(fit.terms, :name))]
         @test all(isfinite, Sigma) && all(diag(Sigma) .> 1e-4)
         @test Sigma ≈ Diagonal(diag(Sigma)) atol = 1e-12
         @test diag(Sigma)[1] ≈ diag(Sigma)[2] atol = 1e-12
     end
 
-    intervals = GLLVM.grouped_nongaussian_intervals(fixture.Y, fit;
+    intervals = GLLVModels.grouped_nongaussian_intervals(fixture.Y, fit;
         unit = fixture.unit, unit_obs = fixture.unit_obs,
         cluster = fixture.cluster, cluster2 = fixture.cluster2)
     @test intervals.status === :available

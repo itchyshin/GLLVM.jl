@@ -13,7 +13,7 @@
 #     interval has a closed form: 2(ℓmax − ℓ(v)) = (v−v̂)²/s² = χ²₁(level)
 #     gives v̂ ± s·√(χ²₁(level)). Nothing here can be satisfied by tuning.
 
-using GLLVM, Test, Distributions
+using GLLVModels, Test, Distributions
 
 @testset "Boundary inference" begin
 

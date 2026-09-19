@@ -3,7 +3,7 @@
 # This variant places a per-species residual SD φ_j on each trait. It does not
 # reproduce R's fixed-residual plus unique-variance decomposition unless the
 # fixed residual SD is supplied explicitly.
-# GLLVM.jl's shared-σ Gaussian path (src/likelihood.jl,
+# GLLVModels.jl's shared-σ Gaussian path (src/likelihood.jl,
 # src/fit.jl, src/profile.jl) uses a single σ_eps and is left UNTOUCHED. This file
 # adds a parallel per-species variant.
 #

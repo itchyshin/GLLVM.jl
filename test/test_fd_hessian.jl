@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 using Random
 using Distributions
@@ -17,7 +17,7 @@ using Distributions
     @testset "diagonal quadratic with large offset (the exact trigger)" begin
         c = [2.0, 5.0, 0.5, 3.0]
         f = x -> 0.5 * sum(c .* x .^ 2) + 1.0e4   # Hessian = diag(c)
-        H = GLLVM._fd_hessian(f, [0.3, -0.7, 1.1, 0.2])
+        H = GLLVModels._fd_hessian(f, [0.3, -0.7, 1.1, 0.2])
         @test isapprox(diag(H), c; rtol = 1e-4)
         @test maximum(abs, H - Diagonal(c)) < 1e-3
     end
@@ -25,7 +25,7 @@ using Distributions
     @testset "general symmetric quadratic recovers A" begin
         A = [2.0 0.5 -0.3; 0.5 1.5 0.2; -0.3 0.2 3.0]
         f = x -> 0.5 * dot(x, A * x) + 50.0
-        H = GLLVM._fd_hessian(f, [0.4, -0.2, 0.9])
+        H = GLLVModels._fd_hessian(f, [0.4, -0.2, 0.9])
         @test isapprox(H, A; rtol = 1e-3, atol = 1e-3)
     end
 

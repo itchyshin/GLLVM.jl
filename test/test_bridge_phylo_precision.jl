@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, SparseArrays
+using GLLVModels, Test, Random, LinearAlgebra, SparseArrays
 
 # Phylo transport S3a — Julia-side precision-payload admission.
 #
@@ -50,7 +50,7 @@ end
     @test p == 8
 
     @testset "payload schema uses frozen field meanings" begin
-        payload = GLLVM.phylo_precision_payload(pp)
+        payload = GLLVModels.phylo_precision_payload(pp)
         for key in _S3A_PAYLOAD_KEYS
             @test haskey(payload, key)
         end
@@ -76,14 +76,14 @@ end
         # A direct unnegated R determinant must fail even for a valid matrix.
         r_log_det_A = -logdet(Symmetric(Matrix(pp.Q)))
         @test payload.log_det ≈ -r_log_det_A atol=1e-8
-        @test_throws ArgumentError GLLVM.admit_phylo_precision_payload(
+        @test_throws ArgumentError GLLVModels.admit_phylo_precision_payload(
             merge(payload, (; log_det=r_log_det_A)))
         @test payload.node_labels == pp.node_labels
     end
 
     @testset "admit validates checksum and reconstructs PrecisionPhy" begin
-        payload = GLLVM.phylo_precision_payload(pp)
-        admitted = GLLVM.admit_phylo_precision_payload(payload)
+        payload = GLLVModels.phylo_precision_payload(pp)
+        admitted = GLLVModels.admit_phylo_precision_payload(payload)
         @test admitted.n_aug == pp.n_aug
         @test admitted.n_leaves == pp.n_leaves
         @test admitted.species_aug_id == pp.species_aug_id
@@ -98,11 +98,11 @@ end
 
         # JuliaCall typically ships string-keyed Dicts, not NamedTuples.
         as_dict = Dict{String,Any}(String(k) => getfield(payload, k) for k in _S3A_PAYLOAD_KEYS)
-        admitted_dict = GLLVM.admit_phylo_precision_payload(as_dict)
+        admitted_dict = GLLVModels.admit_phylo_precision_payload(as_dict)
         @test admitted_dict.species_aug_id == pp.species_aug_id
         @test Matrix(admitted_dict.Q) ≈ Matrix(pp.Q) atol = 1e-12
 
-        admitted_kw = GLLVM.admit_phylo_precision_payload(; payload...)
+        admitted_kw = GLLVModels.admit_phylo_precision_payload(; payload...)
         @test admitted_kw.n_aug == pp.n_aug
         @test Matrix(admitted_kw.Q) ≈ Matrix(pp.Q) atol = 1e-12
 
@@ -114,59 +114,59 @@ end
     end
 
     @testset "malformed payloads raise named gates" begin
-        payload = GLLVM.phylo_precision_payload(pp)
+        payload = GLLVModels.phylo_precision_payload(pp)
 
         # Animal / Ainv payloads may use n_aug ≥ n_leaves (tip-only or
         # ancestors kept). n_aug = 2p − 1 is therefore no longer a DIM
         # reject on a tree payload; n_aug < n_leaves still is.
         bad_dim = merge(payload, (; n_aug = p - 1))
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_dim),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(bad_dim),
                          "GJL-GATE-PHYLO-PAYLOAD-DIM")
 
         bad_triplet_len = merge(payload, (; x = payload.x[1:(end - 1)]))
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_triplet_len),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(bad_triplet_len),
                          "GJL-GATE-PHYLO-PAYLOAD-DIM")
 
         bad_index = merge(payload, (; i = copy(payload.i)))
         bad_index.i[1] = 0
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_index),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(bad_index),
                          "GJL-GATE-PHYLO-PAYLOAD-INDEX")
 
         bad_tip = merge(payload, (; species_aug_id = copy(payload.species_aug_id)))
         bad_tip.species_aug_id[1] = payload.n_aug
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_tip),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(bad_tip),
                          "GJL-GATE-PHYLO-PAYLOAD-TIPMAP")
 
         dup_tip = merge(payload, (; species_aug_id = fill(0, p)))
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(dup_tip),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(dup_tip),
                          "GJL-GATE-PHYLO-PAYLOAD-TIPMAP")
 
         bad_label = merge(payload, (; node_labels = payload.node_labels[1:(end - 1)]))
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_label),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(bad_label),
                          "GJL-GATE-PHYLO-PAYLOAD-LABEL")
 
         empty_label = merge(payload, (; node_labels = copy(payload.node_labels)))
         empty_label.node_labels[1] = ""
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(empty_label),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(empty_label),
                          "GJL-GATE-PHYLO-PAYLOAD-LABEL")
 
         nan_x = merge(payload, (; x = copy(payload.x)))
         nan_x.x[1] = NaN
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(nan_x),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(nan_x),
                          "GJL-GATE-PHYLO-PAYLOAD-NONFINITE")
 
         inf_scale = merge(payload, (; scale = Inf))
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(inf_scale),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(inf_scale),
                          "GJL-GATE-PHYLO-PAYLOAD-NONFINITE")
 
         bad_logdet = merge(payload, (; log_det = payload.log_det + 0.25))
-        _s3a_expect_gate(() -> GLLVM.admit_phylo_precision_payload(bad_logdet),
+        _s3a_expect_gate(() -> GLLVModels.admit_phylo_precision_payload(bad_logdet),
                          "GJL-GATE-PHYLO-PAYLOAD-LOGDET")
     end
 
     @testset "replay agrees with AugmentedPhy at matched parameters" begin
-        payload = GLLVM.phylo_precision_payload(pp)
-        admitted = GLLVM.admit_phylo_precision_payload(payload)
+        payload = GLLVModels.phylo_precision_payload(pp)
+        admitted = GLLVModels.admit_phylo_precision_payload(payload)
         Random.seed!(20260906)
         K_B, n = 2, 10
         Λ_B = randn(p, K_B)

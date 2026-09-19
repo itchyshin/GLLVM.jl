@@ -1,7 +1,7 @@
 #!/usr/bin/env julia
 # Delta-Gamma each-own-optimum 2SO smoke (follow-up batch, contract §6).
 
-using GLLVM, RCall, Dates, Random, LinearAlgebra, ForwardDiff
+using GLLVModels, RCall, Dates, Random, LinearAlgebra, ForwardDiff
 using Distributions: Gamma
 
 const CONTRACT = joinpath(@__DIR__, "..", "..", "docs", "dev-log", "core070",

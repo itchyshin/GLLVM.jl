@@ -1,4 +1,4 @@
-using JSON3, SHA, LinearAlgebra, SparseArrays, GLLVM
+using JSON3, SHA, LinearAlgebra, SparseArrays, GLLVModels
 include(joinpath(@__DIR__, "compare_phylo_gaussian_reference.jl"))
 
 const _DB_TREE_PRECISION_SHA = "ab01ee47206565eb1af7da391af313953b8a97c6bb11d9b6160655aaa0429170"
@@ -27,7 +27,7 @@ function _db_check_tree_gaussian(doc, reference)
     require(size(Q) == (14,14) && observed == [14,7,12,9,13,8,11,10], "wrong tree dimensions/map")
     require(reference["scale"] == 4 && reference["height"] == 4 && reference["ridge_applied"] === false, "wrong tree scale/ridge")
     ii,jj,vv = findnz(sparse(Q))
-    phy = GLLVM._validate_precision_fit_input(PrecisionPhy(ii,jj,vv,14,8,labels,
+    phy = GLLVModels._validate_precision_fit_input(PrecisionPhy(ii,jj,vv,14,8,labels,
         Float64(reference["log_det_Q"]),4.0,observed))
     original = doc["original_long"]
     require(length(original)==48, "wrong long-data length")
@@ -59,11 +59,11 @@ function _db_check_tree_gaussian(doc, reference)
         require(length(theta)==length(gradient)==7 && all(isfinite,theta) &&
             all(isfinite,gradient), "invalid parameters/gradient")
         require(isapprox(maximum(abs,gradient),section["gradient_norm"];atol=1e-12,rtol=1e-12), "gradient norm mismatch")
-        native_theta = vcat(theta[1:3],GLLVM.pack_lambda(reshape(theta[5:7],3,1)),theta[4])
-        native = GLLVM._precision_multivariate_nll(Y,phy,native_theta;
+        native_theta = vcat(theta[1:3],GLLVModels.pack_lambda(reshape(theta[5:7],3,1)),theta[4])
+        native = GLLVModels._precision_multivariate_nll(Y,phy,native_theta;
             rank=1,mode=:barelowrank,residual_mode=:shared,species_id=repeat(1:8;inner=2))
         target = Float64(section["marginal_nll"])
-        require(isfinite(target) && GLLVM._pmv_valid_objective(native) && abs(native-target)<=1e-6,
+        require(isfinite(target) && GLLVModels._pmv_valid_objective(native) && abs(native-target)<=1e-6,
             "$key marginal likelihood mismatch")
         comparisons[key] = Dict("r_nll"=>target,"julia_nll"=>native,"absolute_difference"=>abs(native-target))
     end

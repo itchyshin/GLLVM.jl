@@ -5,7 +5,7 @@
 # and noise draws from the task seed. K=2, per-trait intercepts beta_true.
 #
 # argv: family(p_gaussian|poisson|nbinom2|binomial) p n seed outdir
-using GLLVM
+using GLLVModels
 using Random
 using LinearAlgebra
 using Statistics
@@ -28,9 +28,9 @@ eta = Lambda_true * randn(rng, K, n) .+ beta_true
 Y = if family == "gaussian"
     eta .+ sigma_true .* randn(rng, p, n)
 elseif family == "poisson"
-    [rand(rng, GLLVM.Distributions.Poisson(exp(min(eta[i, j], 4.0)))) for i in 1:p, j in 1:n]
+    [rand(rng, GLLVModels.Distributions.Poisson(exp(min(eta[i, j], 4.0)))) for i in 1:p, j in 1:n]
 elseif family == "nbinom2"
-    [rand(rng, GLLVM.Distributions.NegativeBinomial(2.0, 2.0 / (2.0 + exp(min(eta[i, j], 4.0))))) for i in 1:p, j in 1:n]
+    [rand(rng, GLLVModels.Distributions.NegativeBinomial(2.0, 2.0 / (2.0 + exp(min(eta[i, j], 4.0))))) for i in 1:p, j in 1:n]
 elseif family == "binomial"
     [rand(rng) < 1 / (1 + exp(-eta[i, j])) ? 1 : 0 for i in 1:p, j in 1:n]
 else
@@ -44,13 +44,13 @@ t = @elapsed fit = if family == "gaussian"
     for j in 1:p
         X[j, :, j] .= 1
     end
-    GLLVM.fit_gaussian_gllvm(float.(Y); K = K, X = X)
+    GLLVModels.fit_gaussian_gllvm(float.(Y); K = K, X = X)
 elseif family == "poisson"
-    GLLVM.fit_poisson_gllvm(Int.(Y); K = K)
+    GLLVModels.fit_poisson_gllvm(Int.(Y); K = K)
 elseif family == "nbinom2"
-    GLLVM.fit_nb_gllvm(Int.(Y); K = K)
+    GLLVModels.fit_nb_gllvm(Int.(Y); K = K)
 else
-    GLLVM.fit_binomial_gllvm(Int.(Y); K = K)
+    GLLVModels.fit_binomial_gllvm(Int.(Y); K = K)
 end
 
 # Sign/rotation-invariant recovery measures only (never signed loadings).

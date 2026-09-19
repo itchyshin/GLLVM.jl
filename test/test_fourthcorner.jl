@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Fourth-corner trait–environment model" begin
     @testset "offset marginal Λ=0 reduces to independent GLM loglik (exact)" begin
@@ -8,7 +8,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         Xenv = randn(n, q)                           # site environment covariates
         TR = randn(p, r)                             # species traits
         C = 0.4 .* randn(q, r)                       # fourth-corner coefficients
-        O = GLLVM._build_offset_fourthcorner(Xenv, TR, C)
+        O = GLLVModels._build_offset_fourthcorner(Xenv, TR, C)
         @test size(O) == (p, n)
 
         # hand-computed offset entry for one (t,s):
@@ -20,7 +20,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test O[t, s] ≈ Ohand atol = 1e-12
 
         Y = [rand(Poisson(exp(β[tt] + O[tt, ss]))) for tt in 1:p, ss in 1:n]
-        ll = GLLVM._marginal_loglik_offset(Poisson(), Y, ones(Int, p, n),
+        ll = GLLVModels._marginal_loglik_offset(Poisson(), Y, ones(Int, p, n),
                                            zeros(p, K), β, O, LogLink())
         ref = 0.0
         for tt in 1:p, ss in 1:n
@@ -30,9 +30,9 @@ using GLLVM, Test, Random, Distributions, Statistics
     end
 
     @testset "dimension checks" begin
-        @test_throws DimensionMismatch GLLVM._build_offset_fourthcorner(
+        @test_throws DimensionMismatch GLLVModels._build_offset_fourthcorner(
             randn(10, 2), randn(5, 3), randn(3, 3))   # C rows ≠ q
-        @test_throws DimensionMismatch GLLVM._build_offset_fourthcorner(
+        @test_throws DimensionMismatch GLLVModels._build_offset_fourthcorner(
             randn(10, 2), randn(5, 3), randn(2, 4))   # C cols ≠ r
     end
 
@@ -45,7 +45,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         C_true = 0.3 .* randn(q, r)
         Λ_true = 0.4 .* randn(p, K)
         Z = randn(K, n)
-        O = GLLVM._build_offset_fourthcorner(Xenv, TR, C_true)
+        O = GLLVModels._build_offset_fourthcorner(Xenv, TR, C_true)
         η = β_true .+ O .+ Λ_true * Z
         Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
 
@@ -66,7 +66,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         C_true = 0.3 .* randn(q, r)
         Λ_true = 0.4 .* randn(p, K)
         Z = randn(K, n)
-        O = GLLVM._build_offset_fourthcorner(Xenv, TR, C_true)
+        O = GLLVModels._build_offset_fourthcorner(Xenv, TR, C_true)
         η = β_true .+ O .+ Λ_true * Z
         Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
 
@@ -81,7 +81,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test all(isfinite, μhat)
 
         # model-selection criteria (β + vec(C) + Λ; Poisson has no dispersion)
-        @test GLLVM._nparams(fit) == p + q * r + (p * K - div(K * (K - 1), 2))
+        @test GLLVModels._nparams(fit) == p + q * r + (p * K - div(K * (K - 1), 2))
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
         ftd = fitted(fit, Y, Xenv, TR)

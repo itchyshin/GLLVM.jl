@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "Beta Laplace marginal" begin
     @testset "Λ = 0 reduces to independent beta-regression loglik (exact)" begin
@@ -8,7 +8,7 @@ using GLLVM, Test, Random, Distributions
         β = log.(μ ./ (1 .- μ))                       # logit
         φ = 8.0
         Y = [rand(Beta(μ[t] * φ, (1 - μ[t]) * φ)) for t in 1:p, s in 1:n]
-        ll = GLLVM.beta_marginal_loglik_laplace(Y, zeros(p, K), β, φ)
+        ll = GLLVModels.beta_marginal_loglik_laplace(Y, zeros(p, K), β, φ)
         ll_indep = sum(logpdf(Beta(μ[t] * φ, (1 - μ[t]) * φ), Y[t, s])
                        for t in 1:p, s in 1:n)
         @test ll ≈ ll_indep atol = 1e-8
@@ -24,7 +24,7 @@ using GLLVM, Test, Random, Distributions
         μt = inv.(1 .+ exp.(-(β .+ Λ[:, 1] .* ztrue)))
         y = [rand(Beta(μt[t] * φ, (1 - μt[t]) * φ)) for t in 1:p]
         Y = reshape(y, p, 1)
-        ll_lap = GLLVM.beta_marginal_loglik_laplace(Y, Λ, β, φ)
+        ll_lap = GLLVModels.beta_marginal_loglik_laplace(Y, Λ, β, φ)
         zs = range(-8, 8; length = 4001); dz = step(zs)
         marg = 0.0
         for z in zs

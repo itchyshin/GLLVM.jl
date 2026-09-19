@@ -1,4 +1,4 @@
-using GLLVM,Test
+using GLLVModels,Test
 @testset "AGHQ outer driver and numerical prerequisites" begin
     include(joinpath(@__DIR__,"../test/test_aghq_outer.jl"))
     include(joinpath(@__DIR__,"../test/test_aghq_frozen.jl"))

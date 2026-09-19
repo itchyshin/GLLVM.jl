@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Statistics
 
 # src/extractors.jl — post-fit extractor family (core070 missing-surface work
 # order, Cluster 1). Verifies the `extract_*`/`get*` public names against
@@ -19,7 +19,7 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         out_unit = extract_Sigma(fit; level = :unit, part = :total)
         Σ_manual = fit.pars.Λ * fit.pars.Λ'
         @test out_unit.Sigma ≈ Σ_manual atol = 1e-10
-        @test out_unit.R ≈ GLLVM._cov2cor(Σ_manual) atol = 1e-10
+        @test out_unit.R ≈ GLLVModels._cov2cor(Σ_manual) atol = 1e-10
         @test out_unit.level === :unit
 
         # J1 has no W tier: :unit_obs collapses to σ_eps² I.
@@ -42,7 +42,7 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         @test uniq_w.s ≈ fill(fit.pars.σ_eps^2, p) atol = 1e-10
 
         # :site tier matches the existing sigma_y_site generic exactly.
-        @test extract_Sigma(fit; level = :site).Sigma ≈ GLLVM.sigma_y_site(fit) atol = 1e-12
+        @test extract_Sigma(fit; level = :site).Sigma ≈ GLLVModels.sigma_y_site(fit) atol = 1e-12
 
         @test_throws ArgumentError extract_Sigma(fit; level = :bogus)
         @test_throws ArgumentError extract_Sigma(fit; part = :bogus)
@@ -144,13 +144,13 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         # (anti)correlated), not the identity. Cross-check against a direct
         # closed-form cov2cor(Λ Λᵀ), independent of the extractor internals.
         Σ_unit_manual = fit.pars.Λ * fit.pars.Λ'
-        @test extract_correlations(fit) ≈ GLLVM._cov2cor(Σ_unit_manual) atol = 1e-10
+        @test extract_correlations(fit) ≈ GLLVModels._cov2cor(Σ_unit_manual) atol = 1e-10
         @test all(≈(1.0; atol = 1e-10), diag(extract_correlations(fit)))
         @test all(x -> isapprox(abs(x), 1.0; atol = 1e-8), extract_correlations(fit))
 
         # `level = :total` recovers the legacy total-variance forward.
-        @test extract_communality(fit; level = :total) ≈ GLLVM.communality(fit)
-        @test extract_correlations(fit; level = :total) ≈ GLLVM.correlation(fit)
+        @test extract_communality(fit; level = :total) ≈ GLLVModels.communality(fit)
+        @test extract_correlations(fit; level = :total) ≈ GLLVModels.correlation(fit)
         R_total = extract_correlations(fit; level = :total)
         @test all(≈(1.0; atol = 1e-10), diag(R_total))
         @test all(-1.0 - 1e-9 .≤ R_total .≤ 1.0 + 1e-9)
@@ -188,11 +188,11 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         # total tier sum exactly -- algebraic identity, exact tolerance.
         @test extract_proportions(fit) ≈ ones(p) atol = 1e-10
         @test extract_proportions(fit; level = :total) ≈
-              GLLVM.proportions(fit; component = :shared)
+              GLLVModels.proportions(fit; component = :shared)
         # Any non-:shared component forwards unchanged regardless of level
         # (not part of this alignment slice).
         @test extract_proportions(fit; component = :residual) ≈
-              GLLVM.proportions(fit; component = :residual)
+              GLLVModels.proportions(fit; component = :residual)
 
         # No phylo block on this fit: phylo signal is all-NaN.
         hs = extract_phylo_signal(fit)
@@ -280,11 +280,11 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         Λ_true = 0.5 .* randn(p, K)
         η = Λ_true * randn(K, n)
         μ = exp.(η)
-        Y = [rand(GLLVM.Distributions.Poisson(μ[i, j])) for i in 1:p, j in 1:n]
+        Y = [rand(GLLVModels.Distributions.Poisson(μ[i, j])) for i in 1:p, j in 1:n]
         fit = fit_poisson_gllvm(Y; K = K)
 
-        @test extract_communality(fit, Y) ≈ GLLVM.communality(fit, Y)
-        @test extract_correlations(fit, Y) ≈ GLLVM.correlation(fit, Y)
+        @test extract_communality(fit, Y) ≈ GLLVModels.communality(fit, Y)
+        @test extract_correlations(fit, Y) ≈ GLLVModels.correlation(fit, Y)
     end
 
     @testset "R-tier-scoped oracle pins (gaussian_small fixture, wave5-conversion7)" begin
@@ -385,7 +385,7 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         # extract_communality(level="unit") / extract_proportions()
         # `shared_unit` both degenerate to the uninformative constant 1.0
         # for every trait (Repair 3 / Repair 4, surface-conversion-notes.md)
-        # -- and GLLVM.jl's new tier-scoped default reproduces that
+        # -- and GLLVModels.jl's new tier-scoped default reproduces that
         # degeneracy exactly.
         @test extract_communality(fit_g) ≈ ones(p_g) atol = 1e-10
         @test extract_proportions(fit_g) ≈ ones(p_g) atol = 1e-10
@@ -393,7 +393,7 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         # extract_correlations default (level = :unit) pins against R's
         # traced GETRESIDUALCOR / EXTRACT-SIGMA-derived correlation matrix.
         @test extract_correlations(fit_g) ≈ R_R atol = 1e-4
-        @test extract_correlations(fit_g) ≈ GLLVM._cov2cor(Σ_R) atol = 1e-4
+        @test extract_correlations(fit_g) ≈ GLLVModels._cov2cor(Σ_R) atol = 1e-4
 
         # extract_Omega default (level = :auto): gaussian_small carries only
         # the :unit tier (K > 0; no diag on :unit_obs, no W-tier loadings,
@@ -402,8 +402,8 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
         # `tiers = "B"`-only composition (Repair 5, surface-conversion-
         # notes.md: "Omega = Lambda_B Lambda_B^T exactly").
         @test extract_Omega(fit_g) ≈ Σ_R atol = 1e-4
-        @test GLLVM._r_tier_present(fit_g, :unit)
-        @test !GLLVM._r_tier_present(fit_g, :unit_obs)
+        @test GLLVModels._r_tier_present(fit_g, :unit)
+        @test !GLLVModels._r_tier_present(fit_g, :unit_obs)
 
         # level = :total recovers the legacy (pre-decision) composition,
         # which on this single-tier fixture adds sigma_eps^2*I as a spurious

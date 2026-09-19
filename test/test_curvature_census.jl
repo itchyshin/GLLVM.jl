@@ -34,9 +34,9 @@
 #      none of them, so a 9th two-part family with a Fisher `Wc` would have extended the
 #      class with this test green.
 
-using GLLVM, Test, InteractiveUtils, ForwardDiff, Distributions
+using GLLVModels, Test, InteractiveUtils, ForwardDiff, Distributions
 
-const G = GLLVM
+const G = GLLVModels
 
 _family_of(m) = (p = Base.unwrap_unionall(m.sig).parameters;
                  length(p) >= 2 ? p[2] : nothing)

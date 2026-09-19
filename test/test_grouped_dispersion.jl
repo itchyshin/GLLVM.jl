@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # Grouped / species-specific NB dispersion (gllvm's disp.group). Anchors:
 #   1. a constant per-species dispersion equals the shared-r NB marginal (machine
@@ -22,8 +22,8 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 Y[t, s] = rand(NegativeBinomial(r, r / (r + μ)))
             end
         end
-        ll_shared  = GLLVM.nb_marginal_loglik_laplace(Y, Λ, β, r)
-        ll_grouped = GLLVM.nb_grouped_marginal_loglik_laplace(Y, Λ, β, fill(r, p))
+        ll_shared  = GLLVModels.nb_marginal_loglik_laplace(Y, Λ, β, r)
+        ll_grouped = GLLVModels.nb_grouped_marginal_loglik_laplace(Y, Λ, β, fill(r, p))
         @test ll_grouped ≈ ll_shared atol = 1e-10
     end
 
@@ -33,11 +33,11 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         β = 0.2 .* randn(p) .+ 1.0
         Λ = 0.3 .* randn(p, K)
         Y = rand(0:6, p, n)
-        ll1 = GLLVM.nb_grouped_marginal_loglik_laplace(Y, Λ, β, fill(2.0, p))
-        ll2 = GLLVM.nb_grouped_marginal_loglik_laplace(Y, Λ, β, fill(20.0, p))
+        ll1 = GLLVModels.nb_grouped_marginal_loglik_laplace(Y, Λ, β, fill(2.0, p))
+        ll2 = GLLVModels.nb_grouped_marginal_loglik_laplace(Y, Λ, β, fill(20.0, p))
         @test isfinite(ll1) && isfinite(ll2)
         # mixed per-species dispersion also evaluates finitely.
-        @test isfinite(GLLVM.nb_grouped_marginal_loglik_laplace(Y, Λ, β, [1.0, 5.0, 20.0, 50.0]))
+        @test isfinite(GLLVModels.nb_grouped_marginal_loglik_laplace(Y, Λ, β, [1.0, 5.0, 20.0, 50.0]))
     end
 
     @testset "fit_nb_gllvm_grouped: one group ≈ fit_nb_gllvm" begin
@@ -109,7 +109,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
             for t in 1:p, s in 1:n
                 X[t, s, 1] = x1[s]
             end
-            O = GLLVM._build_offset(X, γ)
+            O = GLLVModels._build_offset(X, γ)
             Z = randn(rng, K, n)
             η = β .+ O .+ Λ * Z
             Y = Matrix{Float64}(undef, p, n)
@@ -119,7 +119,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 Y[t, s] = float(rand(rng, NegativeBinomial(r, r / (r + μ))))
             end
             Yi = round.(Int, Y)
-            fit = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = K, group = collect(1:p))
+            fit = GLLVModels.fit_nb_gllvm_grouped_cov(Yi; X = X, K = K, group = collect(1:p))
             @test length(fit.dispersion_boundary) == 3
             @test any(fit.dispersion_boundary)
             @test fit.converged == false

@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions
 
 @testset "fit_nb_gllvm — recovery" begin
     @testset "recovers loading structure + intercepts; sane dispersion" begin

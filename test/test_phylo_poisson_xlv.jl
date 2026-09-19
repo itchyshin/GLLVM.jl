@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 using Distributions: Poisson
 
 function _dense_leaf_phylo_poisson_xlv_loglik(Y, beta, Lambda, alpha_lv, sigma2_phy,
@@ -10,7 +10,7 @@ function _dense_leaf_phylo_poisson_xlv_loglik(Y, beta, Lambda, alpha_lv, sigma2_
     leaf_pos = [(lp = phy.leaf_indices[t]; phy.root_index < lp ? lp - 1 : lp) for t in 1:p]
     Sigma_a = sigma2_phy .* (inv(Qc)[leaf_pos, leaf_pos])
     Pa = inv(Sigma_a)
-    mean_eta = GLLVM._lv_mean_eta(Lambda, X_lv, alpha_lv)
+    mean_eta = GLLVModels._lv_mean_eta(Lambda, X_lv, alpha_lv)
 
     eps = zeros(n, K)
     a = zeros(p)
@@ -36,7 +36,7 @@ function _dense_leaf_phylo_poisson_xlv_loglik(Y, beta, Lambda, alpha_lv, sigma2_
             for k in 1:K
                 eta_ts += Lambda[t, k] * eps[s, k]
             end
-            mu_ts = exp(GLLVM._clamp_eta(eta_ts))
+            mu_ts = exp(GLLVModels._clamp_eta(eta_ts))
             score_ts = Y[t, s] - mu_ts
             weight_ts = mu_ts
             aidx = n_z + t
@@ -71,8 +71,8 @@ function _dense_leaf_phylo_poisson_xlv_loglik(Y, beta, Lambda, alpha_lv, sigma2_
         for k in 1:K
             eta_ts += Lambda[t, k] * eps[s, k]
         end
-        mu_ts = exp(GLLVM._clamp_eta(eta_ts))
-        q += GLLVM._glm_logpdf(Poisson(), mu_ts, 1, Y[t, s])
+        mu_ts = exp(GLLVModels._clamp_eta(eta_ts))
+        q += GLLVModels._glm_logpdf(Poisson(), mu_ts, 1, Y[t, s])
     end
     return q + 0.5 * logdet(cholesky(Symmetric(Pa))) -
            0.5 * logdet(cholesky(Symmetric(H)))
@@ -80,7 +80,7 @@ end
 
 @testset "Phylo x Poisson predictor-informed LV S1 likelihood" begin
     Random.seed!(724)
-    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    phy = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p = phy.n_leaves
     n = 7
     K = 1
@@ -91,18 +91,18 @@ end
     X_lv = reshape(collect(range(-1.2, 1.2; length = n)), n, q_lv)
     Y = rand(0:5, p, n)
 
-    ll_joint0 = GLLVM._phylo_poisson_xlv_marginal_loglik(
+    ll_joint0 = GLLVModels._phylo_poisson_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, 1e-8, phy, X_lv;
         maxiter = 120, tol = 1e-10)
-    theta_plain = vcat(beta, vec(alpha_lv), GLLVM.pack_lambda(Lambda))
-    ll_plain = -GLLVM.poisson_lv_nll_packed(
+    theta_plain = vcat(beta, vec(alpha_lv), GLLVModels.pack_lambda(Lambda))
+    ll_plain = -GLLVModels.poisson_lv_nll_packed(
         theta_plain, Y, p, K, LogLink(); X_lv = X_lv, q_lv = q_lv,
         maxiter = 120, tol = 1e-10)
     @test isapprox(ll_joint0, ll_plain; atol = 2e-3)
 
     sigma2 = 0.45
     Lambda0 = zeros(p, K)
-    ll_phylo_only = GLLVM._phylo_poisson_xlv_marginal_loglik(
+    ll_phylo_only = GLLVModels._phylo_poisson_xlv_marginal_loglik(
         Y, beta, Lambda0, alpha_lv, sigma2, phy, X_lv;
         maxiter = 120, tol = 1e-10)
     ll_phylo_glm = phylo_glm_marginal_loglik(
@@ -110,7 +110,7 @@ end
         link = LogLink(), maxiter = 120, tol = 1e-10)
     @test isapprox(ll_phylo_only, ll_phylo_glm; atol = 1e-7)
 
-    ll_sparse_aug = GLLVM._phylo_poisson_xlv_marginal_loglik(
+    ll_sparse_aug = GLLVModels._phylo_poisson_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, sigma2, phy, X_lv;
         maxiter = 120, tol = 1e-10)
     ll_dense_leaf = _dense_leaf_phylo_poisson_xlv_loglik(
@@ -118,21 +118,21 @@ end
     @test isapprox(ll_sparse_aug, ll_dense_leaf; atol = 1e-6)
     @test isfinite(ll_sparse_aug)
 
-    @test GLLVM._phylo_poisson_xlv_marginal_loglik(
+    @test GLLVModels._phylo_poisson_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, 0.0, phy, X_lv) == -Inf
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_marginal_loglik(
         Y[1:5, :], beta, Lambda, alpha_lv, sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, sigma2, phy, X_lv[1:(end - 1), :])
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_marginal_loglik(
         Y, beta, Lambda, ones(2, K), sigma2, phy, X_lv)
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_marginal_loglik(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_marginal_loglik(
         Y, beta, Lambda, alpha_lv, sigma2, phy, X_lv; link = IdentityLink())
 end
 
 @testset "Phylo x Poisson B_eta_realized selected-entry canary" begin
     Random.seed!(725)
-    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    phy = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p = phy.n_leaves
     n = 28
     K = 1
@@ -149,7 +149,7 @@ end
 
     # Deterministic positive-control counts keep the canary focused on
     # selected-entry LR routing. This is not a source-variance recovery test.
-    fit = GLLVM._fit_phylo_poisson_xlv(
+    fit = GLLVModels._fit_phylo_poisson_xlv(
         Y, phy; K = K, X_lv = X_lv,
         beta_init = beta, Lambda_init = Lambda, alpha_lv_init = alpha_lv,
         sigma2_phy_init = sigma2,
@@ -159,8 +159,8 @@ end
     @test isfinite(fit.loglik)
     @test fit.sigma2_phy > 0
 
-    eta_target = vec(GLLVM._eta_realized_lv_effects(X_lv, Z_truth, Lambda))
-    prof = GLLVM._phylo_poisson_xlv_profile_eta_realized(
+    eta_target = vec(GLLVModels._eta_realized_lv_effects(X_lv, Z_truth, Lambda))
+    prof = GLLVModels._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target;
         level = 0.95, profile_iterations = 700,
         newton_maxiter = 120, newton_tol = 1e-10)
@@ -182,17 +182,17 @@ end
     # can vary by platform even when the constraint error is already below the
     # profile gate, so do not make it part of this S1 evidence claim.
 
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, Int[], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1, 1], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [p + 1], eta_target)
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target[1:(end - 1)])
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target; profile_iterations = 0)
-    @test_throws ArgumentError GLLVM._phylo_poisson_xlv_profile_eta_realized(
+    @test_throws ArgumentError GLLVModels._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target; endpoint_step = -0.1)
 
     # Red-first: the boundary-tolerant ok-gate (added to accept a
@@ -204,7 +204,7 @@ end
     # approach it, the refit's constraint_error stays orders of magnitude
     # above tolerance -- a genuinely failed endpoint search, unrelated to
     # any variance boundary. This must still report :failed.
-    prof_fail = GLLVM._phylo_poisson_xlv_profile_eta_realized(
+    prof_fail = GLLVModels._phylo_poisson_xlv_profile_eta_realized(
         fit, Y, phy, X_lv, [1], eta_target;
         level = 0.95, profile_iterations = 3, constraint_tol = 1e-14,
         newton_maxiter = 120, newton_tol = 1e-10)

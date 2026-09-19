@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, ForwardDiff, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, ForwardDiff, Statistics
 
 # Two-level Gaussian simulator: y_:,obs = Λ_B z_B,i + s_B,i + Λ_W z_W,obs + s_W,obs
 # (μ = 0). The between draw (z_B,i, s_B,i) is shared across an individual'\''s obs;
@@ -36,7 +36,7 @@ end
 
         Σ_B = Λ_B * Λ_B' + Diagonal(σ²_B)
         Σ_W = Λ_W * Λ_W' + Diagonal(σ²_W)
-        codes, _ = GLLVM._code_grouping(indiv); L = maximum(codes)
+        codes, _ = GLLVModels._code_grouping(indiv); L = maximum(codes)
         ll_dense = 0.0
         for g in 1:L
             idx = findall(==(g), codes); ni = length(idx)
@@ -57,12 +57,12 @@ end
         p, K_B, K_W = 5, 2, 1
         indiv = repeat(1:8, inner = 4)
         y = randn(p, length(indiv))
-        codes, _ = GLLVM._code_grouping(indiv); L = maximum(codes)
+        codes, _ = GLLVModels._code_grouping(indiv); L = maximum(codes)
         ind_idx = [findall(==(g), codes) for g in 1:L]
-        rrB = GLLVM.rr_theta_len(p, K_B); rrW = GLLVM.rr_theta_len(p, K_W)
+        rrB = GLLVModels.rr_theta_len(p, K_B); rrW = GLLVModels.rr_theta_len(p, K_W)
         nll = θ -> begin
-            Λ_B, σ²_B, Λ_W, σ²_W = GLLVM._twolevel_unpack(θ, p, K_B, K_W)
-            -GLLVM._twolevel_loglik(y, ind_idx, Λ_B, σ²_B, Λ_W, σ²_W)
+            Λ_B, σ²_B, Λ_W, σ²_W = GLLVModels._twolevel_unpack(θ, p, K_B, K_W)
+            -GLLVModels._twolevel_loglik(y, ind_idx, Λ_B, σ²_B, Λ_W, σ²_W)
         end
         θ = vcat(0.3 .* randn(rrB), log.(fill(0.4, p)),
                  0.3 .* randn(rrW), log.(fill(0.5, p)))

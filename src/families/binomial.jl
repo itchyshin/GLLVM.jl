@@ -298,8 +298,8 @@ function _warn_saturation(sat::Union{Nothing, LaplaceSaturationHealth}, link::Li
             "This MAY indicate the Laplace approximation is unreliable at this ",
             "optimum; loadings and loglik can be strongly inflated when the ",
             "saturation is latent-mode driven, while extreme-prevalence data can ",
-            "saturate benignly through the intercepts. See docs/dev-log/check-log.md ",
-            "2026-08-28 (the diagnosed cloglog pathology).")
+            "saturate benignly through the intercepts. This warning includes the ",
+            "documented cloglog pathology.")
     end
     return sat
 end
@@ -332,13 +332,11 @@ initial latent scores on `X_lv`.
 `hessian` selects the Laplace log-det curvature only (`:fisher` expected /
 `:observed` joint — TMB's choice); the inner mode search is always
 Fisher-scored. Default: canonical logit — the two coincide (`:fisher`).
-Probit defaults to `:observed` (changed 2026-08-28, maintainer decision — TMB/
-`gllvmTMB` parity, see `docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`).
+Probit defaults to `:observed` (matching TMB/`gllvmTMB` parity).
 Cloglog ALSO defaults to `:observed` (changed 2026-09-01, maintainer decisions
 round 1 item 2 — a confirmed Julia-side likelihood-value defect against R,
 not the 2026-08-28 optimizer-runaway pathology, which was measured under
-BOTH curvature selectors and is unaffected by this default; see
-`docs/dev-log/core070/cloglog-leaf-notes.md`). Omitting the kwarg is exactly
+BOTH curvature selectors and is unaffected by this default). Omitting the kwarg is exactly
 the default-path behaviour for every link.
 """
 function _fit_binomial_gllvm_laplace(Y::AbstractMatrix; K::Integer,

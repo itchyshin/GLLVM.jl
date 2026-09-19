@@ -1,6 +1,6 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
-@testset "ordination — Poisson GLLVM" begin
+@testset "ordination — Poisson GLLVModels" begin
     Random.seed!(2026)
     p, K, n = 5, 2, 100
     β_true = log.([4.0, 6.0, 3.0, 5.0, 4.0])

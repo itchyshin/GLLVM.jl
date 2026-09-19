@@ -1,4 +1,4 @@
-using GLLVM,Test,Random,LinearAlgebra
+using GLLVModels,Test,Random,LinearAlgebra
 @testset "GE Gaussian empty design" begin
     rng=MersenneTwister(714);p=3;n=36
     Y=reshape([.8,.4,-.3],p,1)*randn(rng,1,n)+.7randn(rng,p,n)
@@ -7,13 +7,13 @@ using GLLVM,Test,Random,LinearAlgebra
         spec=(p=p,q=0,K_B=1,K_W=0,has_diag=false,K_phy=phy ? 1 : 0,has_phy_unique=false)
         theta=phy ? [.1,.3,-.2,-.4,.2,.1] : [.1,.3,-.2]
         C=phy ? [.9 .2 .1;.2 1.1 .3;.1 .3 .8] : nothing
-        f0=t->GLLVM.gaussian_profile_nll(t,Y;spec=spec,Σ_phy=C)
-        fx=t->GLLVM.gaussian_profile_nll(t,Y;spec=spec,Σ_phy=C,X=X0)
+        f0=t->GLLVModels.gaussian_profile_nll(t,Y;spec=spec,Σ_phy=C)
+        fx=t->GLLVModels.gaussian_profile_nll(t,Y;spec=spec,Σ_phy=C,X=X0)
         @test fx(theta) ≈ f0(theta) atol=1e-12
-        @test GLLVM.ForwardDiff.gradient(fx,theta) ≈ GLLVM.ForwardDiff.gradient(f0,theta) atol=1e-10
-        @test GLLVM.ForwardDiff.hessian(fx,theta) ≈ GLLVM.ForwardDiff.hessian(f0,theta) atol=1e-9
-        rx=GLLVM.profile_recover(theta,Y;spec=spec,Σ_phy=C,X=X0)
-        r0=GLLVM.profile_recover(theta,Y;spec=spec,Σ_phy=C)
+        @test GLLVModels.ForwardDiff.gradient(fx,theta) ≈ GLLVModels.ForwardDiff.gradient(f0,theta) atol=1e-10
+        @test GLLVModels.ForwardDiff.hessian(fx,theta) ≈ GLLVModels.ForwardDiff.hessian(f0,theta) atol=1e-9
+        rx=GLLVModels.profile_recover(theta,Y;spec=spec,Σ_phy=C,X=X0)
+        r0=GLLVModels.profile_recover(theta,Y;spec=spec,Σ_phy=C)
         @test rx==r0
         @test rx.logLik ≈ -fx(theta) atol=1e-10
     end

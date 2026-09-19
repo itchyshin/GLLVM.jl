@@ -546,7 +546,7 @@ end
 # RETURN VALUE. R's `tmbprofile_wrapper()` gets there by first calling
 # `TMB::tmbprofile()`, which returns the raw (parameter value, deviance)
 # TRACE, and only then reducing that trace to bounds via `.profile_bounds()`.
-# GLLVM.jl's `profile_ci` never materialises that trace — every constrained
+# GLLVModels.jl's `profile_ci` never materialises that trace — every constrained
 # refit's deviance is used and discarded inside `_profile_bisect_side`.
 #
 # `tmbprofile_wrapper` here fills that namespace/surface gap: it re-walks
@@ -717,7 +717,7 @@ Batch curve wrapper: calls [`tmbprofile_wrapper`](@ref) for every entry of
 R's `profile_targets()` is a READINESS REGISTRY (which parameters/targets a
 fit COULD be profiled on, without running anything, because
 `TMB::tmbprofile()` needs the fit's live `tmb_obj` checkpoint machinery to
-run cheaply and reversibly). GLLVM.jl's `profile_ci` has no comparable
+run cheaply and reversibly). GLLVModels.jl's `profile_ci` has no comparable
 checkpoint/restore step — running it IS the cheap operation — so this
 function runs every target's curve directly rather than reporting a
 separate readiness flag; a fit for which a given `parm` cannot be resolved
@@ -755,8 +755,7 @@ quantity. Building a curve variant for THAT quantity needs the identical
 penalty-profile plumbing `confint_derived.jl` already owns; duplicating it
 here would create two divergent implementations of the same profile, so
 this function is deliberately scoped to the packed `sigma_phy[t]` term —
-the raw SCALE parameter, not the derived SIGNAL ratio. See
-`docs/dev-log/core070/se-machinery-slice-notes.md` for the full gap note.
+the raw SCALE parameter, not the derived SIGNAL ratio.
 """
 function profile_phylo_signal(fit::GllvmFit, t::Integer; kwargs...)
     fit.model.has_phy_unique || throw(ArgumentError(
@@ -769,9 +768,9 @@ end
 """
     profile_targets(args...; kwargs...)
 
-Deprecated forwarding shim: renamed to [`profile_curve_targets`](@ref) per
-maintainer decision round2-3 #5 (the name `profile_targets` is reserved for a
-future mirror of R's readiness-registry surface, a different function).
+Deprecated forwarding shim: renamed to [`profile_curve_targets`](@ref). The
+name `profile_targets` is reserved for a future R-style readiness registry,
+which would be a different function.
 """
 function profile_targets(args...; kwargs...)
     Base.depwarn("profile_targets is deprecated: renamed to profile_curve_targets; the name profile_targets is reserved for a future R-mirroring readiness-registry surface", :profile_targets)

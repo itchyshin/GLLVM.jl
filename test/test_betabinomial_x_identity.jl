@@ -10,7 +10,7 @@ using Test
 using Random
 using LinearAlgebra
 using Distributions
-using GLLVM
+using GLLVModels
 
 @testset "BetaBinomial + X identity (API B under X)" begin
 
@@ -21,22 +21,22 @@ using GLLVM
         γ = [0.35]
         Λ = 0.25 .* randn(p, K)
         X = randn(p, n, q)
-        O = GLLVM._build_offset(X, γ)
+        O = GLLVModels._build_offset(X, γ)
         Z = randn(K, n)
         η = β .+ O .+ Λ * Z
         φ = 8.0
         N = fill(10, p, n)
         Y = Matrix{Int}(undef, p, n)
         for t in 1:p, s in 1:n
-            μ = GLLVM.linkinv(GLLVM.LogitLink(), η[t, s])
+            μ = GLLVModels.linkinv(GLLVModels.LogitLink(), η[t, s])
             a = μ * φ
             b = (1 - μ) * φ
             psucc = clamp(rand(Beta(a, b)), 1e-6, 1 - 1e-6)
             Y[t, s] = rand(Binomial(N[t, s], psucc))
         end
         φvec = fill(φ, p)
-        ll_g = GLLVM.betabinomial_grouped_marginal_loglik_laplace(Y, N, Λ, β, φvec; offset = O)
-        ll_s = GLLVM.betabinomial_marginal_loglik_laplace(Y, N, Λ, β, φ; offset = O)
+        ll_g = GLLVModels.betabinomial_grouped_marginal_loglik_laplace(Y, N, Λ, β, φvec; offset = O)
+        ll_s = GLLVModels.betabinomial_marginal_loglik_laplace(Y, N, Λ, β, φ; offset = O)
         @test isapprox(ll_g, ll_s; atol = 1e-10, rtol = 0)
     end
 
@@ -51,7 +51,7 @@ using GLLVM
         N = fill(8, p, n)
         Y = Matrix{Int}(undef, p, n)
         for t in 1:p, s in 1:n
-            μ = GLLVM.linkinv(GLLVM.LogitLink(), η[t, s])
+            μ = GLLVModels.linkinv(GLLVModels.LogitLink(), η[t, s])
             a = μ * φ_true
             b = (1 - μ) * φ_true
             psucc = clamp(rand(Beta(a, b)), 1e-6, 1 - 1e-6)
@@ -74,14 +74,14 @@ using GLLVM
         γ_true = [0.4]
         Λ_true = 0.3 .* randn(p, K)
         X = randn(p, n, q)
-        O = GLLVM._build_offset(X, γ_true)
+        O = GLLVModels._build_offset(X, γ_true)
         Z = randn(K, n)
         η = β_true .+ O .+ Λ_true * Z
         φ_true = 10.0
         N = fill(8, p, n)
         Y = Matrix{Int}(undef, p, n)
         for t in 1:p, s in 1:n
-            μ = GLLVM.linkinv(GLLVM.LogitLink(), η[t, s])
+            μ = GLLVModels.linkinv(GLLVModels.LogitLink(), η[t, s])
             a = μ * φ_true
             b = (1 - μ) * φ_true
             psucc = clamp(rand(Beta(a, b)), 1e-6, 1 - 1e-6)
@@ -97,7 +97,7 @@ using GLLVM
 
         # G=1 self-consistency: the grouped_cov objective at the fitted params
         # must equal the shared marginal evaluated at the same (β, Λ, φ, offset).
-        O̅ = GLLVM._build_offset(X, fg.γ)
+        O̅ = GLLVModels._build_offset(X, fg.γ)
         ll_check = betabinomial_marginal_loglik_laplace(Y, N, fg.Λ, fg.β, fg.φ[1]; offset = O̅)
         @test isapprox(ll_check, fg.loglik; atol = 1e-8, rtol = 0)
     end
@@ -118,7 +118,7 @@ using GLLVM
         N = [5 + ((t + i) % 4) for t in 1:p, i in 1:n]
         Y = Matrix{Int}(undef, p, n)
         for t in 1:p, s in 1:n
-            μ = GLLVM.linkinv(GLLVM.LogitLink(), η[t, s])
+            μ = GLLVModels.linkinv(GLLVModels.LogitLink(), η[t, s])
             psucc = clamp(rand(Beta(μ * φ_true, (1 - μ) * φ_true)), 1e-6, 1 - 1e-6)
             Y[t, s] = rand(Binomial(N[t, s], psucc))
         end

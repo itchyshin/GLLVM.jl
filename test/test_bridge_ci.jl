@@ -12,7 +12,7 @@
 #   4. FLAT CONTRACT — every CI field is a primitive String/Float64/array.
 
 using Test
-using GLLVM
+using GLLVModels
 using Random
 using Statistics
 
@@ -39,7 +39,7 @@ function _sim_poisson_bridge_ci(p, n, K; seed = 12)
     rng = Random.MersenneTwister(seed + 1000)
     Y = Matrix{Int}(undef, p, n)
     for i in eachindex(η)
-        Y[i] = rand(rng, GLLVM.Poisson(exp(clamp(η[i], -8, 4))))
+        Y[i] = rand(rng, GLLVModels.Poisson(exp(clamp(η[i], -8, 4))))
     end
     return Y
 end
@@ -50,7 +50,7 @@ function _sim_binomial(p, n, K, Ntrial; seed = 13)
     Y = Matrix{Int}(undef, p, n)
     for i in eachindex(η)
         pr = 1 / (1 + exp(-η[i]))
-        Y[i] = rand(rng, GLLVM.Binomial(Ntrial, pr))
+        Y[i] = rand(rng, GLLVModels.Binomial(Ntrial, pr))
     end
     return Y
 end
@@ -62,7 +62,7 @@ function _sim_nb(p, n, K; seed = 14, r = 5.0)
     for i in eachindex(η)
         μ = exp(clamp(η[i], -8, 4))
         pr = r / (r + μ)
-        Y[i] = rand(rng, GLLVM.NegativeBinomial(r, pr))
+        Y[i] = rand(rng, GLLVModels.NegativeBinomial(r, pr))
     end
     return Y
 end
@@ -74,7 +74,7 @@ function _sim_beta(p, n, K; seed = 15, φ = 8.0)
     for i in eachindex(η)
         μ = 1 / (1 + exp(-η[i]))
         μ = clamp(μ, 1e-3, 1 - 1e-3)
-        Y[i] = clamp(rand(rng, GLLVM.Beta(μ * φ, (1 - μ) * φ)), 1e-4, 1 - 1e-4)
+        Y[i] = clamp(rand(rng, GLLVModels.Beta(μ * φ, (1 - μ) * φ)), 1e-4, 1 - 1e-4)
     end
     return Y
 end
@@ -85,7 +85,7 @@ function _sim_gamma(p, n, K; seed = 16, shape = 4.0)
     Y = Matrix{Float64}(undef, p, n)
     for i in eachindex(η)
         μ = exp(clamp(η[i], -4, 4))
-        Y[i] = rand(rng, GLLVM.Gamma(shape, μ / shape)) + 1e-6
+        Y[i] = rand(rng, GLLVModels.Gamma(shape, μ / shape)) + 1e-6
     end
     return Y
 end
@@ -160,8 +160,8 @@ end
         # Gaussian
         Yg = _sim_gaussian(4, 60, 1; seed = 22)
         alpha = vec(mean(Yg; dims = 2)); Yc = Yg .- alpha
-        gf = GLLVM.fit_gaussian_gllvm(Yc; K = 1)
-        nat = GLLVM.confint(gf; y = Yc, level = 0.95)
+        gf = GLLVModels.fit_gaussian_gllvm(Yc; K = 1)
+        nat = GLLVModels.confint(gf; y = Yc, level = 0.95)
         br = bridge_fit(; y = Yg, family = "gaussian", d = 1,
                         options = Dict("ci_method" => "wald"))
         @test br.ci_method == "wald"
@@ -172,8 +172,8 @@ end
 
         # Poisson
         Yp = _sim_poisson_bridge_ci(4, 60, 1; seed = 23)
-        pf = GLLVM.fit_poisson_gllvm(Yp; K = 1)
-        natp = GLLVM.confint(pf, Float64.(Yp); method = :wald, level = 0.95)
+        pf = GLLVModels.fit_poisson_gllvm(Yp; K = 1)
+        natp = GLLVModels.confint(pf, Float64.(Yp); method = :wald, level = 0.95)
         brp = bridge_fit(; y = Float64.(Yp), family = "poisson", d = 1,
                          options = Dict("ci_method" => "wald"))
         dp = _ci_max_absdiff(brp.ci_param_names, brp.ci_lower, brp.ci_upper,
@@ -183,8 +183,8 @@ end
         # Binomial
         Yb = _sim_binomial(4, 60, 1, 6; seed = 24)
         Nb = fill(6, size(Yb)...)
-        bf = GLLVM.fit_binomial_gllvm(Yb; K = 1, N = Nb)
-        natb = GLLVM.confint(bf, Float64.(Yb); method = :wald, level = 0.95, N = Nb)
+        bf = GLLVModels.fit_binomial_gllvm(Yb; K = 1, N = Nb)
+        natb = GLLVModels.confint(bf, Float64.(Yb); method = :wald, level = 0.95, N = Nb)
         brb = bridge_fit(; y = Float64.(Yb), family = "binomial", d = 1, N = Nb,
                          options = Dict("ci_method" => "wald"))
         db = _ci_max_absdiff(brb.ci_param_names, brb.ci_lower, brb.ci_upper,
@@ -206,8 +206,8 @@ end
     @testset "profile parity vs native" begin
         # Poisson: native vector profile
         Yp = _sim_poisson_bridge_ci(3, 60, 1; seed = 31)
-        pf = GLLVM.fit_poisson_gllvm(Yp; K = 1)
-        natp = GLLVM.confint(pf, Float64.(Yp); method = :profile, level = 0.95)
+        pf = GLLVModels.fit_poisson_gllvm(Yp; K = 1)
+        natp = GLLVModels.confint(pf, Float64.(Yp); method = :profile, level = 0.95)
         brp = bridge_fit(; y = Float64.(Yp), family = "poisson", d = 1,
                          options = Dict("ci_method" => "profile"))
         @test brp.ci_method == "profile"
@@ -218,11 +218,11 @@ end
         # Gaussian: native per-parameter profile_ci, looped over all terms
         Yg = _sim_gaussian(3, 60, 1; seed = 32)
         alpha = vec(mean(Yg; dims = 2)); Yc = Yg .- alpha
-        gf = GLLVM.fit_gaussian_gllvm(Yc; K = 1)
+        gf = GLLVModels.fit_gaussian_gllvm(Yc; K = 1)
         nterm = length(gf.pars.θ_packed)
         nat_lo = Float64[]; nat_hi = Float64[]
         for i in 1:nterm
-            pc = GLLVM.profile_ci(gf, i; y = Yc, level = 0.95)
+            pc = GLLVModels.profile_ci(gf, i; y = Yc, level = 0.95)
             push!(nat_lo, pc.lower); push!(nat_hi, pc.upper)
         end
         brg = bridge_fit(; y = Yg, family = "gaussian", d = 1,
@@ -244,8 +244,8 @@ end
         nb = 40
         # Poisson
         Yp = _sim_poisson_bridge_ci(3, 50, 1; seed = 41)
-        pf = GLLVM.fit_poisson_gllvm(Yp; K = 1)
-        natp = GLLVM.confint(pf, Float64.(Yp); method = :bootstrap, level = 0.95,
+        pf = GLLVModels.fit_poisson_gllvm(Yp; K = 1)
+        natp = GLLVModels.confint(pf, Float64.(Yp); method = :bootstrap, level = 0.95,
                              n_boot = nb, seed = 7)
         brp = bridge_fit(; y = Float64.(Yp), family = "poisson", d = 1,
                          options = Dict("ci_method" => "bootstrap",
@@ -259,8 +259,8 @@ end
         # Gaussian
         Yg = _sim_gaussian(3, 50, 1; seed = 42)
         alpha = vec(mean(Yg; dims = 2)); Yc = Yg .- alpha
-        gf = GLLVM.fit_gaussian_gllvm(Yc; K = 1)
-        natg = GLLVM.bootstrap_ci(gf; y = Yc, n_boot = nb, level = 0.95, seed = 7)
+        gf = GLLVModels.fit_gaussian_gllvm(Yc; K = 1)
+        natg = GLLVModels.bootstrap_ci(gf; y = Yc, n_boot = nb, level = 0.95, seed = 7)
         brg = bridge_fit(; y = Yg, family = "gaussian", d = 1,
                          options = Dict("ci_method" => "bootstrap",
                                         "ci_nboot" => nb, "ci_seed" => 7))

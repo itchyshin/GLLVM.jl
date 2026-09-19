@@ -1,11 +1,11 @@
-using GLLVM
+using GLLVModels
 using Test
 using Random
 using LinearAlgebra
 using Distributions
 
-using GLLVM: rr_theta_len, pack_lambda, unpack_lambda, init_theta_rr
-const ForwardDiff = GLLVM.ForwardDiff
+using GLLVModels: rr_theta_len, pack_lambda, unpack_lambda, init_theta_rr
+const ForwardDiff = GLLVModels.ForwardDiff
 
 @testset "none × dep matrix fitter" begin
     @testset "free count is p(p+1)/2 at K = p" begin
@@ -29,7 +29,7 @@ const ForwardDiff = GLLVM.ForwardDiff
         θ[(K + 1):end] .= 0.05 .* randn(length(θ) - K)
         y = randn(p, n)
         params = [log(0.6); θ]
-        nll = prm -> GLLVM.gaussian_nll_packed(prm, y, p, K)
+        nll = prm -> GLLVModels.gaussian_nll_packed(prm, y, p, K)
         g_ad = ForwardDiff.gradient(nll, params)
         ε = 1e-5
         g_fd = similar(params)

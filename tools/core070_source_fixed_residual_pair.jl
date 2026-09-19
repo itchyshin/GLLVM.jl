@@ -1,5 +1,5 @@
 # Exact original ordinary independent/common source models; no formula/bridge claim.
-using GLLVM, RCall, LinearAlgebra, TOML, Test, SHA
+using GLLVModels, RCall, LinearAlgebra, TOML, Test, SHA
 include(joinpath(pwd(),"test/parity/parity_helpers.jl"))
 length(ARGS)==1 || error("expected fresh output path")
 output=ARGS[1];ispath(output) && error("fresh output required");mkpath(output)
@@ -42,7 +42,7 @@ for (index,common) in enumerate((false,true))
       "expected_id"=>id==(common ? "MODE-ORD-COMMON" : "MODE-ORD-INDEP"),
       "residual_fixed"=>native.residual_fixed && native.sigma_eps===fixed,
       "reference_residual_rule"=>isapprox(fixed,rcopy(Float64,R"max(.001*sd(df$value),1e-6)");rtol=1e-12),
-      "free_parameters"=>GLLVM.dof(native)==length(rpar)==(common ? 4 : 6),
+      "free_parameters"=>GLLVModels.dof(native)==length(rpar)==(common ? 4 : 6),
       "r_code"=>rcode==0,"r_gradient"=>all(isfinite,rgrad)&&maximum(abs,rgrad)<=1e-4,
       "native_health"=>native.converged && native.gradient_norm<=1e-7,
       "finite_likelihoods"=>all(isfinite,(native.loglik,rll,robj)),
@@ -56,7 +56,7 @@ for (index,common) in enumerate((false,true))
       "r_names"=>rnames,"r_parameters"=>rpar,"r_beta"=>rbeta,"r_source_sd"=>rsd,
       "native_beta"=>native.beta,"native_source_variance"=>diag(only(native.trait_covariances)),
       "native_gradient_max"=>native.gradient_norm,"native_parameters"=>native.parameters,
-      "native_dof"=>GLLVM.dof(native),"checks"=>checks)
+      "native_dof"=>GLLVModels.dof(native),"checks"=>checks)
     push!(rows,row)
     open(joinpath(output,"result.toml"),"w") do io
         TOML.print(io,Dict("source"=>source,"data_sha256"=>bytes2hex(sha256(reinterpret(UInt8,vec(Y)))),

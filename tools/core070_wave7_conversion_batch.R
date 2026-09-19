@@ -1,6 +1,6 @@
 # Conversion batch #3 (wave-7): pays 7 of the 45 BLOCKED_NEEDS_JULIA_SURFACE
 # ledger rows in docs/dev-log/core070/required-source-case-map.json whose
-# Julia function name now exists in names(GLLVM) (verified against this
+# Julia function name now exists in names(GLLVModels) (verified against this
 # worktree's HEAD). The other 38 are deferred with a per-row trace in
 # docs/dev-log/core070/wave7-conversion-batch-contract.json's `deferred[]` --
 # most of them are SAME-NAME, DIFFERENT-SURFACE collisions discovered by

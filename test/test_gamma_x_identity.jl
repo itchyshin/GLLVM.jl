@@ -7,7 +7,7 @@ using Test
 using Random
 using LinearAlgebra
 using Distributions
-using GLLVM
+using GLLVModels
 
 @testset "Gamma + X identity (API B under X)" begin
 
@@ -18,7 +18,7 @@ using GLLVM
         γ = [0.4]
         Λ = 0.3 .* randn(p, K)
         X = randn(p, n, q)
-        O = GLLVM._build_offset(X, γ)
+        O = GLLVModels._build_offset(X, γ)
         Z = randn(K, n)
         η = β .+ O .+ Λ * Z
         α = 4.0
@@ -28,10 +28,10 @@ using GLLVM
             Y[t, s] = rand(Gamma(α, μ / α)) + 1e-6
         end
         αvec = fill(α, p)
-        ll_g = GLLVM.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, αvec; offset = O)
+        ll_g = GLLVModels.gamma_grouped_marginal_loglik_laplace(Y, Λ, β, αvec; offset = O)
         fam = Gamma(α, 1.0)
         N = ones(Int, p, n)
-        ll_s = GLLVM._marginal_loglik_offset(fam, Y, N, Λ, β, O, LogLink())
+        ll_s = GLLVModels._marginal_loglik_offset(fam, Y, N, Λ, β, O, LogLink())
         @test isapprox(ll_g, ll_s; atol = 1e-10, rtol = 0)
     end
 
@@ -42,7 +42,7 @@ using GLLVM
         γ_true = [0.5]
         Λ_true = 0.35 .* randn(p, K)
         X = randn(p, n, q)
-        O = GLLVM._build_offset(X, γ_true)
+        O = GLLVModels._build_offset(X, γ_true)
         Z = randn(K, n)
         η = β_true .+ O .+ Λ_true * Z
         α_true = 3.5

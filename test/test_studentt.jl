@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions, ForwardDiff
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions, ForwardDiff
 
 # Central finite-difference gradient (matches test/test_family_forwarddiff_gradients.jl
 # and test/test_nb1_lognormal.jl). NOTE the Float32 '2f0' stencil trap: the divisor
@@ -20,7 +20,7 @@ _max_rel_err(a, b) = maximum(abs.(a .- b) ./ max.(1.0, abs.(b)))
 
     # ---------------------------------------------------------------------
     # Marginal sanity: as ν → ∞ the Student-t marginal → Gaussian marginal.
-    # On the identity link the Gaussian GLLVM marginal is the closed-form
+    # On the identity link the Gaussian GLLVModels marginal is the closed-form
     # gaussian_marginal_loglik of the centred responses (Λ Λᵀ + σ² I), so a large
     # ν Student-t Laplace marginal should match it closely.
     # ---------------------------------------------------------------------
@@ -31,8 +31,8 @@ _max_rel_err(a, b) = maximum(abs.(a .- b) ./ max.(1.0, abs.(b)))
         Λ = 0.3 .* randn(p, K)
         σ = 0.7
         Y = [β[t] + (Λ * randn(K))[1] + σ * randn() for t in 1:p, s in 1:n]
-        ll_t = GLLVM.studentt_marginal_loglik_laplace(Y, Λ, β, σ; ν = 1e6)
-        ll_g = GLLVM.gaussian_marginal_loglik(Y .- β, Λ, σ)
+        ll_t = GLLVModels.studentt_marginal_loglik_laplace(Y, Λ, β, σ; ν = 1e6)
+        ll_g = GLLVModels.gaussian_marginal_loglik(Y .- β, Λ, σ)
         @test ll_t ≈ ll_g rtol = 1e-3
     end
 
@@ -43,7 +43,7 @@ _max_rel_err(a, b) = maximum(abs.(a .- b) ./ max.(1.0, abs.(b)))
         σ = 0.8
         ν = 4.0
         Y = [β[t] + σ * rand(TDist(ν)) for t in 1:p, s in 1:n]
-        ll = GLLVM.studentt_marginal_loglik_laplace(Y, zeros(p, K), β, σ; ν = ν)
+        ll = GLLVModels.studentt_marginal_loglik_laplace(Y, zeros(p, K), β, σ; ν = ν)
         # Independent location-scale t log-density: logpdf(TDist(ν), (y−β)/σ) − log σ.
         ll_indep = sum(logpdf(TDist(ν), (Y[t, s] - β[t]) / σ) - log(σ)
                        for t in 1:p, s in 1:n)
@@ -57,15 +57,15 @@ _max_rel_err(a, b) = maximum(abs.(a .- b) ./ max.(1.0, abs.(b)))
     @testset "marginal gradient: FD ≤ 1e-6" begin
         Random.seed!(703)
         p, n, K = 4, 8, 1
-        rr = GLLVM.rr_theta_len(p, K)
+        rr = GLLVModels.rr_theta_len(p, K)
         β0 = [0.3, 0.7, -0.1, 0.5]
-        Λ0 = GLLVM.pack_lambda(0.2 .* randn(p, K))
+        Λ0 = GLLVModels.pack_lambda(0.2 .* randn(p, K))
         σ_true = 0.9
         ν = 4.0
         Y = [β0[t] + σ_true * rand(TDist(ν)) for t in 1:p, s in 1:n]
         θ0 = vcat(β0, Λ0, log(σ_true))
-        f = θ -> -GLLVM.studentt_marginal_loglik_laplace(
-            Y, GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
+        f = θ -> -GLLVModels.studentt_marginal_loglik_laplace(
+            Y, GLLVModels.unpack_lambda(θ[(p + 1):(p + rr)], p, K), θ[1:p],
             exp(θ[p + rr + 1]); ν = ν)
         gad = ForwardDiff.gradient(f, θ0)
         gfd = _central_fd_gradient(f, θ0)

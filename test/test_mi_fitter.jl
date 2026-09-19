@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics, Distributions
+using GLLVModels, Test, LinearAlgebra, Random, Statistics, Distributions
 
 # User-facing fitter fit_gllvm_mi for the non-Gaussian missing predictor: wraps
 # the AD-clean augmented-Laplace marginal in L-BFGS. Recovery under MAR (the

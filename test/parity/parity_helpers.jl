@@ -99,7 +99,7 @@ function _core070_write_toml(name::AbstractString, receipt::Dict{String, Any})
 end
 
 function _core070_source_pin!()
-    Core070Receipts.verify_loaded_source(_core070_root(), Base.pkgdir(GLLVM), pathof(GLLVM))
+    Core070Receipts.verify_loaded_source(_core070_root(), Base.pkgdir(GLLVModels), pathof(GLLVModels))
     marker = get(ENV, "GLLVM_PARITY_R_SOURCE_PIN", "")
     isempty(marker) && throw(ArgumentError(
         "required parity evidence needs GLLVM_PARITY_R_SOURCE_PIN inside the installed gllvmTMB library"))
@@ -134,8 +134,8 @@ function _core070_source_pin!()
         "julia_source_tree_sha256" => _core070_tree_sha256(joinpath(@__DIR__, "..", "..", "src")),
         "julia_version" => string(VERSION),
         "julia_machine" => Sys.MACHINE,
-        "julia_package_path" => realpath(pathof(GLLVM)),
-        "julia_package_root" => realpath(Base.pkgdir(GLLVM)),
+        "julia_package_path" => realpath(pathof(GLLVModels)),
+        "julia_package_root" => realpath(Base.pkgdir(GLLVModels)),
         "julia_project_path" => realpath(Base.active_project()),
         "julia_project_sha256" => _core070_sha256_file(Base.active_project()),
         "julia_manifest_sha256" => begin
@@ -592,7 +592,7 @@ Multinomial differs on both counts —
 * the response is a **single categorical (factor) column** on the formula LHS, not a
   numeric cell value; the twin expands it internally into `K−1` one-hot pseudo-trait
   rows (`R/gllvmTMB.R` `expand_multinomial_response()`), and
-* there is **no `latent(...)` term**, because GLLVM.jl's v1 multinomial is
+* there is **no `latent(...)` term**, because GLLVModels.jl's v1 multinomial is
   fixed-effects softmax only (no LV — `fit_multinomial_gllvm` throws on `K`/`num_lv`).
   The twin supports a no-covstruct multinomial fit, so the FE-only shape is a genuine
   same-model comparison rather than a concession.
@@ -628,7 +628,7 @@ function fit_gllvmtmb_parity_loglik_multinomial(y::AbstractVector{<:Integer},
         trait = factor(rep("t1", n)),
         value = factor(as.character(yv), levels = lev)
     )
-    # No latent(...) term: GLLVM.jl v1 multinomial is fixed-effects softmax only.
+    # No latent(...) term: GLLVModels.jl v1 multinomial is fixed-effects softmax only.
     fit_r <- gllvmTMB(
         value ~ 0 + trait,
         data = df_long,

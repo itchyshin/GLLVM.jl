@@ -1,8 +1,8 @@
-# R -> Julia bridge entry point for GLLVM.jl, exposing the fitted one-part families
+# R -> Julia bridge entry point for GLLVModels.jl, exposing the fitted one-part families
 # to R via JuliaCall (the canonical transport across the drmTMB<->DRM.jl ecosystem).
 #
 # `bridge_fit` accepts plain matrices + family strings (the R side, gllvmTMB, owns
-# formula parsing; GLLVM.jl owns the numerical fit) and returns a FLAT NamedTuple of
+# formula parsing; GLLVModels.jl owns the numerical fit) and returns a FLAT NamedTuple of
 # JuliaCall-convertible primitives only (Float64 scalars/arrays, Ints, Strings,
 # Bools) — no Julia struct ever crosses the language boundary.
 #
@@ -98,7 +98,7 @@
 # land. Mixed-family and REML paths skip-with-note since their fits have no
 # native confint engine yet.
 #
-# ADDITIVE: this file + an include/export line in GLLVM.jl. It edits no fitter or
+# ADDITIVE: this file + an include/export line in GLLVModels.jl. It edits no fitter or
 # extractor; it is included LAST so every dispatch target already exists.
 
 # --- plain-data helpers ----------------------------------------------------

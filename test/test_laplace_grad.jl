@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 
 # The exact (ForwardDiff + implicit-step) Poisson Laplace gradient must match a
 # central finite-difference gradient of the marginal — the FD-vs-analytic check that
@@ -11,14 +11,14 @@ using GLLVM, Test, Random, LinearAlgebra
     Λ = randn(p, K) .* 0.4
     Y = rand(0:6, p, n)
 
-    rr = GLLVM.rr_theta_len(p, K)
-    θ = vcat(β, GLLVM.pack_lambda(Λ))
+    rr = GLLVModels.rr_theta_len(p, K)
+    θ = vcat(β, GLLVModels.pack_lambda(Λ))
 
     # Marginal as a function of the packed θ (for the finite-difference reference).
     f = function (θv)
         b = θv[1:p]
-        L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
-        return GLLVM.poisson_marginal_loglik_laplace(Y, L, b, LogLink();
+        L = GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+        return GLLVModels.poisson_marginal_loglik_laplace(Y, L, b, LogLink();
                                                      maxiter = 200, tol = 1e-12)
     end
 
@@ -44,11 +44,11 @@ using GLLVM, Test, Random, LinearAlgebra
     @testset "Binomial" begin
         Nb = fill(8, p, n)
         Yb = [rand(0:Nb[t, s]) for t in 1:p, s in 1:n]
-        θb = vcat(β, GLLVM.pack_lambda(Λ))
+        θb = vcat(β, GLLVModels.pack_lambda(Λ))
         fb = function (θv)
             b = θv[1:p]
-            L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
-            return GLLVM.binomial_marginal_loglik_laplace(Yb, Nb, L, b, LogitLink();
+            L = GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            return GLLVModels.binomial_marginal_loglik_laplace(Yb, Nb, L, b, LogitLink();
                                                           maxiter = 200, tol = 1e-12)
         end
         gfd = similar(θb)
@@ -66,12 +66,12 @@ using GLLVM, Test, Random, LinearAlgebra
     @testset "Negative binomial (with dispersion)" begin
         rdisp = 4.0
         Yn = rand(0:8, p, n)
-        θn = vcat(β, GLLVM.pack_lambda(Λ), log(rdisp))      # last entry = log r
+        θn = vcat(β, GLLVModels.pack_lambda(Λ), log(rdisp))      # last entry = log r
         fn = function (θv)
             b = θv[1:p]
-            L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            L = GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
             rr_ = exp(θv[p + rr + 1])
-            return GLLVM.nb_marginal_loglik_laplace(Yn, L, b, rr_;
+            return GLLVModels.nb_marginal_loglik_laplace(Yn, L, b, rr_;
                                                     maxiter = 200, tol = 1e-12)
         end
         gfd = similar(θn)
@@ -90,12 +90,12 @@ using GLLVM, Test, Random, LinearAlgebra
     @testset "Gamma (with shape α)" begin
         αsh = 3.0
         Yg = 0.5 .+ 2 .* rand(p, n)                  # positive responses
-        θg = vcat(β, GLLVM.pack_lambda(Λ), log(αsh))
+        θg = vcat(β, GLLVModels.pack_lambda(Λ), log(αsh))
         fg = function (θv)
             b = θv[1:p]
-            L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            L = GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
             a = exp(θv[p + rr + 1])
-            return GLLVM.gamma_marginal_loglik_laplace(Yg, L, b, a; maxiter = 200, tol = 1e-12)
+            return GLLVModels.gamma_marginal_loglik_laplace(Yg, L, b, a; maxiter = 200, tol = 1e-12)
         end
         gfd = similar(θg)
         for i in 1:length(θg)
@@ -113,12 +113,12 @@ using GLLVM, Test, Random, LinearAlgebra
     @testset "Beta (with precision φ)" begin
         φp = 7.0
         Yb2 = clamp.(rand(p, n), 0.02, 0.98)             # responses in (0,1)
-        θb2 = vcat(β, GLLVM.pack_lambda(Λ), log(φp))
+        θb2 = vcat(β, GLLVModels.pack_lambda(Λ), log(φp))
         fb2 = function (θv)
             b = θv[1:p]
-            L = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            L = GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
             ph = exp(θv[p + rr + 1])
-            return GLLVM.beta_marginal_loglik_laplace(Yb2, L, b, ph; maxiter = 200, tol = 1e-12)
+            return GLLVModels.beta_marginal_loglik_laplace(Yb2, L, b, ph; maxiter = 200, tol = 1e-12)
         end
         gfd = similar(θb2)
         for i in 1:length(θb2)

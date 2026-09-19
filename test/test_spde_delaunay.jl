@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 
 # ── Helpers used only in this test file ──────────────────────────────────────
 
@@ -37,7 +37,7 @@ end
         ys = [Float64(j) for i in 0:3, j in 0:3]
         pts = hcat(vec(xs), vec(ys)) .+ 0.18 .* (rand(16, 2) .- 0.5)
 
-        nodes, tris = GLLVM.spde_mesh_delaunay(pts)
+        nodes, tris = GLLVModels.spde_mesh_delaunay(pts)
 
         @test size(nodes, 1) == size(pts, 1)
         @test size(nodes, 2) == 2
@@ -73,7 +73,7 @@ end
         end
         @test total_area > 0
 
-        Cdiag, G = GLLVM.spde_fem(nodes, tris)
+        Cdiag, G = GLLVModels.spde_fem(nodes, tris)
         @test sum(Cdiag) ≈ total_area atol = 1e-8
         @test all(Cdiag .> 0)
         @test G ≈ G'
@@ -110,7 +110,7 @@ end
                     1.5 1.5; 0.5 2.5; 2.5 0.5; 1.2 0.6]   # all strictly inside
         pts = vcat(outer, interior)
 
-        nodes, tris = GLLVM.spde_mesh_delaunay(pts)
+        nodes, tris = GLLVModels.spde_mesh_delaunay(pts)
         N = size(nodes, 1)
         @test N == 11
 
@@ -130,7 +130,7 @@ end
         end
         @test total_area ≈ 8.0 atol = 1e-8   # hull is the outer triangle
 
-        Cdiag, G = GLLVM.spde_fem(nodes, tris)
+        Cdiag, G = GLLVModels.spde_fem(nodes, tris)
         @test sum(Cdiag) ≈ 8.0 atol = 1e-8
         @test all(Cdiag .> 0)
         @test G ≈ G'
@@ -158,7 +158,7 @@ end
         N = 30
         pts = hcat(10.0 .* rand(N), 10.0 .* rand(N))
 
-        nodes, tris = GLLVM.spde_mesh_delaunay(pts)
+        nodes, tris = GLLVModels.spde_mesh_delaunay(pts)
 
         @test size(nodes, 1) == N
         @test all(1 .≤ tris .≤ N)
@@ -182,7 +182,7 @@ end
         end
 
         # FEM gate.
-        Cdiag, G = GLLVM.spde_fem(nodes, tris)
+        Cdiag, G = GLLVModels.spde_fem(nodes, tris)
         total_area = sum(Cdiag)
         @test total_area > 0
         @test all(Cdiag .> 0)
@@ -215,7 +215,7 @@ end
     # ── Test 4: minimum 3-point triangle ──────────────────────────────────────
     @testset "Minimum 3 points" begin
         pts = [0.0 0.0; 1.0 0.0; 0.0 1.0]
-        nodes, tris = GLLVM.spde_mesh_delaunay(pts)
+        nodes, tris = GLLVModels.spde_mesh_delaunay(pts)
 
         @test size(nodes, 1) == 3
         @test size(tris, 1) == 1
@@ -230,7 +230,7 @@ end
         @test area ≈ 0.5 atol = 1e-12
 
         # FEM gate.
-        Cdiag, _ = GLLVM.spde_fem(nodes, tris)
+        Cdiag, _ = GLLVModels.spde_fem(nodes, tris)
         @test sum(Cdiag) ≈ 0.5 atol = 1e-12
     end
 
@@ -239,12 +239,12 @@ end
     # convention and both must feed spde_fem without error.
     @testset "Convention compatibility with spde_mesh_grid" begin
         pts = [0.0 0.0; 1.0 0.0; 1.0 1.0; 0.0 1.0; 0.5 0.25; 0.3 0.7]
-        nodes_d, tris_d = GLLVM.spde_mesh_delaunay(pts)
+        nodes_d, tris_d = GLLVModels.spde_mesh_delaunay(pts)
         nodes_g, tris_g = spde_mesh_grid(pts; nx = 5, ny = 5)
 
         # Both satisfy the FEM contract.
-        Cd, _ = GLLVM.spde_fem(nodes_d, tris_d)
-        Cg, _ = GLLVM.spde_fem(nodes_g, tris_g)
+        Cd, _ = GLLVModels.spde_fem(nodes_d, tris_d)
+        Cg, _ = GLLVModels.spde_fem(nodes_g, tris_g)
         @test sum(Cd) > 0
         @test sum(Cg) > 0
 

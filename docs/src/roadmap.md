@@ -1,18 +1,15 @@
 # Roadmap
 
-GLLVM.jl is being built as a fast Julia **companion to
+GLLVModels.jl is being built as a fast Julia **companion to
 [`gllvmTMB`](https://itchyshin.github.io/gllvmTMB/)**: the same core estimands
 where paired, usable directly in Julia and through a **narrow** R bridge
-(`engine = "julia"`). Core070 ledger closure (FREE=0) is spreadsheet accounting,
-not true parity — see [Capability parity](gllvmtmb-parity.md). A full 0.7.1
-surface port (column_coef, slopes, formula grid) is out of scope unless a new
-arc opens it. The live, detailed roadmap — with linked issues — is tracked on
-GitHub:
-
-➡️ **[GLLVM.jl roadmap (issue #11)](https://github.com/itchyshin/GLLVM.jl/issues/11)**
+(`engine = "julia"`). A closed spreadsheet ledger is accounting, not true
+parity — see [Capability parity](gllvmtmb-parity.md). A full 0.7.1
+surface port (column_coef, slopes, formula grid) is not part of the current
+release scope.
 
 Current sequencing is R-first. Native `gllvmTMB` functionality and the R user
-workflow define the oracle; `GLLVM.jl` mirrors admitted rows, supplies parity
+workflow define the oracle; `GLLVModels.jl` mirrors admitted rows, supplies parity
 evidence, and accelerates them after point estimates, logLik/objective, CI or
 CI-status, docs, tests, and Rose audit agree. REML is Gaussian-only; AI-REML is
 future design input for exact Gaussian cells, not non-Gaussian Laplace.
@@ -24,7 +21,7 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
 | **v0.2.0** | Gaussian complete | closed-form marginal, O(p) phylogenetic fitter, post-fit tools, this docs site |
 | **v0.3.0** | Non-Gaussian catch-up | one-part Laplace families, first two-part fitters, analytic-gradient hardening |
 | **v0.4.0** | Interface and bridge catch-up | `@formula` front-end, wide/long parity, gllvmTMB-mirroring tutorials, live `gllvmTMB` bridge gates |
-| **v1.0** | True-parity milestone (aspirational) | Meets `true-parity-decision-map.md` against frozen gllvmTMB 0.7.0 — second-order receipts, realistic-size cells, real-data workflows, grouping-level pairing; **not** merely ledger FREE=0 or “complete bridge” for every R row |
+| **v1.0** | True-parity milestone (aspirational) | Meets the true-parity decision map against frozen gllvmTMB 0.7.0 — second-order receipts, realistic-size cells, real-data workflows, grouping-level pairing; **not** merely a closed ledger or “complete bridge” for every R row |
 
 ## What works today
 
@@ -67,4 +64,4 @@ future design input for exact Gaussian cells, not non-Gaussian Laplace.
   fit-specific prediction routes, richer diagnostics, and parity evidence for
   every promoted row.
 
-This roadmap evolves; issue #11 is always current.
+This roadmap evolves as new model routes earn their evidence.

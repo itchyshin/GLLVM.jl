@@ -10,7 +10,7 @@ DOCS=ROOT/'.unlazy/core070-aghq/aghq-public-binomial-docs-02'
 
 def verify_public():
     _,_,red=process(ROOT/'.unlazy/core070-aghq/aghq-public-binomial-red-01',False,1)
-    assert 'hasfield(GLLVM.BinomialFit, :integration)' in red
+    assert 'hasfield(GLLVModels.BinomialFit, :integration)' in red
     _,_,review=process(ROOT/'.unlazy/core070-aghq/aghq-public-binomial-review-red-01',False,1)
     assert 'component = :mean' in review and ':starts' in review
     for name,title,passed,failed in [('aghq-public-binomial-shape-red-01','BU public binomial AGHQ',105,3),('aghq-public-poisson-shape-red-01','PU public Poisson AGHQ',50,2)]:

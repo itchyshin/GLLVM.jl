@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra
+using Test, GLLVModels, LinearAlgebra
 
 # Regression for CORE070 COV-ORD-LATENT-BARE: the direct default-mean latent
 # source fit must satisfy the same optimizer-health gate as the explicit-design

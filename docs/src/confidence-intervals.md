@@ -1,6 +1,6 @@
 # Confidence intervals
 
-GLLVM.jl provides three complementary interval methods — **Wald**, **profile
+GLLVModels.jl provides three complementary interval methods — **Wald**, **profile
 likelihood**, and **parametric bootstrap** — for the Gaussian engine and the
 admitted non-Gaussian CI rows.
 
@@ -10,7 +10,7 @@ For a fitted non-Gaussian model, all three methods are reached through a single
 R-style call:
 
 ```julia
-using GLLVM, Distributions
+using GLLVModels, Distributions
 
 fit = fit_gllvm(Y; family = Poisson(), K = 2)
 

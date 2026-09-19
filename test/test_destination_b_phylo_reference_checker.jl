@@ -3,7 +3,7 @@ using JSON3
 using SHA
 using LinearAlgebra
 using SparseArrays
-using GLLVM
+using GLLVModels
 
 include(joinpath(@__DIR__, "..", "tools", "destination_b",
     "compare_phylo_gaussian_reference.jl"))
@@ -49,9 +49,9 @@ function _checker_fixture(path, artifact, artifact_sha)
     log_det_Q = logdet(cholesky(Symmetric(Q)))
     phy = PrecisionPhy(ii, jj, value, 2, 2, ["s1", "s2"],
         log_det_Q, 1.0, [1, 2])
-    nll = GLLVM._precision_multivariate_nll(Y,
-        GLLVM._validate_precision_fit_input(phy),
-        vcat(beta, GLLVM.pack_lambda(reshape(loading, 3, 1)), log_sd);
+    nll = GLLVModels._precision_multivariate_nll(Y,
+        GLLVModels._validate_precision_fit_input(phy),
+        vcat(beta, GLLVModels.pack_lambda(reshape(loading, 3, 1)), log_sd);
         rank = 1, mode = :barelowrank, residual_mode = :shared,
         species_id = species_id)
     names = ["b_fix", "b_fix", "b_fix", "log_sigma_eps",
@@ -189,10 +189,10 @@ end
         joinpath(@__DIR__, "..", "tools", "destination_b",
             "compare_phylo_gaussian_reference.jl"))))
     @test passed["precision_multivariate_fit_source_sha256"] ==
-        bytes2hex(sha256(read(joinpath(dirname(pathof(GLLVM)),
+        bytes2hex(sha256(read(joinpath(dirname(pathof(GLLVModels)),
             "precision_multivariate_fit.jl"))))
     @test passed["precision_fit_admission_source_sha256"] ==
-        bytes2hex(sha256(read(joinpath(dirname(pathof(GLLVM)),
+        bytes2hex(sha256(read(joinpath(dirname(pathof(GLLVModels)),
             "precision_fit_admission.jl"))))
     @test passed["comparison_kind"] == "matched_and_r_fitted_cross_evaluation"
     @test passed["independent_julia_fit"] === false

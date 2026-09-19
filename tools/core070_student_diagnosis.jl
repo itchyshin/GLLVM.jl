@@ -1,5 +1,5 @@
 # Bounded diagnostic only. Never substitutes for the required parity cell.
-using GLLVM, RCall, Random, Distributions, SHA, TOML, Test
+using GLLVModels, RCall, Random, Distributions, SHA, TOML, Test
 root = ARGS[1]
 output = ARGS[2]
 isdir(output) && error("diagnostic output must be fresh")
@@ -65,10 +65,10 @@ open(joinpath(output,"density-precision.tsv"),"w") do io
     println(io,"nu\ty\tdouble\tbig_reference\tabs_error")
     setprecision(BigFloat,256) do
         for v in (4.0,1e3,1e6,1e8,2.3175e10,1e12), y in (0.0,0.7,3.0)
-            value=GLLVM._glm_logpdf(GLLVM.StudentTFamily(v,0.7),0.0,1,y)
+            value=GLLVModels._glm_logpdf(GLLVModels.StudentTFamily(v,0.7),0.0,1,y)
             vb=BigFloat(v); sb=BigFloat(0.7); yb=BigFloat(y)
             half=(vb+1)/2
-            reference=GLLVM.loggamma(half)-GLLVM.loggamma(vb/2)-log(vb*big(π))/2-
+            reference=GLLVModels.loggamma(half)-GLLVModels.loggamma(vb/2)-log(vb*big(π))/2-
                       log(sb)-half*log1p(yb^2/(vb*sb^2))
             println(io,join((v,y,value,Float64(reference),Float64(abs(BigFloat(value)-reference))),'\t'))
         end

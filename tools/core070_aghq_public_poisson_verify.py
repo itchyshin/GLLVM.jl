@@ -7,11 +7,11 @@ STATE=ROOT/'.unlazy/core070-aghq/aghq-public-poisson-green-07'
 
 def verify():
     _,_,public_red=process(ROOT/'.unlazy/core070-aghq/aghq-public-poisson-red-02',False,1)
-    assert 'hasfield(GLLVM.PoissonFit, :integration)' in public_red
+    assert 'hasfield(GLLVModels.PoissonFit, :integration)' in public_red
     assert '!(result.pd_hessian)' in public_red or '!result.pd_hessian' in public_red
     assert 'all(isnan, result.se)' in public_red
     _,_,red=process(ROOT/'.unlazy/core070-aghq/aghq-multistart-red-01',False,1)
-    assert 'isdefined(GLLVM, :aghq_multistart_optimize)' in red
+    assert 'isdefined(GLLVModels, :aghq_multistart_optimize)' in red
     assert re.search(r'AM multistart selection\s*\|\s*1\s+1',red)
     plan,p,log=process(STATE,False,0)
     for name,pin in plan['pins'].items():

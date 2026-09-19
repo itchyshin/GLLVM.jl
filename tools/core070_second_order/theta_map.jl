@@ -31,10 +31,10 @@ function map_r_theta_glm(rpar, rnames, p, K; disp_name=nothing, julia_theta_len=
         "b_fix length mismatch",
         counts, julia_theta_len === nothing ? 0 : julia_theta_len,
         "expected $(p) b_fix entries, got $(length(bidx))"))
-    length(lidx) == GLLVM.rr_theta_len(p, K) || return (:blocked, ThetaMapBlocker(
+    length(lidx) == GLLVModels.rr_theta_len(p, K) || return (:blocked, ThetaMapBlocker(
         "theta_rr_B length mismatch",
         counts, julia_theta_len === nothing ? 0 : julia_theta_len,
-        "expected $(GLLVM.rr_theta_len(p, K)) theta_rr_B entries, got $(length(lidx))"))
+        "expected $(GLLVModels.rr_theta_len(p, K)) theta_rr_B entries, got $(length(lidx))"))
     parts = [rpar[bidx], rpar[lidx]]
     if disp_name !== nothing
         didx = findall(==(disp_name), rnames)
@@ -67,9 +67,9 @@ function map_r_theta_gaussian(rpar, rnames, p, K; julia_theta_len=nothing)
     sidx === nothing && return (:blocked, ThetaMapBlocker(
         "missing log_sigma_eps", counts, julia_theta_len === nothing ? 0 : julia_theta_len,
         "R par has no log_sigma_eps"))
-    length(lidx) == GLLVM.rr_theta_len(p, K) || return (:blocked, ThetaMapBlocker(
+    length(lidx) == GLLVModels.rr_theta_len(p, K) || return (:blocked, ThetaMapBlocker(
         "theta_rr_B length mismatch", counts, julia_theta_len === nothing ? 0 : julia_theta_len,
-        "expected $(GLLVM.rr_theta_len(p, K)) theta_rr_B entries"))
+        "expected $(GLLVModels.rr_theta_len(p, K)) theta_rr_B entries"))
     θ = vcat(rpar[sidx], rpar[lidx])
     if julia_theta_len !== nothing && length(θ) != julia_theta_len
         return (:blocked, ThetaMapBlocker(

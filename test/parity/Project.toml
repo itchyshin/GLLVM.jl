@@ -1,4 +1,4 @@
-# Standalone project for the GLLVM.jl ↔ R gllvmTMB parity suite.
+# Standalone project for the GLLVModels.jl ↔ R gllvmTMB parity suite.
 #
 # This project is INTENTIONALLY SEPARATE from test/Project.toml.
 # RCall requires a working R installation and cannot be precompiled on CI
@@ -6,10 +6,10 @@
 # the default test suite (`julia --project=. test/runtests.jl`) never
 # touches this project and will never break because of R absence.
 #
-# GLLVM *is* listed in [deps] below, with the package's own UUID taken from the
+# GLLVModels *is* listed in [deps] below, with the package's own UUID taken from the
 # root Project.toml. `runparity.jl` still calls `Pkg.develop(path="../..")` at
 # runtime — that is what points the (gitignored) Manifest at this working tree,
-# since GLLVM is unregistered and Julia 1.10 has no `[sources]` support.
+# since GLLVModels is unregistered and Julia 1.10 has no `[sources]` support.
 #
 # Why the dep is declared here rather than left implicit (2026-08-24):
 # `Pkg.develop` used to ADD the entry itself on every run, and Pkg rewrites a
@@ -26,7 +26,7 @@
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
-GLLVM = "2dc8e01c-4f48-4476-aaae-e919b4a30df7"
+GLLVModels = "2dc8e01c-4f48-4476-aaae-e919b4a30df7"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 RCall = "6f49c342-dc21-5d91-9882-a32aef131414"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"

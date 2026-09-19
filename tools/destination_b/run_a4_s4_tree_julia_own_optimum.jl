@@ -5,7 +5,7 @@
 
 using LinearAlgebra
 using SHA
-using GLLVM
+using GLLVModels
 using Distributions: Normal
 
 include(joinpath(@__DIR__, "a4_s4_fixed_coordinate_evaluator.jl"))
@@ -79,7 +79,7 @@ end
 function a4_s4_tree_julia_own_optimum_policy(; start = nothing, bridge::Bool = false,
         intervals::Bool = false)
     start === nothing || throw(ArgumentError("R-derived or caller-supplied starts are prohibited; use the Julia default"))
-    !bridge || throw(ArgumentError("bridge fitting is prohibited; this runner calls GLLVM.fit_gllvm directly"))
+    !bridge || throw(ArgumentError("bridge fitting is prohibited; this runner calls GLLVModels.fit_gllvm directly"))
     !intervals || throw(ArgumentError("interval work is prohibited for this own-optimum record"))
     return nothing
 end
@@ -214,7 +214,7 @@ function a4_s4_tree_julia_own_optimum_input(summary::AbstractDict;
         "immutable tree fixture no longer agrees with tree map/response contract")
     # The fixture admission validates Q symmetry/PD/logdet and returns an owned
     # snapshot.  Its Q already contains the scale-four construction.
-    phy = GLLVM._validate_precision_fit_input(fixture.phy)
+    phy = GLLVModels._validate_precision_fit_input(fixture.phy)
     _a4s4_tree_own_require(phy.scale == 4.0 && phy.Q == fixture.phy.Q && phy.log_det == fixture.phy.log_det,
         "tree Q was changed while preparing native Julia input")
     source_lineage = Dict{String,Any}(
@@ -393,7 +393,7 @@ function a4_s4_tree_julia_own_optimum_receipt_fixture()
         "r_own_optimum" => "unavailable",
         "intervals" => "not_run",
         "claim_boundary" => _A4S4_TREE_OWN_CLAIM,
-        "route" => Dict("entrypoint" => "GLLVM.fit_gllvm", "family" => "Normal", "rank" => 1,
+        "route" => Dict("entrypoint" => "GLLVModels.fit_gllvm", "family" => "Normal", "rank" => 1,
             "phylo_mode" => "barelowrank", "residual_mode" => "shared", "sigma2_phy" => 1.0,
             "requested_iterations" => 400, "requested_g_tol" => 1e-5),
         "initialization" => Dict("kind" => "Julia_default_from_Y", "start_keyword_supplied" => false,
@@ -429,7 +429,7 @@ function a4_s4_validate_tree_julia_own_optimum_receipt(receipt::AbstractDict)
         "residual_mode", "sigma2_phy", "requested_iterations", "requested_g_tol"], "native Julia route")
     rank = _a4s4_tree_own_integer(route["rank"], "phylogenetic rank")
     requested_iterations = _a4s4_tree_own_integer(route["requested_iterations"], "requested iterations")
-    _a4s4_tree_own_require(route["entrypoint"] == "GLLVM.fit_gllvm" && route["family"] == "Normal" &&
+    _a4s4_tree_own_require(route["entrypoint"] == "GLLVModels.fit_gllvm" && route["family"] == "Normal" &&
         rank == 1 && route["phylo_mode"] == "barelowrank" && route["residual_mode"] == "shared" &&
         _a4s4_tree_own_finite(route["sigma2_phy"], "sigma2_phy") == 1.0 &&
         requested_iterations >= 0 && _a4s4_tree_own_finite(route["requested_g_tol"], "requested g_tol") > 0,
@@ -526,11 +526,11 @@ end
 function _a4s4_tree_own_receipt(checked, snapshot, fit; iterations::Integer, g_tol::Real)
     _a4s4_tree_own_require(snapshot.validated_input === checked,
         "final receipt must be built from the pre-fit validated input snapshot")
-    nll = GLLVM._precision_multivariate_nll(checked.fixture.Y, fit.phy, fit.parameters;
+    nll = GLLVModels._precision_multivariate_nll(checked.fixture.Y, fit.phy, fit.parameters;
         rank = 1, mode = :barelowrank, residual_mode = :shared, species_id = checked.fixture.species_id)
     difference = abs(nll + fit.loglik)
     receipt = a4_s4_tree_julia_own_optimum_receipt_fixture()
-    receipt["route"] = Dict("entrypoint" => "GLLVM.fit_gllvm", "family" => "Normal", "rank" => 1,
+    receipt["route"] = Dict("entrypoint" => "GLLVModels.fit_gllvm", "family" => "Normal", "rank" => 1,
         "phylo_mode" => "barelowrank", "residual_mode" => "shared", "sigma2_phy" => 1.0,
         "requested_iterations" => Int(iterations), "requested_g_tol" => Float64(g_tol))
     immutable = checked.fixture.immutable_input_bytes
@@ -577,7 +577,7 @@ function a4_s4_tree_julia_sizing_probe_receipt_fixture(; outcome::Symbol = :retu
         "own_optimum" => "not_assessed",
         "intervals" => "not_run",
         "claim_boundary" => _A4S4_TREE_SIZING_CLAIM,
-        "route" => Dict("entrypoint" => "GLLVM.fit_gllvm", "family" => "Normal", "rank" => 1,
+        "route" => Dict("entrypoint" => "GLLVModels.fit_gllvm", "family" => "Normal", "rank" => 1,
             "phylo_mode" => "barelowrank", "residual_mode" => "shared", "sigma2_phy" => 1.0,
             "iterations" => 5, "g_tol" => 1e-5),
         "initialization" => Dict("kind" => "Julia_default_from_Y", "start_keyword_supplied" => false,
@@ -604,7 +604,7 @@ function a4_s4_validate_tree_julia_sizing_probe_receipt(receipt::AbstractDict)
         "residual_mode", "sigma2_phy", "iterations", "g_tol"], "native Julia sizing probe route")
     rank = _a4s4_tree_own_integer(route["rank"], "probe phylogenetic rank")
     probe_iterations = _a4s4_tree_own_integer(route["iterations"], "probe iterations")
-    _a4s4_tree_own_require(route["entrypoint"] == "GLLVM.fit_gllvm" && route["family"] == "Normal" &&
+    _a4s4_tree_own_require(route["entrypoint"] == "GLLVModels.fit_gllvm" && route["family"] == "Normal" &&
         rank == 1 && route["phylo_mode"] == "barelowrank" && route["residual_mode"] == "shared" &&
         _a4s4_tree_own_finite(route["sigma2_phy"], "probe sigma2_phy") == 1.0 &&
         probe_iterations == 5 && _a4s4_tree_own_finite(route["g_tol"], "probe g_tol") == 1e-5,
@@ -707,7 +707,7 @@ function run_a4_s4_tree_julia_sizing_probe(raw_summary_path::AbstractString, rec
     snapshot = _a4s4_tree_own_pre_fit_snapshot(raw_summary_path, raw_summary_bytes; validated_input = checked)
     started = time_ns()
     receipt = try
-        fit = GLLVM.fit_gllvm(checked.fixture.Y; family = Normal(), phylo = checked.fixture.phy,
+        fit = GLLVModels.fit_gllvm(checked.fixture.Y; family = Normal(), phylo = checked.fixture.phy,
             phylo_rank = 1, phylo_mode = :barelowrank, residual_mode = :shared,
             species_id = _A4S4_TREE_OWN_SPECIES_ID, iterations = 5, g_tol = 1e-5)
         _a4s4_tree_sizing_probe_receipt(checked, snapshot, started, fit)
@@ -736,7 +736,7 @@ function run_a4_s4_tree_julia_own_optimum(raw_summary_path::AbstractString, rece
     snapshot = _a4s4_tree_own_pre_fit_snapshot(raw_summary_path, raw_summary_bytes; validated_input = checked)
     # No `start` keyword is passed: this is deliberately the public route's
     # deterministic default initialization from Y, not an R-coordinate replay.
-    fit = GLLVM.fit_gllvm(checked.fixture.Y; family = Normal(), phylo = checked.fixture.phy,
+    fit = GLLVModels.fit_gllvm(checked.fixture.Y; family = Normal(), phylo = checked.fixture.phy,
         phylo_rank = 1, phylo_mode = :barelowrank, residual_mode = :shared,
         species_id = _A4S4_TREE_OWN_SPECIES_ID, iterations = iterations, g_tol = g_tol)
     receipt = _a4s4_tree_own_receipt(checked, snapshot, fit; iterations, g_tol)

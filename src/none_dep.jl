@@ -18,8 +18,8 @@ to `K = p`: full-rank packed-triangular ``Λ`` with
 ``Σ = L Lᵀ``. Same estimand as [`fit_gaussian_gllvm`](@ref)`(Y; K = p)`
 and twin `latent(0 + trait | g, d = T)`.
 
-This is a **Gaussian matrix** fitter. `@formula` `dep()` sugar is not in
-this slice (v1 rejects `FunctionTerm` and random-effect terms `(… | g)`).
+This is a **Gaussian matrix** fitter. `@formula` `dep()` syntax is not
+currently available (v1 rejects `FunctionTerm` and random-effect terms `(… | g)`).
 
 !!! warning "σ_eps is not separately identified on this path"
     Because `K = p`, `ΛΛᵀ` is already full rank, so the likelihood pins only

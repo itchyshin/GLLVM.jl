@@ -15,7 +15,7 @@
 # _vcov_beta.csv). Also emits the shared CSV Y matrix to ./data/ so the
 # paired R run (Totoro background, or a future Nibi run) reads
 # byte-identical data.
-using GLLVM
+using GLLVModels
 using Random
 using DelimitedFiles
 using LinearAlgebra
@@ -125,7 +125,7 @@ if fam == "gaussian"
     write_terms(joinpath("out", "$(tag)_julia_terms.csv"), ci.term, ci.estimate, ci.se, ci.lower, ci.upper)
 
     θ̂ = fit.pars.θ_packed
-    nll = GLLVM._confint_reconstruct_nll(fit, Y, X, nothing)
+    nll = GLLVModels._confint_reconstruct_nll(fit, Y, X, nothing)
     H = ForwardDiff.hessian(nll, θ̂)
     Hs = Symmetric((H .+ H') ./ 2)
     push!(summary_lines, "cond_H=$(cond(Hs))")
@@ -160,8 +160,8 @@ elseif fam == "poisson"
     push!(summary_lines, "boundary_terms=$(join(boundary_terms, ';'))")
     write_terms(joinpath("out", "$(tag)_julia_terms.csv"), ci.term, ci.estimate, ci.se, ci.lower, ci.upper)
 
-    ad = GLLVM._family_ci(fit, Yi; objective = :laplace)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Yi; objective = :laplace)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Hs = Symmetric((H .+ H') ./ 2)
     push!(summary_lines, "cond_H=$(cond(Hs))")
     Σ = try
@@ -187,7 +187,7 @@ elseif fam == "nb2"
     Yi = Y
 
     t0 = time()
-    fit = fit_gllvm(Yi; family = GLLVM.NegativeBinomial(), K = K, g_tol = 1e-7, iterations = 800)
+    fit = fit_gllvm(Yi; family = GLLVModels.NegativeBinomial(), K = K, g_tol = 1e-7, iterations = 800)
     wall_fit = time() - t0
     push!(summary_lines, "converged=$(fit.converged)")
     push!(summary_lines, "logLik=$(fit.loglik)")
@@ -202,8 +202,8 @@ elseif fam == "nb2"
     push!(summary_lines, "boundary_terms=$(join(boundary_terms, ';'))")
     write_terms(joinpath("out", "$(tag)_julia_terms.csv"), ci.term, ci.estimate, ci.se, ci.lower, ci.upper)
 
-    ad = GLLVM._family_ci(fit, Yi; objective = :laplace)
-    H = GLLVM._fd_hessian(ad.nll, ad.θ)
+    ad = GLLVModels._family_ci(fit, Yi; objective = :laplace)
+    H = GLLVModels._fd_hessian(ad.nll, ad.θ)
     Hs = Symmetric((H .+ H') ./ 2)
     push!(summary_lines, "cond_H=$(cond(Hs))")
     Σ = try

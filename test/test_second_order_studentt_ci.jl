@@ -4,7 +4,7 @@
 using Test
 using Random
 using Distributions: TDist
-using GLLVM
+using GLLVModels
 
 @testset "StudentTFit second-order Wald CI (fixed ν, shared σ)" begin
     Random.seed!(801)

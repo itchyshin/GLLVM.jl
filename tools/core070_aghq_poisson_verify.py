@@ -11,7 +11,7 @@ def verify():
     _,_,bad_runner=process(ROOT/'.unlazy/core070-aghq/aghq-poisson-green-02',False,1)
     plan,p,log=process(STATE,True,0)
     assert re.search(r'AGHQ Poisson and prerequisites\s*\|\s*262\s+1\s+263',red)
-    assert 'isdefined(GLLVM, :aghq_poisson_problem)' in red
+    assert 'isdefined(GLLVModels, :aghq_poisson_problem)' in red
     assert re.search(r'AGHQ Poisson and prerequisites\s*\|\s*301\s+1\s+302',bad_fixture)
     assert re.search(r'AGHQ Poisson and prerequisites\s*\|\s*309\s+309',bad_runner)
     assert 'invalid numeric constant' in bad_runner

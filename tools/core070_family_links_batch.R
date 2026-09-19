@@ -7,7 +7,7 @@
 # docs/dev-log/core070/family-reconciliation-2026-09-01.json audited both
 # rows and returned verdict=NO_EVIDENCE / recommended_disposition=
 # needs_fresh_batch for each: no retained receipt anywhere in the repo
-# executes a binomial-probit or binomial-cloglog GLLVM fit. This runner
+# executes a binomial-probit or binomial-cloglog GLLVModels fit. This runner
 # produces that fresh compute.
 #
 # Design follows tools/core070_namespace_2_batch.R's repair pattern: THIS R

@@ -68,12 +68,12 @@ function _core070_source_specification(id::Symbol)
     log_sigma_eps = -0.39432656302578389
 
     if id === :STRUCT_PHY_TREE_RR
-        source = GLLVM.SourceCovariance(Symmetric(inv(Symmetric(Qtree)));
+        source = GLLVModels.SourceCovariance(Symmetric(inv(Symmetric(Qtree)));
             groups = _core070_tree_groups(),
             name = :phylo_tree_rr, mode = :latent, rank = 1)
         start = vcat(beta, [0.5, 0.0, 0.0], log_sigma_eps)
     elseif id === :STRUCT_PHY_DENSE_RR
-        source = GLLVM.SourceCovariance(C + 1e-8I3;
+        source = GLLVModels.SourceCovariance(C + 1e-8I3;
             groups = _core070_species_groups(),
             name = :phylo_dense_rr, mode = :latent, rank = 1)
         start = vcat(beta, [0.5, 0.0, 0.0], log_sigma_eps)
@@ -81,25 +81,25 @@ function _core070_source_specification(id::Symbol)
         # R's free loglambda is a log variance.  The candidate API expects a
         # log SD, hence the exact transformed start is loglambda_phy / 2 = 0.
         Ctree = Float64[1 0.5 0; 0.5 1 0; 0 0 1]
-        source = GLLVM.SourceCovariance(Ctree + 1e-8I3;
+        source = GLLVModels.SourceCovariance(Ctree + 1e-8I3;
             groups = _core070_species_groups(),
             name = :phylo_tree_propto, mode = :indep, common = true)
         start = vcat(beta, 0.0, log_sigma_eps)
     elseif id === :STRUCT_ANI_PED_SPARSE
-        source = GLLVM.SourceCovariance(Symmetric(inv(Symmetric(Qped)));
+        source = GLLVModels.SourceCovariance(Symmetric(inv(Symmetric(Qped)));
             groups = _core070_pedigree_groups(),
             name = :animal_pedigree_sparse, mode = :latent, rank = 1)
         start = vcat(beta, [0.5, 0.0, 0.0], log_sigma_eps)
     elseif id === :STRUCT_KER_SINGLE_PSI
-        source = GLLVM.SourceCovariance(C + 1e-8I3;
+        source = GLLVModels.SourceCovariance(C + 1e-8I3;
             groups = _core070_species_groups(),
             name = :kernel_single_psi, mode = :latent, rank = 1, unique = true)
         start = vcat(beta, [0.5, 0.0, 0.0], [0.0, 0.0, 0.0], log_sigma_eps)
     else # :STRUCT_KER_MULTI
-        source1 = GLLVM.SourceCovariance(C + 1e-8I3;
+        source1 = GLLVModels.SourceCovariance(C + 1e-8I3;
             groups = _core070_species_groups(),
             name = :kernel_k1, mode = :latent, rank = 1)
-        source2 = GLLVM.SourceCovariance(K2 + 1e-8I3;
+        source2 = GLLVModels.SourceCovariance(K2 + 1e-8I3;
             groups = _core070_species_groups(),
             name = :kernel_k2, mode = :latent, rank = 1)
         source = (source1, source2)
@@ -124,9 +124,9 @@ end
 
 Return a source-pinned preparation binding for one captured nonspatial Core070
 reference case. The return value has `Y` (traits × units), named
-`GLLVM.SourceCovariance` specifications, and the exact candidate API `start`
+`GLLVModels.SourceCovariance` specifications, and the exact candidate API `start`
 vector. It does not call an optimizer. Include this file only after loading
-`GLLVM`; construction and the two sparse precision inverses occur only when
+`GLLVModels`; construction and the two sparse precision inverses occur only when
 this function is called.
 """
 function core070_gaussian_source_binding(id::Symbol)
@@ -141,7 +141,7 @@ function core070_gaussian_source_binding(id::Symbol)
         Y = Y,
         sources = source_vector,
         start = start,
-        fit_call = "GLLVM.fit_gaussian_sources(binding.Y; sources=binding.sources, start=binding.start)",
+        fit_call = "GLLVModels.fit_gaussian_sources(binding.Y; sources=binding.sources, start=binding.start)",
     )
 end
 

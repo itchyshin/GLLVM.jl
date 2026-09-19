@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 using SparseArrays
 
@@ -16,7 +16,7 @@ function _jpg_loglik(fixture, phy; ordinary_incidences = [fixture.crossed_incide
         ordinary_trait_variances = [fixture.grouped_variance],
         phylo_unique_variance = fixture.phylo_unique_variance, psi = fixture.psi)
     residualized = fixture.response .- reshape(fixture.mean, size(fixture.response))
-    return GLLVM.joint_phylo_grouped_gaussian_loglik(residualized, phy,
+    return GLLVModels.joint_phylo_grouped_gaussian_loglik(residualized, phy,
         fixture.loading, psi; phylo_unique_variance = phylo_unique_variance,
         species_id = fixture.species_id, ordinary_incidences = ordinary_incidences,
         ordinary_trait_variances = ordinary_trait_variances)
@@ -52,7 +52,7 @@ end
         residualized = fixture.response .- reshape(fixture.mean, size(fixture.response))
         joint = _jpg_loglik(fixture, phy; ordinary_incidences = SparseMatrixCSC{Float64,Int}[],
             ordinary_trait_variances = Vector{Float64}[])
-        phylo = GLLVM.multivariate_phylo_precision_loglik(residualized', phy,
+        phylo = GLLVModels.multivariate_phylo_precision_loglik(residualized', phy,
             fixture.loading, fixture.psi; phylo_unique_variance = fixture.phylo_unique_variance,
             species_id = fixture.species_id)
         @test isapprox(joint, phylo; atol = 1e-10, rtol = 1e-10)

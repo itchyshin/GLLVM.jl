@@ -1,8 +1,8 @@
 # Original retained default-unique fixture; direct and formula cases share one execution.
 module Core070GaussianOriginalRequired
-using GLLVM,RCall,Test,LinearAlgebra,Statistics,TOML,SHA
+using GLLVModels,RCall,Test,LinearAlgebra,Statistics,TOML,SHA
 using ..Main: _core070_receipt_dir, _core070_root, _parity_require_gllvmtmb!
-@assert realpath(pkgdir(GLLVM))==realpath(_core070_root())
+@assert realpath(pkgdir(GLLVModels))==realpath(_core070_root())
 _parity_require_gllvmtmb!()
 fixture=joinpath(@__DIR__,"fixtures/core070_gaussian_original.toml")
 reference=joinpath(@__DIR__,"fixtures/core070_gaussian_reference.R")
@@ -14,27 +14,27 @@ R"source($reference); rb <- .admission_run(Y,'gaussian','value ~ 0 + latent(0 + 
 rtheta=rcopy(Vector{Float64},R"as.numeric(rb$fit$opt$par)")
 names=rcopy(Vector{String},R"names(rb$fit$opt$par)")
 lambda_idx=findall(==("theta_rr_B"),names);unique_idx=findall(==("theta_diag_B"),names)
-@assert length(lambda_idx)==GLLVM.rr_theta_len(p,K) && length(unique_idx)==p && length(rtheta)==length(lambda_idx)+p
+@assert length(lambda_idx)==GLLVModels.rr_theta_len(p,K) && length(unique_idx)==p && length(rtheta)==length(lambda_idx)+p
 c=rcopy(Float64,R"exp(rb$params$log_sigma_eps)")
 @assert isapprox(c,max(0.001std(vec(Y)),1e-6);atol=1e-14)
 function objective(theta)
- L=GLLVM.unpack_lambda(theta[lambda_idx],p,K)
+ L=GLLVModels.unpack_lambda(theta[lambda_idx],p,K)
  -gaussian_pervar_marginal_loglik(Y,L,exp.(2 .* theta[unique_idx]).+c^2)
 end
 point=copy(rtheta);point[lambda_idx]=[0.8,0.55,-0.45,0.3];point[unique_idx]=log.([0.5,0.6,0.7,0.8])
 @rput point
 rv=rcopy(Float64,R"as.numeric(rb$fit$tmb_obj$fn(point))");rg=rcopy(Vector{Float64},R"as.numeric(rb$fit$tmb_obj$gr(point))")
-point_value_delta=abs(objective(point)-rv);point_gradient_delta=maximum(abs,GLLVM.ForwardDiff.gradient(objective,point)-rg)
+point_value_delta=abs(objective(point)-rv);point_gradient_delta=maximum(abs,GLLVModels.ForwardDiff.gradient(objective,point)-rg)
 fit=fit_gaussian_pervar_gllvm(Y;K=K,X=zeros(p,n,0),fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)
-ntheta=copy(rtheta);ntheta[lambda_idx]=GLLVM.pack_lambda(fit.Λ);ntheta[unique_idx]=log.(fit.ψ²)./2
+ntheta=copy(rtheta);ntheta[lambda_idx]=GLLVModels.pack_lambda(fit.Λ);ntheta[unique_idx]=log.(fit.ψ²)./2
 @rput ntheta rtheta
 R"rvalue<-as.numeric(rb$fit$tmb_obj$fn(rtheta)); rgrad<-as.numeric(rb$fit$tmb_obj$gr(rtheta)); cross<-as.numeric(rb$fit$tmb_obj$fn(ntheta))"
 rvalue=rcopy(Float64,R"rvalue");rgradient=rcopy(Vector{Float64},R"rgrad")
-ngradient=GLLVM.ForwardDiff.gradient(objective,ntheta)
+ngradient=GLLVModels.ForwardDiff.gradient(objective,ntheta)
 rconverged=rcopy(Bool,R"as.integer(rb$fit$opt$convergence)==0L")
 nh=fit.converged && all(isfinite,ngradient) && (maximum(abs,ngradient)<=1e-4 || maximum(abs,ngradient)/max(1,abs(fit.loglik))<=1e-6)
 rh=rconverged && all(isfinite,rgradient) && (maximum(abs,rgradient)<=1e-4 || maximum(abs,rgradient)/max(1,abs(rvalue))<=1e-6)
-record=Dict("fixture_sha256"=>bytes2hex(sha256(read(fixture))),"fixed_residual_sd"=>c,"native_unique_variances"=>fit.ψ²,"native_total_variances"=>fit.φ²,"r_parameter_names"=>names,"r_parameters"=>rtheta,"native_parameters_in_r_scale"=>ntheta,"native_loglik"=>fit.loglik,"r_loglik"=>-rvalue,"delta_loglik"=>abs(fit.loglik+rvalue),"point_value_delta"=>point_value_delta,"point_gradient_delta"=>point_gradient_delta,"r_endpoint_value_delta"=>abs(objective(rtheta)-rvalue),"native_endpoint_cross_delta"=>abs(fit.loglik+rcopy(Float64,R"cross")),"native_gradient_max"=>maximum(abs,ngradient),"r_gradient_max"=>maximum(abs,rgradient),"native_health"=>nh,"r_health"=>rh,"r_random"=>rcopy(Vector{String},R"rb$random"),"r_fixed_columns"=>rcopy(Int,R"ncol(rb$fit$tmb_obj$env$data$X_fix)"),"r_sigma_mapped"=>rcopy(Bool,R"!is.null(rb$fit$tmb_obj$env$map$log_sigma_eps)"),"native_dof"=>GLLVM._nparams(fit))
+record=Dict("fixture_sha256"=>bytes2hex(sha256(read(fixture))),"fixed_residual_sd"=>c,"native_unique_variances"=>fit.ψ²,"native_total_variances"=>fit.φ²,"r_parameter_names"=>names,"r_parameters"=>rtheta,"native_parameters_in_r_scale"=>ntheta,"native_loglik"=>fit.loglik,"r_loglik"=>-rvalue,"delta_loglik"=>abs(fit.loglik+rvalue),"point_value_delta"=>point_value_delta,"point_gradient_delta"=>point_gradient_delta,"r_endpoint_value_delta"=>abs(objective(rtheta)-rvalue),"native_endpoint_cross_delta"=>abs(fit.loglik+rcopy(Float64,R"cross")),"native_gradient_max"=>maximum(abs,ngradient),"r_gradient_max"=>maximum(abs,rgradient),"native_health"=>nh,"r_health"=>rh,"r_random"=>rcopy(Vector{String},R"rb$random"),"r_fixed_columns"=>rcopy(Int,R"ncol(rb$fit$tmb_obj$env$data$X_fix)"),"r_sigma_mapped"=>rcopy(Bool,R"!is.null(rb$fit$tmb_obj$env$map$log_sigma_eps)"),"native_dof"=>GLLVModels._nparams(fit))
 open(io->TOML.print(io,record),joinpath(output,"gaussian-native.toml"),"w")
 println(record)
 @testset "Original Gaussian default unique native pair" begin
@@ -53,11 +53,11 @@ println(record)
 end
 println("CORE070_DEFAULT_UNIQUE_PAIR_PASS")
 
-formula_fit=gllvm(@formula(y ~ 0),Y,(site=collect(1:n),);family=GLLVM.Normal(),
+formula_fit=gllvm(@formula(y ~ 0),Y,(site=collect(1:n),);family=GLLVModels.Normal(),
     K=K,pervar=true,fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)
-ftheta=copy(rtheta);ftheta[lambda_idx]=GLLVM.pack_lambda(formula_fit.Λ)
+ftheta=copy(rtheta);ftheta[lambda_idx]=GLLVModels.pack_lambda(formula_fit.Λ)
 ftheta[unique_idx]=log.(formula_fit.ψ²)./2
-fg=GLLVM.ForwardDiff.gradient(objective,ftheta)
+fg=GLLVModels.ForwardDiff.gradient(objective,ftheta)
 formula_record=Dict("id"=>"CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
     "fixture_sha256"=>bytes2hex(sha256(read(fixture))),
     "formula_parameters"=>ftheta, "formula"=>"y ~ 0", "pervar"=>true,"fixed_residual_sd"=>c,
@@ -65,7 +65,7 @@ formula_record=Dict("id"=>"CORE070-FAMILY-00-IDENTITY-FORMULA-INTERFACE",
     "delta_loglik"=>abs(formula_fit.loglik+rvalue),
     "native_formula_delta"=>abs(formula_fit.loglik-fit.loglik),
     "formula_gradient_max"=>maximum(abs,fg),"converged"=>formula_fit.converged,
-    "fixed_effect_count"=>length(formula_fit.β),"dof"=>GLLVM._nparams(formula_fit),
+    "fixed_effect_count"=>length(formula_fit.β),"dof"=>GLLVModels._nparams(formula_fit),
     "formula_unique_variances"=>formula_fit.ψ²)
 open(io->TOML.print(io,formula_record),joinpath(output,"gaussian-formula.toml"),"w")
 @testset "Original R default unique formula pair" begin
@@ -85,11 +85,11 @@ println(formula_record)
 
 longdata=(y=reverse(vec(Y)),species=reverse(repeat(collect(1:p),n)),
           site=reverse(repeat(collect(1:n);inner=p)))
-longfit=gllvm(@formula(y ~ 0),longdata;family=GLLVM.Normal(),K=K,pervar=true,
+longfit=gllvm(@formula(y ~ 0),longdata;family=GLLVModels.Normal(),K=K,pervar=true,
     fixed_residual_sd=c,method=:lbfgs,g_tol=1e-8,iterations=3000)
-longtheta=copy(rtheta);longtheta[lambda_idx]=GLLVM.pack_lambda(longfit.Λ)
+longtheta=copy(rtheta);longtheta[lambda_idx]=GLLVModels.pack_lambda(longfit.Λ)
 longtheta[unique_idx]=log.(longfit.ψ²)./2
-longgrad=GLLVM.ForwardDiff.gradient(objective,longtheta)
+longgrad=GLLVModels.ForwardDiff.gradient(objective,longtheta)
 long_record=Dict("fixture_sha256"=>bytes2hex(sha256(read(fixture))),
     "loglik"=>longfit.loglik,"converged"=>longfit.converged,
     "gradient_max"=>maximum(abs,longgrad),"parameters"=>longtheta,
@@ -105,9 +105,9 @@ open(io->TOML.print(io,long_record),joinpath(output,"gaussian-long.toml"),"w")
  @test long_record["native_parameter_delta"]<=1e-7
  @test long_record["native_loglik_delta"]<=1e-7
  @test_throws ArgumentError gllvm(@formula(y ~ 0),map(x->x[2:end],longdata);
-     family=GLLVM.Normal(),K=K,pervar=true,fixed_residual_sd=c)
+     family=GLLVModels.Normal(),K=K,pervar=true,fixed_residual_sd=c)
  @test_throws ArgumentError gllvm(@formula(y ~ 0),map(x->vcat(x,x[1]),longdata);
-     family=GLLVM.Normal(),K=K,pervar=true,fixed_residual_sd=c)
+     family=GLLVModels.Normal(),K=K,pervar=true,fixed_residual_sd=c)
 end
 println("GAUSSIAN_ORIGINAL_REQUIRED_PAIR_PASS")
 

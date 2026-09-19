@@ -1,4 +1,4 @@
-using GLLVM, Test, Distributions, Random, LinearAlgebra, Statistics
+using GLLVModels, Test, Distributions, Random, LinearAlgebra, Statistics
 
 @testset "fit_binomial_gllvm — recovery" begin
     Random.seed!(20)
@@ -20,7 +20,7 @@ using GLLVM, Test, Distributions, Random, LinearAlgebra, Statistics
 
     # the latent structure is detected: the fitted K=1 model beats the Λ=0
     # (independent-binomial) marginal at the same intercepts
-    ll0 = GLLVM.binomial_marginal_loglik_laplace(Y, fill(1, p, n), zeros(p, K), fit.β, link)
+    ll0 = GLLVModels.binomial_marginal_loglik_laplace(Y, fill(1, p, n), zeros(p, K), fit.β, link)
     @test fit.loglik > ll0
 
     # rotation/sign-invariant recovery of the shared structure ΛΛ' (rank-1)

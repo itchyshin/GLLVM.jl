@@ -1,5 +1,5 @@
 # =============================================================================
-# Coverage simulation for *derived bounded quantities* of a Gaussian GLLVM:
+# Coverage simulation for *derived bounded quantities* of a Gaussian GLLVModels:
 #   transformed-Wald  vs  profile  vs  bootstrap
 # =============================================================================
 #
@@ -22,9 +22,9 @@
 # coverage proportion ± Monte-Carlo SE.
 #
 # Methods
-#   transformed-Wald = GLLVM.transformed_wald_ci_derived   (1 Hessian; cheap)
-#   profile          = GLLVM.profile_ci_derived            (constrained refits)
-#   bootstrap        = GLLVM.bootstrap_ci_derived          (n_boot refits)
+#   transformed-Wald = GLLVModels.transformed_wald_ci_derived   (1 Hessian; cheap)
+#   profile          = GLLVModels.profile_ci_derived            (constrained refits)
+#   bootstrap        = GLLVModels.bootstrap_ci_derived          (n_boot refits)
 #
 # Derived quantities (scalar)
 #   ρ[i,j]  — a cross-trait correlation (Fisher-z transformed-Wald)
@@ -50,7 +50,7 @@
 # printed to stdout. Partial results print as they accrue.
 # =============================================================================
 
-using GLLVM
+using GLLVModels
 using Random
 using LinearAlgebra
 using Distributions
@@ -58,11 +58,11 @@ using Statistics
 using Printf
 
 # The transformed-Wald file is additive (not compiled into the installed
-# GLLVM); inject it into the module so GLLVM.transformed_wald_ci_derived &
+# GLLVModels); inject it into the module so GLLVModels.transformed_wald_ci_derived &
 # the wrappers resolve. Its deps (confint_derived.jl, confint.jl) are
 # already compiled in.
-if !isdefined(GLLVM, :transformed_wald_ci_derived)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "confint_derived_wald.jl"))
+if !isdefined(GLLVModels, :transformed_wald_ci_derived)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "confint_derived_wald.jl"))
 end
 
 # -----------------------------------------------------------------------------
@@ -101,8 +101,8 @@ function build_fixture(cell::Cell)
     Σ_phy = nothing
     L_phy = nothing
     if cell.phylo
-        phy = GLLVM.random_balanced_tree(p; branch_length = cell.branch_length)
-        Σ = GLLVM.sigma_phy_dense(phy; σ²_phy = 1.0)
+        phy = GLLVModels.random_balanced_tree(p; branch_length = cell.branch_length)
+        Σ = GLLVModels.sigma_phy_dense(phy; σ²_phy = 1.0)
         Σ_phy = Matrix(Symmetric((Σ .+ Σ') ./ 2))
         L_phy = cholesky(Symmetric(Σ_phy)).L
     end
@@ -188,13 +188,13 @@ end
 function closure_for(target, spec, diagΣphy)
     if target.kind === :correlation
         i, j = target.idx
-        return GLLVM._make_correlation_closure(spec, i, j)
+        return GLLVModels._make_correlation_closure(spec, i, j)
     elseif target.kind === :communality
         t = target.idx[1]
-        return GLLVM._make_communality_closure(spec, t)
+        return GLLVModels._make_communality_closure(spec, t)
     elseif target.kind === :phylo_signal
         t = target.idx[1]
-        return GLLVM._make_phylo_signal_closure(spec, t; diag_Σphy = diagΣphy)
+        return GLLVModels._make_phylo_signal_closure(spec, t; diag_Σphy = diagΣphy)
     else
         error("unknown derived kind $(target.kind)")
     end
@@ -205,7 +205,7 @@ end
 # scale; non-finite / failed → (NaN, NaN), excluded from the denominator.
 # -----------------------------------------------------------------------------
 function cis_for_target(target, fit, y, Σ_phy; n_boot::Int, boot_seed::Int)
-    spec = GLLVM._derived_spec(fit)
+    spec = GLLVModels._derived_spec(fit)
     diagΣphy = Σ_phy === nothing ? nothing : diag(Σ_phy)
     f = closure_for(target, spec, diagΣphy)
 
@@ -213,7 +213,7 @@ function cis_for_target(target, fit, y, Σ_phy; n_boot::Int, boot_seed::Int)
 
     # ---- transformed-Wald ----
     try
-        w = GLLVM.transformed_wald_ci_derived(fit, f;
+        w = GLLVModels.transformed_wald_ci_derived(fit, f;
                                               transform = target.transform,
                                               y = y, Σ_phy = Σ_phy)
         out[:twald] = (w.method === :transformed_wald &&
@@ -225,7 +225,7 @@ function cis_for_target(target, fit, y, Σ_phy; n_boot::Int, boot_seed::Int)
 
     # ---- profile ----
     try
-        pf = GLLVM.profile_ci_derived(fit, f; y = y, Σ_phy = Σ_phy)
+        pf = GLLVModels.profile_ci_derived(fit, f; y = y, Σ_phy = Σ_phy)
         out[:profile] = (pf.method === :profile &&
                          isfinite(pf.lower) && isfinite(pf.upper)) ?
                         (pf.lower, pf.upper) : (NaN, NaN)
@@ -235,7 +235,7 @@ function cis_for_target(target, fit, y, Σ_phy; n_boot::Int, boot_seed::Int)
 
     # ---- bootstrap ----
     try
-        bt = GLLVM.bootstrap_ci_derived(fit, f; y = y, Σ_phy = Σ_phy,
+        bt = GLLVModels.bootstrap_ci_derived(fit, f; y = y, Σ_phy = Σ_phy,
                                         n_boot = n_boot, seed = boot_seed)
         out[:bootstrap] = (isfinite(bt.lower) && isfinite(bt.upper)) ?
                           (bt.lower, bt.upper) : (NaN, NaN)

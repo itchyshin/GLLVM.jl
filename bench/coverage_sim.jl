@@ -1,5 +1,5 @@
 # =============================================================================
-# 3-way CI coverage simulation for the Gaussian GLLVM (Wald / profile / bootstrap)
+# 3-way CI coverage simulation for the Gaussian GLLVModels (Wald / profile / bootstrap)
 # =============================================================================
 #
 # Scientific question
@@ -19,9 +19,9 @@
 # proportion ± Monte-Carlo SE.
 #
 # Estimands (scalar): σ_eps, β, and (phylo cells only) σ_phy[1].
-# Methods:            Wald      = GLLVM.confint        (Hessian)
-#                     Profile   = GLLVM.profile_ci     (LRT-inverted)
-#                     Bootstrap = GLLVM.bootstrap_ci    (parametric)
+# Methods:            Wald      = GLLVModels.confint        (Hessian)
+#                     Profile   = GLLVModels.profile_ci     (LRT-inverted)
+#                     Bootstrap = GLLVModels.bootstrap_ci    (parametric)
 #
 # Cells
 # -----
@@ -47,7 +47,7 @@
 #
 # Run
 # ---
-#   julia --project=bench bench/coverage_sim.jl      # (GLLVM is a bench dep)
+#   julia --project=bench bench/coverage_sim.jl      # (GLLVModels is a bench dep)
 #   julia --project=.     bench/coverage_sim.jl      # also works
 #
 # Budget knobs (environment variables, all optional):
@@ -60,7 +60,7 @@
 # truncated run is still informative; MCSE columns make reliability explicit.
 # =============================================================================
 
-using GLLVM
+using GLLVModels
 using Random
 using LinearAlgebra
 using Distributions
@@ -132,8 +132,8 @@ function build_fixture(cell::Cell)
     Σ_phy = nothing
     L_phy = nothing
     if cell.phylo
-        phy = GLLVM.random_balanced_tree(p; branch_length = cell.branch_length)
-        Σ = GLLVM.sigma_phy_dense(phy; σ²_phy = 1.0)
+        phy = GLLVModels.random_balanced_tree(p; branch_length = cell.branch_length)
+        Σ = GLLVModels.sigma_phy_dense(phy; σ²_phy = 1.0)
         Σ_phy = Matrix(Symmetric((Σ .+ Σ') ./ 2))
         L_phy = cholesky(Symmetric(Σ_phy)).L
     end

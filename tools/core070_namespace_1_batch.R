@@ -167,7 +167,7 @@ if (self_test) {
   #     confirmed via the paired Julia self-test's own contract read (this R
   #     process does not load Julia; it asserts the CONTRACT records these as
   #     expected_julia_symbol_exists == FALSE, which is what the Julia
-  #     self-test independently verifies against the live GLLVM module).
+  #     self-test independently verifies against the live GLLVModels module).
   neg_case_ids <- vapply(contract$negative_controls, function(x) {
     if (is.null(x$case_id)) NA_character_ else x$case_id
   }, character(1))

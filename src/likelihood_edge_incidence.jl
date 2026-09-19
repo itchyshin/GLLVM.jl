@@ -114,10 +114,10 @@ function gaussian_marginal_loglik_edge_phy(y::AbstractMatrix,
     end
 
     # Delegate to the dense J3 implementation — it is already
-    # Dual-compatible and tested. Reach into the GLLVM module since this
+    # Dual-compatible and tested. Reach into the GLLVModels module since this
     # file is included outside the module on the PERF++++ branch (the
-    # hard constraint forbids editing src/GLLVM.jl).
-    return GLLVM.gaussian_marginal_loglik(y, Λ_B, σ_eps;
+    # hard constraint forbids editing src/GLLVModels.jl).
+    return GLLVModels.gaussian_marginal_loglik(y, Λ_B, σ_eps;
                                           X = X, β = β,
                                           Λ_W = Λ_W, σ²_B = σ²_B, σ²_W = σ²_W,
                                           Λ_phy = Λ_phy, σ_phy = σ_phy,

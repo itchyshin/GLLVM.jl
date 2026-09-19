@@ -1,5 +1,5 @@
 # Export the immutable B1 fixture for the one authorized frozen-R control.
-# It constructs data only and never imports GLLVM or calls an optimizer.
+# It constructs data only and never imports GLLVModels or calls an optimizer.
 
 length(ARGS) == 1 || error("Use: julia b1_balanced_complete_crossed_export.jl OUTPUT.csv")
 output = ARGS[1]

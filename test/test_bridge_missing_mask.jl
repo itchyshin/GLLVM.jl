@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using Random
 
 @testset "bridge missing-response mask" begin

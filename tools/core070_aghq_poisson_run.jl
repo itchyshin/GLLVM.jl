@@ -1,4 +1,4 @@
-using GLLVM,Test,Random,TOML,SHA
+using GLLVModels,Test,Random,TOML,SHA
 @testset "AGHQ Poisson and prerequisites" begin
     include(joinpath(@__DIR__,"../test/test_aghq_poisson.jl"))
     include(joinpath(@__DIR__,"../test/test_aghq_outer.jl"))
@@ -19,10 +19,10 @@ function ap_rand_poisson(lambda::Float64)
     end
 end
 Y=[ap_rand_poisson(exp(clamp(eta[t,s],-8.,8.))) for t in 1:p,s in 1:n]
-theta=vcat(beta,GLLVM.pack_lambda(L))
-problem=GLLVM.aghq_poisson_problem(Y,K;k=5)
+theta=vcat(beta,GLLVModels.pack_lambda(L))
+problem=GLLVModels.aghq_poisson_problem(Y,K;k=5)
 initial=problem.objective(theta,problem.adapt(theta))
-elapsed=@elapsed fit=GLLVM.aghq_outer_optimize(theta,problem.adapt,problem.objective;n_adapt=400)
+elapsed=@elapsed fit=GLLVModels.aghq_outer_optimize(theta,problem.adapt,problem.objective;n_adapt=400)
 diagnostics=problem.mode_diagnostics(fit.parameters)
 @testset "AP05 original Poisson fitting smoke" begin
     @test length(theta)==14
@@ -33,7 +33,7 @@ diagnostics=problem.mode_diagnostics(fit.parameters)
     @test all(d->d.gradient_max<=1e-7 && !d.curvature_repaired,diagnostics)
 end
 receipt=Dict("scope"=>"INTERNAL_POISSON_AGHQ_SMOKE_NOT_R_PARITY_OR_RECOVERY",
-    "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVM),"seed"=>44,"p"=>p,"K"=>K,"n"=>n,
+    "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVModels),"seed"=>44,"p"=>p,"K"=>K,"n"=>n,
     "k"=>5,"initial_objective"=>initial,"objective"=>fit.objective,"usable"=>fit.usable,
     "converged"=>fit.converged,"stop_reason"=>string(fit.stop_reason),"gradient_kind"=>string(fit.gradient_kind),
     "frozen_gradient_max"=>fit.frozen_gradient_max,"relative_gradient"=>fit.relative_gradient,

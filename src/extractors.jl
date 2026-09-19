@@ -29,7 +29,7 @@
 #   .unlazy/core070-aghq/oracle-source/readback/R/output-methods.R
 #   .unlazy/core070-aghq/oracle-source/readback/R/extractors.R
 #
-# Loading-sign convention: GLLVM.jl's `getLoadings(fit; rotate=true)` fixes
+# Loading-sign convention: GLLVModels.jl's `getLoadings(fit; rotate=true)` fixes
 # signs via the largest-magnitude-entry convention (src/postfit.jl); rotated
 # loadings are never compared or canonicalised against R's own sign choice.
 # Quantities compared against a Gaussian closed form here are all
@@ -40,7 +40,7 @@ using LinearAlgebra: diagm
 const _GllvmOrTwoLevel = Union{GllvmFit, TwoLevelFit}
 
 # ---------------------------------------------------------------------------
-# Level normalisation. GLLVM.jl uses :unit / :unit_obs for the two ordinary
+# Level normalisation. GLLVModels.jl uses :unit / :unit_obs for the two ordinary
 # tiers (mirrors R's canonical spelling); the legacy :B / :W aliases are
 # accepted for gllvm-familiarity, matching R's `.normalise_level()`.
 # ---------------------------------------------------------------------------
@@ -106,7 +106,7 @@ Implied trait covariance at one tier of a fitted Gaussian GLLVM, mirroring
                   `Σ_B = Λ_B Λ_Bᵀ + diag(σ²_B)`.
   - `:unit_obs` — within-unit (observation, "W") tier,
                   `Σ_W = Λ_W Λ_Wᵀ + diag(σ²_W) + σ²_eps·I`.
-  - `:site`     — the full per-site covariance `sigma_y_site(fit)` (a GLLVM.jl
+  - `:site`     — the full per-site covariance `sigma_y_site(fit)` (a GLLVModels.jl
                   extension not present in the R tier vocabulary; combines
                   both tiers' diagonal contributions with the Gaussian
                   residual, excluding the phylogenetic block).
@@ -122,7 +122,7 @@ Legacy aliases `:B`/`:W` are accepted for `:unit`/`:unit_obs`.
   - `:unique` — the diagonal `Ψ` term alone, as a length-`p` vector `s`.
               Returns `(s, level, part)`.
 
-Deviation from R: GLLVM.jl has no `phy`/`spatial`/`*_slope` tiers yet (those
+Deviation from R: GLLVModels.jl has no `phy`/`spatial`/`*_slope` tiers yet (those
 augmented-block tiers belong to structured-term recognizers, Cluster 3 of
 the missing-surface work order); requesting them throws `ArgumentError`.
 """
@@ -216,7 +216,7 @@ Canonical snake_case accessor for the fitted species/trait loadings.
 Forwards to [`getLoadings`](@ref) (`gllvm`-style spelling), mirroring
 `gllvmTMB::extract_loadings()`'s forwarding to `getLoadings()`.
 
-Deviation from R: no `level` tier argument (GLLVM.jl's `_loadings` reads
+Deviation from R: no `level` tier argument (GLLVModels.jl's `_loadings` reads
 the single loadings matrix each fit type carries; there is no Julia-bridge
 rotation gate to special-case).
 """
@@ -251,7 +251,7 @@ extract_rotated_loadings(fit) = (Λ = getLoadings(fit; rotate = true), R = rotat
 ## of the B/W/phy component tiers R's `extract_Sigma()`/`extract_Omega()`
 ## track at all. These helpers reproduce that convention exactly. They are
 ## intentionally distinct from `_sigma_unit_obs` above (`extract_Sigma`'s own
-## `:unit_obs` total, which folds `σ_eps²` in unconditionally as GLLVM.jl's
+## `:unit_obs` total, which folds `σ_eps²` in unconditionally as GLLVModels.jl's
 ## own useful extension per its docstring, and is unchanged by this decision
 ## — `extract_Sigma`'s public contract was never part of the estimand-
 ## alignment ledger row).
@@ -309,8 +309,7 @@ end
 
 Per-trait communality at ONE tier, `c²_t = (Λ_tier Λ_tierᵀ)_tt /
 Σ_tier,total_tt`, mirroring `gllvmTMB::extract_communality(level = ...)`.
-This is now the DEFAULT (`level = :unit`; maintainer decision round 1, item
-3 — see `docs/dev-log/estimand-alignment-notes.md`), matching R's
+This is now the DEFAULT (`level = :unit`), matching R's
 tier-scoped denominator exactly: `σ_eps²` (the Gaussian observation
 residual) never enters, because it is not one of R's `B`/`W`/`phy` tier
 components. `level = :unit_obs` is the within-unit (W) twin.
@@ -321,7 +320,7 @@ every trait — this is R's own degenerate behaviour on such a fit (confirmed
 against R's `gaussian_small` oracle fixture, `unique = FALSE`, no W tier:
 `extract_communality(level = "unit")` returns all-`1.0`), not a bug.
 
-`level = :total` recovers GLLVM.jl's original TOTAL-variance estimand
+`level = :total` recovers GLLVModels.jl's original TOTAL-variance estimand
 (forwards to [`communality`](@ref)): shared / `sigma_y_site(fit)`, i.e.
 every non-phylo tier the fit carries plus `σ_eps²`. The two estimands agree
 only when `σ_eps == 0` and there is no W-tier.
@@ -362,13 +361,12 @@ extract_communality(fit::Union{_NonGaussianLatentFit, BinomialFit, OrdinalFit,
 Cross-trait correlation at ONE tier, `cov2cor(Σ_tier,total)`, mirroring
 `gllvmTMB::extract_correlations(tier = ...)`'s point-only route
 (`extract_Sigma(fit, level = tier, part = "total")\$R`). This is now the
-DEFAULT (`level = :unit`; maintainer decision round 1, item 3 — see
-`docs/dev-log/estimand-alignment-notes.md`): `σ_eps²` never enters the
+DEFAULT (`level = :unit`): `σ_eps²` never enters the
 tier total, matching R exactly (same tier-scoping as
 [`extract_communality`](@ref)). `level = :unit_obs` is the within-unit (W)
 twin.
 
-`level = :total` recovers GLLVM.jl's original TOTAL-variance estimand
+`level = :total` recovers GLLVModels.jl's original TOTAL-variance estimand
 (forwards to [`correlation`](@ref)): `ρ_ij = Σ_y_site,ij / √(Σ_y_site,ii ·
 Σ_y_site,jj)`, standardising by every non-phylo tier plus `σ_eps²`. The two
 estimands agree only when `σ_eps == 0` and there is no W-tier.
@@ -407,7 +405,7 @@ Cross-trait correlation SUBMATRIX `R[traits_i, traits_j]` between two named
 groups of traits (by positional integer index), mirroring the block-slicing
 intent of `gllvmTMB::extract_cross_correlations()`. Deviation from R: no
 Fisher-z confidence band and no name-based trait subsetting (positional
-integer indices only, matching GLLVM.jl's convention elsewhere — see
+integer indices only, matching GLLVModels.jl's convention elsewhere — see
 [`extract_Gamma`](@ref)); the CI band is Cluster 2 (derived-CI surfaces).
 
 `level = :unit` is the only value accepted for `fit::GllvmFit` (it forwards
@@ -423,7 +421,7 @@ function extract_cross_correlations(fit::GllvmFit; level::Symbol = :unit,
     lvl = _canonical_level(level)
     lvl === :unit || throw(ArgumentError(
         "extract_cross_correlations(::GllvmFit) currently supports level = :unit only " *
-        "(GLLVM.jl computes one site-level correlation tier for GllvmFit); got :$level"))
+        "(GLLVModels.jl computes one site-level correlation tier for GllvmFit); got :$level"))
     R = extract_correlations(fit)
     return Matrix(R[traits_i, traits_j])
 end
@@ -522,14 +520,13 @@ fit genuinely carries (`shared_unit` + `unique_unit` + `shared_unit_obs` +
 `unique_unit_obs`, whichever are present — `σ_eps²` is never one of them,
 same tier-scoping as [`extract_communality`](@ref) /
 [`extract_correlations`](@ref)). This tier-scoped `:shared` route is now the
-DEFAULT (maintainer decision round 1, item 3 — see
-`docs/dev-log/estimand-alignment-notes.md`); on a fit with only a `:unit`
+DEFAULT; on a fit with only a `:unit`
 tier and no diagonal (e.g. `has_diag = false`), it degenerates to `1.0` for
 every trait, matching R's own degenerate behaviour on such a fit.
 
 Any other `component` (`:unique_W`, `:unique_B`, `:unique_Wd`, `:residual`),
 or `level = :total`, forwards unchanged to the existing [`proportions`](@ref)
-generic (GLLVM.jl's original TOTAL-variance composition, `sigma_y_site(fit)`
+generic (GLLVModels.jl's original TOTAL-variance composition, `sigma_y_site(fit)`
 denominator) — those components/level are not part of this alignment slice.
 """
 function extract_proportions(fit::GllvmFit; component::Symbol = :shared, level::Symbol = :unit)
@@ -571,7 +568,7 @@ extract_repeatability(fit::TwoLevelFit) = repeatability(fit)
 Per-trait unit-level intraclass correlation `ICC_t = v_B,t / (v_B,t + v_W,t)`,
 `v_B,t = diag(extract_Sigma(fit; level=:unit).Sigma)`,
 `v_W,t = diag(extract_Sigma(fit; level=:unit_obs).Sigma)`. Mirrors
-`gllvmTMB::extract_ICC_site()` (`link_residual = "none"`; GLLVM.jl's
+`gllvmTMB::extract_ICC_site()` (`link_residual = "none"`; GLLVModels.jl's
 `GllvmFit` is Gaussian-only so there is no implicit link residual to add).
 NaN where `v_B,t + v_W,t` is not finite-positive, matching R's
 `.safe_icc_ratio()`.
@@ -608,15 +605,14 @@ genuinely carries — the phylogenetic block (`Λ_phy_aug Λ_phy_augᵀ` when
 `gllvmTMB::extract_Omega()` with `tiers = NULL` (auto-detected) and
 `link_residual = "none"` (Gaussian `GllvmFit` has no implicit link residual
 to add). This tier-presence-gated composition is now the DEFAULT
-(`level = :auto`; maintainer decision round 1, item 3 — see
-`docs/dev-log/estimand-alignment-notes.md`): the previous default
+(`level = :auto`): the previous default
 unconditionally summed `extract_Sigma(level=:unit_obs, part=:total)`, which
 folds in `σ_eps²` even when the fit carries no genuine W tier at all — a
 confirmed cross-engine bug (R oracle diff ≈ `σ_eps²` exactly on a
 single-tier fixture), not a deliberate estimand choice, now fixed by
 gating on tier presence.
 
-`level = :total` recovers GLLVM.jl's original unconditional-sum estimand
+`level = :total` recovers GLLVModels.jl's original unconditional-sum estimand
 (`Σ_unit + Σ_unit_obs` via `extract_Sigma`, `:unit_obs` always including
 `σ_eps²·I` regardless of W-tier presence).
 """
@@ -650,10 +646,10 @@ end
 # Still blocked (no stub — see docs/dev-log/core070/extractors-slice-notes.md
 # for the full accounting):
 #   * extract_residual_split — needs the per-family link-residual bank wired
-#     to an explicit OLRE fit tag; GLLVM.jl's K_W tier is not that tag.
+#     to an explicit OLRE fit tag; GLLVModels.jl's K_W tier is not that tag.
 #   * extract_coevolution_modules — needs a module/eigen-decomposition of Γ
 #     that no coevolution fit type currently computes.
 #   * getREsd — needs TMB-sdreport-style marginal SDs of the random effects
-#     from the joint precision; no such accessor exists in GLLVM.jl yet (it
+#     from the joint precision; no such accessor exists in GLLVModels.jl yet (it
 #     is Hessian/SE machinery, i.e. Cluster 2 territory, not a point readout).
 # ---------------------------------------------------------------------------

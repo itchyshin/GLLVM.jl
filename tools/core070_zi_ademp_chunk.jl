@@ -13,7 +13,7 @@
 #                error; failures RECORDED, never dropped.
 #
 # argv: family(zip|zinb|zib) p n seed_start seed_end outdir
-using GLLVM
+using GLLVModels
 using Random
 using LinearAlgebra
 using Statistics
@@ -42,20 +42,20 @@ function draw_Y(rng)
         if rand(rng) < _inv_logit(betaz_true[i])        # structural zero
             Y[i, j] = 0
         elseif family == "zip"
-            Y[i, j] = rand(rng, GLLVM.Distributions.Poisson(exp(min(eta_c[i, j], 4.0))))
+            Y[i, j] = rand(rng, GLLVModels.Distributions.Poisson(exp(min(eta_c[i, j], 4.0))))
         elseif family == "zinb"
             mu = exp(min(eta_c[i, j], 4.0))
-            Y[i, j] = rand(rng, GLLVM.Distributions.NegativeBinomial(r_true, r_true / (r_true + mu)))
+            Y[i, j] = rand(rng, GLLVModels.Distributions.NegativeBinomial(r_true, r_true / (r_true + mu)))
         else
-            Y[i, j] = rand(rng, GLLVM.Distributions.Binomial(N_TRIALS, _inv_logit(eta_c[i, j])))
+            Y[i, j] = rand(rng, GLLVModels.Distributions.Binomial(N_TRIALS, _inv_logit(eta_c[i, j])))
         end
     end
     return Y
 end
 
-fit_one(Y) = family == "zip"  ? GLLVM.fit_zip_gllvm(Y; K = K) :
-             family == "zinb" ? GLLVM.fit_zinb_gllvm(Y; K = K) :
-                                GLLVM.fit_zib_gllvm(Y; K = K, N = N_TRIALS)
+fit_one(Y) = family == "zip"  ? GLLVModels.fit_zip_gllvm(Y; K = K) :
+             family == "zinb" ? GLLVModels.fit_zinb_gllvm(Y; K = K) :
+                                GLLVModels.fit_zib_gllvm(Y; K = K, N = N_TRIALS)
 
 outfile = joinpath(outdir, "zi-$(family)-p$(p)-n$(n)-s$(lpad(s0, 4, '0')).csv")
 open(outfile, "w") do io

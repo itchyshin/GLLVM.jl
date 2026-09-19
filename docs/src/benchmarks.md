@@ -1,17 +1,17 @@
 # Benchmarks
 
 The benchmark grid from the parallel `gllvmTMB-julia-bench/` study
-compares R `gllvmTMB` and GLLVM.jl on the same simulated data per
+compares R `gllvmTMB` and GLLVModels.jl on the same simulated data per
 replicate. Both engines minimise the same Gaussian marginal
 log-likelihood with `f_reltol = 1e-10` and `g_tol = 1e-6`. The R engine
 uses `gllvmTMB::gllvmTMB` (TMB Laplace + L-BFGS); the Julia engine uses
-`GLLVM.fit_gaussian_gllvm` (closed-form Gaussian marginal + `Optim`
+`GLLVModels.fit_gaussian_gllvm` (closed-form Gaussian marginal + `Optim`
 L-BFGS with `ForwardDiff` gradients).
 
 Six cells × three replicates × two engines = 36 fits. All 36 converged.
 
 !!! warning "This grid is Gaussian only — the speedup does NOT generalise"
-    Every number on this page comes from the **Gaussian** path, where GLLVM.jl
+    Every number on this page comes from the **Gaussian** path, where GLLVModels.jl
     uses a closed-form marginal and R uses a TMB Laplace approximation. That is
     an *algorithmic* difference, not a language one, and it is where the large
     factors come from.

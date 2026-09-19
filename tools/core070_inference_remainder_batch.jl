@@ -5,7 +5,7 @@
 # Pure-Julia consumer, mirroring tools/core070_namespace_2_batch.jl: reads a
 # JSON oracle file the paired R runner
 # (tools/core070_inference_remainder_batch.R) writes BEFORE invoking this
-# script, refits the shared Gaussian fixture natively via `using GLLVM`
+# script, refits the shared Gaussian fixture natively via `using GLLVModels`
 # only. No RCall, no parity-runner include, no R of any kind runs here.
 #
 # argv:
@@ -19,7 +19,7 @@
 # Invocation:
 #   julia --project=. tools/core070_inference_remainder_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 
 # ---------------------------------------------------------------------------
 # Minimal JSON reader/writer (no external dependency; mirrors the existing
@@ -146,7 +146,7 @@ out_path = ARGS[1]
 isfile(out_path) && error("destination already exists: $out_path")
 mkpath(dirname(out_path))
 
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd()) "must run from the GLLVM.jl package root"
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(pwd()) "must run from the GLLVModels.jl package root"
 
 oracle_path = get(ENV, "CORE070_INFERENCE_REMAINDER_R_ORACLE", "")
 isempty(oracle_path) &&
@@ -163,7 +163,7 @@ oracle = json_read(oracle_path)
 # bootstrap_ci_derived on this fixture to compare against R's
 # confint(parm="icc", method=...), which crashed on Totoro because R's route
 # needs a genuine two-tier fit (vB>0, vW>0) via extract_repeatability(), and
-# because GLLVM.jl's actual comparand for extract_repeatability is
+# because GLLVModels.jl's actual comparand for extract_repeatability is
 # repeatability(fit::TwoLevelFit) in src/twolevel.jl (a point estimate only,
 # with zero Wald/profile/bootstrap CI machinery) -- not icc_wald_ci on an
 # ordinary GllvmFit at all. See the contract's `notes` /
@@ -184,8 +184,8 @@ for j in 1:p
 end
 
 fit = fit_gaussian_gllvm(Y; K = K, X = X)
-spec = GLLVM._derived_spec(fit)
-f_icc = GLLVM._make_communality_closure(spec, 1)   # reject-path closure only
+spec = GLLVModels._derived_spec(fit)
+f_icc = GLLVModels._make_communality_closure(spec, 1)   # reject-path closure only
 
 cases = Dict{String, Any}()
 
@@ -229,40 +229,40 @@ end
 icc_reject_methods = reject_case!(cases, "CORE070-INFERENCE-ICC-CI-UNSUPPORTED-METHOD-REJECT",
     "icc_reject", "icc",
     [
-        ("wald_asym", () -> GLLVM.icc_wald_ci(fit, f_icc; y = Y, method = :wald_asym)),
-        ("fisher-z", () -> GLLVM.icc_wald_ci(fit, f_icc; y = Y, method = Symbol("fisher-z"))),
-        ("bogus", () -> GLLVM.icc_wald_ci(fit, f_icc; y = Y, method = :bogus)),
+        ("wald_asym", () -> GLLVModels.icc_wald_ci(fit, f_icc; y = Y, method = :wald_asym)),
+        ("fisher-z", () -> GLLVModels.icc_wald_ci(fit, f_icc; y = Y, method = Symbol("fisher-z"))),
+        ("bogus", () -> GLLVModels.icc_wald_ci(fit, f_icc; y = Y, method = :bogus)),
     ])
 
 reject_case!(cases, "CORE070-INFERENCE-PHYLO-SIGNAL-CI-UNSUPPORTED-METHOD-REJECT",
     "phylo_reject", "phylo_signal",
     [
-        ("wald_asym", () -> GLLVM.phylo_signal_wald_ci(fit, 1; y = Y, method = :wald_asym)),
-        ("fisher-z", () -> GLLVM.phylo_signal_wald_ci(fit, 1; y = Y, method = Symbol("fisher-z"))),
-        ("bogus", () -> GLLVM.phylo_signal_wald_ci(fit, 1; y = Y, method = :bogus)),
+        ("wald_asym", () -> GLLVModels.phylo_signal_wald_ci(fit, 1; y = Y, method = :wald_asym)),
+        ("fisher-z", () -> GLLVModels.phylo_signal_wald_ci(fit, 1; y = Y, method = Symbol("fisher-z"))),
+        ("bogus", () -> GLLVModels.phylo_signal_wald_ci(fit, 1; y = Y, method = :bogus)),
     ])
 
 reject_case!(cases, "CORE070-INFERENCE-COMMUNALITY-CI-UNSUPPORTED-METHOD-REJECT",
     "communality_reject", "communality",
     [
-        ("wald_asym", () -> GLLVM.communality_wald_ci(fit, 1; y = Y, method = :wald_asym)),
-        ("fisher-z", () -> GLLVM.communality_wald_ci(fit, 1; y = Y, method = Symbol("fisher-z"))),
-        ("bogus", () -> GLLVM.communality_wald_ci(fit, 1; y = Y, method = :bogus)),
+        ("wald_asym", () -> GLLVModels.communality_wald_ci(fit, 1; y = Y, method = :wald_asym)),
+        ("fisher-z", () -> GLLVModels.communality_wald_ci(fit, 1; y = Y, method = Symbol("fisher-z"))),
+        ("bogus", () -> GLLVModels.communality_wald_ci(fit, 1; y = Y, method = :bogus)),
     ])
 
 reject_case!(cases, "CORE070-INFERENCE-RHO-CI-UNSUPPORTED-METHOD-REJECT",
     "rho_reject", "rho",
     [
-        ("wald_asym", () -> GLLVM.correlation_wald_ci(fit, 1, 2; y = Y, method = :wald_asym)),
-        ("bogus", () -> GLLVM.correlation_wald_ci(fit, 1, 2; y = Y, method = :bogus)),
+        ("wald_asym", () -> GLLVModels.correlation_wald_ci(fit, 1, 2; y = Y, method = :wald_asym)),
+        ("bogus", () -> GLLVModels.correlation_wald_ci(fit, 1, 2; y = Y, method = :bogus)),
     ])
 
 reject_case!(cases, "CORE070-INFERENCE-PROPORTION-CI-UNSUPPORTED-METHOD-REJECT",
     "proportion_reject", "proportion",
     [
-        ("wald_asym", () -> GLLVM.icc_wald_ci(fit, f_icc; y = Y, method = :wald_asym)),
-        ("fisher-z", () -> GLLVM.icc_wald_ci(fit, f_icc; y = Y, method = Symbol("fisher-z"))),
-        ("bogus", () -> GLLVM.icc_wald_ci(fit, f_icc; y = Y, method = :bogus)),
+        ("wald_asym", () -> GLLVModels.icc_wald_ci(fit, f_icc; y = Y, method = :wald_asym)),
+        ("fisher-z", () -> GLLVModels.icc_wald_ci(fit, f_icc; y = Y, method = Symbol("fisher-z"))),
+        ("bogus", () -> GLLVModels.icc_wald_ci(fit, f_icc; y = Y, method = :bogus)),
     ])
 
 # ---------------------------------------------------------------------------

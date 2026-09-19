@@ -1,5 +1,5 @@
 # Renders the landing-page figure: a model-implied cross-response correlation
-# heatmap from a small simulated two-factor Gaussian GLLVM fit.
+# heatmap from a small simulated two-factor Gaussian GLLVModels fit.
 #
 # This is NOT part of the Documenter build (keeps CairoMakie out of the docs
 # environment / CI). Run it by hand to regenerate the committed PNG:
@@ -10,7 +10,7 @@
 #
 # Output: docs/src/assets/correlation_heatmap.png
 
-using GLLVM, CairoMakie, Random
+using GLLVModels, CairoMakie, Random
 
 Random.seed!(42)
 n, p, K = 120, 6, 2
@@ -21,7 +21,7 @@ n, p, K = 120, 6, 2
     [0.1 1.3; 0.2 1.0; 0.0 0.8],
 )
 Z = randn(K, n)
-Y = Λ_true * Z .+ 0.6 .* randn(p, n)        # p × n: responses × sites (GLLVM convention)
+Y = Λ_true * Z .+ 0.6 .* randn(p, n)        # p × n: responses × sites (GLLVModels convention)
 
 fit = fit_gaussian_gllvm(Y; K = K)
 R   = correlation(fit)                       # p × p, symmetric, entries in [-1, 1]

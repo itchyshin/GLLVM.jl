@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Reconcile GLLVM.jl's public export surface against R's gllvmTMB, at a named git ref.
+"""Reconcile GLLVModels.jl's public export surface against R's gllvmTMB, at a named git ref.
 
 Ported from DRM.jl's tools/parity_ledger.py (the drmTMB<->DRM.jl catch-up
-countdown), adapted to the gllvmTMB<->GLLVM.jl pair. Reads gllvmTMB's
-`NAMESPACE` at a named git ref and GLLVM.jl's own `export` block in
-`src/GLLVM.jl`, then reports BOTH directions:
+countdown), adapted to the gllvmTMB<->GLLVModels.jl pair. Reads gllvmTMB's
+`NAMESPACE` at a named git ref and GLLVModels.jl's own `export` block in
+`src/GLLVModels.jl`, then reports BOTH directions:
 
   FORWARD -- R exports with no Julia twin (genuinely owed)
   REVERSE -- Julia exports with no R twin (genuinely ahead)
@@ -112,7 +112,7 @@ NOT_CAPABILITY = {
     "gr": "R gradient/generic helper; not a distinct Julia-facing capability",
     "gllvmTMBcontrol": "R control-object constructor (fit-option bag); Julia takes options as keyword args, no matching constructor export",
     "screen_control": "R control-object constructor for screen_gllvmTMB(); same shape as gllvmTMBcontrol, no Julia analogue",
-    "meta_known_V": "meta-analysis known-V helper; not a GLLVM engine capability (DRM.jl carries the identical exclusion for its own meta_known_V)",
+    "meta_known_V": "meta-analysis known-V helper; not a GLLVModels engine capability (DRM.jl carries the identical exclusion for its own meta_known_V)",
 }
 
 # FORWARD, R name -> Julia's *deliberately different* name. Source:
@@ -148,7 +148,7 @@ DELIBERATELY_NOT_PORTED = {
     "make_mesh": "R-side geospatial mesh prep (sf, CRS) before any fit; SPDE fitters take a mesh/precision Julia already has, not this constructor",
     "get_crs": "R-side CRS/projection accessor for geospatial prep; no fitting-engine analogue",
     "add_utm_columns": "R-side coordinate-projection convenience for geospatial prep; no fitting-engine analogue",
-    "impute_model": "missing-data imputation-model surface; structurally separate from GLLVM.jl's Laplace/VA family fitters",
+    "impute_model": "missing-data imputation-model surface; structurally separate from GLLVModels.jl's Laplace/VA family fitters",
     "imputed": "missing-data surface; same as impute_model",
     "categorical": "an imputation family (categorical missingness), not a response family; same missing-data surface as impute_model",
     "miss_control": "missing-data control-object constructor; same missing-data surface as impute_model",
@@ -196,9 +196,9 @@ AHEAD_PATTERNS = [
     (re.compile(r"_logpdf$|_logz$|_cdf$"), "distribution-kernel helper (log-density/normalizer/CDF); engine internal"),
     (re.compile(r"_wald_ci$|_ci$"), "named Wald/profile CI accessor for one derived quantity; gllvmTMB reaches CIs generically via confint(), not per-quantity exports"),
     (re.compile(r"^em_|_squarem"), "EM/SQUAREM alternative-solver internals; gllvmTMB's TMB path never uses this solver family"),
-    (re.compile(r"^spde_|^Q_|Precision$|precision$"), "SPDE/Matern spatial substrate; a GLLVM.jl capability gllvmTMB's TMB template does not implement (per docs/src/gllvmtmb-parity.md \"Honest gaps\")"),
-    (re.compile(r"^phylo_|^augmented_|^felsenstein|Contrasts$|^EdgePhy$|^edge_|^branch_|^Branch|^clade_|^blup"), "phylogenetic engine substrate (sparse/contrasts/edge-incidence); a GLLVM.jl capability with no gllvmTMB analogue"),
-    (re.compile(r"^coevolution|^Coevo|^make_cross_kernel"), "coevolution/cross-kernel substrate; a GLLVM.jl capability with no gllvmTMB analogue"),
+    (re.compile(r"^spde_|^Q_|Precision$|precision$"), "SPDE/Matern spatial substrate; a GLLVModels.jl capability gllvmTMB's TMB template does not implement (per docs/src/gllvmtmb-parity.md \"Honest gaps\")"),
+    (re.compile(r"^phylo_|^augmented_|^felsenstein|Contrasts$|^EdgePhy$|^edge_|^branch_|^Branch|^clade_|^blup"), "phylogenetic engine substrate (sparse/contrasts/edge-incidence); a GLLVModels.jl capability with no gllvmTMB analogue"),
+    (re.compile(r"^coevolution|^Coevo|^make_cross_kernel"), "coevolution/cross-kernel substrate; a GLLVModels.jl capability with no gllvmTMB analogue"),
 ]
 
 
@@ -222,11 +222,11 @@ def r_exports(repo: Path, ref: str) -> list[str]:
 
 
 def julia_exports(root: Path) -> list[str]:
-    """Parse export block(s) in src/GLLVM.jl (checked to hold them all; no
+    """Parse export block(s) in src/GLLVModels.jl (checked to hold them all; no
     other included src/ file carries its own top-level `export` line as of
     this port -- verified by grep across src/)."""
     names: list[str] = []
-    src_files = [root / "src" / "GLLVM.jl"]
+    src_files = [root / "src" / "GLLVModels.jl"]
     for f in src_files:
         text = f.read_text()
         for block in re.findall(r"^export\s+(.+?)(?=\n\s*\n|\nexport|\Z)", text, re.M | re.S):
@@ -309,7 +309,7 @@ def run(gllvmtmb: Path, ref: str, root: Path) -> int:
     case_map = load_required_case_map(root)
 
     print(f"gllvmTMB {version} @ {ref} ({sha[:9] if sha else '?'})")
-    print(f"  R exports: {len(r_names)}   GLLVM.jl exports: {len(j_names)}")
+    print(f"  R exports: {len(r_names)}   GLLVModels.jl exports: {len(j_names)}")
     print()
 
     print(f"FORWARD -- RENAMED AWAY ({len(result['renamed_away'])}) -- "
@@ -329,7 +329,7 @@ def run(gllvmtmb: Path, ref: str, root: Path) -> int:
         print(f"  {name:<24} {DELIBERATELY_NOT_PORTED[name]}")
     print()
 
-    print(f"FORWARD -- gllvmTMB EXPORTS WITH NO GLLVM.jl TWIN ({len(result['missing'])}) -- genuinely owed")
+    print(f"FORWARD -- gllvmTMB EXPORTS WITH NO GLLVModels.jl TWIN ({len(result['missing'])}) -- genuinely owed")
     for name in result["missing"]:
         row = case_map.get(f"namespace/export/{name}")
         if row is None:
@@ -346,7 +346,7 @@ def run(gllvmtmb: Path, ref: str, root: Path) -> int:
         print(f"  {name:<32} {result['ahead_classified'][name]}")
     print()
 
-    print(f"REVERSE -- GLLVM.jl EXPORTS WITH NO gllvmTMB TWIN ({len(result['ahead_missing'])}) -- genuinely ahead, unclassified")
+    print(f"REVERSE -- GLLVModels.jl EXPORTS WITH NO gllvmTMB TWIN ({len(result['ahead_missing'])}) -- genuinely ahead, unclassified")
     for name in result["ahead_missing"]:
         print(f"  {name}")
     print()
@@ -389,8 +389,8 @@ def self_test() -> int:
 
         jroot = Path(tmp) / "j_repo"
         (jroot / "src").mkdir(parents=True)
-        (jroot / "src" / "GLLVM.jl").write_text(
-            "module GLLVM\nexport fit_thing, AliasedThingJl, julia_only_thing\n\nend\n"
+        (jroot / "src" / "GLLVModels.jl").write_text(
+            "module GLLVModels\nexport fit_thing, AliasedThingJl, julia_only_thing\n\nend\n"
         )
 
         # local test-only aliasing (does not touch module-level ALIASES)
@@ -433,7 +433,7 @@ def self_test() -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(
-        description="Export-surface parity: R NAMESPACE vs GLLVM.jl exports at a git ref.",
+        description="Export-surface parity: R NAMESPACE vs GLLVModels.jl exports at a git ref.",
         epilog=(
             f"Default R pin: frozen gllvmTMB 0.7.0 {FROZEN_GLLVMTMB_ORACLE[:8]}. "
             f"Capability CLOSURE uses {CAPABILITY_LEDGER_REF} via parity_capability_closure.sh."
@@ -446,7 +446,7 @@ def main() -> int:
     ap.add_argument("--r-ref", default=None,
                      help="alias for --ref on the R NAMESPACE read (P13; same default as --ref)")
     ap.add_argument("--root", default=Path(__file__).resolve().parents[1], type=Path,
-                     help="path to the GLLVM.jl repo root")
+                     help="path to the GLLVModels.jl repo root")
     ap.add_argument("--self-test", action="store_true",
                      help="run the synthetic self-test instead of reading real repos")
     args = ap.parse_args()

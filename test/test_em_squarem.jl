@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistics
 
 # SQUAREM acceleration for the gradient-free EM (`src/em_squarem.jl`).
 
@@ -6,7 +6,7 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, Statistic
 # plus one shared per-trait phylo random effect z = diag(σ_phy) φ, φ ~ N(0,Σ).
 function _sim_phylo_unique_sq(tree, Λ_B, σ_phy, σ_eps, n; seed = 0)
     Random.seed!(seed)
-    Σ_phy = GLLVM.sigma_phy_dense(tree; σ²_phy = 1.0)
+    Σ_phy = GLLVModels.sigma_phy_dense(tree; σ²_phy = 1.0)
     p, K_B = size(Λ_B)
     η_B = randn(K_B, n)
     φ   = cholesky(Symmetric(Σ_phy)).L * randn(p)
@@ -64,8 +64,8 @@ end
 
     @testset "the accelerated point is a fixed point of the plain EM map" begin
         # (sq is already fitted above with tol = 1e-10)
-        θ  = GLLVM._pack_phylo(sq.Λ_B, sq.σ_eps, sq.σ_phy)
-        θ′ = GLLVM._em_map_phylo(θ, Matrix{Float64}(y1), Σ1, p1, 1)
+        θ  = GLLVModels._pack_phylo(sq.Λ_B, sq.σ_eps, sq.σ_phy)
+        θ′ = GLLVModels._em_map_phylo(θ, Matrix{Float64}(y1), Σ1, p1, 1)
         @test maximum(abs.(θ′ .- θ)) < 1e-5
     end
 

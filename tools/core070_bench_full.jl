@@ -5,7 +5,7 @@
 # fit_poisson_gllvm / fit_nb_gllvm / fit_binomial_gllvm (intrinsic per-trait
 # beta intercepts = R's 0 + trait means).
 # argv: ARGS[1] = the campaign output dir
-using GLLVM
+using GLLVModels
 using DelimitedFiles
 using Statistics
 
@@ -30,13 +30,13 @@ open(joinpath(out, "julia-timings.csv"), "w") do io
                     for j in 1:p
                         X[j, :, j] .= 1
                     end
-                    GLLVM.fit_gaussian_gllvm(Y; K = 2, X = X)
+                    GLLVModels.fit_gaussian_gllvm(Y; K = 2, X = X)
                 elseif fam == "poisson"
-                    GLLVM.fit_poisson_gllvm(Int.(round.(Y)); K = 2)
+                    GLLVModels.fit_poisson_gllvm(Int.(round.(Y)); K = 2)
                 elseif fam == "nbinom2"
-                    GLLVM.fit_nb_gllvm(Int.(round.(Y)); K = 2)
+                    GLLVModels.fit_nb_gllvm(Int.(round.(Y)); K = 2)
                 elseif fam == "binomial"
-                    GLLVM.fit_binomial_gllvm(Int.(round.(Y)); K = 2)
+                    GLLVModels.fit_binomial_gllvm(Int.(round.(Y)); K = 2)
                 else
                     error("unknown family $fam")
                 end

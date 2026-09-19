@@ -106,11 +106,11 @@ stopifnot("gllvmTMB_multi" %in% class(fit))
 #    latent(0+trait|site_species,d=1)) and aborts otherwise with "Wald
 #    repeatability needs vB > 0 and vW > 0; refit with ordinary latent or
 #    standalone indep at each tier." Building the matching Julia comparand
-#    is a deeper gap than a fixture swap: GLLVM.jl's repeatability(fit) in
+#    is a deeper gap than a fixture swap: GLLVModels.jl's repeatability(fit) in
 #    src/twolevel.jl (the mapping namespace-1-batch-contract.json pins for
 #    extract_repeatability, NOT icc_wald_ci) returns only a bare point
 #    estimate -- there is no Wald/profile/bootstrap CI machinery for the
-#    two-level repeatability estimand in GLLVM.jl at all. This case has been
+#    two-level repeatability estimand in GLLVModels.jl at all. This case has been
 #    moved to needs_new_julia_surface in the contract; see its `notes` and
 #    `totoro_failed_attempts`. Nothing below constructs a two-tier fit.
 # ---------------------------------------------------------------------------

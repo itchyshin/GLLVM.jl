@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # Engine-health gates G-a…G-d for `fit_tweedie_gllvm`, specified in
 # docs/dev-log/decisions/2026-08-16-tweedie-fit-gllvm-identity.md §T6.
@@ -48,36 +48,36 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
     @testset "G-b/G-c convergence contract" begin
         # Flat 1e12 failure plateau: the finite-difference gradient is exactly
         # zero there, so Optim reports g_converged. Never a result.
-        conv, ll, why = GLLVM._tweedie_verdict(true, 0.0, 1e12, -60.0, 1e-5)
+        conv, ll, why = GLLVModels._tweedie_verdict(true, 0.0, 1e12, -60.0, 1e-5)
         @test !conv
         @test why === :objective_failed
         @test ll == -Inf                      # not -1e12  (G-b)
 
         # Non-finite objective at the returned point is the same failure.
-        conv, ll, why = GLLVM._tweedie_verdict(true, 0.0, Inf, 0.0, 1e-5)
+        conv, ll, why = GLLVModels._tweedie_verdict(true, 0.0, Inf, 0.0, 1e-5)
         @test !conv && why === :objective_failed && ll == -Inf
 
         # Power run to the closed end of (1,2): ξ = -60 ⇒ p̂ rounds to 1.0.  (G-c)
-        conv, ll, why = GLLVM._tweedie_verdict(true, 1e-9, 336.6, -60.0, 1e-5)
+        conv, ll, why = GLLVModels._tweedie_verdict(true, 1e-9, 336.6, -60.0, 1e-5)
         @test !conv
         @test why === :power_at_boundary
         @test isfinite(ll)
         # …and symmetrically at the p → 2 end.
-        @test GLLVM._tweedie_verdict(true, 1e-9, 336.6, 60.0, 1e-5)[3] === :power_at_boundary
+        @test GLLVModels._tweedie_verdict(true, 1e-9, 336.6, 60.0, 1e-5)[3] === :power_at_boundary
 
         # The stall that used to advertise as success: Optim's relative f-change
         # test fires while the gradient residual is ~1e15.
-        conv, ll, why = GLLVM._tweedie_verdict(true, 8.077e15, 3.8886709e11, 0.0, 1e-5)
+        conv, ll, why = GLLVModels._tweedie_verdict(true, 8.077e15, 3.8886709e11, 0.0, 1e-5)
         @test !conv
         @test why === :gradient_not_small
 
         # A healthy point is still reported as converged.
-        conv, ll, why = GLLVM._tweedie_verdict(true, 5.585e-6, 336.594, -1.16, 1e-5)
+        conv, ll, why = GLLVModels._tweedie_verdict(true, 5.585e-6, 336.594, -1.16, 1e-5)
         @test conv
         @test why === :ok
         @test ll ≈ -336.594
         # …and Optim's own "not converged" is never overridden upward.
-        @test !GLLVM._tweedie_verdict(false, 5.585e-6, 336.594, -1.16, 1e-5)[1]
+        @test !GLLVModels._tweedie_verdict(false, 5.585e-6, 336.594, -1.16, 1e-5)[1]
     end
 
     # -----------------------------------------------------------------------
@@ -107,7 +107,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         # G-c at fit level: strictly interior power, with room to spare.
         for f in fits
             @test 1 < f.p < 2
-            @test abs(log((f.p - 1) / (2 - f.p))) <= GLLVM._TWEEDIE_XI_MAX
+            @test abs(log((f.p - 1) / (2 - f.p))) <= GLLVModels._TWEEDIE_XI_MAX
         end
 
         # The repair must not be a lateral move: the pre-repair best start
@@ -144,7 +144,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 z = randn(rng, K)
                 for t in 1:p_sp
                     μ = exp(β[t] + dot(Λ[t, :], z))
-                    Y[t, s] = GLLVM._tweedie_sample(μ, φ_true, p_true, rng)
+                    Y[t, s] = GLLVModels._tweedie_sample(μ, φ_true, p_true, rng)
                 end
             end
             f = fit_tweedie_gllvm(Y; K = K)

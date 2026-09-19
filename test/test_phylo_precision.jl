@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, SparseArrays
+using GLLVModels, Test, Random, LinearAlgebra, SparseArrays
 
 # Phylo transport S1 — PrecisionPhy consumer.
 #

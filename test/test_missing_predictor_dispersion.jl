@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics, Distributions, ForwardDiff
+using GLLVModels, Test, LinearAlgebra, Random, Statistics, Distributions, ForwardDiff
 
 # Non-Gaussian missing predictor (mi() Track T2): extend the augmented-(z,x)
 # Laplace from the canonical families (Poisson/log, Binomial/logit) to the
@@ -26,9 +26,9 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics, Distributions, ForwardDiff
         b_x, μ_x, σ_x = 0.5, 0.4, 0.7
         y = [rand(NegativeBinomial(r_true, r_true / (r_true + 2.0))) for _ in 1:p]
         N = ones(Int, p)
-        ll_lap = GLLVM.laplace_loglik_site_xs(NegativeBinomial(r_true, 0.5), y, N, Λ, β, LogLink();
+        ll_lap = GLLVModels.laplace_loglik_site_xs(NegativeBinomial(r_true, 0.5), y, N, Λ, β, LogLink();
                                               x_obs = nothing, b_x = b_x, μ_x = μ_x, σ_x2 = σ_x^2)
-        nodes, wts = GLLVM._gauss_hermite(90)
+        nodes, wts = GLLVModels._gauss_hermite(90)
         zz = sqrt(2) .* nodes; wz = wts ./ sqrt(π)
         xx = μ_x .+ sqrt(2) * σ_x .* nodes; wx = wts ./ sqrt(π)
         acc = 0.0
@@ -58,7 +58,7 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics, Distributions, ForwardDiff
             Λ = reshape(θ[(p + 1):(p + p * K)], p, K)
             bx = θ[p + p * K + 1]; mx = θ[p + p * K + 2]; sx2 = exp(θ[p + p * K + 3])
             r = exp(θ[p + p * K + 4])
-            GLLVM.marginal_loglik_laplace_xs(NegativeBinomial(r, 0.5), Y, N, Λ, β, LogLink();
+            GLLVModels.marginal_loglik_laplace_xs(NegativeBinomial(r, 0.5), Y, N, Λ, β, LogLink();
                                              x = xm, b_x = bx, μ_x = mx, σ_x2 = sx2)
         end
         θ = vcat(β0, vec(Λ0), b_x, μ_x, log(σ_x^2), log(r_true))
@@ -109,9 +109,9 @@ end
         μ0 = exp.(β .+ b_x * μ_x)
         y = [rand(Gamma(α_true, μ0[t] / α_true)) for t in 1:p]
         N = ones(Int, p)
-        ll_lap = GLLVM.laplace_loglik_site_xs(Gamma(α_true, 1.0), y, N, Λ, β, LogLink();
+        ll_lap = GLLVModels.laplace_loglik_site_xs(Gamma(α_true, 1.0), y, N, Λ, β, LogLink();
                                               x_obs = nothing, b_x = b_x, μ_x = μ_x, σ_x2 = σ_x^2)
-        nodes, wts = GLLVM._gauss_hermite(90)
+        nodes, wts = GLLVModels._gauss_hermite(90)
         zz = sqrt(2) .* nodes; wz = wts ./ sqrt(π)
         xx = μ_x .+ sqrt(2) * σ_x .* nodes; wx = wts ./ sqrt(π)
         acc = 0.0
@@ -140,7 +140,7 @@ end
             Λ = reshape(θ[(p + 1):(p + p * K)], p, K)
             bx = θ[p + p * K + 1]; mx = θ[p + p * K + 2]; sx2 = exp(θ[p + p * K + 3])
             α = exp(θ[p + p * K + 4])
-            GLLVM.marginal_loglik_laplace_xs(Gamma(α, 1.0), Y, N, Λ, β, LogLink();
+            GLLVModels.marginal_loglik_laplace_xs(Gamma(α, 1.0), Y, N, Λ, β, LogLink();
                                              x = xm, b_x = bx, μ_x = mx, σ_x2 = sx2)
         end
         θ = vcat(β0, vec(Λ0), b_x, μ_x, log(σ_x^2), log(α_true))
@@ -191,9 +191,9 @@ end
         μ0 = 1 ./ (1 .+ exp.(-(β .+ b_x * μ_x)))
         y = [rand(Beta(μ0[t] * φ_true, (1 - μ0[t]) * φ_true)) for t in 1:p]
         N = ones(Int, p)
-        ll_lap = GLLVM.laplace_loglik_site_xs(Beta(φ_true, 1.0), y, N, Λ, β, LogitLink();
+        ll_lap = GLLVModels.laplace_loglik_site_xs(Beta(φ_true, 1.0), y, N, Λ, β, LogitLink();
                                               x_obs = nothing, b_x = b_x, μ_x = μ_x, σ_x2 = σ_x^2)
-        nodes, wts = GLLVM._gauss_hermite(90)
+        nodes, wts = GLLVModels._gauss_hermite(90)
         zz = sqrt(2) .* nodes; wz = wts ./ sqrt(π)
         xx = μ_x .+ sqrt(2) * σ_x .* nodes; wx = wts ./ sqrt(π)
         acc = 0.0
@@ -222,7 +222,7 @@ end
             Λ = reshape(θ[(p + 1):(p + p * K)], p, K)
             bx = θ[p + p * K + 1]; mx = θ[p + p * K + 2]; sx2 = exp(θ[p + p * K + 3])
             φ = exp(θ[p + p * K + 4])
-            GLLVM.marginal_loglik_laplace_xs(Beta(φ, 1.0), Y, N, Λ, β, LogitLink();
+            GLLVModels.marginal_loglik_laplace_xs(Beta(φ, 1.0), Y, N, Λ, β, LogitLink();
                                              x = xm, b_x = bx, μ_x = mx, σ_x2 = sx2)
         end
         θ = vcat(β0, vec(Λ0), b_x, μ_x, log(σ_x^2), log(φ_true))

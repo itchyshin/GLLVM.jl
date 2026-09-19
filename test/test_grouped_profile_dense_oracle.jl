@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Optim, Random
+using GLLVModels, Test, LinearAlgebra, Optim, Random
 
 # Independent dense oracle for the first scalar grouped-variance profile.
 # It never calls a production likelihood or nuisance refitter: at fixed v it
@@ -52,11 +52,11 @@ end
 
 @testset "grouped variance profile matches independent dense oracle" begin
     fixture = _gpdo_fixture()
-    fit = GLLVM.fit_grouped_gaussian(fixture.Y; terms=fixture.terms,
+    fit = GLLVModels.fit_grouped_gaussian(fixture.Y; terms=fixture.terms,
         unit=fixture.group, iterations=100, g_tol=1e-5)
     @test fit.converged && fit.gradient_norm <= 1e-5
 
-    profile = GLLVM._grouped_gaussian_variance_profile(fit, fixture.Y;
+    profile = GLLVModels._grouped_gaussian_variance_profile(fit, fixture.Y;
         selected=(1, 1), iterations=100, gradient_tolerance=1e-5,
         max_expand=8, maxiter=24)
     @test profile.status === :available
@@ -67,7 +67,7 @@ end
     # fixed-variance reduced production objective at its separately optimised
     # mean and residual variance. This does not fit or compare a model.
     zero_dense = _gpdo_dense_fixed_variance(fixture.y, fixture.Z, 0.0)
-    zero_adapter = GLLVM._grouped_indep_variance_profile_objective(
+    zero_adapter = GLLVModels._grouped_indep_variance_profile_objective(
         fixture.Y, fit.mean_design, fit.terms, fit.incidences;
         selected=(1, 1), fixed_variance=0.0)
     zero_theta = [zero_dense.mean, log(sqrt(zero_dense.residual_variance))]

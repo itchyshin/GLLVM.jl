@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 @testset "Variational (VA) marginal — Negative Binomial" begin
     @testset "Λ=0 reduces to independent NB loglik (exact)" begin
@@ -7,7 +7,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         r = 3.5
         β = 0.3 .* randn(p) .+ 1.0
         Y = [rand(NegativeBinomial(r, r / (r + exp(β[t])))) for t in 1:p, s in 1:n]
-        va = GLLVM.nb_marginal_loglik_va(Y, zeros(p, K), β, r)
+        va = GLLVModels.nb_marginal_loglik_va(Y, zeros(p, K), β, r)
         ref = 0.0
         for t in 1:p, s in 1:n
             ref += logpdf(NegativeBinomial(r, r / (r + exp(β[t]))), Y[t, s])
@@ -27,8 +27,8 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 Y[t, s] = rand(Poisson(exp(β[t] + Λ[t, 1] * z)))
             end
         end
-        va_nb  = GLLVM.nb_marginal_loglik_va(Y, Λ, β, 1e6)
-        va_poi = GLLVM.poisson_marginal_loglik_va(Y, Λ, β)
+        va_nb  = GLLVModels.nb_marginal_loglik_va(Y, Λ, β, 1e6)
+        va_poi = GLLVModels.poisson_marginal_loglik_va(Y, Λ, β)
         @test isapprox(va_nb, va_poi; atol = 1e-2)
     end
 
@@ -41,7 +41,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         ztrue = randn()
         y = [rand(NegativeBinomial(r, r / (r + exp(β[t] + Λ[t, 1] * ztrue)))) for t in 1:p]
         Y = reshape(y, p, 1)
-        va = GLLVM.nb_marginal_loglik_va(Y, Λ, β, r)
+        va = GLLVModels.nb_marginal_loglik_va(Y, Λ, β, r)
 
         # exact single-site marginal by dense quadrature
         zs = range(-10, 10; length = 8001); dz = step(zs)
@@ -68,13 +68,13 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         Λ = reshape(0.4 .* randn(p * K), p, K)
         Λ2 = Λ .^ 2
         y = [rand(NegativeBinomial(r, r / (r + exp(β[t])))) for t in 1:p]  # integer y
-        x, w = GLLVM._gauss_hermite(20)
-        f(ψ) = -GLLVM._va_site_negbin_elbo(ψ, y, Λ, Λ2, β, r, x, w)
+        x, w = GLLVModels._gauss_hermite(20)
+        f(ψ) = -GLLVModels._va_site_negbin_elbo(ψ, y, Λ, Λ2, β, r, x, w)
         h = 1e-6
         for _ in 1:3
             ψ = 0.5 .* randn(2K)
             G = zeros(2K)
-            GLLVM._va_site_negbin_grad!(G, ψ, y, Λ, Λ2, β, r, x, w)
+            GLLVModels._va_site_negbin_grad!(G, ψ, y, Λ, Λ2, β, r, x, w)
             fd = zeros(2K)
             for i in 1:2K
                 ψp = copy(ψ); ψp[i] += h
@@ -99,11 +99,11 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 Y[t, s] = rand(NegativeBinomial(r, r / (r + μ)))
             end
         end
-        rr = GLLVM.rr_theta_len(p, K)
+        rr = GLLVModels.rr_theta_len(p, K)
 
         # θ near a warm start: empirical intercepts + SVD loadings + log r₀.
-        link = GLLVM.LogLink()
-        Zemp = [GLLVM.linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
+        link = GLLVModels.LogLink()
+        Zemp = [GLLVModels.linkfun(link, max(Y[t, i] + 0.5, 1e-4)) for t in 1:p, i in 1:n]
         β0 = vec(sum(Zemp; dims = 2)) ./ n
         Zc = Zemp .- β0
         Fsvd = svd(Zc)
@@ -112,19 +112,19 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
         for j in 1:kk
             Λ0[:, j] = Fsvd.U[:, j] .* (Fsvd.S[j] / sqrt(n))
         end
-        θ = vcat(β0, GLLVM.pack_lambda(Λ0), log(5.0))
+        θ = vcat(β0, GLLVModels.pack_lambda(Λ0), log(5.0))
 
-        x, w = GLLVM._gauss_hermite(20)
+        x, w = GLLVModels._gauss_hermite(20)
         β_ = θ[1:p]
-        Λ_ = GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+        Λ_ = GLLVModels.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
         Λ2_ = Λ_ .^ 2
         r_ = exp(θ[p + rr + 1])
-        _, M, V = GLLVM._va_negbin_solve_all(Y, Λ_, Λ2_, β_, r_, x, w)
+        _, M, V = GLLVModels._va_negbin_solve_all(Y, Λ_, Λ2_, β_, r_, x, w)
         G = zeros(length(θ))
-        GLLVM._va_negbin_outer_grad!(G, Y, Λ_, Λ2_, β_, r_, M, V, x, w)
+        GLLVModels._va_negbin_outer_grad!(G, Y, Λ_, Λ2_, β_, r_, M, V, x, w)
 
-        f(θv) = -GLLVM.nb_marginal_loglik_va(Y,
-                    GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K),
+        f(θv) = -GLLVModels.nb_marginal_loglik_va(Y,
+                    GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K),
                     θv[1:p], exp(θv[p + rr + 1]))
         h = 1e-5
         fd = zeros(length(θ))
@@ -137,7 +137,7 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
     end
 
     @testset "fit_nb_gllvm_va — machinery" begin
-        # Small NB2 GLLVM; assert the driver returns a well-formed fit and the
+        # Small NB2 GLLVModels; assert the driver returns a well-formed fit and the
         # maximised ELBO does not sit below the no-LV bound at the fitted (β, r).
         Random.seed!(303)
         p, K, n = 5, 2, 100
@@ -152,12 +152,12 @@ using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
                 Y[t, s] = rand(NegativeBinomial(r, r / (r + μ)))
             end
         end
-        fit = GLLVM.fit_nb_gllvm_va(Y; K = K)
-        @test fit isa GLLVM.NBFit
+        fit = GLLVModels.fit_nb_gllvm_va(Y; K = K)
+        @test fit isa GLLVModels.NBFit
         @test isfinite(fit.loglik)
         @test fit.r > 0
         @test size(fit.Λ) == (p, K)
         @test fit.loglik ≥
-              GLLVM.nb_marginal_loglik_va(Y, zeros(p, K), fit.β, fit.r) - 1e-3
+              GLLVModels.nb_marginal_loglik_va(Y, zeros(p, K), fit.β, fit.r) - 1e-3
     end
 end

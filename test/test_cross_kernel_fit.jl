@@ -1,7 +1,7 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics
+using GLLVModels, Test, LinearAlgebra, Random, Statistics
 
 # Cross-lineage coevolution — complete-data stacked two-lineage Gaussian fit with
-# Σ_phy = K* (PGLLVM "two lineages", C0/C2 machinery in GLLVM.jl's native
+# Σ_phy = K* (PGLLVM "two lineages", C0/C2 machinery in GLLVModels.jl's native
 # orientation). Validates that:
 #   (a) the engine fits with the cross kernel K* as the species covariance,
 #   (b) extract_Gamma slices the fitted host × partner block of Λ_phy Λ_phyᵀ,
@@ -9,7 +9,7 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics
 #       logLik margin, because the data carry cross-lineage covariance the null
 #       cannot represent (its host×partner block is structurally zero).
 #
-# IDENTIFIABILITY LIMIT (documented, not a defect). GLLVM.jl's phylo marginal is
+# IDENTIFIABILITY LIMIT (documented, not a defect). GLLVModels.jl's phylo marginal is
 # the Hadamard single-realisation form B = (Λ_phy Λ_phyᵀ) .* Σ_phy, shared across
 # sites. A single dataset therefore identifies Λ_phy only weakly, so this test
 # does NOT assert tight Γ recovery (|cor(Γ̂, Γ_true)| > 0.9 — which gllvmTMB's

@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 using Random
 
@@ -30,12 +30,12 @@ Random.seed!(220)
     @test source.projection[3, 2] == 1.0
 
     theta = [0.0, 0.0, 0.35, -0.2, log(0.4), log(0.55), log(0.5)]
-    B = only(GLLVM._source_trait_covariances([source], p, theta[3:6]))
-    L = GLLVM.unpack_lambda(theta[3:4], p, 1)
+    B = only(GLLVModels._source_trait_covariances([source], p, theta[3:6]))
+    L = GLLVModels.unpack_lambda(theta[3:4], p, 1)
     @test B ≈ L * L' + Diagonal(exp.(2 .* theta[5:6])) atol = 1e-12
     @test B[1, 2] != 0.0
 
-    payload = GLLVM.bridge_fit(
+    payload = GLLVModels.bridge_fit(
         y = Y,
         family = "gaussian",
         d = 1,

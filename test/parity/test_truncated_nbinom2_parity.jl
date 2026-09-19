@@ -1,4 +1,4 @@
-# test_truncated_nbinom2_parity.jl — zero-truncated NB2 GLLVM logLik vs gllvmTMB
+# test_truncated_nbinom2_parity.jl — zero-truncated NB2 GLLVModels logLik vs gllvmTMB
 # (twin fid 11)
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
@@ -27,7 +27,7 @@
 # Twin Δ rule: no number is quoted unless this cell runs live under
 # GLLVM_PARITY_TESTS=1 against a real gllvmTMB. Never invent, never carry over.
 
-using GLLVM, RCall, Test, Random
+using GLLVModels, RCall, Test, Random
 import Distributions
 include(joinpath(@__DIR__, "truncnb2_policy.jl"))
 
@@ -36,7 +36,7 @@ include(joinpath(@__DIR__, "truncnb2_policy.jl"))
 # Seed pre-registered BEFORE any run (42–49, 420–431, 52–57 already taken).
 const _TNB2_SEED = 58
 
-@testset "truncated_nbinom2 GLLVM parity: GLLVM.jl vs gllvmTMB (twin fid 11)" begin
+@testset "truncated_nbinom2 GLLVModels parity: GLLVModels.jl vs gllvmTMB (twin fid 11)" begin
 
     Random.seed!(_TNB2_SEED)
     p, K, n = 5, 1, 120

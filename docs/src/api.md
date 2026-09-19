@@ -1,6 +1,6 @@
 # API Reference
 
-This page documents the public API of `GLLVM.jl`, categorized by functional domain.
+This page documents the public API of `GLLVModels.jl`, categorized by functional domain.
 
 ---
 
@@ -142,12 +142,12 @@ fit_delta_gamma_gllvm_va
 ```@docs
 ppca_init
 em_fa
-GLLVM.pack_lambda
-GLLVM.unpack_lambda
-GLLVM.rr_theta_len
-GLLVM.rotate_to_lower_triangular
-GLLVM.low_rank_chol
-GLLVM.LowRankPlusDiagChol
+GLLVModels.pack_lambda
+GLLVModels.unpack_lambda
+GLLVModels.rr_theta_len
+GLLVModels.rotate_to_lower_triangular
+GLLVModels.low_rank_chol
+GLLVModels.LowRankPlusDiagChol
 ```
 
 ---
@@ -310,33 +310,33 @@ qq_max_dev
 ### Likelihood & Gradient Kernels
 
 ```@docs
-GLLVM.gaussian_marginal_loglik
-GLLVM.gaussian_profile_nll
-GLLVM.gaussian_nll_packed
-GLLVM.gaussian_lv_nll_packed
-GLLVM.binomial_marginal_loglik_laplace
-GLLVM.binomial_lv_nll_packed
+GLLVModels.gaussian_marginal_loglik
+GLLVModels.gaussian_profile_nll
+GLLVModels.gaussian_nll_packed
+GLLVModels.gaussian_lv_nll_packed
+GLLVModels.binomial_marginal_loglik_laplace
+GLLVModels.binomial_lv_nll_packed
 binomial_laplace_grad
-GLLVM.poisson_marginal_loglik_laplace
-GLLVM.poisson_lv_nll_packed
+GLLVModels.poisson_marginal_loglik_laplace
+GLLVModels.poisson_lv_nll_packed
 poisson_laplace_grad
-GLLVM.nb_marginal_loglik_laplace
-GLLVM.nb_lv_nll_packed
+GLLVModels.nb_marginal_loglik_laplace
+GLLVModels.nb_lv_nll_packed
 nb_laplace_grad
-GLLVM.gamma_marginal_loglik_laplace
-GLLVM.gamma_lv_nll_packed
+GLLVModels.gamma_marginal_loglik_laplace
+GLLVModels.gamma_lv_nll_packed
 gamma_laplace_grad
-GLLVM.beta_marginal_loglik_laplace
-GLLVM.beta_lv_nll_packed
+GLLVModels.beta_marginal_loglik_laplace
+GLLVModels.beta_lv_nll_packed
 beta_laplace_grad
-GLLVM.ordinal_marginal_loglik_laplace
-GLLVM.ordinal_lv_nll_packed
-GLLVM.marginal_loglik_laplace
-GLLVM.laplace_loglik_site
-GLLVM.marginal_loglik_laplace_mi
-GLLVM.marginal_loglik_laplace_xs
-GLLVM.laplace_loglik_site_mi
-GLLVM.laplace_loglik_site_xs
+GLLVModels.ordinal_marginal_loglik_laplace
+GLLVModels.ordinal_lv_nll_packed
+GLLVModels.marginal_loglik_laplace
+GLLVModels.laplace_loglik_site
+GLLVModels.marginal_loglik_laplace_mi
+GLLVModels.marginal_loglik_laplace_xs
+GLLVModels.laplace_loglik_site_mi
+GLLVModels.laplace_loglik_site_xs
 gaussian_reml_loglik
 gaussian_grouped_intercept_loglik
 twolevel_marginal_loglik
@@ -352,8 +352,8 @@ gaussian_marginal_loglik_contrasts
 gaussian_marginal_loglik_edge_phy
 mixed_marginal_loglik_laplace
 truncated_poisson_marginal_loglik_laplace
-GLLVM.censored_poisson_marginal_loglik_laplace
-GLLVM.censored_bounds_to_YN
+GLLVModels.censored_poisson_marginal_loglik_laplace
+GLLVModels.censored_bounds_to_YN
 truncated_nbinom2_marginal_loglik_laplace
 truncated_nbinom2_pertrait_marginal_loglik_laplace
 gp1_marginal_loglik_laplace
@@ -382,21 +382,21 @@ constrained_marginal_loglik_laplace
 rrr_marginal_loglik
 quadratic_marginal_loglik_laplace
 ordered_beta_marginal_loglik_laplace
-GLLVM.ordered_beta_logp
+GLLVModels.ordered_beta_logp
 betabinomial_marginal_loglik_laplace
 betabinomial_grouped_marginal_loglik_laplace
-GLLVM.betabinomial_logp
-GLLVM.twopart_marginal_loglik_laplace
-GLLVM.multinomial_loglik
-GLLVM.multinomial_eta
-GLLVM.unpack_multinomial
-GLLVM.multinomial_pack_len
-GLLVM.proportions
-GLLVM.aghq_grid
-GLLVM.aghq_grid_ok
-GLLVM.aghq_stage1a_marginal_loglik
-GLLVM.aghq_stage1a_loglik_site
-GLLVM.AGHQGrid
+GLLVModels.betabinomial_logp
+GLLVModels.twopart_marginal_loglik_laplace
+GLLVModels.multinomial_loglik
+GLLVModels.multinomial_eta
+GLLVModels.unpack_multinomial
+GLLVModels.multinomial_pack_len
+GLLVModels.proportions
+GLLVModels.aghq_grid
+GLLVModels.aghq_grid_ok
+GLLVModels.aghq_stage1a_marginal_loglik
+GLLVModels.aghq_stage1a_loglik_site
+GLLVModels.AGHQGrid
 beta_marginal_loglik_va
 delta_gamma_marginal_loglik_va
 poisson_marginal_loglik_va
@@ -406,14 +406,14 @@ gamma_marginal_loglik_va
 exponential_marginal_loglik_va
 spde_gaussian_marginal_loglik
 spde_latent_marginal_loglik
-GLLVM.takahashi_selinv
-GLLVM.takahashi_diag
-GLLVM.build_sparse_phy_state
-GLLVM.leaf_block_inv
+GLLVModels.takahashi_selinv
+GLLVModels.takahashi_diag
+GLLVModels.build_sparse_phy_state
+GLLVModels.leaf_block_inv
 make_phy
-GLLVM.profile_recover
-GLLVM.profile_ci_derived
-GLLVM.bootstrap_ci_derived
+GLLVModels.profile_recover
+GLLVModels.profile_ci_derived
+GLLVModels.bootstrap_ci_derived
 ```
 
 ---
@@ -428,9 +428,9 @@ ProbitLink
 CLogLogLink
 IdentityLink
 LogLink
-GLLVM.linkinv
-GLLVM.linkfun
-GLLVM.mu_eta
+GLLVModels.linkinv
+GLLVModels.linkfun
+GLLVModels.mu_eta
 ```
 
 ### Fit Result Types
@@ -528,7 +528,7 @@ OrderedBeta
 Ordinal
 ZIPoisson
 ZINegBin
-GLLVM.ZINB
+GLLVModels.ZINB
 ZIB
 BetaBinom
 COMPoisson
@@ -576,7 +576,7 @@ route accepts logit, probit and complementary-log-log links, with the same
 node controls and frozen-node convergence rule as the Poisson route.
 
 ```julia
-using GLLVM
+using GLLVModels
 Y = [0 1 2 3 1 2 0 1; 1 2 3 1 0 2 1 3]
 N = fill(3, size(Y))
 fit = fit_binomial_gllvm(Y; K=1, N=N, aghq=3,

@@ -1,4 +1,4 @@
-using GLLVM
+using GLLVModels
 using Test
 using Random
 using LinearAlgebra
@@ -165,7 +165,7 @@ using Distributions
         φ = rand(MvNormal(zeros(p), Symmetric(Matrix(Σ_spatial))))  # spatial random effect draw
         Y = Λ_true * randn(K, n) .+ 0.5 .* φ .+ σ_eps_true .* randn(p, n)
 
-        # 1. Fit Gaussian GLLVM with structured spatial covariance
+        # 1. Fit Gaussian GLLVModels with structured spatial covariance
         fit_spatial = fit_gaussian_gllvm(Y; K = K, has_phy_unique = true, Σ_phy = Σ_spatial)
         @test fit_spatial.converged
         @test isfinite(fit_spatial.logLik)

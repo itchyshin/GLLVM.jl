@@ -1,9 +1,9 @@
-using Test, GLLVM, LinearAlgebra, SparseArrays
+using Test, GLLVModels, LinearAlgebra, SparseArrays
 
 @testset "grouped Gaussian random-effect kernel" begin
-    @test isdefined(GLLVM, :_grouped_gaussian_nll)
-    if isdefined(GLLVM, :_grouped_gaussian_nll)
-        f = GLLVM._grouped_gaussian_nll
+    @test isdefined(GLLVModels, :_grouped_gaussian_nll)
+    if isdefined(GLLVModels, :_grouped_gaussian_nll)
+        f = GLLVModels._grouped_gaussian_nll
         Y = [0.2 -0.4 0.8 0.1;
              1.1  0.3 -0.2 0.5]
         beta = [0.1, -0.2]
@@ -49,7 +49,7 @@ using Test, GLLVM, LinearAlgebra, SparseArrays
         extreme_L = [100.0;;]
         extreme_sigma = 1e-8
         extreme_Y = reshape(fill(100.0, 4), 1, :)
-        extreme_value = GLLVM._grouped_gaussian_factor_nll(extreme_Y, [0.0],
+        extreme_value = GLLVModels._grouped_gaussian_factor_nll(extreme_Y, [0.0],
             [extreme_Z], [extreme_L], extreme_sigma)
         extreme_expected = (4 * log(2pi) + 3 * log(extreme_sigma^2) +
             log(extreme_sigma^2 + 4 * extreme_L[1]^2) +
@@ -60,20 +60,20 @@ using Test, GLLVM, LinearAlgebra, SparseArrays
 end
 
 @testset "grouped term unpack keeps unique variances concrete" begin
-    terms = GLLVM.GroupingTerm[
-        GLLVM.GroupingTerm(:unit; mode = :latent, rank = 1, unique = true),
-        GLLVM.GroupingTerm(:cluster; mode = :dep),
+    terms = GLLVModels.GroupingTerm[
+        GLLVModels.GroupingTerm(:unit; mode = :latent, rank = 1, unique = true),
+        GLLVModels.GroupingTerm(:cluster; mode = :dep),
     ]
     theta = zeros(7)
-    _, uniques, _, used = GLLVM._grouped_term_unpack(theta, 2, terms)
+    _, uniques, _, used = GLLVModels._grouped_term_unpack(theta, 2, terms)
     @test used == length(theta)
     @test eltype(uniques) === Union{Nothing,Vector{Float64}}
 end
 
 @testset "low-rank grouped Gaussian factor kernel" begin
-    @test isdefined(GLLVM, :_grouped_gaussian_factor_nll)
-    if isdefined(GLLVM, :_grouped_gaussian_factor_nll)
-        f = GLLVM._grouped_gaussian_factor_nll
+    @test isdefined(GLLVModels, :_grouped_gaussian_factor_nll)
+    if isdefined(GLLVModels, :_grouped_gaussian_factor_nll)
+        f = GLLVModels._grouped_gaussian_factor_nll
         Y = [0.2 -0.4 0.8 0.1;
              1.1  0.3 -0.2 0.5;
             -0.1  0.6 0.4 -0.3]

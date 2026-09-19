@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using Random
 using LinearAlgebra
 using Distributions
@@ -16,15 +16,15 @@ using Statistics
         Random.seed!(123)
         p, n, K, q_lv, K_phy = 4, 6, 1, 1, 1
         X_lv   = randn(n, q_lv)
-        θ_rr_B = randn(GLLVM.rr_theta_len(p, K));     Λ_B   = GLLVM.unpack_lambda(θ_rr_B, p, K)
-        θ_rr_p = randn(GLLVM.rr_theta_len(p, K_phy)); Λ_phy = GLLVM.unpack_lambda(θ_rr_p, p, K_phy)
+        θ_rr_B = randn(GLLVModels.rr_theta_len(p, K));     Λ_B   = GLLVModels.unpack_lambda(θ_rr_B, p, K)
+        θ_rr_p = randn(GLLVModels.rr_theta_len(p, K_phy)); Λ_phy = GLLVModels.unpack_lambda(θ_rr_p, p, K_phy)
         alpha_lv = randn(q_lv, K)
         log_σ    = -0.3
         M = randn(p, p + 2); S = M * M'; Σ_phy = S ./ sqrt.(diag(S) * diag(S)')
         y = randn(p, n)
 
         params = vcat(vec(alpha_lv), log_σ, θ_rr_B, θ_rr_p)
-        nll = GLLVM.gaussian_lv_nll_packed(params, y, p, K;
+        nll = GLLVModels.gaussian_lv_nll_packed(params, y, p, K;
                 X_lv = X_lv, q_lv = q_lv, K_phy = K_phy, has_phy_unique = false, Σ_phy = Σ_phy)
 
         σ = exp(log_σ)
@@ -37,7 +37,7 @@ using Statistics
 
         # α = 0 reduces to the plain phylo marginal (no mean shift).
         params0 = vcat(zeros(q_lv * K), log_σ, θ_rr_B, θ_rr_p)
-        nll0 = GLLVM.gaussian_lv_nll_packed(params0, y, p, K;
+        nll0 = GLLVModels.gaussian_lv_nll_packed(params0, y, p, K;
                 X_lv = X_lv, q_lv = q_lv, K_phy = K_phy, has_phy_unique = false, Σ_phy = Σ_phy)
         @test abs(-nll0 - logpdf(MvNormal(zeros(p * n), Symmetric(Matrix(V))), vec(y))) < 1e-8
     end

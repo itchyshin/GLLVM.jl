@@ -1,4 +1,4 @@
-using Test, JSON3, SHA, GLLVM
+using Test, JSON3, SHA, GLLVModels
 
 @testset "Actual R adapter multivariate bridge consumer" begin
     root=joinpath(@__DIR__,"..","docs","dev-log","core070")

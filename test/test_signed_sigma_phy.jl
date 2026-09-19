@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Distributions
 
 # Verify the signed (identity-link) σ_phy parameterisation in the dense
 # Gaussian phylo_unique fit. Two gates:
@@ -13,14 +13,14 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
 # Note: this file deliberately constructs Σ_phy by hand instead of calling
 # `augmented_phy`/`sigma_phy_dense`. Reason: `test_sparse_phy.jl` does
 # `include("../src/sparse_phy.jl")` which under Julia 1.10 conflicts with
-# `GLLVM.augmented_phy` once that symbol has been resolved in Main from
+# `GLLVModels.augmented_phy` once that symbol has been resolved in Main from
 # another test file. Hand-rolling Σ_phy keeps this test self-contained
 # and unaffected by include ordering.
 
 # Hand-computed Brownian-motion phylogenetic covariance for the 6-leaf
 # tree `(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);`
 # (Σ[i,j] = shared root-to-MRCA branch length). Matches the matrix
-# returned by `GLLVM.sigma_phy_dense` (verified offline).
+# returned by `GLLVModels.sigma_phy_dense` (verified offline).
 const _SIGMA_PHY_6 = [
     0.7  0.4  0.2  0.2  0.0  0.0;
     0.4  0.7  0.2  0.2  0.0  0.0;
@@ -86,10 +86,10 @@ end
         # ±σ_phy must give the same logLik.
         y17 = _sim_phy_unique_signed(Σ_phy, Λ_B, fill(0.9, p), 0.5, 400; seed = 17)
         fit = fit_gaussian_gllvm(y17; K = 1, has_phy_unique = true, Σ_phy = Σ_phy)
-        ll_anchored = GLLVM.gaussian_marginal_loglik(
+        ll_anchored = GLLVModels.gaussian_marginal_loglik(
             y17, fit.pars.Λ, fit.pars.σ_eps;
             σ_phy = fit.pars.σ_phy, Σ_phy = Σ_phy)
-        ll_flipped = GLLVM.gaussian_marginal_loglik(
+        ll_flipped = GLLVModels.gaussian_marginal_loglik(
             y17, fit.pars.Λ, fit.pars.σ_eps;
             σ_phy = -fit.pars.σ_phy, Σ_phy = Σ_phy)
         @test ll_anchored ≈ ll_flipped rtol = 1e-12
@@ -144,14 +144,14 @@ end
         spec = (q = 0, p = model.p, K_B = model.K, K_W = model.K_W,
                 has_diag = model.has_diag, K_phy = model.K_phy,
                 has_phy_unique = model.has_phy_unique)
-        nll_at_hat = GLLVM.gaussian_nll_packed(fit.pars.θ_packed, y17;
+        nll_at_hat = GLLVModels.gaussian_nll_packed(fit.pars.θ_packed, y17;
                                                spec = spec, Σ_phy = Σ_phy)
         @test nll_at_hat ≈ -fit.logLik rtol = 1e-8
 
         # Also verify the packed σ_phy entries equal fit.pars.σ_phy
         # directly (not their log).
         # Layout: [log_σ_eps; θ_rr_B; σ_phy] (no β, no diag, no K_W, no K_phy).
-        rr_B = GLLVM.rr_theta_len(model.p, model.K)
+        rr_B = GLLVModels.rr_theta_len(model.p, model.K)
         cursor = 1 + rr_B  # log_σ_eps + θ_rr_B
         σ_phy_from_packed = fit.pars.θ_packed[(cursor + 1):(cursor + model.p)]
         @test σ_phy_from_packed ≈ fit.pars.σ_phy rtol = 1e-12

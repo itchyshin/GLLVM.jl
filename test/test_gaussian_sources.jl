@@ -1,6 +1,6 @@
-using Test, GLLVM, LinearAlgebra, Statistics
+using Test, GLLVModels, LinearAlgebra, Statistics
 @testset "Gaussian source model layer" begin
-    available=all(s->isdefined(GLLVM,s),(:SourceCovariance,:fit_gaussian_sources,:GaussianSourcesFit))
+    available=all(s->isdefined(GLLVModels,s),(:SourceCovariance,:fit_gaussian_sources,:GaussianSourcesFit))
     @test available
     if available
         C=[1.0 .2;.2 1.4]; D=[1.0 .1 .2;.1 1.2 .0;.2 .0 .9]
@@ -8,7 +8,7 @@ using Test, GLLVM, LinearAlgebra, Statistics
         s2=SourceCovariance(D;groups=[3,1,2],name=:b,mode=:indep)
         Y=[.2 -.4 .8;1.1 .3 -.2]; beta=[.1,-.2]
         theta=[beta;.4;-.3;log(.2);log(.6);log(.7)]
-        objective(t)=GLLVM._gaussian_sources_nll(Y,[s1,s2],t)
+        objective(t)=GLLVModels._gaussian_sources_nll(Y,[s1,s2],t)
         L=[.4;-.3;;]; B1=L*L';B2=Diagonal([.2^2,.6^2])
         V=.7^2*Matrix(I,6,6)
         # Independent observation-loop reference, not production Kronecker assembly.
@@ -17,21 +17,21 @@ using Test, GLLVM, LinearAlgebra, Statistics
         end
         r=vec(Y.-beta); expected=(6log(2pi)+logdet(V)+dot(r,V\r))/2
         @test objective(theta)≈expected atol=1e-12
-        grad=GLLVM.ForwardDiff.gradient(objective,theta)
+        grad=GLLVModels.ForwardDiff.gradient(objective,theta)
         fd=[(objective(theta+1e-5*I(7)[:,j])-objective(theta-1e-5*I(7)[:,j]))/2e-5 for j in 1:7]
         @test maximum(abs.(grad-fd))<1e-6
-        @test GLLVM._gaussian_sources_nll(Y,[s2,s1],theta[[1,2,5,6,3,4,7]])≈expected atol=1e-12
+        @test GLLVModels._gaussian_sources_nll(Y,[s2,s1],theta[[1,2,5,6,3,4,7]])≈expected atol=1e-12
         order=[3,1,2]
         perm=[SourceCovariance(C;groups=[2,1,1],name=:a),SourceCovariance(D;groups=[2,3,1],name=:b,mode=:indep)]
-        @test GLLVM._gaussian_sources_nll(Y[:,order],perm,theta)≈expected atol=1e-12
+        @test GLLVModels._gaussian_sources_nll(Y[:,order],perm,theta)≈expected atol=1e-12
         common=SourceCovariance(C;groups=[1,1,2],mode=:indep,common=true)
-        B=only(GLLVM._source_trait_covariances([common],2,[log(.3)]))
+        B=only(GLLVModels._source_trait_covariances([common],2,[log(.3)]))
         @test B≈.09*Matrix(I,2,2) atol=1e-14
         @test B[1,2]==0 # equal independent fields, not a common field
         dep=SourceCovariance(C;groups=[1,1,2],mode=:dep)
-        @test only(GLLVM._source_trait_covariances([dep],2,[.4,.6,.1]))≈[.16 .04;.04 .37] atol=1e-14
+        @test only(GLLVModels._source_trait_covariances([dep],2,[.4,.6,.1]))≈[.16 .04;.04 .37] atol=1e-14
         unique=SourceCovariance(C;groups=[1,1,2],rank=1,unique=true,common=true)
-        @test only(GLLVM._source_trait_covariances([unique],2,[.4,-.3,log(.2)]))≈B1+.04I atol=1e-14
+        @test only(GLLVModels._source_trait_covariances([unique],2,[.4,-.3,log(.2)]))≈B1+.04I atol=1e-14
         # Analytic ML control: Gaussian independent noise, no latent-source fitting.
         fit=fit_gaussian_sources(Y;sources=SourceCovariance[],g_tol=1e-7)
         means=vec(mean(Y,dims=2));sigma=sqrt(sum(abs2,Y.-means)/length(Y))

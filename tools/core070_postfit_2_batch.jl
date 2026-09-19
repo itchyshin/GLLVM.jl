@@ -1,9 +1,9 @@
 # Runtime evidence for the postfit-2 batch: for every one of the 39
 # native/bridge/readback rows in docs/dev-log/core070/postfit-2-batch-contract.json
 # (all classified NEEDS_NEW_JULIA_SURFACE — see that contract's `rows`), records
-# whether the GLLVM module genuinely lacks the required surface. This is a
+# whether the GLLVModels module genuinely lacks the required surface. This is a
 # real runtime check against the loaded module, not an assumption:
-#   - `isdefined(GLLVM, Symbol(name))` for every candidate top-level symbol
+#   - `isdefined(GLLVModels, Symbol(name))` for every candidate top-level symbol
 #     the row's julia_surface could plausibly be exported/bound as;
 #   - for rows where a same-named function DOES exist but with materially
 #     different required behaviour (predict/residuals/simulate/summary/vcov/
@@ -18,10 +18,10 @@
 #
 # ARGV[1] is REQUIRED and is the output JSON path to write the receipt to
 # (mkpath'd if its directory does not exist). No frozen R library, no fit
-# comparison, no bridge call: this script only touches the local GLLVM module.
+# comparison, no bridge call: this script only touches the local GLLVModels module.
 # Usage: julia --project=. tools/core070_postfit_2_batch.jl <output.json>
 
-using GLLVM
+using GLLVModels
 using Random
 using LinearAlgebra
 
@@ -75,7 +75,7 @@ const FIT = fit_gaussian_gllvm(Y; K = K)
 rows = Dict{String,Any}()
 
 function existence_row!(rows, key, candidate_symbols)
-    found = [s for s in candidate_symbols if isdefined(GLLVM, Symbol(s))]
+    found = [s for s in candidate_symbols if isdefined(GLLVModels, Symbol(s))]
     rows[key] = Dict(
         "check_kind" => "existence",
         "candidate_exported_symbols" => candidate_symbols,
@@ -126,11 +126,11 @@ existence_row!(rows, "tmbprofile_wrapper", ["tmbprofile_wrapper"])
 
 # rotate_loadings: the *name* is absent (only `rotation`/`getLoadings` exist,
 # and `rotation` is principal/SVD-only -- no method= kwarg at all).
-let found = isdefined(GLLVM, :rotate_loadings)
-    absent = !found && !has_kwarg(GLLVM.rotation, "method")
+let found = isdefined(GLLVModels, :rotate_loadings)
+    absent = !found && !has_kwarg(GLLVModels.rotation, "method")
     probe_row!(rows, "rotate_loadings",
-        "rotate_loadings not isdefined, and GLLVM.rotation(fit) (the only rotation entry point) has no `method` keyword (varimax/promax/none) -- confirms no varimax/promax rotation surface exists under any name",
-        absent; extra = Dict("rotate_loadings_isdefined" => found, "rotation_has_method_kwarg" => has_kwarg(GLLVM.rotation, "method")))
+        "rotate_loadings not isdefined, and GLLVModels.rotation(fit) (the only rotation entry point) has no `method` keyword (varimax/promax/none) -- confirms no varimax/promax rotation surface exists under any name",
+        absent; extra = Dict("rotate_loadings_isdefined" => found, "rotation_has_method_kwarg" => has_kwarg(GLLVModels.rotation, "method")))
 end
 
 # --- functional probes against the live FIT ---------------------------------
@@ -139,43 +139,43 @@ end
 # concept anywhere in the module (no field, no throw path to probe against a
 # plain Gaussian fit, and no exported guard symbol).
 let guard_syms = ["mspl", "MsplFit", "LikelihoodWeights", "likelihood_weights"]
-    found_guard = [s for s in guard_syms if isdefined(GLLVM, Symbol(s))]
+    found_guard = [s for s in guard_syms if isdefined(GLLVModels, Symbol(s))]
     has_field = hasfield(typeof(FIT), :mspl) || hasfield(typeof(FIT), :likelihood_weights)
     absent = isempty(found_guard) && !has_field
     probe_row!(rows, "logLik.gllvmTMB_multi",
-        "loglikelihood(fit) exists and returns a value, but no mspl-estimator or likelihood_weights guard-class concept is defined anywhere in GLLVM (no matching exported symbol, no matching field on the fit struct) -- the two required rejection branches have no Julia equivalent to test",
-        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVM, :loglikelihood), "guard_symbols_found" => found_guard))
+        "loglikelihood(fit) exists and returns a value, but no mspl-estimator or likelihood_weights guard-class concept is defined anywhere in GLLVModels (no matching exported symbol, no matching field on the fit struct) -- the two required rejection branches have no Julia equivalent to test",
+        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVModels, :loglikelihood), "guard_symbols_found" => found_guard))
 end
 
 # nobs: StatsAPI.nobs(fit) exists, but is a site/level count, not a
 # missing-data-aware 3-way likelihood-row precedence.
 let precedence_syms = ["likelihood_rows", "is_y_observed", "MissingDataControl", "missing_data"]
-    found = [s for s in precedence_syms if isdefined(GLLVM, Symbol(s))]
+    found = [s for s in precedence_syms if isdefined(GLLVModels, Symbol(s))]
     absent = isempty(found)
     probe_row!(rows, "nobs.gllvmTMB_multi",
-        "StatsAPI.nobs(fit) exists (site/level count via hasfield dispatch) but no missing-data-aware likelihood-row-count precedence (likelihood_rows / is_y_observed / MissingDataControl) exists anywhere in GLLVM to exercise the masked-fixture branch the spec requires",
-        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVM, Symbol("nobs")), "precedence_symbols_found" => found))
+        "StatsAPI.nobs(fit) exists (site/level count via hasfield dispatch) but no missing-data-aware likelihood-row-count precedence (likelihood_rows / is_y_observed / MissingDataControl) exists anywhere in GLLVModels to exercise the masked-fixture branch the spec requires",
+        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVModels, Symbol("nobs")), "precedence_symbols_found" => found))
 end
 
 # ordiplot.gllvmTMB_multi: ordiplot(fit, Y; rotate, biplot, ...) exists but has
 # no `level` or `axes` keyword, and `rotate` is a Bool, not a rotation-method
 # selector, so `rotate="none"` cannot be expressed.
-let has_level = has_kwarg(GLLVM.ordiplot, "level")
-    has_axes = has_kwarg(GLLVM.ordiplot, "axes")
+let has_level = has_kwarg(GLLVModels.ordiplot, "level")
+    has_axes = has_kwarg(GLLVModels.ordiplot, "axes")
     absent = !has_level && !has_axes
     probe_row!(rows, "ordiplot.gllvmTMB_multi",
         "ordiplot(fit, Y; rotate::Bool, biplot, site_labels, species_labels) exists but has no `level` or `axes` keyword (R's ordiplot(fit, level=, axes=c(1,2), rotate=\"none\") cannot be expressed), and returns (sites, species, ...) rather than (scores, loadings, sc)",
-        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVM, :ordiplot), "has_level_kwarg" => has_level, "has_axes_kwarg" => has_axes))
+        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVModels, :ordiplot), "has_level_kwarg" => has_level, "has_axes_kwarg" => has_axes))
 end
 
 # predict.gllvmTMB_multi: predict(fit, y; type, ...) exists but is in-sample
 # only -- no `newdata`, no `re_form`.
-let has_newdata = has_kwarg(GLLVM.predict, "newdata")
-    has_re_form = has_kwarg(GLLVM.predict, "re_form")
+let has_newdata = has_kwarg(GLLVModels.predict, "newdata")
+    has_re_form = has_kwarg(GLLVModels.predict, "re_form")
     absent = !has_newdata && !has_re_form
     probe_row!(rows, "predict.gllvmTMB_multi",
         "predict(fit, y; type=:response|:link, X=, X_lv=, mask=, offset=) exists but has no `newdata` or `re_form` keyword on any method -- R's newdata-based out-of-sample prediction and fixed-vs-conditional re_form path cannot be expressed",
-        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVM, :predict), "has_newdata_kwarg" => has_newdata, "has_re_form_kwarg" => has_re_form))
+        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVModels, :predict), "has_newdata_kwarg" => has_newdata, "has_re_form_kwarg" => has_re_form))
 end
 
 # residuals.gllvmTMB_multi: residuals(fit, y; type=...) only accepts
@@ -188,24 +188,24 @@ let rejects_simulation_rank = try
     catch e
         e isa ArgumentError
     end
-    has_nsim = has_kwarg(GLLVM.residuals, "nsim")
-    has_condition = has_kwarg(GLLVM.residuals, "condition_on_RE")
+    has_nsim = has_kwarg(GLLVModels.residuals, "nsim")
+    has_condition = has_kwarg(GLLVModels.residuals, "condition_on_RE")
     absent = rejects_simulation_rank && !has_nsim && !has_condition
     probe_row!(rows, "residuals.gllvmTMB_multi",
         "residuals(fit, y; type=:dunnsmyth|:pearson, ...) live-probed with type=:simulation_rank throws ArgumentError (the R-required type value is rejected), and no nsim/condition_on_RE keyword exists -- R's randomized_quantile/simulation_rank + nsim/seed/condition_on_RE contract has no Julia equivalent",
-        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVM, :residuals),
+        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVModels, :residuals),
                               "type_simulation_rank_rejected" => rejects_simulation_rank,
                               "has_nsim_kwarg" => has_nsim, "has_condition_on_RE_kwarg" => has_condition))
 end
 
 # simulate.gllvmTMB_multi: simulate(fit, n; rng) exists but takes a required
 # positional draw-count `n`, not `nsim=1`, and has no `newdata`/`condition_on_RE`.
-let has_newdata = has_kwarg(GLLVM.simulate, "newdata")
-    has_condition = has_kwarg(GLLVM.simulate, "condition_on_RE")
+let has_newdata = has_kwarg(GLLVModels.simulate, "newdata")
+    has_condition = has_kwarg(GLLVModels.simulate, "condition_on_RE")
     absent = !has_newdata && !has_condition
     probe_row!(rows, "simulate.gllvmTMB_multi",
         "simulate(fit, n::Integer; rng=) exists (positional draw-count, RNG-object seeding) but has no `newdata` or `condition_on_RE` keyword -- R's newdata-conditional path and the documented Gaussian-on-link-scale newdata fallback cannot be expressed",
-        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVM, :simulate), "has_newdata_kwarg" => has_newdata, "has_condition_on_RE_kwarg" => has_condition))
+        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVModels, :simulate), "has_newdata_kwarg" => has_newdata, "has_condition_on_RE_kwarg" => has_condition))
 end
 
 # print.gllvmTMB_multi: Base.show(io, MIME"text/plain", fit) exists (live-
@@ -235,7 +235,7 @@ let result = summary(FIT)
     wrong_shape = result isa AbstractString
     probe_row!(rows, "summary.gllvmTMB_multi",
         "summary(fit) is live-probed and returns a plain String (one-line fit description), not the required structured header-list + fixef-table + Sigma_B object",
-        wrong_shape; extra = Dict("base_symbol_exists" => isdefined(GLLVM, Symbol("summary")), "probed_return_type" => string(typeof(result))))
+        wrong_shape; extra = Dict("base_symbol_exists" => isdefined(GLLVModels, Symbol("summary")), "probed_return_type" => string(typeof(result))))
 end
 
 # vcov.gllvmTMB_multi: StatsAPI.vcov requires an explicit `y`/Y argument and
@@ -243,17 +243,17 @@ end
 # whereas R's vcov(object) takes the fit alone and returns a named dense
 # p x p matrix aligned to the free/fixed coefficient mask.
 let zero_arg_fails = try
-        Base.invokelatest(GLLVM.StatsAPI.vcov, FIT)
+        Base.invokelatest(GLLVModels.StatsAPI.vcov, FIT)
         false
     catch e
         true
     end
-    result = GLLVM.StatsAPI.vcov(FIT, Y)
+    result = GLLVModels.StatsAPI.vcov(FIT, Y)
     is_diagonal_only = result isa Diagonal
     absent = zero_arg_fails && is_diagonal_only
     probe_row!(rows, "vcov.gllvmTMB_multi",
         "vcov(fit) alone (no y/Y) throws ArgumentError (R's zero-extra-argument vcov(object) contract cannot be expressed), and vcov(fit, Y) live-probed returns a Diagonal (SE^2 only) rather than a named dense p x p covariance matrix aligned to a free/fixed coefficient mask",
-        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVM, Symbol("vcov")), "zero_arg_vcov_throws" => zero_arg_fails, "probed_return_type" => string(typeof(result))))
+        absent; extra = Dict("base_symbol_exists" => isdefined(GLLVModels, Symbol("vcov")), "zero_arg_vcov_throws" => zero_arg_fails, "probed_return_type" => string(typeof(result))))
 end
 
 all_absent = all(r["surface_absent"] for r in values(rows))
@@ -265,7 +265,7 @@ receipt = Dict(
     "scope" => "CORE070_POSTFIT_2_BATCH_JULIA_SURFACE_ABSENCE",
     "reference_commit" => "b4d5fee64def88bc768dda1f1f77c29b295edd86",
     "julia_version" => string(VERSION),
-    "gllvm_exported_symbol_count" => length(names(GLLVM)),
+    "gllvm_exported_symbol_count" => length(names(GLLVModels)),
     "probe_fit" => Dict("p" => P, "K" => K, "n" => N, "fit_type" => string(typeof(FIT))),
     "rows" => rows,
     "row_count" => length(rows),

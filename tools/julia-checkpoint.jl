@@ -2,7 +2,7 @@
 # tools/julia-checkpoint.jl
 #
 # Julia analog of `tools/codex-checkpoint.R` from the drmTMB repo, adapted for
-# GLLVM.jl conventions (AGENTS.md, docs/dev-log/after-task/).
+# GLLVModels.jl conventions (AGENTS.md, docs/dev-log/after-task/).
 #
 # Usage:
 #     julia --project=. tools/julia-checkpoint.jl
@@ -209,7 +209,7 @@ Recent commits:
 $(commits_md)
 """
 
-    println("# GLLVM.jl Recovery Checkpoint")
+    println("# GLLVModels.jl Recovery Checkpoint")
     println()
     println("Generated: $(now_local)")
     println("Branch: `$(branch)` @ `$(sha)`")

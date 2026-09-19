@@ -1,14 +1,14 @@
-using GLLVM,Test,Random,LinearAlgebra,Distributions
+using GLLVModels,Test,Random,LinearAlgebra,Distributions
 @testset "BU public binomial AGHQ" begin
-    @test hasfield(GLLVM.BinomialFit,:integration)
-    if hasfield(GLLVM.BinomialFit,:integration)
+    @test hasfield(GLLVModels.BinomialFit,:integration)
+    if hasfield(GLLVModels.BinomialFit,:integration)
         Y=[0 1 2 3 1 2 0 1;1 2 3 1 0 2 1 3];N=fill(3,size(Y))
         base=fit_binomial_gllvm(Y;K=1,N=N,iterations=2)
         @test base.integration===nothing
         one=fit_binomial_gllvm(Y;K=1,N=N,iterations=2,aghq=1)
         @test one.loglik==base.loglik && one.β==base.β && one.Λ==base.Λ
         @test one.integration.actual===:laplace && one.integration.reason===:laplace_rule
-        old=GLLVM.BinomialFit(base.β,base.Λ,base.link,base.loglik,base.converged,base.iterations,
+        old=GLLVModels.BinomialFit(base.β,base.Λ,base.link,base.loglik,base.converged,base.iterations,
             base.alpha_lv,base.theta_packed,base.hessian,base.saturation)
         @test old.integration===nothing
         @test_throws ArgumentError fit_binomial_gllvm(Y;K=1,N=N,aghq=0)
@@ -26,18 +26,18 @@ using GLLVM,Test,Random,LinearAlgebra,Distributions
             @test fit.converged==fit.integration.result.selected.converged
             @test fit.theta_packed==fit.integration.result.selected.parameters
             @test fit.integration.base_controls.iterations==12
-            replay=GLLVM._binomial_aghq_refit_kwargs(fit)
+            replay=GLLVModels._binomial_aghq_refit_kwargs(fit)
             @test replay.N==N && replay.N!==trials && replay.aghq==3
             @test replay.aghq_control==fit.integration.controls
-            ad=GLLVM._family_ci(fit,Y;objective=:fit)
+            ad=GLLVModels._family_ci(fit,Y;objective=:fit)
             @test ad.nll(ad.θ) ≈ -fit.loglik atol=1e-10
-            @test_throws ArgumentError GLLVM._family_ci(fit,Y;N=N.+1)
+            @test_throws ArgumentError GLLVModels._family_ci(fit,Y;N=N.+1)
             @test_throws ArgumentError confint(fit,Y;objective=:laplace)
             ci=confint(fit,Y;parm="beta[1]")
             @test ci.objective===:aghq && ci.gradient_kind===:frozen_surrogate
             if link isa LogitLink
-                H=GLLVM.ForwardDiff.hessian(ad.nll,ad.θ)
-                @test maximum(abs.(H-GLLVM._fd_hessian(ad.nll,ad.θ)))<1e-3
+                H=GLLVModels.ForwardDiff.hessian(ad.nll,ad.θ)
+                @test maximum(abs.(H-GLLVModels._fd_hessian(ad.nll,ad.θ)))<1e-3
                 profile=confint(fit,Y;method=:profile,parm="beta[1]",profile_iterations=20)
                 @test profile.objective===:aghq && profile.gradient_kind===:frozen_surrogate
                 @test length(profile.status)==1
@@ -55,7 +55,7 @@ using GLLVM,Test,Random,LinearAlgebra,Distributions
             @test eta ≈ fit.β .+ fit.Λ*z' .+ off
             prob=predict(fit,Y)
             @test all(0 .<=prob.<=1)
-            @test prob ≈ (link isa CLogLogLink ? -expm1.(-exp.(eta)) : clamp.(GLLVM.linkinv.(Ref(link),eta),1e-12,1-1e-12))
+            @test prob ≈ (link isa CLogLogLink ? -expm1.(-exp.(eta)) : clamp.(GLLVModels.linkinv.(Ref(link),eta),1e-12,1-1e-12))
             res=residuals(fit,Y;type=:pearson)
             @test isnan(res[1,2])
             @test res[1,1] ≈ (Y[1,1]-N[1,1]*prob[1,1])/sqrt(N[1,1]*prob[1,1]*(1-prob[1,1]))
@@ -77,7 +77,7 @@ using GLLVM,Test,Random,LinearAlgebra,Distributions
         multi=fit_binomial_gllvm(Y;K=1,N=N,aghq=3,iterations=2,aghq_control=(n_adapt=1,))
         @test hasproperty(multi.integration.result,:starts)
         if hasproperty(multi.integration.result,:starts)
-            expected=GLLVM.linkfun.(Ref(LogitLink()),clamp.(vec(sum(Y;dims=2))./size(Y,2),1/32,31/32))
+            expected=GLLVModels.linkfun.(Ref(LogitLink()),clamp.(vec(sum(Y;dims=2))./size(Y,2),1/32,31/32))
             @test multi.integration.result.starts[2][1:2] ≈ expected
             @test all(==(.3),multi.integration.result.starts[2][3:end])
         end

@@ -18,18 +18,18 @@ the call reproducible. In a bridge workflow, `payload` instead comes from the
 already-admitted canonical precision transport.
 
 ```julia
-using GLLVM
+using GLLVModels
 
 # Four tips; the root-dropped augmented precision also retains internal nodes.
-pp = GLLVM.PrecisionPhy(GLLVM.random_balanced_tree(4; branch_length = 0.3))
-payload = GLLVM.phylo_precision_payload(pp)
+pp = GLLVModels.PrecisionPhy(GLLVModels.random_balanced_tree(4; branch_length = 0.3))
+payload = GLLVModels.phylo_precision_payload(pp)
 
 # Rows are traits and columns are observations. Tips may repeat across columns.
 y = [1.2 0.8 1.1 0.9 1.0 0.7 1.3 0.6;
      0.1 0.4 0.2 0.3 0.0 0.5 0.2 0.4;
      0.7 0.5 0.6 0.8 0.9 0.4 0.8 0.5]
 
-fit = GLLVM.bridge_fit(
+fit = GLLVModels.bridge_fit(
     y = y,
     family = "gaussian",
     d = 1,                         # rank of the phylogenetic loading matrix

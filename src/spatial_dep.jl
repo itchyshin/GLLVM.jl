@@ -10,15 +10,16 @@
 
 Standalone **spatial × dep** entry point (twin `spatial_dep(0 + trait | coords, mesh = mesh)`).
 
-**Arc 0:** not implemented. The twin estimand requires an fmesher-style mesh and
-SPDE projected precision on **sites**; Julia does not wire that transport in this slice.
+This route is not yet implemented. The twin estimand requires an fmesher-style
+mesh and SPDE projected precision on **sites**; Julia does not yet provide that
+transport.
 Calls fail with `ArgumentError` — do not use dense [`spatial_cov`](@ref) on trait
 coordinates as a stand-in for `spatial_dep`.
 
 For spatial latent fields inside non-Gaussian GLLVMs, see [`fit_spde_latent_gllvm`](@ref).
 For Gaussian SPDE fields, see [`fit_spde_gaussian`](@ref).
 
-No `@formula` `spatial_dep()` sugar in Arc 0.
+No `@formula` `spatial_dep()` syntax is available yet.
 """
 function fit_spatial_dep_gllvm(Y::AbstractMatrix; kwargs...)
     p, n = size(Y)
@@ -36,9 +37,8 @@ end
 
 function _spatial_dep_arc0_not_implemented(p::Int, n::Int, _variant::Symbol)
     throw(ArgumentError(
-        "fit_spatial_dep_gllvm: spatial × dep is not implemented in Arc 0 " *
+        "fit_spatial_dep_gllvm: spatial × dep is not implemented yet " *
         "(p = $p traits, n = $n sites). The twin route needs " *
         "spatial_dep(0 + trait | coords, mesh = mesh) with an SPDE mesh and " *
-        "projected site-level precision — not a dense trait-kernel Σ_phy shortcut. " *
-        "See docs/dev-log/decisions/2026-09-14-spatial-dep-identity.md."))
+        "projected site-level precision — not a dense trait-kernel Σ_phy shortcut."))
 end

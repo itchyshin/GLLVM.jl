@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 
 # The profile_ci() entry point takes `y` as a kwarg so it can reconstruct
 # the NLL closure without touching src/fit.jl (the PERF agent is
@@ -18,8 +18,8 @@ using GLLVM, Test, Random, LinearAlgebra
         σ_true = 0.5
         y = Λ_true * randn(K, n) + σ_true * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        ci_prof = GLLVM.profile_ci(fit, "sigma_eps"; y = y)
-        ci_tuned = GLLVM.profile_ci(fit, "sigma_eps"; y = y,
+        ci_prof = GLLVModels.profile_ci(fit, "sigma_eps"; y = y)
+        ci_tuned = GLLVModels.profile_ci(fit, "sigma_eps"; y = y,
                                     profile_iterations = 200,
                                     profile_g_tol = 1e-4,
                                     profile_max_expand = 20,
@@ -30,9 +30,9 @@ using GLLVM, Test, Random, LinearAlgebra
         @test ci_tuned.method in (:profile, :partial)
         # Width should be sensible (not collapsed, not absurd)
         @test 0.01 < (ci_prof.upper - ci_prof.lower) < 1.0
-        @test_throws ArgumentError GLLVM.profile_ci(fit, "sigma_eps"; y = y,
+        @test_throws ArgumentError GLLVModels.profile_ci(fit, "sigma_eps"; y = y,
                                                     profile_iterations = 0)
-        @test_throws ArgumentError GLLVM.profile_ci(fit, "sigma_eps"; y = y,
+        @test_throws ArgumentError GLLVModels.profile_ci(fit, "sigma_eps"; y = y,
                                                     profile_g_tol = Inf)
         @info "σ_eps profile CI (clean fixture)" lower=ci_prof.lower upper=ci_prof.upper truth=σ_true method=ci_prof.method
     end
@@ -44,7 +44,7 @@ using GLLVM, Test, Random, LinearAlgebra
         Λ_true = reshape([0.7, 0.5, 0.4], p, K)
         y = Λ_true * randn(K, n) + 0.05 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        ci_prof = GLLVM.profile_ci(fit, "sigma_eps"; y = y)
+        ci_prof = GLLVModels.profile_ci(fit, "sigma_eps"; y = y)
         @test ci_prof.lower >= 0   # σ_eps is positive — profile respects this
         @info "σ_eps profile CI (small σ)" lower=ci_prof.lower upper=ci_prof.upper method=ci_prof.method
     end
@@ -56,7 +56,7 @@ using GLLVM, Test, Random, LinearAlgebra
         y = randn(p, n)
         try
             fit = fit_gaussian_gllvm(y; K = K)
-            ci = GLLVM.profile_ci(fit, "sigma_eps"; y = y)
+            ci = GLLVModels.profile_ci(fit, "sigma_eps"; y = y)
             # Either both NaN (failed) or finite (improbably succeeded)
             @test (isnan(ci.lower) && isnan(ci.upper)) || (ci.lower < ci.upper)
         catch

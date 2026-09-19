@@ -5,7 +5,7 @@ if Base.find_package("StableRNGs") === nothing
         @test_skip false
     end
 else
-    using GLLVM
+    using GLLVModels
     using LinearAlgebra
     using SparseArrays
     using StableRNGs
@@ -23,7 +23,7 @@ else
         species_id = repeat([1, 2], 6)
         n, p = length(species_id), 2
         cluster = [1, 2, 1, 3, 2, 3, 1, 2, 3, 1, 3, 2]
-        incidence = GLLVM._grouped_incidence(cluster, n)
+        incidence = GLLVModels._grouped_incidence(cluster, n)
         loading = reshape([0.55, 0.30], p, 1)
         psi = [0.35, 0.48]
         grouped_variance = [0.16, 0.11]
@@ -34,7 +34,7 @@ else
         covariance = Matrix(kron(selection * (Matrix(phy.Q) \ selection'), loading * loading') +
             kron(Matrix(incidence * incidence'), Diagonal(grouped_variance)) +
             kron(Matrix(I, n, n), Diagonal(psi)))
-        D = GLLVM._trait_mean_design(p, n)
+        D = GLLVModels._trait_mean_design(p, n)
         beta = [0.10, -0.18]
         response = reshape(D * beta + cholesky(Symmetric(covariance)).L * randn(rng, p * n), p, n)
         return (; phy, species_id, cluster, response)
@@ -43,43 +43,43 @@ else
     @testset "joint phylo grouped Gaussian postfit" begin
         fixture = _jpgp_fixture()
         terms = [GroupingTerm(:cluster; mode = :indep, common = false)]
-        loose = GLLVM.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
+        loose = GLLVModels.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
             rank = 1, phylo_mode = :barelowrank, terms = terms,
             cluster = fixture.cluster, species_id = fixture.species_id,
             iterations = 160, g_tol = 2e-4)
-        fit = GLLVM.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
+        fit = GLLVModels.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
             rank = 1, phylo_mode = :barelowrank, terms = terms,
             cluster = fixture.cluster, species_id = fixture.species_id,
             start = loose.parameters, iterations = 160, g_tol = 1e-5)
         @test fit.converged
 
         expected = reshape(fit.mean_design * fit.beta, fit.response_shape)
-        @test GLLVM.joint_phylo_grouped_population_predict(fit) ≈ expected
-        @test GLLVM.predict(fit) ≈ expected
-        @test GLLVM.fitted(fit) ≈ expected
-        @test GLLVM.residuals(fit) ≈ fit.response .- expected
+        @test GLLVModels.joint_phylo_grouped_population_predict(fit) ≈ expected
+        @test GLLVModels.predict(fit) ≈ expected
+        @test GLLVModels.fitted(fit) ≈ expected
+        @test GLLVModels.residuals(fit) ≈ fit.response .- expected
         new_design = [1.0 0.0; 0.0 1.0; 2.0 0.0; 0.0 2.0]
-        @test GLLVM.predict(fit, new_design) ≈ reshape(new_design * fit.beta, 2, 2)
-        @test_throws DimensionMismatch GLLVM.predict(fit, ones(3, length(fit.beta)))
-        @test_throws ArgumentError GLLVM.predict(fit; type = :conditional)
-        @test_throws ArgumentError GLLVM.predict(fit; random_effects = :mode)
+        @test GLLVModels.predict(fit, new_design) ≈ reshape(new_design * fit.beta, 2, 2)
+        @test_throws DimensionMismatch GLLVModels.predict(fit, ones(3, length(fit.beta)))
+        @test_throws ArgumentError GLLVModels.predict(fit; type = :conditional)
+        @test_throws ArgumentError GLLVModels.predict(fit; random_effects = :mode)
 
-        phylo = GLLVM.extract_Sigma(fit; level = :phylo, part = :total)
-        ordinary = GLLVM.extract_Sigma(fit; level = :cluster, part = :total)
-        residual = GLLVM.extract_Sigma(fit; level = :residual, part = :total)
+        phylo = GLLVModels.extract_Sigma(fit; level = :phylo, part = :total)
+        ordinary = GLLVModels.extract_Sigma(fit; level = :cluster, part = :total)
+        residual = GLLVModels.extract_Sigma(fit; level = :residual, part = :total)
         @test phylo.Sigma ≈ fit.phylo_covariance
         @test ordinary.Sigma ≈ only(fit.ordinary_covariances)
         @test residual.Sigma ≈ Diagonal(fit.residual_variance)
         @test phylo.source === :phylogenetic
         @test ordinary.source === :ordinary
         @test residual.source === :observation_residual
-        @test_throws ArgumentError GLLVM.extract_Sigma(fit; level = :not_a_source)
+        @test_throws ArgumentError GLLVModels.extract_Sigma(fit; level = :not_a_source)
 
-        covariance = GLLVM.vcov(fit)
+        covariance = GLLVModels.vcov(fit)
         @test size(covariance) == (length(fit.beta), length(fit.beta))
         @test covariance ≈ covariance'
         @test all(isfinite, covariance)
-        @test GLLVM.stderror(fit) ≈ sqrt.(diag(covariance))
+        @test GLLVModels.stderror(fit) ≈ sqrt.(diag(covariance))
         report = summary(fit, fit.response)
         @test report.inference_status === :available
         @test isfinite(report.inference_gradient_norm)
@@ -87,12 +87,12 @@ else
         @test all(row -> row.status === :available && isfinite(row.se), report.fixed_effects)
         @test_throws ArgumentError summary(fit, fit.response .+ 1.0)
 
-        stalled = GLLVM.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
+        stalled = GLLVModels.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
             rank = 1, phylo_mode = :barelowrank, terms = terms,
             cluster = fixture.cluster, species_id = fixture.species_id,
             iterations = 0, g_tol = 1e-5)
         @test !stalled.converged
-        @test_throws ArgumentError GLLVM.vcov(stalled)
+        @test_throws ArgumentError GLLVModels.vcov(stalled)
         unavailable = summary(stalled, stalled.response)
         @test unavailable.inference_status === :not_converged
         @test all(row -> row.status === :not_converged && isnan(row.se), unavailable.fixed_effects)

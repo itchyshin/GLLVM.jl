@@ -1,4 +1,4 @@
-# test_gaussian_parity.jl — Gaussian GLLVM parity: GLLVM.jl vs R gllvmTMB
+# test_gaussian_parity.jl — Gaussian GLLVModels parity: GLLVModels.jl vs R gllvmTMB
 #
 # Included by runparity.jl after the env gate and RCall load succeed.
 # NEVER included by test/runtests.jl.
@@ -8,7 +8,7 @@
 #
 # ── Why rotation-invariant quantities only? ──────────────────────────────────
 # The loading matrix Λ has two non-identifiable symmetries under a Gaussian
-# GLLVM:
+# GLLVModels:
 #
 #   1. Rotation invariance: for any orthogonal Q, ΛQ gives the same marginal
 #      covariance ΛΛᵀ and thus the same likelihood.
@@ -16,9 +16,9 @@
 #
 # Compare only: marginal log-likelihood, Σ_y = ΛΛᵀ + σ²_eps I, σ_eps.
 
-using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
+using GLLVModels, RCall, Test, Random, LinearAlgebra, Statistics
 
-@testset "Gaussian GLLVM parity: GLLVM.jl vs gllvmTMB" begin
+@testset "Gaussian GLLVModels parity: GLLVModels.jl vs gllvmTMB" begin
 
     # ── 1. Simulate data (tiny fixed seed) ───────────────────────────────────
     Random.seed!(42)
@@ -40,7 +40,7 @@ using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
     # J1 model (see scratch/2026-08-01-gaussian-rcall-shape.md §2).
     y .-= mean(y; dims = 2)
 
-    # ── 2. Julia fit via GLLVM.jl ────────────────────────────────────────────
+    # ── 2. Julia fit via GLLVModels.jl ────────────────────────────────────────────
     jl_fit = fit_gaussian_gllvm(y; K = K)
 
     @test jl_fit.converged

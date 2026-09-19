@@ -1,23 +1,23 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Statistics
 
 # Local guard: load the source files on demand, mirroring the sister
 # confint tests (test_confint_derived.jl uses the same pattern). The
 # transformed-Wald file depends on _derived_unpack / _sigma_y_site_from_unpacked
 # (confint_derived.jl) and _confint_reconstruct_nll (confint.jl).
-# `using GLLVM` loads the *compiled* module, which does not include the
-# new (additive) transformed-Wald file. Inject it INTO the GLLVM module
+# `using GLLVModels` loads the *compiled* module, which does not include the
+# new (additive) transformed-Wald file. Inject it INTO the GLLVModels module
 # with Base.include so its functions resolve their internal dependencies
 # (_derived_unpack, _confint_reconstruct_nll, ForwardDiff, …) correctly
-# and become reachable as `GLLVM.*`. Its dependencies confint_derived.jl
-# and confint.jl are already compiled into GLLVM.
-if !isdefined(GLLVM, :sigma_y_site)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "confint_derived.jl"))
+# and become reachable as `GLLVModels.*`. Its dependencies confint_derived.jl
+# and confint.jl are already compiled into GLLVModels.
+if !isdefined(GLLVModels, :sigma_y_site)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "confint_derived.jl"))
 end
-if !isdefined(GLLVM, :confint)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "confint.jl"))
+if !isdefined(GLLVModels, :confint)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "confint.jl"))
 end
-if !isdefined(GLLVM, :transformed_wald_ci_derived)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "confint_derived_wald.jl"))
+if !isdefined(GLLVModels, :transformed_wald_ci_derived)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "confint_derived_wald.jl"))
 end
 
 @testset "transformed-Wald CIs for derived bounded quantities" begin
@@ -31,38 +31,38 @@ end
     fit = fit_gaussian_gllvm(y; K = K)
     @test fit.converged
 
-    spec = GLLVM._derived_spec(fit)
+    spec = GLLVModels._derived_spec(fit)
 
     @testset "link round-trips" begin
         for ρ in (-0.9, -0.3, 0.0, 0.5, 0.95)
-            @test isapprox(GLLVM._tw_fisher_z_inv(GLLVM._tw_fisher_z(ρ)), ρ;
+            @test isapprox(GLLVModels._tw_fisher_z_inv(GLLVModels._tw_fisher_z(ρ)), ρ;
                            atol = 1e-12)
         end
         for x in (0.05, 0.3, 0.5, 0.8, 0.97)
-            @test isapprox(GLLVM._tw_logistic(GLLVM._tw_logit(x)), x; atol = 1e-12)
+            @test isapprox(GLLVModels._tw_logistic(GLLVModels._tw_logit(x)), x; atol = 1e-12)
         end
     end
 
     @testset "packed closures equal public accessors at θ̂" begin
-        R = GLLVM.correlation(fit)
-        c2 = GLLVM.communality(fit)
+        R = GLLVModels.correlation(fit)
+        c2 = GLLVModels.communality(fit)
         θ̂ = fit.pars.θ_packed
         # Correlation: a couple of off-diagonals.
         for (i, j) in ((1, 2), (2, 3), (1, 4))
-            @test isapprox(GLLVM._correlation_packed(θ̂, spec, i, j), R[i, j];
+            @test isapprox(GLLVModels._correlation_packed(θ̂, spec, i, j), R[i, j];
                            rtol = 1e-10)
         end
         # Communality per trait.
         for t in 1:p
-            @test isapprox(GLLVM._communality_packed(θ̂, spec, t), c2[t];
+            @test isapprox(GLLVModels._communality_packed(θ̂, spec, t), c2[t];
                            rtol = 1e-10)
         end
     end
 
     @testset "correlation transformed-Wald: estimate, bounds, range" begin
-        R = GLLVM.correlation(fit)
+        R = GLLVModels.correlation(fit)
         for (i, j) in ((1, 2), (1, 3), (2, 4))
-            ci = GLLVM.correlation_wald_ci(fit, i, j; y = y)
+            ci = GLLVModels.correlation_wald_ci(fit, i, j; y = y)
             @test ci.method === :transformed_wald
             @test ci.transform === :fisher_z
             @test ci.pd_hessian
@@ -79,9 +79,9 @@ end
     end
 
     @testset "communality transformed-Wald: estimate, bounds, range" begin
-        c2 = GLLVM.communality(fit)
+        c2 = GLLVModels.communality(fit)
         for t in 1:p
-            ci = GLLVM.communality_wald_ci(fit, t; y = y)
+            ci = GLLVModels.communality_wald_ci(fit, t; y = y)
             @test ci.method === :transformed_wald
             @test ci.transform === :logit
             @test ci.pd_hessian
@@ -96,24 +96,24 @@ end
     end
 
     @testset "generic API matches the wrapper" begin
-        f_ρ = GLLVM._make_correlation_closure(spec, 1, 2)
-        ci_generic = GLLVM.transformed_wald_ci_derived(fit, f_ρ;
+        f_ρ = GLLVModels._make_correlation_closure(spec, 1, 2)
+        ci_generic = GLLVModels.transformed_wald_ci_derived(fit, f_ρ;
                                                        transform = :fisher_z, y = y)
-        ci_wrap = GLLVM.correlation_wald_ci(fit, 1, 2; y = y)
+        ci_wrap = GLLVModels.correlation_wald_ci(fit, 1, 2; y = y)
         @test isapprox(ci_generic.lower, ci_wrap.lower; rtol = 1e-12)
         @test isapprox(ci_generic.upper, ci_wrap.upper; rtol = 1e-12)
         @test isapprox(ci_generic.estimate, ci_wrap.estimate; rtol = 1e-12)
     end
 
     @testset "invalid transform symbol errors" begin
-        f_ρ = GLLVM._make_correlation_closure(spec, 1, 2)
-        @test_throws ArgumentError GLLVM.transformed_wald_ci_derived(
+        f_ρ = GLLVModels._make_correlation_closure(spec, 1, 2)
+        @test_throws ArgumentError GLLVModels.transformed_wald_ci_derived(
             fit, f_ρ; transform = :probit, y = y)
     end
 
     @testset "missing y errors" begin
-        f_ρ = GLLVM._make_correlation_closure(spec, 1, 2)
-        @test_throws ArgumentError GLLVM.transformed_wald_ci_derived(
+        f_ρ = GLLVModels._make_correlation_closure(spec, 1, 2)
+        @test_throws ArgumentError GLLVModels.transformed_wald_ci_derived(
             fit, f_ρ; transform = :fisher_z)
     end
 
@@ -123,8 +123,8 @@ end
         p2, n2 = 6, 200
         Λ2 = reshape(0.3 .+ 0.4 .* abs.(randn(p2)), p2, 1)
         Λ2[2:2:end] .*= -1.0
-        phy = GLLVM.random_balanced_tree(p2; branch_length = 0.5)
-        Σ_phy = Matrix(Symmetric(GLLVM.sigma_phy_dense(phy; σ²_phy = 1.0)))
+        phy = GLLVModels.random_balanced_tree(p2; branch_length = 0.5)
+        Σ_phy = Matrix(Symmetric(GLLVModels.sigma_phy_dense(phy; σ²_phy = 1.0)))
         L_phy = cholesky(Symmetric(Σ_phy)).L
         σ_phy_true = 0.8
         # Simulate: latent factor + species-shared phylo + residual.
@@ -137,11 +137,11 @@ end
         fit2 = fit_gaussian_gllvm(y2; K = 1, has_phy_unique = true, Σ_phy = Σ_phy)
         @test fit2.converged
 
-        h2_vec = GLLVM.phylo_signal(fit2; Σ_phy = Σ_phy)
+        h2_vec = GLLVModels.phylo_signal(fit2; Σ_phy = Σ_phy)
         # Test a trait whose point estimate is interior (not on a boundary).
         t_test = findfirst(h -> isfinite(h) && 0.02 < h < 0.98, h2_vec)
         @test t_test !== nothing
-        ci = GLLVM.phylo_signal_wald_ci(fit2, t_test; y = y2, Σ_phy = Σ_phy)
+        ci = GLLVModels.phylo_signal_wald_ci(fit2, t_test; y = y2, Σ_phy = Σ_phy)
         @test ci.method === :transformed_wald
         @test ci.transform === :logit
         @test isapprox(ci.estimate, h2_vec[t_test]; rtol = 1e-8)
@@ -151,7 +151,7 @@ end
         @test ci.upper ≤ 1.0
         @test ci.lower ≤ ci.estimate ≤ ci.upper
 
-        ci_all = GLLVM._phylo_signal_wald_ci_all(fit2; y = y2, Σ_phy = Σ_phy)
+        ci_all = GLLVModels._phylo_signal_wald_ci_all(fit2; y = y2, Σ_phy = Σ_phy)
         @test length(ci_all) == length(h2_vec)
         @test ci_all[t_test].method === ci.method
         @test ci_all[t_test].transform === ci.transform
@@ -163,10 +163,10 @@ end
         # Regression guard (issue #92): packed phylo-signal H² must equal the
         # public phylo_signal(fit; Σ_phy)[t]. This is the has_phy_unique path,
         # where σ_phy is packed on the natural signed scale.
-        spec2 = GLLVM._derived_spec(fit2)
+        spec2 = GLLVModels._derived_spec(fit2)
         for t in 1:p2
             isfinite(h2_vec[t]) || continue
-            hp = GLLVM._phylo_signal_packed(fit2.pars.θ_packed, spec2, t;
+            hp = GLLVModels._phylo_signal_packed(fit2.pars.θ_packed, spec2, t;
                                             diag_Σphy = diag(Σ_phy))
             @test isapprox(hp, h2_vec[t]; rtol = 1e-8)
         end
@@ -174,11 +174,11 @@ end
         # Same packed≡public guard for the K_phy > 0 low-rank phylo-loading path.
         fit3 = fit_gaussian_gllvm(y2; K = 1, K_phy = 1, Σ_phy = Σ_phy)
         if fit3.converged
-            h3 = GLLVM.phylo_signal(fit3; Σ_phy = Σ_phy)
-            spec3 = GLLVM._derived_spec(fit3)
+            h3 = GLLVModels.phylo_signal(fit3; Σ_phy = Σ_phy)
+            spec3 = GLLVModels._derived_spec(fit3)
             for t in 1:p2
                 isfinite(h3[t]) || continue
-                hp3 = GLLVM._phylo_signal_packed(fit3.pars.θ_packed, spec3, t;
+                hp3 = GLLVModels._phylo_signal_packed(fit3.pars.θ_packed, spec3, t;
                                                  diag_Σphy = diag(Σ_phy))
                 @test isapprox(hp3, h3[t]; rtol = 1e-8)
             end

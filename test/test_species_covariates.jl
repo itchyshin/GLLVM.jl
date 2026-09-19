@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 # Build a (p,n,q) design carrying `q` shared site covariates broadcast across
 # species: X[t,s,k] = x[k][s]. Each species t will later get its own slope row.
@@ -20,12 +20,12 @@ end
         B = 0.5 .* randn(p, q)                       # species-specific slopes
         x1 = randn(n); x2 = randn(n)
         X = _site_design_q([x1, x2], p)
-        O = GLLVM._build_offset_species(X, B)
+        O = GLLVModels._build_offset_species(X, B)
         # hand-computed offset entry: O[3,4] = B[3,1]*x1[4] + B[3,2]*x2[4]
         @test O[3, 4] ≈ B[3, 1] * x1[4] + B[3, 2] * x2[4] atol = 1e-12
         Y = [rand(Poisson(exp(β[t] + O[t, s]))) for t in 1:p, s in 1:n]
 
-        ll = GLLVM._marginal_loglik_offset(Poisson(), Y, ones(Int, p, n),
+        ll = GLLVModels._marginal_loglik_offset(Poisson(), Y, ones(Int, p, n),
                                            zeros(p, K), β, O, LogLink())
         ref = 0.0
         for t in 1:p, s in 1:n
@@ -43,7 +43,7 @@ end
         x1 = randn(n); x2 = randn(n)
         X = _site_design_q([x1, x2], p)
         Z = randn(K, n)
-        O = GLLVM._build_offset_species(X, B_true)
+        O = GLLVModels._build_offset_species(X, B_true)
         η = β_true .+ O .+ Λ_true * Z
         Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
 
@@ -63,7 +63,7 @@ end
         x1 = randn(n); x2 = randn(n)
         X = _site_design_q([x1, x2], p)
         Z = randn(K, n)
-        O = GLLVM._build_offset_species(X, B_true)
+        O = GLLVModels._build_offset_species(X, B_true)
         η = β_true .+ O .+ 0.4 .* randn(p, K) * Z
         Y = [rand(Poisson(exp(η[t, s]))) for t in 1:p, s in 1:n]
 
@@ -78,7 +78,7 @@ end
         @test all(isfinite, μhat)
 
         # model-selection criteria (β + vec(B) + Λ; Poisson has no dispersion)
-        @test GLLVM._nparams(fit) == p + p * q + (p * K - div(K * (K - 1), 2))
+        @test GLLVModels._nparams(fit) == p + p * q + (p * K - div(K * (K - 1), 2))
         @test isfinite(aic(fit))
         @test isfinite(bic(fit, n))
         ftd = fitted(fit, Y, X)

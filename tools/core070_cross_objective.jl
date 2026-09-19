@@ -2,7 +2,7 @@
 #
 # The decisive two-evaluation test: evaluating engine A's objective at engine
 # B's fitted coordinates separates "same likelihood function" from "same argmax
-# value". This tool provides the Julia half: evaluate GLLVM.jl's objective at a
+# value". This tool provides the Julia half: evaluate GLLVModels.jl's objective at a
 # set of R-fitted coordinates supplied as invariant quantities (beta, loading
 # crossproduct, dispersion), reconstructing a loading factor from the
 # crossproduct — valid because every objective used here depends on Λ only
@@ -13,7 +13,7 @@
 # coordinates reproduces Julia's retained loglik, and (b) the objective at the
 # frozen R reference's retained coordinates reproduces R's retained loglik.
 # (b) is the likelihood-function identity statement itself.
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 
 """
@@ -48,9 +48,9 @@ function gaussian_sources_nll_at(Y::AbstractMatrix{<:Real}, source;
     ss = SourceCovariance[snap]
     S = [s.projection * s.covariance * s.projection' for s in ss]
     L = loading_factor_from_crossprod(crossprod, source.rank)
-    theta = vcat(Float64.(beta), GLLVM.pack_lambda(L),
+    theta = vcat(Float64.(beta), GLLVModels.pack_lambda(L),
                  0.5 * log(Float64(residual_variance)))
-    return GLLVM._gaussian_sources_nll(Matrix{Float64}(Y), ss, theta;
+    return GLLVModels._gaussian_sources_nll(Matrix{Float64}(Y), ss, theta;
         projected = S, sigma_eps_fixed = nothing, X = nothing)
 end
 
@@ -110,9 +110,9 @@ any internal NLL/objective convention).
   - `:binomial` — `crossprod_or_loadings` may be the `p × p` crossprod or a
     `p × rank` loadings matrix (see [`_loadings_from`](@ref)); `N` (p×n
     trial counts) defaults to all-ones (Bernoulli cells); `link` defaults to
-    `LogitLink()`. Delegates to `GLLVM.binomial_marginal_loglik_laplace`.
+    `LogitLink()`. Delegates to `GLLVModels.binomial_marginal_loglik_laplace`.
   - `:poisson` — same loadings convention as `:binomial`; `link` defaults to
-    `LogLink()`. Delegates to `GLLVM.poisson_marginal_loglik_laplace`.
+    `LogLink()`. Delegates to `GLLVModels.poisson_marginal_loglik_laplace`.
 """
 function cross_objective_at(family_kind::Symbol, Y::AbstractMatrix{<:Real};
         beta::AbstractVector{<:Real}, crossprod_or_loadings::AbstractMatrix{<:Real},
@@ -130,14 +130,14 @@ function cross_objective_at(family_kind::Symbol, Y::AbstractMatrix{<:Real};
         p = size(Y, 1)
         Λ = _loadings_from(crossprod_or_loadings, p, rank)
         Nm = N === nothing ? ones(size(Y)) : Float64.(N)
-        lnk = link === nothing ? GLLVM.LogitLink() : link
-        return GLLVM.binomial_marginal_loglik_laplace(Float64.(Y), Nm, Λ, β, lnk;
+        lnk = link === nothing ? GLLVModels.LogitLink() : link
+        return GLLVModels.binomial_marginal_loglik_laplace(Float64.(Y), Nm, Λ, β, lnk;
             mask = mask, offset = offset)
     elseif family_kind === :poisson
         p = size(Y, 1)
         Λ = _loadings_from(crossprod_or_loadings, p, rank)
-        lnk = link === nothing ? GLLVM.LogLink() : link
-        return GLLVM.poisson_marginal_loglik_laplace(Float64.(Y), Λ, β, lnk;
+        lnk = link === nothing ? GLLVModels.LogLink() : link
+        return GLLVModels.poisson_marginal_loglik_laplace(Float64.(Y), Λ, β, lnk;
             mask = mask, offset = offset)
     else
         throw(ArgumentError(

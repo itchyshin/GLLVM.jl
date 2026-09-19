@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
 # Procrustes correlation between two n×K score sets: centre both, best orthogonal
 # alignment of A onto B, then correlation of the aligned coordinates. Used here to

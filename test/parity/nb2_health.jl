@@ -7,7 +7,7 @@ function parity_nb2_health(Y, K, native; artifact_prefix="nb2", receipt_tag="NB2
  datahash=bytes2hex(sha256(reinterpret(UInt8,vec(Float64.(Y)))))
  datahash=="7abde2731134afe61afee5a7f0c29b58892ad72e550fa41cf8230e9c701a2bf9" || error("original NB2 data changed")
  fixture=joinpath(@__DIR__,"test_negbin_parity.jl");source=read(fixture,String)
- helpers=source[findfirst("function _rand_poisson",source).start:findfirst("@testset \"NB2 GLLVM",source).start-1]
+ helpers=source[findfirst("function _rand_poisson",source).start:findfirst("@testset \"NB2 GLLVModels",source).start-1]
  dgp=source[findfirst("    Random.seed!(45)",source).start:findfirst("    jl_fit =",source).start-1]
  output=_core070_required() ? _core070_receipt_dir() : mktempdir()
  rawpath=joinpath(output,artifact_prefix*"-whole-fit.rds")
@@ -27,10 +27,10 @@ r_disp <- exp(as.numeric(r_par$log_phi_nbinom2))
 saveRDS(list(opt=fit_r$opt,gradient=r_gradient,parameters=r_par,report=r_report,
     data=r_obj$env$data,objective=r_objective),rawpath)
 """
-rr=GLLVM.rr_theta_len(p,K)
-theta=vcat(native.β,GLLVM.pack_lambda(native.Λ),log.(native.r_group))
+rr=GLLVModels.rr_theta_len(p,K)
+theta=vcat(native.β,GLLVModels.pack_lambda(native.Λ),log.(native.r_group))
 function objective(v)
- -GLLVM.nb_grouped_marginal_loglik_laplace(Y,GLLVM.unpack_lambda(v[p+1:p+rr],p,K),
+ -GLLVModels.nb_grouped_marginal_loglik_laplace(Y,GLLVModels.unpack_lambda(v[p+1:p+rr],p,K),
     v[1:p],exp.(v[p+rr+1:end]);hessian=:observed,maxiter=100,tol=1e-9)
 end
 function fd(v,m)
@@ -41,7 +41,7 @@ end
 g=fd(theta,1.0);g2=fd(theta,2.0)
 rtheta=rcopy(Vector{Float64},R"as.numeric(fit_r$opt$par)")
 rlambda=rcopy(Matrix{Float64},R"r_lambda");rbeta=rcopy(Vector{Float64},R"r_beta");rdisp=rcopy(Vector{Float64},R"r_disp")
-rnative=vcat(rbeta,GLLVM.pack_lambda(rlambda),log.(rdisp))
+rnative=vcat(rbeta,GLLVModels.pack_lambda(rlambda),log.(rdisp))
 rg=rcopy(Vector{Float64},R"r_gradient")
 report=Dict("source"=>_core070_source_pin!(),"data_sha256"=>datahash,
  "fixture_sha256"=>bytes2hex(sha256(read(fixture))),"dgp_sha256"=>bytes2hex(sha256(helpers*dgp)),

@@ -6,9 +6,9 @@
 #
 # The four paths (all returning the identical number for one shared
 # fixture) are:
-#   1. DENSE (reference)   GLLVM.gaussian_marginal_loglik          (src/likelihood.jl)
+#   1. DENSE (reference)   GLLVModels.gaussian_marginal_loglik          (src/likelihood.jl)
 #                          builds the full p×p Σ_phy + dense Cholesky.
-#   2. HADFIELD-NAKAGAWA   GLLVM.gaussian_marginal_loglik_sparse_phy
+#   2. HADFIELD-NAKAGAWA   GLLVModels.gaussian_marginal_loglik_sparse_phy
 #                          augmented sparse precision via CHOLMOD; evaluation-only.
 #   3. FELSENSTEIN         gaussian_marginal_loglik_contrasts      (src/likelihood_contrasts.jl)
 #                          independent-contrast diagonalisation of the BM block.
@@ -25,7 +25,7 @@
 # with a self-contained "median of repeated @elapsed" helper rather than
 # @belapsed. This keeps `julia --project=.` working out of the box.
 
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 using Random
 using SparseArrays
@@ -34,22 +34,22 @@ using Printf
 using ForwardDiff
 
 # The Felsenstein-contrast and edge-node incidence paths are NEW files
-# that are deliberately NOT wired into the GLLVM module on this branch
-# (hard constraint: do NOT modify src/GLLVM.jl). Include them directly,
+# that are deliberately NOT wired into the GLLVModels module on this branch
+# (hard constraint: do NOT modify src/GLLVModels.jl). Include them directly,
 # exactly as test/test_phylo_contrasts.jl and test/test_edge_incidence.jl
 # do.
 #
 # `sparse_phy.jl` is re-included at Main on purpose: the trait-specific
 # branch of `gaussian_marginal_loglik_contrasts` calls `sigma_phy_dense`
 # (and the helpers `augmented_phy` / `AugmentedPhy`), which live in
-# sparse_phy.jl. Inside the GLLVM module they are not visible from a
+# sparse_phy.jl. Inside the GLLVModels module they are not visible from a
 # Main-level include of likelihood_contrasts.jl, so we bring a Main copy
 # in — matching test/test_phylo_contrasts.jl (which includes sparse_phy.jl
 # at line 6) and test/test_edge_incidence.jl (line 12). The Main-level
 # `augmented_phy` produces a Main `AugmentedPhy` used to drive the
 # contrasts path; the exported `gaussian_marginal_loglik_sparse_phy`
-# requires a `GLLVM.AugmentedPhy`, so the sparse path is fed
-# `GLLVM.augmented_phy` instead (same trick as test_edge_incidence.jl).
+# requires a `GLLVModels.AugmentedPhy`, so the sparse path is fed
+# `GLLVModels.augmented_phy` instead (same trick as test_edge_incidence.jl).
 include(joinpath(@__DIR__, "..", "src", "sparse_phy.jl"))
 include(joinpath(@__DIR__, "..", "src", "phylo_contrasts.jl"))
 include(joinpath(@__DIR__, "..", "src", "likelihood_contrasts.jl"))
@@ -112,11 +112,11 @@ function build_fixture(p::Integer; σ²_phy::Float64 = 0.7, σ_eps::Float64 = 0.
     # Two augmented trees from the IDENTICAL Newick. They encode the same
     # topology + branch lengths; the only difference is the defining
     # module so each path's dispatch resolves:
-    #   * tree_aug_gllvm :: GLLVM.AugmentedPhy — required by the exported
+    #   * tree_aug_gllvm :: GLLVModels.AugmentedPhy — required by the exported
     #     gaussian_marginal_loglik_sparse_phy (keyword type check).
     #   * tree_aug_main  :: Main.AugmentedPhy  — drives the contrasts path
     #     so its internal `sigma_phy_dense` (Main) dispatches.
-    tree_aug_gllvm = GLLVM.augmented_phy(newick)
+    tree_aug_gllvm = GLLVModels.augmented_phy(newick)
     tree_aug_main  = augmented_phy(newick)
     tree_edge = edge_phy(newick)             # EdgePhy — edge-incidence path
 
@@ -144,13 +144,13 @@ end
 # ---------------------------------------------------------------------------
 
 # 1. DENSE reference. Receives the explicit p×p Σ_phy.
-ll_dense(fx) = GLLVM.gaussian_marginal_loglik(
+ll_dense(fx) = GLLVModels.gaussian_marginal_loglik(
     fx.y, fx.Λ_B, fx.σ_eps;
     Λ_phy = fx.Λ_phy, σ_phy = fx.σ_phy, Σ_phy = fx.Σ_phy)
 
 # 2. HADFIELD-NAKAGAWA augmented sparse precision (CHOLMOD, eval-only).
 #    Receives the AugmentedPhy + the SCALAR σ²_phy (Σ_phy = σ²_phy·S Q⁻¹ Sᵀ).
-ll_sparse(fx) = GLLVM.gaussian_marginal_loglik_sparse_phy(
+ll_sparse(fx) = GLLVModels.gaussian_marginal_loglik_sparse_phy(
     fx.y, fx.Λ_B, fx.σ_eps;
     Λ_phy = fx.Λ_phy, σ_phy = fx.σ_phy, phy = fx.tree_aug_gllvm, σ²_phy = fx.σ²_phy)
 

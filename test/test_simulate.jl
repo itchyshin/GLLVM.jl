@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "simulate(fit)" begin
     @testset "Poisson: shape, type, reproducible" begin

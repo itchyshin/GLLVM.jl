@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Variational (VA) marginal — Exponential" begin
     @testset "Λ=0 reduces to independent Exponential loglik (exact)" begin
@@ -6,7 +6,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         p, K, n = 6, 2, 40
         β = 0.3 .* randn(p) .+ 0.5
         Y = [rand(Exponential(exp(β[t]))) for t in 1:p, s in 1:n]
-        va = GLLVM.exponential_marginal_loglik_va(Y, zeros(p, K), β)
+        va = GLLVModels.exponential_marginal_loglik_va(Y, zeros(p, K), β)
         ref = 0.0
         for t in 1:p, s in 1:n
             ref += logpdf(Exponential(exp(β[t])), Y[t, s])
@@ -22,7 +22,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         ztrue = randn()
         y = [rand(Exponential(exp(β[t] + Λ[t, 1] * ztrue))) for t in 1:p]
         Y = reshape(y, p, 1)
-        va = GLLVM.exponential_marginal_loglik_va(Y, Λ, β)
+        va = GLLVModels.exponential_marginal_loglik_va(Y, Λ, β)
 
         zs = range(-10, 10; length = 8001); dz = step(zs)
         marg = 0.0
@@ -47,12 +47,12 @@ using GLLVM, Test, Random, Distributions, Statistics
         Λ = 0.4 .* randn(p, K)
         Λ2 = Λ .^ 2
         y = [rand(Exponential(exp(β[t]))) for t in 1:p]
-        negelbo(ψ) = -GLLVM._va_site_exponential_elbo(ψ, y, Λ, Λ2, β)
+        negelbo(ψ) = -GLLVModels._va_site_exponential_elbo(ψ, y, Λ, Λ2, β)
         h = 1e-6
         for _ in 1:3
             ψ = randn(2K)
             G = zeros(2K)
-            GLLVM._va_site_exponential_grad!(G, ψ, y, Λ, Λ2, β)
+            GLLVModels._va_site_exponential_grad!(G, ψ, y, Λ, Λ2, β)
             for i in 1:(2K)
                 ψp = copy(ψ); ψp[i] += h
                 ψm = copy(ψ); ψm[i] -= h
@@ -74,7 +74,7 @@ using GLLVM, Test, Random, Distributions, Statistics
                 Y[t, s] = rand(Exponential(exp(βtrue[t] + sum(Λtrue[t, :] .* z))))
             end
         end
-        fit = GLLVM.fit_exponential_gllvm_va(Y; K = K)
+        fit = GLLVModels.fit_exponential_gllvm_va(Y; K = K)
         @test isfinite(fit.loglik)
         @test size(fit.Λ) == (p, K)
         @test length(fit.β) == p

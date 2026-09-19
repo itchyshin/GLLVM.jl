@@ -21,7 +21,7 @@
 #
 # On DRAC, call this from an sbatch array; one row/seed per array task.
 
-using GLLVM
+using GLLVModels
 using Dates
 using ForwardDiff
 using LinearAlgebra
@@ -499,7 +499,7 @@ end
 function lambda_packed_index(p::Integer, K::Integer, row::Integer, col::Integer)
     row < col && return nothing
     row == col && return col
-    return GLLVM._lower_index(p, K, row, col)
+    return GLLVModels._lower_index(p, K, row, col)
 end
 
 function gaussian_lv_nll_for_fit(fit, Y, X_lv)
@@ -508,7 +508,7 @@ function gaussian_lv_nll_for_fit(fit, Y, X_lv)
     has_phy_unique = fit.model.has_phy_unique
     Σ_phy = hasproperty(fit.pars, :Σ_phy) ? fit.pars.Σ_phy : nothing
     q_lv = size(X_lv, 2)
-    return θv -> GLLVM.gaussian_lv_nll_packed(θv, Y, p, K; X_lv = X_lv, q_lv = q_lv,
+    return θv -> GLLVModels.gaussian_lv_nll_packed(θv, Y, p, K; X_lv = X_lv, q_lv = q_lv,
                                               K_phy = K_phy,
                                               has_phy_unique = has_phy_unique,
                                               Σ_phy = Σ_phy)
@@ -523,10 +523,10 @@ function lv_profile_wald_se(nll, x::AbstractVector, p::Integer, K::Integer,
             val = try nll(v) catch; return 1e12 end
             return isfinite(val) ? val : 1e12
         end
-        GLLVM._fd_hessian(safenll, x)
+        GLLVModels._fd_hessian(safenll, x)
     end
-    return GLLVM._lv_wald_from_hessian(H, x, p, K, q_lv, level,
-                                       GLLVM._lv_effects_from_packed_gaussian).se
+    return GLLVModels._lv_wald_from_hessian(H, x, p, K, q_lv, level,
+                                       GLLVModels._lv_effects_from_packed_gaussian).se
 end
 
 function b_lv_profile_penalty_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int};
@@ -544,8 +544,8 @@ function b_lv_profile_penalty_subset_ci(fit, Y, X_lv, entries::AbstractVector{In
     for (j, entry) in pairs(entries)
         progress("$(prefix)B_lv profile entry $entry start ($j/$(length(entries)))")
         t0 = time()
-        ci = GLLVM._lv_effect_profile(nll, x, p, K, q_lv, level,
-                                      GLLVM._lv_effects_from_packed_gaussian, wse;
+        ci = GLLVModels._lv_effect_profile(nll, x, p, K, q_lv, level,
+                                      GLLVModels._lv_effects_from_packed_gaussian, wse;
                                       ad = true, indices = [entry])
         append!(terms, String.(ci.term))
         append!(estimates, Float64.(ci.estimate))
@@ -568,7 +568,7 @@ function b_lv_profile_exact_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int}
     x = collect(Float64, fit.pars.θ_packed)
     nll = gaussian_lv_nll_for_fit(fit, Y, X_lv)
     wse = lv_profile_wald_se(nll, x, p, K, q_lv, level)
-    b_hat = GLLVM._lv_effects_from_packed_gaussian(x, p, K, q_lv)
+    b_hat = GLLVModels._lv_effects_from_packed_gaussian(x, p, K, q_lv)
     cutoff = quantile(Chisq(1), level)
     logσ_idx = q_lv * K + 1
     lambda_offset = logσ_idx
@@ -588,8 +588,8 @@ function b_lv_profile_exact_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int}
 
     function choose_anchor(row, col)
         α = reshape(x[1:(q_lv * K)], q_lv, K)
-        rr = GLLVM.rr_theta_len(p, K)
-        Λ = GLLVM.unpack_lambda(@view(x[(logσ_idx + 1):(logσ_idx + rr)]), p, K)
+        rr = GLLVModels.rr_theta_len(p, K)
+        Λ = GLLVModels.unpack_lambda(@view(x[(logσ_idx + 1):(logσ_idx + rr)]), p, K)
         best = (kind = :none, k = 0, anchor = 0, score = 0.0)
         for k in 1:min(K, row)
             li = lambda_index(row, k)
@@ -729,7 +729,7 @@ function b_lv_profile_truth_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int}
     q_lv = size(X_lv, 2)
     x = collect(Float64, fit.pars.θ_packed)
     nll = gaussian_lv_nll_for_fit(fit, Y, X_lv)
-    b_hat = GLLVM._lv_effects_from_packed_gaussian(x, p, K, q_lv)
+    b_hat = GLLVModels._lv_effects_from_packed_gaussian(x, p, K, q_lv)
     cutoff = quantile(Chisq(1), level)
     logσ_idx = q_lv * K + 1
     lambda_offset = logσ_idx
@@ -751,8 +751,8 @@ function b_lv_profile_truth_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int}
 
     function choose_anchor(row, col)
         alpha = reshape(x[1:(q_lv * K)], q_lv, K)
-        rr = GLLVM.rr_theta_len(p, K)
-        Lambda = GLLVM.unpack_lambda(@view(x[(logσ_idx + 1):(logσ_idx + rr)]), p, K)
+        rr = GLLVModels.rr_theta_len(p, K)
+        Lambda = GLLVModels.unpack_lambda(@view(x[(logσ_idx + 1):(logσ_idx + rr)]), p, K)
         best = (kind = :none, k = 0, anchor = 0, score = 0.0)
         for k in 1:min(K, row)
             li = lambda_index(row, k)
@@ -860,7 +860,7 @@ end
 
 function eta_realized_b_lv_target(X_lv::AbstractMatrix, Z_truth::AbstractMatrix,
                                   Lambda_B::AbstractMatrix)
-    return vec(GLLVM._eta_realized_lv_effects(X_lv, Z_truth, Lambda_B))
+    return vec(GLLVModels._eta_realized_lv_effects(X_lv, Z_truth, Lambda_B))
 end
 
 function b_lv_profile_direct_slope_subset_ci(fit, Y, X_lv, entries::AbstractVector{Int};
@@ -1033,7 +1033,7 @@ end
 function b_lv_bootstrap_basic_ci(fit, Y, X_lv; level::Real, n_boot::Integer,
                                  seed::Integer,
                                  bootstrap_iterations::Union{Nothing, Integer})
-    simfn, refitfn = GLLVM._lv_boot_fns(fit, Y, X_lv, nothing, bootstrap_iterations)
+    simfn, refitfn = GLLVModels._lv_boot_fns(fit, Y, X_lv, nothing, bootstrap_iterations)
     b_hat = vec(extract_lv_effects(fit))
     nb = length(b_hat)
     q_lv = size(X_lv, 2)
@@ -1079,8 +1079,8 @@ function phylo_signal_row(base, fit, Y, Sigma_phy, truth; level::Real)
     lower = fill(NaN, length(truth))
     upper = fill(NaN, length(truth))
     pd = true
-    cis = if isdefined(GLLVM, :_phylo_signal_wald_ci_all)
-        GLLVM._phylo_signal_wald_ci_all(fit; level = level, y = Y, Σ_phy = Sigma_phy)
+    cis = if isdefined(GLLVModels, :_phylo_signal_wald_ci_all)
+        GLLVModels._phylo_signal_wald_ci_all(fit; level = level, y = Y, Σ_phy = Sigma_phy)
     else
         [phylo_signal_wald_ci(fit, t; level = level, y = Y, Σ_phy = Sigma_phy)
          for t in eachindex(truth)]

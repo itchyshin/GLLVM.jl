@@ -4,7 +4,7 @@
 # Usage:
 #   julia --project=. tools/core070_second_order/smoke_binomial_eoo.jl [output.json]
 
-using GLLVM, RCall, Dates, Random, LinearAlgebra, ForwardDiff
+using GLLVModels, RCall, Dates, Random, LinearAlgebra, ForwardDiff
 
 const OUT_DEFAULT = joinpath(@__DIR__, "..", "..", "docs", "dev-log", "core070",
     "binomial-2so-eoo-smoke-receipt-2026-09-06.json")

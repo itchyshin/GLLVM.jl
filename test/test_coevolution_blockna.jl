@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
+using GLLVModels, Test, LinearAlgebra, Random, Statistics, ForwardDiff
 
 # Block-NA cross-lineage coevolution: host species measure only host traits,
 # partner species only partner traits. Observed d = [vec(Y_HH); vec(Y_PP)] is
@@ -21,7 +21,7 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
         A_H = K[1:n_H, 1:n_H]
         A_P = K[(n_H + 1):n, (n_H + 1):n]
         K_HP = K[1:n_H, (n_H + 1):n]
-        M = GLLVM._blockna_cov(Σ_T, A_H, A_P, K_HP, T_H, T_P)
+        M = GLLVModels._blockna_cov(Σ_T, A_H, A_P, K_HP, T_H, T_P)
         full = kron(Matrix(K), Σ_T)
         obs = Int[]
         for i in 1:n_H, t in 1:T_H
@@ -109,7 +109,7 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
         Y_HH = Ystar[1:T_H, 1:n_H]
         Y_PP = Ystar[(T_H + 1):T, (n_H + 1):n]
         d_obs = vcat(vec(Y_HH), vec(Y_PP))
-        f(θ) = GLLVM._coevolution_blockna_nll(θ, d_obs, A_H, A_P, K_HP, T, T_H, T_P, d)
+        f(θ) = GLLVModels._coevolution_blockna_nll(θ, d_obs, A_H, A_P, K_HP, T, T_H, T_P, d)
         θ = vcat(vec(Λ), log(σ))
         g_ad = ForwardDiff.gradient(f, θ)
         h = 1e-6

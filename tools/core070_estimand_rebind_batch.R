@@ -6,7 +6,7 @@
 # tools/core070_surface_conversion_batch.R / surface-conversion-batch-
 # contract.json (case_count=20, deferred_count=21 -- see its own header and
 # docs/dev-log/core070/estimand-alignment-notes.md) because, at the time,
-# GLLVM.jl's extract_communality/extract_correlations/extract_proportions/
+# GLLVModels.jl's extract_communality/extract_correlations/extract_proportions/
 # extract_Omega used a TOTAL-variance estimand while R's real accessors are
 # TIER-SCOPED. That frozen contract is NOT reopened here (it stays exactly
 # 20/21, unedited) -- this is a separate, small, standalone batch that
@@ -14,7 +14,7 @@
 # tools/core070_surface_conversion_batch.R) and calls the REAL R accessors
 # directly (not a Sigma/getResidualCor proxy), now that maintainer decision
 # round 1 item 3 (docs/dev-log/decisions/2026-09-01-maintainer-decisions-round1.md)
-# has made GLLVM.jl's defaults tier-scoped to match.
+# has made GLLVModels.jl's defaults tier-scoped to match.
 #
 # argv:
 #   Rscript --vanilla tools/core070_estimand_rebind_batch.R <frozen-library> <destination>
@@ -81,7 +81,7 @@ stopifnot("gllvmTMB_multi" %in% class(fit_g))
 
 # ---------------------------------------------------------------------------
 # The 4 cases -- REAL R accessors, called with the tier-scoped `level`/
-# `tier`/`component` argument that is now GLLVM.jl's matching DEFAULT.
+# `tier`/`component` argument that is now GLLVModels.jl's matching DEFAULT.
 # ---------------------------------------------------------------------------
 CASE_IDS <- c(
   communality   = "CORE070-ESTIMAND-REBIND-EXTRACT-COMMUNALITY",

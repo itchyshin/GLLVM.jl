@@ -6,7 +6,7 @@ using Test
 using Random
 using LinearAlgebra
 using Distributions
-using GLLVM
+using GLLVModels
 
 function _zinb_x_sim(p, n, K, q; seed = 1, r = 8.0)
     Random.seed!(seed)
@@ -16,8 +16,8 @@ function _zinb_x_sim(p, n, K, q; seed = 1, r = 8.0)
     γc = 0.45 .* randn(q)
     Λc = 0.3 .* randn(p, K)
     X = randn(p, n, q)
-    Oz = GLLVM._build_offset(X, γz)
-    Oc = GLLVM._build_offset(X, γc)
+    Oz = GLLVModels._build_offset(X, γz)
+    Oc = GLLVModels._build_offset(X, γc)
     Z = randn(K, n)
     Y = Matrix{Int}(undef, p, n)
     for t in 1:p, s in 1:n
@@ -36,17 +36,17 @@ end
 
     @testset "dual-offset marginal matches hand-built Oz/Oc" begin
         Y, X, βz, γz, βc, γc, Λc, r = _zinb_x_sim(4, 35, 1, 1; seed = 8701)
-        Oz = GLLVM._build_offset(X, γz)
-        Oc = GLLVM._build_offset(X, γc)
-        ll = GLLVM.zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetz = Oz, offsetc = Oc)
+        Oz = GLLVModels._build_offset(X, γz)
+        Oc = GLLVModels._build_offset(X, γc)
+        ll = GLLVModels.zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetz = Oz, offsetc = Oc)
         @test isfinite(ll)
         # Absorbing a constant γ into β leaves the likelihood unchanged when X is
         # constant across sites — smoke that offsetz path is live (not only offsetc).
         Xconst = ones(size(X)...)
-        Ozc = GLLVM._build_offset(Xconst, γz)
-        Occ = GLLVM._build_offset(Xconst, γc)
-        ll_off = GLLVM.zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetz = Ozc, offsetc = Occ)
-        ll_abs = GLLVM.zinb_marginal_loglik_laplace(Y, Λc, βz .+ γz[1], βc .+ γc[1], r)
+        Ozc = GLLVModels._build_offset(Xconst, γz)
+        Occ = GLLVModels._build_offset(Xconst, γc)
+        ll_off = GLLVModels.zinb_marginal_loglik_laplace(Y, Λc, βz, βc, r; offsetz = Ozc, offsetc = Occ)
+        ll_abs = GLLVModels.zinb_marginal_loglik_laplace(Y, Λc, βz .+ γz[1], βc .+ γc[1], r)
         @test isapprox(ll_off, ll_abs; atol = 1e-8, rtol = 0)
     end
 
@@ -90,18 +90,18 @@ end
     @testset "packed FD central vs 5-point ≤ 1e-6 (incl. log r)" begin
         Y, X, βz, γz, βc, γc, Λc, r = _zinb_x_sim(3, 28, 1, 1; seed = 8730)
         p, n = size(Y); K = 1; q = 1
-        rr = GLLVM.rr_theta_len(p, K)
-        θ = vcat(βz, γz, βc, γc, GLLVM.pack_lambda(Λc), log(r))
+        rr = GLLVModels.rr_theta_len(p, K)
+        θ = vcat(βz, γz, βc, γc, GLLVModels.pack_lambda(Λc), log(r))
         nll = θv -> begin
             βzv = @view θv[1:p]
             γzv = @view θv[(p + 1):(p + q)]
             βcv = @view θv[(p + q + 1):(2p + q)]
             γcv = @view θv[(2p + q + 1):(2p + 2q)]
-            Λcv = GLLVM.unpack_lambda(@view(θv[(2p + 2q + 1):(2p + 2q + rr)]), p, K)
+            Λcv = GLLVModels.unpack_lambda(@view(θv[(2p + 2q + 1):(2p + 2q + rr)]), p, K)
             rv = exp(θv[2p + 2q + rr + 1])
-            Oz = GLLVM._build_offset(X, γzv)
-            Oc = GLLVM._build_offset(X, γcv)
-            return -GLLVM.zinb_marginal_loglik_laplace(Y, Λcv, βzv, βcv, rv;
+            Oz = GLLVModels._build_offset(X, γzv)
+            Oc = GLLVModels._build_offset(X, γcv)
+            return -GLLVModels.zinb_marginal_loglik_laplace(Y, Λcv, βzv, βcv, rv;
                                                       offsetz = Oz, offsetc = Oc)
         end
         h = 1e-6

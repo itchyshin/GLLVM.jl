@@ -7,9 +7,12 @@ function core070_poisson_beta_required(family::Symbol)
     contract="docs/dev-log/core070/poisson-beta-required-contract.json"
     _core070_sha256_file(joinpath(root,contract))=="8b6016cbedcbdc4d20d66f3a4db74f3e0e5bfb4b0fb7d34e742afa499150642c" || error("required model contract changed")
     fixture="test/parity/test_$(family)_parity.jl"
+    # Whole-file pins changed only because the package/module spelling changed
+    # from GLLVM to GLLVModels. The DGP-region pins below intentionally remain
+    # frozen, so this rename cannot silently alter the historical simulation.
     expected=Dict(
-        :poisson => ("d7ca740f8daa303aae730647af53b1db461ba7c0d44a4341db17e7e3495ed204","404e19e607362e4682f7348dec0fc5dd127d06114fe1f9197f24001ddf537100"),
-        :beta => ("74a045861439b5a6f5a56c2c427c4abd2bfcc1fc143cfe43c392044ca51dbac8","45c31fe9b8e846681bdabb7f4a8284bc8a1f04ada25c685a34687c617669e1ab"))
+        :poisson => ("0faa57a2d346dd85715053c90db35550c614e6f87152956e79d9aaf6f0a296c7","404e19e607362e4682f7348dec0fc5dd127d06114fe1f9197f24001ddf537100"),
+        :beta => ("2fda9fcd23ac2bb435cacd7cf9b03bc25b7ccbadacb291a928ed7ac3d1440fa9","45c31fe9b8e846681bdabb7f4a8284bc8a1f04ada25c685a34687c617669e1ab"))
     _core070_sha256_file(joinpath(root,fixture))==expected[family][1] || error("original fixture changed")
     source=read(joinpath(root,fixture),String)
     first=findfirst("    Random.seed!(",source).start;last=findnext("    jl_fit =",source,first).start
@@ -32,7 +35,7 @@ function core070_poisson_beta_required(family::Symbol)
         "fixture_sha256"=>_core070_sha256_file(joinpath(root,fixture)),
         "dgp_sha256"=>bytes2hex(sha256(dgp)))), datafile, "w")
     native = family===:poisson ? fit_poisson_gllvm(Y; K=K) :
-        fit_gllvm(Y; family=GLLVM.Beta(), K=K, g_tol=1e-7, iterations=800)
+        fit_gllvm(Y; family=GLLVModels.Beta(), K=K, g_tol=1e-7, iterations=800)
     r = fit_gllvmtmb_parity_loglik(Y, K; family=family)
     rawpath=joinpath(dir,string(family)*"-whole-fit.rds")
     fam=string(family)
@@ -70,13 +73,13 @@ function core070_poisson_beta_required(family::Symbol)
         original_opt=pb_original$opt,original_gradient=pb_original_gradient,
         original_data=pb_original$tmb_obj$env$data,original_map=pb_original$tmb_obj$env$map),rawpath)
     """
-    rr=GLLVM.rr_theta_len(p,K)
-    theta=vcat(native.β,GLLVM.pack_lambda(native.Λ),family===:beta ? log.(native.φ) : Float64[])
+    rr=GLLVModels.rr_theta_len(p,K)
+    theta=vcat(native.β,GLLVModels.pack_lambda(native.Λ),family===:beta ? log.(native.φ) : Float64[])
     function objective(v)
-        beta=v[1:p];lambda=GLLVM.unpack_lambda(v[p+1:p+rr],p,K)
+        beta=v[1:p];lambda=GLLVModels.unpack_lambda(v[p+1:p+rr],p,K)
         family===:poisson ?
-            -GLLVM.poisson_marginal_loglik_laplace(Y,lambda,beta,LogLink();hessian=native.hessian,maxiter=100,tol=1e-9) :
-            -GLLVM.beta_grouped_marginal_loglik_laplace(Y,lambda,beta,exp.(v[p+rr+1:end]);hessian=:observed,maxiter=100,tol=1e-9)
+            -GLLVModels.poisson_marginal_loglik_laplace(Y,lambda,beta,LogLink();hessian=native.hessian,maxiter=100,tol=1e-9) :
+            -GLLVModels.beta_grouped_marginal_loglik_laplace(Y,lambda,beta,exp.(v[p+rr+1:end]);hessian=:observed,maxiter=100,tol=1e-9)
     end
     function fd(v,m)
         [begin
@@ -90,7 +93,7 @@ function core070_poisson_beta_required(family::Symbol)
     rbeta=rcopy(Vector{Float64},R"pb_beta")
     rlambda=rcopy(Matrix{Float64},R"pb_lambda")
     rdisp=rcopy(Vector{Float64},R"pb_disp")
-    rn=vcat(rbeta,GLLVM.pack_lambda(rlambda),log.(rdisp))
+    rn=vcat(rbeta,GLLVModels.pack_lambda(rlambda),log.(rdisp))
     r_objective=rcopy(Float64,R"pb_objective")
     expected=family===:poisson ? 14 : 15
     report=Dict("id"=>id,"family"=>fam,"scope"=>"ORIGINAL_NATIVE_FIT_HEALTH_NOT_RECOVERY",
@@ -126,7 +129,7 @@ function core070_poisson_beta_required(family::Symbol)
         "r_packing"=>report["r_packing_delta"]<=1e-12,
         "samepoint"=>abs(report["samepoint_delta"])<=1e-6,
         "link"=>family===:poisson ? native.link isa LogLink : native.link isa LogitLink,
-        "curvature"=>family===:poisson ? GLLVM._glm_weight_matches_observed(GLLVM.Poisson(),native.link) : native.hessian===:observed,
+        "curvature"=>family===:poisson ? GLLVModels._glm_weight_matches_observed(GLLVModels.Poisson(),native.link) : native.hessian===:observed,
         "dispersion"=>family===:poisson ? isempty(rdisp) : native.group==collect(1:p)&&length(native.φ)==length(rdisp)==p&&all(>(0),native.φ)&&all(>(0),rdisp))
     checks["model_preserved"] = report["model_preserved"]
     report["checks"]=checks

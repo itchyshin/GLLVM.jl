@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, ForwardDiff
+using GLLVModels, Test, Random, Distributions, ForwardDiff
 
 # Draw zero-truncated NB2(μ, r): reject zeros.
 function _rtruncnb2(μ, r)
@@ -17,7 +17,7 @@ end
         β = log.([2.0, 3.5, 1.5, 4.0])
         r = 5.0
         Y = [_rtruncnb2(exp(β[t]), r) for t in 1:p, s in 1:n]
-        ll = GLLVM.truncated_nbinom2_marginal_loglik_laplace(Y, zeros(p, K), β, r)
+        ll = GLLVModels.truncated_nbinom2_marginal_loglik_laplace(Y, zeros(p, K), β, r)
         ll_indep = sum(begin
             μ = exp(β[t])
             p0 = (r / (r + μ))^r
@@ -35,15 +35,15 @@ end
         μtr = μ / (1 - p0)
         V = μ + μ^2 / r
         var_tr = (V + μ^2) / (1 - p0) - μtr^2
-        s = GLLVM._glm_score(f, μ, 1, me, y)
-        W = GLLVM._glm_weight(f, μ, 1, me)
+        s = GLLVModels._glm_score(f, μ, 1, me, y)
+        W = GLLVModels._glm_weight(f, μ, 1, me)
         @test s ≈ a * (y - μtr) atol = 1e-12
         @test W ≈ a^2 * var_tr atol = 1e-12
         # Sol BLOCK evidence: bare (y−μ_tr) ≈ 0.08144 ≠ dℓ/dη ≈ 0.05012; a·(y−μ_tr) matches.
         @test abs(s - (y - μtr)) > 1e-3   # must NOT equal the a-omitted form
         ℓ = η -> begin
             μv = exp(η)
-            GLLVM._glm_logpdf(TruncatedNegBin2(r), μv, 1, y)
+            GLLVModels._glm_logpdf(TruncatedNegBin2(r), μv, 1, y)
         end
         η = log(μ)
         h = 1e-6
@@ -85,14 +85,14 @@ end
         β = randn(p) .* 0.2 .+ 0.8
         r = 5.0
         Y = [_rtruncnb2(exp(β[t]), r) for t in 1:p, s in 1:n]
-        rr = GLLVM.rr_theta_len(p, K)
-        θ = vcat(β, GLLVM.pack_lambda(0.3 .* randn(p, K)), log(r))
+        rr = GLLVModels.rr_theta_len(p, K)
+        θ = vcat(β, GLLVModels.pack_lambda(0.3 .* randn(p, K)), log(r))
         N1 = ones(Int, size(Y))
         nll = θv -> begin
             βv = θv[1:p]
-            Λv = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            Λv = GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
             rv = exp(θv[p + rr + 1])
-            -GLLVM.marginal_loglik_laplace(TruncatedNegBin2(rv), Y, N1, Λv, βv, LogLink())
+            -GLLVModels.marginal_loglik_laplace(TruncatedNegBin2(rv), Y, N1, Λv, βv, LogLink())
         end
         g_ad = ForwardDiff.gradient(nll, θ)
         h = 1e-6
@@ -113,8 +113,8 @@ end
         r = 5.0
         rvec = fill(r, p)
         Y = [_rtruncnb2(exp(β[t]), r) for t in 1:p, s in 1:n]
-        ll_shared = GLLVM.truncated_nbinom2_marginal_loglik_laplace(Y, Λ, β, r)
-        ll_pt = GLLVM.truncated_nbinom2_pertrait_marginal_loglik_laplace(Y, Λ, β, rvec)
+        ll_shared = GLLVModels.truncated_nbinom2_marginal_loglik_laplace(Y, Λ, β, r)
+        ll_pt = GLLVModels.truncated_nbinom2_pertrait_marginal_loglik_laplace(Y, Λ, β, rvec)
         @test ll_pt ≈ ll_shared atol = 1e-8
     end
 
@@ -124,14 +124,14 @@ end
         β = randn(p) .* 0.2 .+ 0.8
         rvec = [4.0, 6.0, 5.0]
         Y = [_rtruncnb2(exp(β[t]), rvec[t]) for t in 1:p, s in 1:n]
-        rr = GLLVM.rr_theta_len(p, K)
-        θ = vcat(β, GLLVM.pack_lambda(0.3 .* randn(p, K)), log.(rvec))
+        rr = GLLVModels.rr_theta_len(p, K)
+        θ = vcat(β, GLLVModels.pack_lambda(0.3 .* randn(p, K)), log.(rvec))
         @test length(θ) == p + rr + p
         nll = θv -> begin
             βv = θv[1:p]
-            Λv = GLLVM.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
+            Λv = GLLVModels.unpack_lambda(θv[(p + 1):(p + rr)], p, K)
             rv = exp.(θv[(p + rr + 1):(p + rr + p)])
-            -GLLVM.truncated_nbinom2_pertrait_marginal_loglik_laplace(Y, Λv, βv, rv)
+            -GLLVModels.truncated_nbinom2_pertrait_marginal_loglik_laplace(Y, Λv, βv, rv)
         end
         g_ad = ForwardDiff.gradient(nll, θ)
         h = 1e-6

@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 # Build a (p,n,1) design carrying a single shared site covariate: X[t,s,1] = x[s].
 function _site_design(x::AbstractVector, p::Integer)
@@ -17,9 +17,9 @@ end
         β = 0.3 .* randn(p); γ = [0.7]
         x = randn(n); X = _site_design(x, p)
         Y = [rand(Poisson(exp(β[t] + γ[1] * x[s]))) for t in 1:p, s in 1:n]
-        O = GLLVM._build_offset(X, γ)
+        O = GLLVModels._build_offset(X, γ)
         @test O[3, 4] ≈ γ[1] * x[4] atol = 1e-12      # offset construction
-        ll = GLLVM._marginal_loglik_offset(Poisson(), Y, ones(Int, p, n),
+        ll = GLLVModels._marginal_loglik_offset(Poisson(), Y, ones(Int, p, n),
                                            zeros(p, K), β, O, LogLink())
         ref = 0.0
         for t in 1:p, s in 1:n
@@ -102,7 +102,7 @@ end
         @test fit_fixed.γ_fixed == [false, true]
         @test fit_fixed.γ[1] ≈ fit_drop.γ[1] atol = 1e-8
         @test fit_fixed.loglik ≈ fit_drop.loglik atol = 1e-8
-        @test GLLVM.aic(fit_fixed) ≈ GLLVM.aic(fit_drop) atol = 1e-8
+        @test GLLVModels.aic(fit_fixed) ≈ GLLVModels.aic(fit_drop) atol = 1e-8
 
         ci = confint(fit_fixed, Y; method = :wald, X = X, parm = "gamma")
         @test ci.term == ["gamma[1]"]
@@ -143,7 +143,7 @@ end
         Xnew = zeros(p, 3, 1)
         Xnew[:, :, 1] .= [0.0 1.0 -1.0]               # 3 new sites, broadcast across species
         Pl = predict(fit, Xnew; type = :link)
-        @test Pl ≈ fit.β .+ GLLVM._build_offset(Xnew, fit.γ)   # exact fixed-effect predictor
+        @test Pl ≈ fit.β .+ GLLVModels._build_offset(Xnew, fit.γ)   # exact fixed-effect predictor
         Pr = predict(fit, Xnew; type = :response)
         @test Pr ≈ exp.(Pl)
         @test size(Pr) == (p, 3) && all(Pr .>= 0)

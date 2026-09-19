@@ -28,7 +28,7 @@ julia --project=/private/tmp/destination-b-evidence-env-3ih0r7 \
 
 using JSON3
 using SHA
-using GLLVM
+using GLLVModels
 using Distributions: Normal
 
 include(joinpath(@__DIR__, "compare_phylo_gaussian_reference.jl"))
@@ -43,8 +43,8 @@ _dbfit_number(x::Real) = isfinite(x) ? Float64(x) : nothing
 _dbfit_symbol(x::Symbol) = String(x)
 
 function _dbfit_source_hash(filename::AbstractString)
-    source_path = joinpath(dirname(pathof(GLLVM)), filename)
-    isfile(source_path) || throw(ArgumentError("loaded GLLVM source is missing `$filename`"))
+    source_path = joinpath(dirname(pathof(GLLVModels)), filename)
+    isfile(source_path) || throw(ArgumentError("loaded GLLVModels source is missing `$filename`"))
     return bytes2hex(sha256(read(source_path)))
 end
 
@@ -312,7 +312,7 @@ function fit_phylo_gaussian_reference(reference_path::AbstractString;
             "packing.jl" => _dbfit_source_hash("packing.jl"),
         )
         receipt["route"] = Dict{String,Any}(
-            "entrypoint" => "GLLVM.fit_gllvm",
+            "entrypoint" => "GLLVModels.fit_gllvm",
             "family" => "Normal",
             "phylo_rank" => 1,
             "phylo_mode" => "barelowrank",

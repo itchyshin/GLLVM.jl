@@ -8,7 +8,7 @@
 # See docs/dev-log/plans/2026-08-25-laplace-structural-design.md for the design
 # and the adversarial verdict (PROCEED WITH MODIFICATIONS).
 
-using GLLVM, Test, Random, Distributions, ForwardDiff
+using GLLVModels, Test, Random, Distributions, ForwardDiff
 
 @testset "Laplace curvature contract" begin
 
@@ -19,33 +19,33 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
     @testset "default is :fisher — shipped behaviour preserved" begin
         # The contract must not change any default. This is the guard against a
         # flip landing by accident rather than by decision.
-        @test GLLVM._default_hessian(Poisson(), GLLVM.LogLink()) === :fisher
+        @test GLLVModels._default_hessian(Poisson(), GLLVModels.LogLink()) === :fisher
         # Gamma/log is the ONE deliberate exception (2026-08-25): instance 8 of
         # the curvature fault class, on the public default path, flipped on
         # family-specific measured evidence (observed is closer to quadrature
         # 12/12, by 20-60×). Pinned so the exception stays deliberate and
         # visible rather than spreading by accident.
-        @test GLLVM._default_hessian(Gamma(3.0, 1.0), GLLVM.LogLink()) === :observed
+        @test GLLVModels._default_hessian(Gamma(3.0, 1.0), GLLVModels.LogLink()) === :observed
         # NB2/log joined the deliberate exceptions 2026-08-27: flipped on the
         # 900-cell curvature-adjudication campaign, where NB2 preferred the
         # observed curvature on BOTH the estimator-quality and the
         # approximation-accuracy metrics (campaigns/curvature_adjudication/).
-        @test GLLVM._default_hessian(NegativeBinomial(4.0, 0.5), GLLVM.LogLink()) === :observed
+        @test GLLVModels._default_hessian(NegativeBinomial(4.0, 0.5), GLLVModels.LogLink()) === :observed
         # Decision A (2026-08-27): Beta, NB1 and Student-t flipped on the
         # campaign's estimator-quality metric with the reported-loglik cost
         # accepted; Exponential's long-shipped fitter default is now DECLARED
         # at the registry level (adversarial-audit fix). All dated, deliberate.
-        @test GLLVM._default_hessian(Beta(12.0, 1.0), GLLVM.LogitLink()) === :observed
-        @test GLLVM._default_hessian(GLLVM.NB1(1.5), GLLVM.LogLink()) === :observed
-        @test GLLVM._default_hessian(GLLVM.StudentTFamily(4.0, 1.0), GLLVM.IdentityLink()) === :observed
-        @test GLLVM._default_hessian(Exponential(1.0), GLLVM.LogLink()) === :observed
+        @test GLLVModels._default_hessian(Beta(12.0, 1.0), GLLVModels.LogitLink()) === :observed
+        @test GLLVModels._default_hessian(GLLVModels.NB1(1.5), GLLVModels.LogLink()) === :observed
+        @test GLLVModels._default_hessian(GLLVModels.StudentTFamily(4.0, 1.0), GLLVModels.IdentityLink()) === :observed
+        @test GLLVModels._default_hessian(Exponential(1.0), GLLVModels.LogLink()) === :observed
         # Maintainer decision batch (2026-08-28,
         # docs/dev-log/decisions/2026-08-28-arc-decision-batch.md): TweedieED/log
         # and Binomial/probit both flip to :observed — TMB/gllvmTMB structural
         # parity (TMB differentiates the joint nll, so its log-det is observed
         # for every family it ships).
-        @test GLLVM._default_hessian(GLLVM.TweedieED(1.2, 1.5), GLLVM.LogLink()) === :observed
-        @test GLLVM._default_hessian(Binomial(), GLLVM.ProbitLink()) === :observed
+        @test GLLVModels._default_hessian(GLLVModels.TweedieED(1.2, 1.5), GLLVModels.LogLink()) === :observed
+        @test GLLVModels._default_hessian(Binomial(), GLLVModels.ProbitLink()) === :observed
         # Binomial/cloglog flips to :observed too (2026-09-01, maintainer
         # decisions round 1 item 2): at R's fitted coordinates on the retained
         # seed-81012 fixture, Julia's :fisher marginal disagreed with
@@ -54,13 +54,13 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         # docs/dev-log/core070/cloglog-leaf-notes.md). The 2026-08-28
         # optimizer-runaway pathology (check-log same date) was measured under
         # BOTH curvature selectors, so it does not bear on this default.
-        @test GLLVM._default_hessian(Binomial(), GLLVM.CLogLogLink()) === :observed
+        @test GLLVModels._default_hessian(Binomial(), GLLVModels.CLogLogLink()) === :observed
     end
 
     @testset "invalid selector fails loud" begin
         Y = rand(1:6, p, n); N = ones(Int, p, n); β = fill(0.8, p)
-        @test_throws ArgumentError GLLVM.marginal_loglik_laplace(
-            Poisson(), Y, N, Λ, β, GLLVM.LogLink(); hessian = :bogus)
+        @test_throws ArgumentError GLLVModels.marginal_loglik_laplace(
+            Poisson(), Y, N, Λ, β, GLLVModels.LogLink(); hessian = :bogus)
     end
 
     # ---- The invariance set -------------------------------------------------
@@ -74,25 +74,25 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
 
         @testset "Poisson / log" begin
             Y = rand(1:9, p, n)
-            a = GLLVM.marginal_loglik_laplace(Poisson(), Y, N, Λ, β, GLLVM.LogLink(); hessian = :fisher)
-            b = GLLVM.marginal_loglik_laplace(Poisson(), Y, N, Λ, β, GLLVM.LogLink(); hessian = :observed)
+            a = GLLVModels.marginal_loglik_laplace(Poisson(), Y, N, Λ, β, GLLVModels.LogLink(); hessian = :fisher)
+            b = GLLVModels.marginal_loglik_laplace(Poisson(), Y, N, Λ, β, GLLVModels.LogLink(); hessian = :observed)
             @test a === b
-            @test GLLVM._glm_weight_matches_observed(Poisson(), GLLVM.LogLink())
+            @test GLLVModels._glm_weight_matches_observed(Poisson(), GLLVModels.LogLink())
         end
 
         @testset "Binomial / logit" begin
             Nb = fill(6, p, n)
             Y  = [rand(0:6) for _ in 1:p, _ in 1:n]
-            a = GLLVM.marginal_loglik_laplace(Binomial(), Y, Nb, Λ, β, GLLVM.LogitLink(); hessian = :fisher)
-            b = GLLVM.marginal_loglik_laplace(Binomial(), Y, Nb, Λ, β, GLLVM.LogitLink(); hessian = :observed)
+            a = GLLVModels.marginal_loglik_laplace(Binomial(), Y, Nb, Λ, β, GLLVModels.LogitLink(); hessian = :fisher)
+            b = GLLVModels.marginal_loglik_laplace(Binomial(), Y, Nb, Λ, β, GLLVModels.LogitLink(); hessian = :observed)
             @test a === b
-            @test GLLVM._glm_weight_matches_observed(Binomial(), GLLVM.LogitLink())
+            @test GLLVModels._glm_weight_matches_observed(Binomial(), GLLVModels.LogitLink())
         end
 
         @testset "TruncatedPoisson / log" begin
             Y = rand(1:9, p, n)   # y ≥ 1 required
-            a = GLLVM.marginal_loglik_laplace(GLLVM.TruncatedPoisson(), Y, N, Λ, β, GLLVM.LogLink(); hessian = :fisher)
-            b = GLLVM.marginal_loglik_laplace(GLLVM.TruncatedPoisson(), Y, N, Λ, β, GLLVM.LogLink(); hessian = :observed)
+            a = GLLVModels.marginal_loglik_laplace(GLLVModels.TruncatedPoisson(), Y, N, Λ, β, GLLVModels.LogLink(); hessian = :fisher)
+            b = GLLVModels.marginal_loglik_laplace(GLLVModels.TruncatedPoisson(), Y, N, Λ, β, GLLVModels.LogLink(); hessian = :observed)
             @test a === b
         end
 
@@ -100,8 +100,8 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         # the logit link. If probit ever silently acquired the trait, a genuinely
         # wrong weight would be declared safe.
         @testset "trait is link-specific, not family-wide" begin
-            @test !GLLVM._glm_weight_matches_observed(Binomial(), GLLVM.ProbitLink())
-            @test !GLLVM._glm_weight_matches_observed(Binomial(), GLLVM.CLogLogLink())
+            @test !GLLVModels._glm_weight_matches_observed(Binomial(), GLLVModels.ProbitLink())
+            @test !GLLVModels._glm_weight_matches_observed(Binomial(), GLLVModels.CLogLogLink())
         end
     end
 
@@ -115,31 +115,31 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         @testset "Gamma / log differs" begin
             Y = 0.5 .+ rand(p, n)
             f = Gamma(3.0, 1.0)
-            a = GLLVM.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVM.LogLink(); hessian = :fisher)
-            b = GLLVM.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVM.LogLink(); hessian = :observed)
+            a = GLLVModels.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVModels.LogLink(); hessian = :fisher)
+            b = GLLVModels.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVModels.LogLink(); hessian = :observed)
             @test isfinite(a) && isfinite(b)
             @test a != b
-            @test !GLLVM._glm_weight_matches_observed(f, GLLVM.LogLink())
+            @test !GLLVModels._glm_weight_matches_observed(f, GLLVModels.LogLink())
         end
 
         @testset "TweedieED / log differs" begin
             Y = [rand() < 0.3 ? 0.0 : 0.1 + 2 * rand() for _ in 1:p, _ in 1:n]
-            f = GLLVM.TweedieED(1.3, 1.5)
-            a = GLLVM.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVM.LogLink(); hessian = :fisher)
-            b = GLLVM.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVM.LogLink(); hessian = :observed)
+            f = GLLVModels.TweedieED(1.3, 1.5)
+            a = GLLVModels.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVModels.LogLink(); hessian = :fisher)
+            b = GLLVModels.marginal_loglik_laplace(f, Y, N, Λ, β, GLLVModels.LogLink(); hessian = :observed)
             @test isfinite(a) && isfinite(b)
             @test a != b
-            @test !GLLVM._glm_weight_matches_observed(f, GLLVM.LogLink())
+            @test !GLLVModels._glm_weight_matches_observed(f, GLLVModels.LogLink())
         end
 
         @testset "Binomial / probit differs" begin
             Nb = fill(6, p, n)
             Yb = [rand(0:6) for _ in 1:p, _ in 1:n]
-            a = GLLVM.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, GLLVM.ProbitLink(); hessian = :fisher)
-            b = GLLVM.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, GLLVM.ProbitLink(); hessian = :observed)
+            a = GLLVModels.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, GLLVModels.ProbitLink(); hessian = :fisher)
+            b = GLLVModels.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, GLLVModels.ProbitLink(); hessian = :observed)
             @test isfinite(a) && isfinite(b)
             @test a != b
-            @test !GLLVM._glm_weight_matches_observed(Binomial(), GLLVM.ProbitLink())
+            @test !GLLVModels._glm_weight_matches_observed(Binomial(), GLLVModels.ProbitLink())
         end
     end
 
@@ -151,12 +151,12 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
     # μ-clamp the fallback and an analytic formula are deliberately different
     # objects.
     @testset "ForwardDiff fallback ≡ analytic α·y/μ (Gamma/log, interior)" begin
-        link = GLLVM.LogLink()
+        link = GLLVModels.LogLink()
         for α in (0.7, 3.0, 12.0), η in (-1.5, 0.0, 2.0), y in (0.05, 1.0, 7.5)
             f  = Gamma(α, 1.0)
-            μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-            me = GLLVM.mu_eta(link, η)
-            W  = GLLVM._glm_obs_weight(f, μ, 1, me, y, link, η)
+            μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+            me = GLLVModels.mu_eta(link, η)
+            W  = GLLVModels._glm_obs_weight(f, μ, 1, me, y, link, η)
             @test W ≈ α * y / μ rtol = 1e-10
         end
     end
@@ -165,12 +165,12 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
     # signature of this whole fault class. Substituting y = E[y] = μ collapses
     # α·y/μ to α, which is exactly _glm_weight at the log link.
     @testset "Fisher weight is E[observed] — the fault-class signature" begin
-        link = GLLVM.LogLink()
+        link = GLLVModels.LogLink()
         for α in (0.7, 3.0), η in (-0.5, 1.2)
             f  = Gamma(α, 1.0)
-            μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-            me = GLLVM.mu_eta(link, η)
-            @test GLLVM._glm_obs_weight(f, μ, 1, me, μ, link, η) ≈ GLLVM._glm_weight(f, μ, 1, me) rtol = 1e-10
+            μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+            me = GLLVModels.mu_eta(link, η)
+            @test GLLVModels._glm_obs_weight(f, μ, 1, me, μ, link, η) ≈ GLLVModels._glm_weight(f, μ, 1, me) rtol = 1e-10
         end
     end
 
@@ -189,32 +189,32 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
     @testset "trait claims are falsifiable: observed ≡ Fisher across distinct y" begin
 
         @testset "Poisson / log" begin
-            f, link = Poisson(), GLLVM.LogLink()
+            f, link = Poisson(), GLLVModels.LogLink()
             for η in (-1.0, 0.0, 1.7), y in (0, 1, 4, 19)
-                μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-                me = GLLVM.mu_eta(link, η)
-                @test GLLVM._glm_obs_weight(f, μ, 1, me, y, link, η) ≈
-                      GLLVM._glm_weight(f, μ, 1, me) rtol = 1e-10
+                μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+                me = GLLVModels.mu_eta(link, η)
+                @test GLLVModels._glm_obs_weight(f, μ, 1, me, y, link, η) ≈
+                      GLLVModels._glm_weight(f, μ, 1, me) rtol = 1e-10
             end
         end
 
         @testset "Binomial / logit" begin
-            f, link = Binomial(), GLLVM.LogitLink()
+            f, link = Binomial(), GLLVModels.LogitLink()
             for η in (-1.3, 0.0, 0.8), nt in (1, 6), y in 0:min(nt, 3)
-                μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-                me = GLLVM.mu_eta(link, η)
-                @test GLLVM._glm_obs_weight(f, μ, nt, me, y, link, η) ≈
-                      GLLVM._glm_weight(f, μ, nt, me) rtol = 1e-10
+                μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+                me = GLLVModels.mu_eta(link, η)
+                @test GLLVModels._glm_obs_weight(f, μ, nt, me, y, link, η) ≈
+                      GLLVModels._glm_weight(f, μ, nt, me) rtol = 1e-10
             end
         end
 
         @testset "TruncatedPoisson / log" begin
-            f, link = GLLVM.TruncatedPoisson(), GLLVM.LogLink()
+            f, link = GLLVModels.TruncatedPoisson(), GLLVModels.LogLink()
             for η in (-0.5, 0.4, 1.6), y in (1, 2, 7, 15)
-                μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-                me = GLLVM.mu_eta(link, η)
-                @test GLLVM._glm_obs_weight(f, μ, 1, me, y, link, η) ≈
-                      GLLVM._glm_weight(f, μ, 1, me) rtol = 1e-10
+                μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+                me = GLLVModels.mu_eta(link, η)
+                @test GLLVModels._glm_obs_weight(f, μ, 1, me, y, link, η) ≈
+                      GLLVModels._glm_weight(f, μ, 1, me) rtol = 1e-10
             end
         end
 
@@ -222,13 +222,13 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         # carrying an explicit UNVERIFIED caveat (its slot applies max(W, 0)).
         # `n` carries the censoring limit C: n = 0 means uncensored.
         @testset "CensoredPoisson / log" begin
-            f, link = GLLVM.CensoredPoisson(), GLLVM.LogLink()
+            f, link = GLLVModels.CensoredPoisson(), GLLVModels.LogLink()
             @testset "uncensored branch (C = 0) — reduces to Poisson" begin
                 for η in (-0.7, 0.3, 1.4), y in (0, 2, 9)
-                    μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-                    me = GLLVM.mu_eta(link, η)
-                    @test GLLVM._glm_obs_weight(f, μ, 0, me, y, link, η) ≈
-                          GLLVM._glm_weight(f, μ, 0, me) rtol = 1e-10
+                    μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+                    me = GLLVModels.mu_eta(link, η)
+                    @test GLLVModels._glm_obs_weight(f, μ, 0, me, y, link, η) ≈
+                          GLLVModels._glm_weight(f, μ, 0, me) rtol = 1e-10
                 end
             end
             # MEASURED 2026-08-25: the generic ForwardDiff fallback CANNOT be
@@ -245,12 +245,12 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
             @testset "fallback is NOT dual-safe here — locked, because the trait depends on it" begin
                 for C in (1, 3)
                     η = 0.3
-                    μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-                    me = GLLVM.mu_eta(link, η)
-                    @test_throws MethodError GLLVM._glm_obs_weight(f, μ, C, me, C, link, η)
+                    μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+                    me = GLLVModels.mu_eta(link, η)
+                    @test_throws MethodError GLLVModels._glm_obs_weight(f, μ, C, me, C, link, η)
                 end
                 # …and the trait keeps it off that path.
-                @test GLLVM._glm_weight_matches_observed(f, link)
+                @test GLLVModels._glm_weight_matches_observed(f, link)
             end
 
             @testset "censored branch (C ≥ 1) — hand-derived G(G+μ−C) vs numerical 2nd derivative" begin
@@ -259,13 +259,13 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
                 # probes whether the max(W, 0) clamp can bind: if it did, the
                 # slot and the true curvature would diverge and this fails —
                 # converting the recorded UNVERIFIED caveat into a measurement.
-                ℓ(ηv, C) = GLLVM._glm_logpdf(f, GLLVM._clamp_mu(f, GLLVM.linkinv(link, ηv)), C, C)
+                ℓ(ηv, C) = GLLVModels._glm_logpdf(f, GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, ηv)), C, C)
                 for η in (-0.7, 0.3, 1.4, 2.2), C in (1, 3, 8)
-                    μ  = GLLVM._clamp_mu(f, GLLVM.linkinv(link, η))
-                    me = GLLVM.mu_eta(link, η)
+                    μ  = GLLVModels._clamp_mu(f, GLLVModels.linkinv(link, η))
+                    me = GLLVModels.mu_eta(link, η)
                     h  = 1e-4
                     d2 = (ℓ(η + h, C) - 2ℓ(η, C) + ℓ(η - h, C)) / h^2
-                    @test GLLVM._glm_weight(f, μ, C, me) ≈ -d2 rtol = 1e-4
+                    @test GLLVModels._glm_weight(f, μ, C, me) ≈ -d2 rtol = 1e-4
                 end
             end
         end
@@ -291,20 +291,20 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         # decision batch) and moved to the mirror block below alongside Gamma —
         # restructuring this pin rather than deleting its coverage, per the
         # same "exemplar moves as the census shrinks" pattern noted historically.
-        f  = GLLVM.GeneralizedPoisson1(0.3)
+        f  = GLLVModels.GeneralizedPoisson1(0.3)
         Y2 = rand(0:6, p2, n2)
-        bare = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink())
-        fish = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
-        obs  = GLLVM.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVM.LogLink(); hessian = :observed)
+        bare = GLLVModels.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVModels.LogLink())
+        fish = GLLVModels.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVModels.LogLink(); hessian = :fisher)
+        obs  = GLLVModels.marginal_loglik_laplace(f, Y2, N2, Λ2, β2, GLLVModels.LogLink(); hessian = :observed)
         @test bare === fish        # the default IS :fisher, at the value level
         @test bare != obs          # and the two are genuinely different here
 
         # …and the mirror image for Gamma, whose default is now :observed.
         fg = Gamma(2.5, 1.0)
         Yg = 0.4 .+ rand(p2, n2)
-        bg = GLLVM.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVM.LogLink())
-        og = GLLVM.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVM.LogLink(); hessian = :observed)
-        fgv = GLLVM.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
+        bg = GLLVModels.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVModels.LogLink())
+        og = GLLVModels.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVModels.LogLink(); hessian = :observed)
+        fgv = GLLVModels.marginal_loglik_laplace(fg, Yg, N2, Λ2, β2, GLLVModels.LogLink(); hessian = :fisher)
         @test bg === og            # Gamma's default IS :observed, at the value level
         @test bg != fgv
 
@@ -313,20 +313,20 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         # pin (this file's original exemplar for this testset) into an explicit
         # :fisher-kwarg call, per the maintainer's own guidance for handling a
         # flipped exemplar.
-        ft = GLLVM.TweedieED(1.2, 1.5)
+        ft = GLLVModels.TweedieED(1.2, 1.5)
         Yt = [rand() < 0.3 ? 0.0 : rand() * 3.0 + 0.1 for _ in 1:p2, _ in 1:n2]
-        bt = GLLVM.marginal_loglik_laplace(ft, Yt, N2, Λ2, β2, GLLVM.LogLink())
-        ot = GLLVM.marginal_loglik_laplace(ft, Yt, N2, Λ2, β2, GLLVM.LogLink(); hessian = :observed)
-        ftv = GLLVM.marginal_loglik_laplace(ft, Yt, N2, Λ2, β2, GLLVM.LogLink(); hessian = :fisher)
+        bt = GLLVModels.marginal_loglik_laplace(ft, Yt, N2, Λ2, β2, GLLVModels.LogLink())
+        ot = GLLVModels.marginal_loglik_laplace(ft, Yt, N2, Λ2, β2, GLLVModels.LogLink(); hessian = :observed)
+        ftv = GLLVModels.marginal_loglik_laplace(ft, Yt, N2, Λ2, β2, GLLVModels.LogLink(); hessian = :fisher)
         @test bt === ot            # TweedieED's default IS :observed, at the value level
         @test bt != ftv
 
         # …and Binomial/probit (same decision batch): default IS :observed.
         Nb2 = fill(5, p2, n2)
         Yb2 = rand(0:5, p2, n2)
-        bb = GLLVM.marginal_loglik_laplace(Binomial(), Yb2, Nb2, Λ2, β2, GLLVM.ProbitLink())
-        ob = GLLVM.marginal_loglik_laplace(Binomial(), Yb2, Nb2, Λ2, β2, GLLVM.ProbitLink(); hessian = :observed)
-        fbv = GLLVM.marginal_loglik_laplace(Binomial(), Yb2, Nb2, Λ2, β2, GLLVM.ProbitLink(); hessian = :fisher)
+        bb = GLLVModels.marginal_loglik_laplace(Binomial(), Yb2, Nb2, Λ2, β2, GLLVModels.ProbitLink())
+        ob = GLLVModels.marginal_loglik_laplace(Binomial(), Yb2, Nb2, Λ2, β2, GLLVModels.ProbitLink(); hessian = :observed)
+        fbv = GLLVModels.marginal_loglik_laplace(Binomial(), Yb2, Nb2, Λ2, β2, GLLVModels.ProbitLink(); hessian = :fisher)
         @test bb === ob            # Binomial/probit's default IS :observed, at the value level
         @test bb != fbv
     end
@@ -342,8 +342,8 @@ using GLLVM, Test, Random, Distributions, ForwardDiff
         Y3 = 0.5 .+ rand(p3, n3)
         N3 = ones(Int, p3, n3)
         f  = Gamma(3.0, 1.0)
-        obj = b -> GLLVM.marginal_loglik_laplace(f, Y3, N3, Λ3, fill(b, p3),
-                                                 GLLVM.LogLink(); hessian = :observed)
+        obj = b -> GLLVModels.marginal_loglik_laplace(f, Y3, N3, Λ3, fill(b, p3),
+                                                 GLLVModels.LogLink(); hessian = :observed)
         g_ad = ForwardDiff.derivative(obj, 0.5)
         h    = 1e-6
         g_fd = (obj(0.5 + h) - obj(0.5 - h)) / (2h)

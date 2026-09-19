@@ -4,7 +4,7 @@
 # .gllvmTMB_offset_newdata, miss_control) against frozen source; no installed
 # package, model fit, TMB object, or Julia call -- see
 # docs/dev-log/core070/data-batch-contract.json for why every case is
-# verdict SPEC_DEFECT on the Julia side (GLLVM.jl has none of these surfaces
+# verdict SPEC_DEFECT on the Julia side (GLLVModels.jl has none of these surfaces
 # yet). tools/core070_data_batch.jl checks that claim at runtime.
 #
 # Usage:

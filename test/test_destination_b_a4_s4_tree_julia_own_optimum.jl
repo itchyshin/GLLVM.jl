@@ -103,7 +103,7 @@ end
         x -> x["r_own_optimum"] = "available",
         x -> x["evidence_kind"] = "paired_evidence",
         x -> x["intervals"] = "available",
-        x -> x["route"]["entrypoint"] = "GLLVM.bridge_fit",
+        x -> x["route"]["entrypoint"] = "GLLVModels.bridge_fit",
         x -> x["route"]["requested_iterations"] = 0,
         x -> x["route"]["requested_g_tol"] = 0.0,
         x -> x["route"]["requested_g_tol"] = 1e-12,
@@ -259,7 +259,7 @@ end
         x -> x["own_optimum"] = "available",
         x -> x["intervals"] = "available",
         x -> x["qualified"] = true,
-        x -> x["route"]["entrypoint"] = "GLLVM.bridge_fit",
+        x -> x["route"]["entrypoint"] = "GLLVModels.bridge_fit",
         x -> x["route"]["iterations"] = 400,
         x -> x["route"]["g_tol"] = 1e-4,
         x -> x["initialization"]["start_keyword_supplied"] = true,
@@ -290,9 +290,9 @@ end
             "raw-frozen-r-02-summary.json")
         repository = normpath(joinpath(@__DIR__, ".."))
         script = """
-        using GLLVM
+        using GLLVModels
         include($(repr(runner)))
-        @eval GLLVM begin
+        @eval GLLVModels begin
             function fit_gllvm(Y::Matrix{Float64}; kwargs...)
                 throw(ErrorException("injected no-optimizer sizing-probe stop"))
             end

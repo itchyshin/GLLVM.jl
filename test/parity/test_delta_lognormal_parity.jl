@@ -1,4 +1,4 @@
-# test_delta_lognormal_parity.jl — delta-lognormal GLLVM logLik vs gllvmTMB
+# test_delta_lognormal_parity.jl — delta-lognormal GLLVModels logLik vs gllvmTMB
 # (twin fid 12)
 #
 # Included by runparity.jl. NEVER included by test/runtests.jl.
@@ -34,14 +34,14 @@
 # Twin Δ rule: no number is quoted unless this cell runs live under
 # GLLVM_PARITY_TESTS=1 against a real gllvmTMB. Never invent, never carry over.
 
-using GLLVM, RCall, Test, Random
+using GLLVModels, RCall, Test, Random
 
 # parity_helpers.jl is included once by runparity.jl
 
 # Seed pre-registered BEFORE any run (42–49, 52–58, 420–431 already taken).
 const _DLN_SEED = 61
 
-@testset "delta_lognormal GLLVM parity: GLLVM.jl vs gllvmTMB (twin fid 12, shared predictor)" begin
+@testset "delta_lognormal GLLVModels parity: GLLVModels.jl vs gllvmTMB (twin fid 12, shared predictor)" begin
 
     Random.seed!(_DLN_SEED)
     p, K, n = 5, 1, 130

@@ -1,10 +1,10 @@
 # Independent Julia-side fixed-point reconstruction for the masks-known-contract
-# cases. GLLVM.jl has no public `lambda_constraint` / `known_V` surface yet, so
+# cases. GLLVModels.jl has no public `lambda_constraint` / `known_V` surface yet, so
 # this is deliberately a hand-coded reference reconstruction (Base + LinearAlgebra
 # only) of the Gaussian marginal density the frozen R fixture reports, run
 # against the R-retained points/<CASE>-P{1,2}/{observations,source,parameters}.tsv
 # artifacts produced by tools/core070_masks_known_points.R. It does not call
-# GLLVM.jl at all: there is nothing in the package's public or internal surface
+# GLLVModels.jl at all: there is nothing in the package's public or internal surface
 # for this feature to call. See docs/dev-log/core070/masks-known-contract.json.
 #
 # Usage:

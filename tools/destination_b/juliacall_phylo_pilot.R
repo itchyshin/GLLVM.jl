@@ -28,10 +28,10 @@ receipt$environment_path <- project
 receipt$environment_sha256 <- as.list(unname(tools::sha256sum(file.path(project,c("Project.toml","Manifest.toml")))))
 tryCatch({
  JuliaCall::julia_setup(JULIA_HOME=args[1],installJulia=FALSE,install=FALSE,rebuild=FALSE,verbose=FALSE)
- JuliaCall::julia_command(sprintf("import Pkg; Pkg.activate(%s); using GLLVM",encodeString(normalizePath(args[2]),quote='"')))
+ JuliaCall::julia_command(sprintf("import Pkg; Pkg.activate(%s); using GLLVModels",encodeString(normalizePath(args[2]),quote='"')))
  receipt$stage <- "fit"
  started <- proc.time()[["elapsed"]]
- result <- JuliaCall::julia_call("GLLVM.bridge_fit",y=Y,
+ result <- JuliaCall::julia_call("GLLVModels.bridge_fit",y=Y,
   family="gaussian",d=1L,phylo=fixtures$bundles[[kind]]$precision,
   options=list(phylo_model="multivariate",mode="barelowrank",residual_mode="shared",
    species_id=as.integer(fixtures$bundles[[kind]]$species_id),ci_method="wald",g_tol=1e-5,iterations=400L))

@@ -1,7 +1,7 @@
-using GLLVM, Test, TOML
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(joinpath(@__DIR__, ".."))
+using GLLVModels, Test, TOML
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(joinpath(@__DIR__, ".."))
 module Core070ShapeBoundaries
-using GLLVM, Test, TOML
+using GLLVModels, Test, TOML
 struct ResponseRead <: Exception end
 struct NoRead <: AbstractMatrix{Float64} end
 Base.size(::NoRead) = (2, 4)
@@ -46,14 +46,14 @@ end
     # Exact df1 Cauchy law, independent Distributions implementation.
     for location in (-2.0,0.0,3.0), scale in (0.1,1.0,4.0), residual in (-10.0,0.0,0.25,8.0)
         y=location+residual*scale
-        actual=GLLVM._glm_logpdf(StudentTFamily(1.0,scale),location,1,y)
-        expected=GLLVM.logpdf(GLLVM.Cauchy(location,scale),y)
+        actual=GLLVModels._glm_logpdf(StudentTFamily(1.0,scale),location,1,y)
+        expected=GLLVModels.logpdf(GLLVModels.Cauchy(location,scale),y)
         @test actual ≈ expected atol=1e-12 rtol=1e-12
     end
 end
 if haskey(ENV,"CORE070_BOUNDARY_OUTPUT")
     open(io->TOML.print(io,Dict("status"=>"PASS","scope"=>"DOMAIN_AND_KERNEL_ONLY_NO_FITS",
-        "results"=>results,"julia_version"=>string(VERSION),"package_root"=>realpath(Base.pkgdir(GLLVM)))),ENV["CORE070_BOUNDARY_OUTPUT"],"w")
+        "results"=>results,"julia_version"=>string(VERSION),"package_root"=>realpath(Base.pkgdir(GLLVModels)))),ENV["CORE070_BOUNDARY_OUTPUT"],"w")
 end
 end
 if haskey(ENV,"CORE070_BOUNDARY_OUTPUT")

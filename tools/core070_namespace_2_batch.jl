@@ -8,7 +8,7 @@
 # a JSON oracle file the paired R runner (tools/core070_namespace_2_batch.R)
 # writes BEFORE invoking this script (that R process already has the frozen
 # gllvmTMB library loaded and does 100% of the live R-side fitting itself),
-# refits/dispatches the identical data natively via direct `using GLLVM`
+# refits/dispatches the identical data natively via direct `using GLLVModels`
 # module calls only. No RCall, no parity-runner include, no R of any kind
 # runs in this process.
 #
@@ -24,7 +24,7 @@
 # Invocation:
 #   julia --project=. tools/core070_namespace_2_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 
 # ---------------------------------------------------------------------------
 # Minimal JSON reader/writer (no external dependency; mirrors the existing
@@ -151,7 +151,7 @@ out_path = ARGS[1]
 isfile(out_path) && error("destination already exists: $out_path")
 mkpath(dirname(out_path))
 
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd()) "must run from the GLLVM.jl package root"
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(pwd()) "must run from the GLLVModels.jl package root"
 
 oracle_path = get(ENV, "CORE070_NAMESPACE_2_R_ORACLE", "")
 isempty(oracle_path) &&
@@ -185,7 +185,7 @@ for j in 1:p_g
 end
 
 fit_g = fit_gaussian_gllvm(Y_g; K = K_g, X = X_g)
-j_coef_g = GLLVM.StatsAPI.coef(fit_g)
+j_coef_g = GLLVModels.StatsAPI.coef(fit_g)
 j_loglik_g = fit_g.logLik
 r_coef_g = Float64.(g["coef"])
 r_loglik_g = Float64(g["loglik"])
@@ -198,12 +198,12 @@ cases["CORE070-NAMESPACE2-GLLVMTMB-NATIVE-FIT"] = Dict(
 )
 
 # ---------------------------------------------------------------------------
-# Case 2: CORE070-NAMESPACE2-GLLVM-JULIA-SETUP-BRIDGE-ADMISSION
+# Case 2: CORE070-NAMESPACE2-GLLVModels-JULIA-SETUP-BRIDGE-ADMISSION
 # ---------------------------------------------------------------------------
-pkgdir_matches_pwd = realpath(Base.pkgdir(GLLVM)) == realpath(pwd())
+pkgdir_matches_pwd = realpath(Base.pkgdir(GLLVModels)) == realpath(pwd())
 julia_version_string = string(VERSION)
 setup_precondition_r = oracle["setup_precondition_r"] === true
-cases["CORE070-NAMESPACE2-GLLVM-JULIA-SETUP-BRIDGE-ADMISSION"] = Dict(
+cases["CORE070-NAMESPACE2-GLLVModels-JULIA-SETUP-BRIDGE-ADMISSION"] = Dict(
     "pass" => pkgdir_matches_pwd && setup_precondition_r && !isempty(julia_version_string),
     "pkgdir_matches_pwd" => pkgdir_matches_pwd,
     "setup_precondition_r" => setup_precondition_r,
@@ -211,15 +211,15 @@ cases["CORE070-NAMESPACE2-GLLVM-JULIA-SETUP-BRIDGE-ADMISSION"] = Dict(
 )
 
 # ---------------------------------------------------------------------------
-# Case 3: CORE070-NAMESPACE2-GLLVM-JULIA-FIT-BRIDGE-ADMISSION
+# Case 3: CORE070-NAMESPACE2-GLLVModels-JULIA-FIT-BRIDGE-ADMISSION
 # ---------------------------------------------------------------------------
 gate = oracle["gate"]
 gate_gaussian_ok = gate["gaussian"]["ok"] === true && gate["gaussian"]["key"] == "gaussian"
-bridge_key_gaussian = GLLVM._bridge_family_key("gaussian") == "gaussian"
+bridge_key_gaussian = GLLVModels._bridge_family_key("gaussian") == "gaussian"
 
-br_g = GLLVM.bridge_fit(; y = Y_g, family = "gaussian", d = K_g, X = X_g)
+br_g = GLLVModels.bridge_fit(; y = Y_g, family = "gaussian", d = K_g, X = X_g)
 bridge_loglik_delta = abs(br_g.loglik - r_loglik_g)
-cases["CORE070-NAMESPACE2-GLLVM-JULIA-FIT-BRIDGE-ADMISSION"] = Dict(
+cases["CORE070-NAMESPACE2-GLLVModels-JULIA-FIT-BRIDGE-ADMISSION"] = Dict(
     "pass" => gate_gaussian_ok && bridge_key_gaussian && bridge_loglik_delta <= tol["loglik_delta"],
     "gate_gaussian_ok" => gate_gaussian_ok, "bridge_key_gaussian" => bridge_key_gaussian,
     "bridge_loglik_delta" => bridge_loglik_delta,
@@ -241,8 +241,8 @@ r_loglik_nb1 = Float64(nb["loglik_nbinom1"])
 r_loglik_nb2 = Float64(nb["loglik_nbinom2"])
 
 gate_nb1_ok = gate["nbinom1"]["ok"] === true && gate["nbinom1"]["key"] == "nb1"
-bridge_key_nb1 = GLLVM._bridge_family_key("nb1") == "nb1"
-br_nb1 = GLLVM.bridge_fit(; y = Y_nb, family = "nb1", d = K_nb, X = X_nb)
+bridge_key_nb1 = GLLVModels._bridge_family_key("nb1") == "nb1"
+br_nb1 = GLLVModels.bridge_fit(; y = Y_nb, family = "nb1", d = K_nb, X = X_nb)
 nb1_loglik_delta = abs(br_nb1.loglik - r_loglik_nb1)
 cases["CORE070-NAMESPACE2-NBINOM1-FAMILY-BRIDGE"] = Dict(
     "pass" => gate_nb1_ok && bridge_key_nb1 && nb1_loglik_delta <= tol["loglik_delta"],
@@ -251,8 +251,8 @@ cases["CORE070-NAMESPACE2-NBINOM1-FAMILY-BRIDGE"] = Dict(
 )
 
 gate_nb2_ok = gate["nbinom2"]["ok"] === true && gate["nbinom2"]["key"] == "negbinomial"
-bridge_key_nb2 = GLLVM._bridge_family_key("nbinom2") == "negbinomial"
-br_nb2 = GLLVM.bridge_fit(; y = Y_nb, family = "negbinomial", d = K_nb, X = X_nb)
+bridge_key_nb2 = GLLVModels._bridge_family_key("nbinom2") == "negbinomial"
+br_nb2 = GLLVModels.bridge_fit(; y = Y_nb, family = "negbinomial", d = K_nb, X = X_nb)
 nb2_loglik_delta = abs(br_nb2.loglik - r_loglik_nb2)
 cases["CORE070-NAMESPACE2-NBINOM2-FAMILY-BRIDGE"] = Dict(
     "pass" => gate_nb2_ok && bridge_key_nb2 && nb2_loglik_delta <= tol["loglik_delta"],
@@ -271,8 +271,8 @@ Y_ord = reshape(y_ord_flat, p_ord, n_ord)
 r_loglik_ord = Float64(ord["loglik"])
 
 gate_ord_ok = gate["ordinal_probit"]["ok"] === true && gate["ordinal_probit"]["key"] == "ordinal_probit"
-bridge_key_ord = GLLVM._bridge_family_key("ordinal_probit") == "ordinal_probit"
-br_ord = GLLVM.bridge_fit(; y = Y_ord, family = "ordinal_probit", d = K_ord)
+bridge_key_ord = GLLVModels._bridge_family_key("ordinal_probit") == "ordinal_probit"
+br_ord = GLLVModels.bridge_fit(; y = Y_ord, family = "ordinal_probit", d = K_ord)
 ord_loglik_delta = abs(br_ord.loglik - r_loglik_ord)
 cases["CORE070-NAMESPACE2-ORDINAL-PROBIT-FAMILY-BRIDGE"] = Dict(
     "pass" => gate_ord_ok && bridge_key_ord && ord_loglik_delta <= tol["loglik_delta"],

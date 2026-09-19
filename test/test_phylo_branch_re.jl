@@ -1,14 +1,14 @@
 # Standalone validation of the single-variance branch random-effects (incidence
 # form) phylogenetic model. Run via:
 #
-#   julia --project=. -e 'using GLLVM; include("test/test_phylo_branch_re.jl")'
+#   julia --project=. -e 'using GLLVModels; include("test/test_phylo_branch_re.jl")'
 #
 # Included by runtests.jl and also runnable standalone. Implementation loads
-# through GLLVM; this file does not redefine the source module.
+# through GLLVModels; this file does not redefine the source module.
 
-using GLLVM, Test, Random, LinearAlgebra, SparseArrays, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, SparseArrays, Statistics
 
-# Single-variance branch random-effects: included in GLLVM.jl.
+# Single-variance branch random-effects: included in GLLVModels.jl.
 
 # ---------------------------------------------------------------------------
 # Helpers.

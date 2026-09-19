@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 
 @testset "fixed effects" begin
     @testset "X = nothing reproduces J1 behaviour" begin
@@ -51,11 +51,11 @@ using GLLVM, Test, Random, LinearAlgebra
         p, K, n, q = 4, 1, 30, 2
         X = randn(p, n, q)
         y = randn(p, n)
-        nll = params -> GLLVM.gaussian_nll_packed(params, y, p, K; X = X, q = q)
-        params0 = [zeros(q); 0.0; GLLVM.init_theta_rr(p, K)]
+        nll = params -> GLLVModels.gaussian_nll_packed(params, y, p, K; X = X, q = q)
+        params0 = [zeros(q); 0.0; GLLVModels.init_theta_rr(p, K)]
         g = ForwardDiff.gradient(nll, params0)
         @test all(isfinite, g)
-        @test length(g) == q + 1 + GLLVM.rr_theta_len(p, K)
+        @test length(g) == q + 1 + GLLVModels.rr_theta_len(p, K)
     end
 
     @testset "centered Y trait-intercept SE (realistic-size R pairing)" begin
@@ -104,7 +104,7 @@ using GLLVM, Test, Random, LinearAlgebra
         @test fit_fixed.pars.β_fixed == [false, true]
         @test fit_fixed.pars.β[1] ≈ fit_drop.pars.β[1] atol = 1e-10
         @test fit_fixed.logLik ≈ fit_drop.logLik atol = 1e-10
-        @test GLLVM.aic(fit_fixed) ≈ GLLVM.aic(fit_drop) atol = 1e-10
+        @test GLLVModels.aic(fit_fixed) ≈ GLLVModels.aic(fit_drop) atol = 1e-10
 
         ci = confint(fit_fixed; y = y, X = X, parm = "beta")
         @test ci.term == ["beta[1]"]

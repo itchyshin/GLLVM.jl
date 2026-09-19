@@ -1,15 +1,15 @@
-using GLLVM, Test, Random, LinearAlgebra, ForwardDiff, SparseArrays
+using GLLVModels, Test, Random, LinearAlgebra, ForwardDiff, SparseArrays
 
-# node_gradient.jl + sparse_phy_grad.jl are wired into the GLLVM module, so this
+# node_gradient.jl + sparse_phy_grad.jl are wired into the GLLVModels module, so this
 # test uses the module's symbols directly — NO self-include. Exported node
 # functions (node_grad, build_node_perspecies, grad_node_perspecies, node_blups)
 # are used bare; module internals (build_sparse_phy_state, sparse_phy_grad,
-# AugmentedPhy, gaussian_marginal_loglik) are GLLVM-qualified. Self-including the
+# AugmentedPhy, gaussian_marginal_loglik) are GLLVModels-qualified. Self-including the
 # src files here would split the AugmentedPhy type against the suite's other
 # phylo tests (which self-include sparse_phy.jl into Main).
 
-const _gml = GLLVM.gaussian_marginal_loglik
-const _aug = GLLVM.augmented_phy
+const _gml = GLLVModels.gaussian_marginal_loglik
+const _aug = GLLVModels.augmented_phy
 
 # ---------------------------------------------------------------------------
 # Test-only helpers (NOT ported into src/ — they are FD scaffolding).
@@ -66,7 +66,7 @@ end
 
 # Dense Σ_phy = S Q_cond⁻¹ S' from an AugmentedPhy (σ²_phy applied separately).
 # Copied from the prototype; used by the single-trait FD target.
-function sigma_phy_unit(phy::GLLVM.AugmentedPhy)
+function sigma_phy_unit(phy::GLLVModels.AugmentedPhy)
     keep = filter(i -> i != phy.root_index, 1:phy.n_total)
     Qc = Matrix(phy.Q_topology[keep, keep])
     nb = size(Qc, 1); p = phy.n_leaves
@@ -81,7 +81,7 @@ end
 # grad_node_perspecies. NOTE grad_node_perspecies returns ∂negll/∂σ_phy =
 # ½(trace − dataq) (optimiser convention; opposite sign to node_grad's
 # ∂loglik), so the FD target here is `+negll_perspecies_dense` (un-negated).
-function negll_perspecies_dense(phy::GLLVM.AugmentedPhy, y::AbstractVector,
+function negll_perspecies_dense(phy::GLLVModels.AugmentedPhy, y::AbstractVector,
                                 σ_phy::AbstractVector, σ²_eps::Real, μ::Real)
     p = phy.n_leaves
     Σφ = sigma_phy_unit(phy)
@@ -127,7 +127,7 @@ end
         σ_eps = 0.5; σ²_phy = 0.8
         y = randn(p, n)
 
-        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy,
+        st = GLLVModels.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy,
                                     phy = phy, σ²_phy = σ²_phy)
         g = node_grad(st)
 
@@ -161,9 +161,9 @@ end
         σ_eps = 0.6; σ²_phy = 0.8
         y = randn(p, n)
 
-        st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy,
+        st = GLLVModels.build_sparse_phy_state(y, Λ_B, σ_eps; σ_phy = σ_phy,
                                     phy = phy, σ²_phy = σ²_phy)
-        ge = GLLVM._sparse_phy_grad_leafblock(st)
+        ge = GLLVModels._sparse_phy_grad_leafblock(st)
         gn = node_grad(st)
 
         @test relmax(gn.dΛ_B, ge.dΛ_B) < 1e-8

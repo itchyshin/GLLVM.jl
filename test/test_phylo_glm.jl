@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, SparseArrays
+using GLLVModels, Test, Random, LinearAlgebra, SparseArrays
 using Distributions: Poisson
 
 # Phylogenetic GLM (non-Gaussian) via the augmented-state joint Laplace (issue #61,
@@ -9,14 +9,14 @@ using Distributions: Poisson
 
 @testset "Phylogenetic GLM (augmented-state joint Laplace)" begin
     Random.seed!(606)
-    phy = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+    phy = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
     p = phy.n_leaves; n = 8
     β = 0.3 .* randn(p)
     Y = rand(0:6, p, n)
     Ntr = ones(Int, p, n)
 
     # ---- Anchor 1: σ²_phy → 0 ⇒ independent Poisson ------------------------
-    ℓ_indep = sum(GLLVM._glm_logpdf(Poisson(), exp(β[t]), 1, Y[t, s]) for t in 1:p, s in 1:n)
+    ℓ_indep = sum(GLLVModels._glm_logpdf(Poisson(), exp(β[t]), 1, Y[t, s]) for t in 1:p, s in 1:n)
     ℓ_phy0 = phylo_glm_marginal_loglik(Poisson(), Y, Ntr, β, 1e-8, phy; link = LogLink())
     @test isapprox(ℓ_phy0, ℓ_indep; atol = 1e-3)
 
@@ -40,7 +40,7 @@ using Distributions: Poisson
         a .+= Hd \ (s_tot .- Pa * a)
     end
     μ = exp.(β .+ a)
-    ℓd = sum(GLLVM._glm_logpdf(Poisson(), μ[t], 1, Y[t, s]) for t in 1:p, s in 1:n)
+    ℓd = sum(GLLVModels._glm_logpdf(Poisson(), μ[t], 1, Y[t, s]) for t in 1:p, s in 1:n)
     ℓ_dense = ℓd - 0.5 * dot(a, Pa * a) + 0.5 * logdet(Pa) - 0.5 * logdet(Hd)
     @test isapprox(ℓ_sparse, ℓ_dense; atol = 1e-6)
 

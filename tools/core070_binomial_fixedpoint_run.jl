@@ -1,11 +1,11 @@
-using GLLVM,TOML,LinearAlgebra,SHA,Test
+using GLLVModels,TOML,LinearAlgebra,SHA,Test
 r=TOML.parsefile(ENV["CORE070_BINOMIAL_PAIR_INPUT"])
 d=TOML.parsefile(ENV["CORE070_BINOMIAL_FIXTURE_INPUT"])
 p,n,K=d["p"],d["n"],d["K"];Y=reshape(d["responses"],p,n)
-q=GLLVM.aghq_binomial_problem(Y,K;k=5)
+q=GLLVModels.aghq_binomial_problem(Y,K;k=5)
 function evaluate(t)
  a=q.adapt(t);f=q.objective(t,a)
- g=GLLVM.ForwardDiff.gradient(v->q.objective(v,a),t)
+ g=GLLVModels.ForwardDiff.gradient(v->q.objective(v,a),t)
  (f=f,g=g)
 end
 fresh(t)=q.objective(t,q.adapt(t))
@@ -61,7 +61,7 @@ function diagnostic(start,label)
   reason="diagnostic_failed";err=sprint(showerror,ex)
  end
  e=evaluate(t);g1=total(t);g2=total(t;h=2e-5)
- md=q.mode_diagnostics(t);L=GLLVM.unpack_lambda(t[p+1:end],p,K)
+ md=q.mode_diagnostics(t);L=GLLVModels.unpack_lambda(t[p+1:end],p,K)
  Dict("start_label"=>label,"start"=>start,"parameters"=>t,"trace"=>trace,"trials"=>trials,
       "stop_reason"=>reason,"error"=>err,"objective"=>e.f,"frozen_gradient"=>e.g,
       "frozen_residual_met"=>maximum(abs,e.g)<1e-6,"total_gradient_fd"=>g1,
@@ -95,6 +95,6 @@ record=Dict("scope"=>"DIAGNOSTIC_ONLY_NOT_FIT_OR_PARITY","case_id"=>"BF-SEED43-K
  "reference"=>"b4d5fee64def88bc768dda1f1f77c29b295edd86","k"=>5,"runs"=>runs,
  "source_pair_sha256"=>bytes2hex(sha256(read(ENV["CORE070_BINOMIAL_PAIR_INPUT"]))),
  "fixture_sha256"=>bytes2hex(sha256(read(ENV["CORE070_BINOMIAL_FIXTURE_INPUT"]))),
- "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVM))
+ "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVModels))
 open(io->TOML.print(io,record),out,"w")
 println("BF_RECEIPT_SHA256 ",bytes2hex(sha256(read(out))))

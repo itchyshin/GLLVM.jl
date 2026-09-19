@@ -7,7 +7,7 @@ STATE=ROOT/'.unlazy/core070-aghq/aghq-multistart-green-02'
 
 def verify():
     _,_,red=process(ROOT/'.unlazy/core070-aghq/aghq-multistart-red-01',False,1)
-    assert 'isdefined(GLLVM, :aghq_multistart_optimize)' in red
+    assert 'isdefined(GLLVModels, :aghq_multistart_optimize)' in red
     assert re.search(r'AM multistart selection\s*\|\s*1\s+1',red)
     plan,p,log=process(STATE,True,0)
     assert re.search(r'AGHQ multistart and prerequisites\s*\|\s*330\s+330',log)

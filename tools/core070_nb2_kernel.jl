@@ -1,5 +1,5 @@
-using GLLVM,Test
-@assert realpath(Base.pkgdir(GLLVM))==realpath(pwd())
+using GLLVModels,Test
+@assert realpath(Base.pkgdir(GLLVModels))==realpath(pwd())
 @testset "Ordinary NB2 production kernel precision" begin
  include(joinpath(pwd(),"test/test_nb2_precision.jl"))
 end

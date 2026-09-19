@@ -7,7 +7,7 @@ using Test
 using Random
 using LinearAlgebra
 using Distributions
-using GLLVM
+using GLLVModels
 
 @testset "NB2/Beta + X identity (API B under X)" begin
 
@@ -18,7 +18,7 @@ using GLLVM
         γ = [0.4]
         Λ = 0.3 .* randn(p, K)
         X = randn(p, n, q)
-        O = GLLVM._build_offset(X, γ)
+        O = GLLVModels._build_offset(X, γ)
         Z = randn(K, n)
         η = β .+ O .+ Λ * Z
         Y = Matrix{Int}(undef, p, n)
@@ -28,11 +28,11 @@ using GLLVM
             Y[t, s] = rand(NegativeBinomial(r, r / (r + μ)))
         end
         rvec = fill(r, p)
-        ll_g = GLLVM.nb_grouped_marginal_loglik_laplace(Y, Λ, β, rvec;
+        ll_g = GLLVModels.nb_grouped_marginal_loglik_laplace(Y, Λ, β, rvec;
                                                        offset = O)
         fam = NegativeBinomial(r, 0.5)
         N = ones(Int, p, n)
-        ll_s = GLLVM._marginal_loglik_offset(fam, Float64.(Y), N, Λ, β, O, LogLink())
+        ll_s = GLLVModels._marginal_loglik_offset(fam, Float64.(Y), N, Λ, β, O, LogLink())
         @test isapprox(ll_g, ll_s; atol = 1e-10, rtol = 0)
     end
 
@@ -43,7 +43,7 @@ using GLLVM
         γ = [0.35]
         Λ = 0.25 .* randn(p, K)
         X = randn(p, n, q)
-        O = GLLVM._build_offset(X, γ)
+        O = GLLVModels._build_offset(X, γ)
         Z = randn(K, n)
         η = β .+ O .+ Λ * Z
         φ = 12.0
@@ -53,11 +53,11 @@ using GLLVM
             Y[t, s] = clamp(rand(Beta(μ * φ, (1 - μ) * φ)), 1e-6, 1 - 1e-6)
         end
         φvec = fill(φ, p)
-        ll_g = GLLVM.beta_grouped_marginal_loglik_laplace(Y, Λ, β, φvec;
+        ll_g = GLLVModels.beta_grouped_marginal_loglik_laplace(Y, Λ, β, φvec;
                                                          offset = O)
         fam = Beta(φ, 1.0)
         N = ones(Int, p, n)
-        ll_s = GLLVM._marginal_loglik_offset(fam, Y, N, Λ, β, O, LogitLink())
+        ll_s = GLLVModels._marginal_loglik_offset(fam, Y, N, Λ, β, O, LogitLink())
         @test isapprox(ll_g, ll_s; atol = 1e-10, rtol = 0)
     end
 
@@ -68,7 +68,7 @@ using GLLVM
         γ_true = [0.55]
         Λ_true = 0.35 .* randn(p, K)
         X = randn(p, n, q)
-        O = GLLVM._build_offset(X, γ_true)
+        O = GLLVModels._build_offset(X, γ_true)
         Z = randn(K, n)
         η = β_true .+ O .+ Λ_true * Z
         r_true = 5.0
@@ -96,7 +96,7 @@ using GLLVM
         γ_true = [0.45]
         Λ_true = 0.3 .* randn(p, K)
         X = randn(p, n, q)
-        O = GLLVM._build_offset(X, γ_true)
+        O = GLLVModels._build_offset(X, γ_true)
         Z = randn(K, n)
         η = β_true .+ O .+ Λ_true * Z
         φ_true = 10.0

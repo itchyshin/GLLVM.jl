@@ -1,6 +1,6 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
-# Deterministic small Poisson GLLVM (p=4, K=1, n=120).
+# Deterministic small Poisson GLLVModels (p=4, K=1, n=120).
 function _sim_poisson_ct(p, K, n; seed = 7)
     Random.seed!(seed)
     β = 0.5 .* randn(p) .+ 1.0

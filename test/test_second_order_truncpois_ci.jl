@@ -3,7 +3,7 @@
 
 using Test
 using Random
-using GLLVM
+using GLLVModels
 using Distributions: Poisson
 
 @testset "TruncatedPoissonFit second-order Wald CI" begin

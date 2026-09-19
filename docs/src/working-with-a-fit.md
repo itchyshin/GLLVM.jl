@@ -1,11 +1,11 @@
 # Working with a fitted model
 
-Once you have a fit from `fit_gaussian_gllvm` or `fit_gllvm(Y; family=…)`, GLLVM.jl
+Once you have a fit from `fit_gaussian_gllvm` or `fit_gllvm(Y; family=…)`, GLLVModels.jl
 gives you the standard post-fit toolkit — ordination, predictions, residual
 diagnostics, and model-selection criteria — for Gaussian and non-Gaussian fits.
 
 ```julia
-using GLLVM, Random
+using GLLVModels, Random
 Random.seed!(1)
 n, p, K = 120, 6, 2
 Λ = 0.8 .* randn(p, K)

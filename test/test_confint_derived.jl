@@ -1,12 +1,12 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Statistics
 
 # Local guard: include the source files if they haven't been loaded.
 # The CI infrastructure follows the same "load on demand" pattern as
 # the sister files (see test/test_confint_bootstrap.jl).
-if !isdefined(GLLVM, :bootstrap_ci)
+if !isdefined(GLLVModels, :bootstrap_ci)
     include(joinpath(@__DIR__, "..", "src", "confint_bootstrap.jl"))
 end
-if !isdefined(GLLVM, :sigma_y_site)
+if !isdefined(GLLVModels, :sigma_y_site)
     include(joinpath(@__DIR__, "..", "src", "confint_derived.jl"))
 end
 
@@ -19,7 +19,7 @@ end
         y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
 
-        Σ = GLLVM.sigma_y_site(fit)
+        Σ = GLLVModels.sigma_y_site(fit)
         @test size(Σ) == (p, p)
         # Symmetric (up to round-off)
         @test maximum(abs.(Σ - Σ')) < 1e-12
@@ -35,13 +35,13 @@ end
         y = Λ_true * randn(K, n) + 0.4 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
 
-        c2 = GLLVM.communality(fit)
+        c2 = GLLVModels.communality(fit)
         @test length(c2) == p
         @test all(0.0 .≤ c2 .≤ 1.0)
         # Independently verify against the explicit formula
         Λ_B = fit.pars.Λ
         ΛΛt = Λ_B * Λ_B'
-        Σ = GLLVM.sigma_y_site(fit)
+        Σ = GLLVModels.sigma_y_site(fit)
         c2_manual = [ΛΛt[t, t] / Σ[t, t] for t in 1:p]
         @test c2 ≈ c2_manual rtol = 1e-12
     end
@@ -52,14 +52,14 @@ end
         Λ_true = reshape([0.7, 0.5, 0.4, -0.3], p, K)
         y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        shared   = GLLVM.proportions(fit; component = :shared)
-        residual = GLLVM.proportions(fit; component = :residual)
+        shared   = GLLVModels.proportions(fit; component = :shared)
+        residual = GLLVModels.proportions(fit; component = :residual)
         # For J1 (no W, no diag) shared + residual must equal 1 per trait.
         @test all(abs.(shared .+ residual .- 1.0) .< 1e-12)
         # unique_W / unique_B / unique_Wd are zero for J1.
-        @test all(iszero, GLLVM.proportions(fit; component = :unique_W))
-        @test all(iszero, GLLVM.proportions(fit; component = :unique_B))
-        @test all(iszero, GLLVM.proportions(fit; component = :unique_Wd))
+        @test all(iszero, GLLVModels.proportions(fit; component = :unique_W))
+        @test all(iszero, GLLVModels.proportions(fit; component = :unique_B))
+        @test all(iszero, GLLVModels.proportions(fit; component = :unique_Wd))
     end
 
     @testset "correlation is unit-diagonal and bounded" begin
@@ -68,7 +68,7 @@ end
         Λ_true = reshape([0.7, 0.5, 0.4, -0.3], p, K)
         y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        R = GLLVM.correlation(fit)
+        R = GLLVModels.correlation(fit)
         @test size(R) == (p, p)
         for t in 1:p
             @test isapprox(R[t, t], 1.0; atol = 1e-12)
@@ -85,7 +85,7 @@ end
         Λ_true = reshape([0.7, 0.5, 0.4, -0.3], p, K)
         y = Λ_true * randn(K, n) + 0.5 * randn(p, n)
         fit = fit_gaussian_gllvm(y; K = K)
-        h2 = GLLVM.phylo_signal(fit)
+        h2 = GLLVModels.phylo_signal(fit)
         @test length(h2) == p
         @test all(isnan, h2)
     end
@@ -104,7 +104,7 @@ end
         ΛΛt_true = Λ_true * Λ_true'
         c2_truth = ΛΛt_true[1, 1] / (ΛΛt_true[1, 1] + σ_true^2)
 
-        ci = GLLVM.bootstrap_ci_derived(fit, fb -> GLLVM.communality(fb)[1];
+        ci = GLLVModels.bootstrap_ci_derived(fit, fb -> GLLVModels.communality(fb)[1];
                                         y = y, n_boot = 200, seed = 11)
         @info "communality[1] bootstrap CI" lower=ci.lower estimate=ci.estimate upper=ci.upper truth=c2_truth n_converged=ci.n_converged n_valid=ci.n_valid
         @test isfinite(ci.lower) && isfinite(ci.upper)
@@ -126,10 +126,10 @@ end
         @test fit.converged
 
         # Per-parameter profile CI on σ_eps (raw scale).
-        if !isdefined(GLLVM, :profile_ci)
+        if !isdefined(GLLVModels, :profile_ci)
             include(joinpath(@__DIR__, "..", "src", "confint_profile.jl"))
         end
-        ci_param = GLLVM.profile_ci(fit, "sigma_eps"; y = y)
+        ci_param = GLLVModels.profile_ci(fit, "sigma_eps"; y = y)
         @test isfinite(ci_param.lower) && isfinite(ci_param.upper)
 
         # Derived profile CI on σ_eps². log_σ_eps is at packed index q + 1.
@@ -137,7 +137,7 @@ end
         # σ_eps² closure is θ -> exp(2 θ[1]).
         @test isempty(fit.pars.β)
         f_se2 = θ -> exp(2 * θ[1])
-        ci_der = GLLVM.profile_ci_derived(fit, f_se2;
+        ci_der = GLLVModels.profile_ci_derived(fit, f_se2;
                                           y = y, level = 0.95,
                                           penalty_weight = 1e7,
                                           initial_step = 0.05)

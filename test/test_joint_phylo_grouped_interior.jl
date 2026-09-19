@@ -5,7 +5,7 @@ if Base.find_package("StableRNGs") === nothing
         @test_skip false
     end
 else
-    using GLLVM
+    using GLLVModels
     using LinearAlgebra
     using SparseArrays
     using StableRNGs
@@ -22,7 +22,7 @@ else
         n = length(species_id)
         cluster = [mod(7 * observation + 2 * ((observation - 1) ÷ replication), 17) + 1
                    for observation in 1:n]
-        incidence = GLLVM._grouped_incidence(cluster, n)
+        incidence = GLLVModels._grouped_incidence(cluster, n)
         selection = sparse(collect(1:n), phy.species_aug_id[species_id], ones(n), n, phy.n_aug)
         beta = [0.20, -0.15]
         loading = reshape([0.50, 0.28], p, 1)
@@ -31,7 +31,7 @@ else
         covariance = Matrix(kron(selection * (phy.Q \ Matrix(selection')),
             loading * loading') + kron(Matrix(incidence * incidence'),
             Diagonal(ordinary_variance)) + kron(Matrix(I, n, n), Diagonal(psi)))
-        D = GLLVM._trait_mean_design(p, n)
+        D = GLLVModels._trait_mean_design(p, n)
         response = reshape(D * beta + cholesky(Symmetric(covariance)).L * randn(rng, p * n), p, n)
         return (; response, phy, species_id, cluster, incidence, beta, loading,
             psi, ordinary_variance, covariance)
@@ -52,7 +52,7 @@ else
         @test length(unique(fixture.cluster)) == 17
         @test all(isfinite, fixture.response)
 
-        fit = GLLVM.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
+        fit = GLLVModels.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
             rank = 1, phylo_mode = :barelowrank, terms = terms,
             cluster = fixture.cluster, species_id = fixture.species_id,
             iterations = 200, g_tol = 2e-4)
@@ -61,7 +61,7 @@ else
         @test fit.hessian_positive_definite
         @test fit.gradient_norm <= 2e-4
 
-        interval = GLLVM.joint_phylo_grouped_intervals(fit)
+        interval = GLLVModels.joint_phylo_grouped_intervals(fit)
         @info "Joint phylo grouped interior interval receipt" fit_gradient_norm = fit.gradient_norm interval_status = interval.status interval_gradient_norm = interval.gradient_norm interval_condition_number = interval.condition_number
         # Retained original receipt at the intentionally loose fit tolerance.
         # It is a diagnostic, not a substitute for the refined availability gate.
@@ -76,7 +76,7 @@ else
             start = fit.parameters, iterations = 200, g_tol = 1e-5)
         @test refined.converged
         @test refined.gradient_norm <= 1e-5
-        refined_interval = GLLVM.joint_phylo_grouped_intervals(refined)
+        refined_interval = GLLVModels.joint_phylo_grouped_intervals(refined)
         @info "Joint phylo grouped refined interval receipt" gradient_norm = refined.gradient_norm interval_status = refined_interval.status interval_gradient_norm = refined_interval.gradient_norm interval_condition_number = refined_interval.condition_number
         @test refined_interval.status === :available
         @test _joint_phylo_grouped_interval_available(refined_interval, "beta[1]")

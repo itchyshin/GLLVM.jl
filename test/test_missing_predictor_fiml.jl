@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
+using GLLVModels, Test, LinearAlgebra, Random, Statistics, ForwardDiff
 
 # Missing-predictor FIML (the mi() axis), Gaussian Phase-2a slice: a site-level
 # continuous predictor x (one value per site, may be `missing`) modelled as
@@ -75,7 +75,7 @@ using GLLVM, Test, LinearAlgebra, Random, Statistics, ForwardDiff
         xm[[5, 20, 60, 90]] .= missing
         isobs = [!ismissing(xi) for xi in xm]
         xobs = [isobs[s] ? Float64(xm[s]) : 0.0 for s in 1:n]
-        f(θ) = GLLVM._mi_fiml_nll(θ, y, xobs, isobs, p, n, K)
+        f(θ) = GLLVModels._mi_fiml_nll(θ, y, xobs, isobs, p, n, K)
         θ = vcat([0.2, -0.1, 0.0, 0.3], 0.8, 0.5, log(0.7), log(0.3), vec(Λ))
         g_ad = ForwardDiff.gradient(f, θ)
         h = 1e-6

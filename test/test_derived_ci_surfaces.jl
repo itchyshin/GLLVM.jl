@@ -1,20 +1,20 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Statistics
 
 # Local guard: mirrors test_confint_derived_wald.jl — force-inject the
-# (additive) source files into the compiled GLLVM module so their internal
+# (additive) source files into the compiled GLLVModels module so their internal
 # helpers (_derived_unpack, _tw_link, _twolevel_unpack, …) resolve even if
 # this test file runs against a precompiled cache from before this slice.
-if !isdefined(GLLVM, :sigma_y_site)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "confint_derived.jl"))
+if !isdefined(GLLVModels, :sigma_y_site)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "confint_derived.jl"))
 end
-if !isdefined(GLLVM, :confint)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "confint.jl"))
+if !isdefined(GLLVModels, :confint)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "confint.jl"))
 end
-if !isdefined(GLLVM, :transformed_wald_ci_derived)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "confint_derived_wald.jl"))
+if !isdefined(GLLVModels, :transformed_wald_ci_derived)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "confint_derived_wald.jl"))
 end
-if !isdefined(GLLVM, :repeatability_wald_ci)
-    Base.include(GLLVM, joinpath(@__DIR__, "..", "src", "twolevel.jl"))
+if !isdefined(GLLVModels, :repeatability_wald_ci)
+    Base.include(GLLVModels, joinpath(@__DIR__, "..", "src", "twolevel.jl"))
 end
 
 @testset "Cluster 2 derived-CI surfaces (core070)" begin
@@ -45,14 +45,14 @@ end
         end
         y = reduce(hcat, ys)
 
-        fit = GLLVM.fit_twolevel_gaussian(y, individual; K_B = K_B, K_W = K_W)
+        fit = GLLVModels.fit_twolevel_gaussian(y, individual; K_B = K_B, K_W = K_W)
         @test fit.converged
 
-        R = GLLVM.repeatability(fit)
+        R = GLLVModels.repeatability(fit)
         @test all(0 .< R .< 1)
 
         @testset "wald CI: logit-transform, brackets the point estimate" begin
-            ci = GLLVM.repeatability_wald_ci(fit, y, individual)
+            ci = GLLVModels.repeatability_wald_ci(fit, y, individual)
             @test length(ci) == p
             for t in 1:p
                 @test isapprox(ci[t].estimate, R[t]; rtol = 1e-10)
@@ -68,10 +68,10 @@ end
             # Cross-check the ForwardDiff gradient inside repeatability_wald_ci
             # against a central finite difference on the packed log-odds closure,
             # at a fixed seed, to <=1e-6 relative (repo FD convention).
-            θ̂ = GLLVM._twolevel_theta_at_mle(fit)
+            θ̂ = GLLVModels._twolevel_theta_at_mle(fit)
             t = 1
-            g = θ -> GLLVM._repeatability_log_odds_packed(θ, p, K_B, K_W, t)
-            grad_ad = GLLVM.ForwardDiff.gradient(g, θ̂)
+            g = θ -> GLLVModels._repeatability_log_odds_packed(θ, p, K_B, K_W, t)
+            grad_ad = GLLVModels.ForwardDiff.gradient(g, θ̂)
             eps = 1e-6
             grad_fd = similar(θ̂)
             for j in eachindex(θ̂)
@@ -83,7 +83,7 @@ end
         end
 
         @testset "bootstrap CI: percentile bounds bracket the point estimate" begin
-            ci_boot = GLLVM.repeatability_bootstrap_ci(fit, individual; nsim = 40, seed = 7)
+            ci_boot = GLLVModels.repeatability_bootstrap_ci(fit, individual; nsim = 40, seed = 7)
             @test length(ci_boot) == p
             for t in 1:p
                 @test isapprox(ci_boot[t].estimate, R[t]; rtol = 1e-10)
@@ -94,8 +94,8 @@ end
         end
 
         @testset "wald vs bootstrap agree to within a generous MC band" begin
-            ci_w = GLLVM.repeatability_wald_ci(fit, y, individual)
-            ci_b = GLLVM.repeatability_bootstrap_ci(fit, individual; nsim = 60, seed = 11)
+            ci_w = GLLVModels.repeatability_wald_ci(fit, y, individual)
+            ci_b = GLLVModels.repeatability_bootstrap_ci(fit, individual; nsim = 60, seed = 11)
             for t in 1:p
                 if ci_w[t].method === :transformed_wald && ci_b[t].n_boot >= 10
                     # Both intervals should overlap substantially with the point
@@ -108,21 +108,21 @@ end
         end
 
         @testset "method = :profile is refused with the named withdrawal error" begin
-            @test_throws GLLVM.TwoLevelRepeatabilityProfileWithdrawn GLLVM.repeatability_ci(
+            @test_throws GLLVModels.TwoLevelRepeatabilityProfileWithdrawn GLLVModels.repeatability_ci(
                 fit, y, individual; method = :profile)
             err = try
-                GLLVM.repeatability_ci(fit, y, individual; method = :profile)
+                GLLVModels.repeatability_ci(fit, y, individual; method = :profile)
                 nothing
             catch e
                 e
             end
-            @test err isa GLLVM.TwoLevelRepeatabilityProfileWithdrawn
+            @test err isa GLLVModels.TwoLevelRepeatabilityProfileWithdrawn
             @test occursin("profile", sprint(showerror, err))
         end
 
         @testset "repeatability_ci dispatcher matches direct calls" begin
-            ci_w1 = GLLVM.repeatability_ci(fit, y, individual; method = :wald)
-            ci_w2 = GLLVM.repeatability_wald_ci(fit, y, individual)
+            ci_w1 = GLLVModels.repeatability_ci(fit, y, individual; method = :wald)
+            ci_w2 = GLLVModels.repeatability_wald_ci(fit, y, individual)
             for t in 1:p
                 @test ci_w1[t].estimate == ci_w2[t].estimate
             end
@@ -144,9 +144,9 @@ end
     # 2. Standardized-loading rho Wald CI (loading_ci, method = :wald_asym)
     # =======================================================================
     @testset "standardized loading (rho) Wald CI — Fisher-z" begin
-        ci = GLLVM.standardized_loading_wald_ci(fit2, 1, 1; y = y2)
+        ci = GLLVModels.standardized_loading_wald_ci(fit2, 1, 1; y = y2)
         @test ci.transform === :fisher_z
-        Σ = GLLVM.sigma_y_site(fit2)
+        Σ = GLLVModels.sigma_y_site(fit2)
         rho_expected = fit2.pars.Λ[1, 1] / sqrt(Σ[1, 1])
         @test isapprox(ci.estimate, rho_expected; rtol = 1e-10)
         if ci.method === :transformed_wald
@@ -154,7 +154,7 @@ end
         end
 
         # Table form via loading_ci(method = :wald_asym).
-        tbl = GLLVM.loading_ci(fit2, y2; method = :wald_asym)
+        tbl = GLLVModels.loading_ci(fit2, y2; method = :wald_asym)
         @test length(tbl) == p * K
         row11 = only(filter(r -> r.trait == 1 && r.axis == 1, tbl))
         @test isapprox(row11.estimate, ci.estimate; rtol = 1e-10)
@@ -167,13 +167,13 @@ end
     end
 
     @testset "loading_ci method=:wald + loading_scale=:standardized dispatches to standardized_loading_wald_ci (not raw)" begin
-        ci_std = GLLVM.standardized_loading_wald_ci(fit2, 1, 1; y = y2)
-        ci_raw = GLLVM.raw_loading_wald_ci(fit2, 1, 1; y = y2)
+        ci_std = GLLVModels.standardized_loading_wald_ci(fit2, 1, 1; y = y2)
+        ci_raw = GLLVModels.raw_loading_wald_ci(fit2, 1, 1; y = y2)
         # Sanity: raw and standardized really are different numbers for this
         # fixture (otherwise the defect would be silently unobservable).
         @test !isapprox(ci_std.estimate, ci_raw.estimate; rtol = 1e-6)
 
-        tbl = GLLVM.loading_ci(fit2, y2; method = :wald, loading_scale = :standardized)
+        tbl = GLLVModels.loading_ci(fit2, y2; method = :wald, loading_scale = :standardized)
         row11 = only(filter(r -> r.trait == 1 && r.axis == 1, tbl))
         @test row11.loading_scale === :standardized
         @test isapprox(row11.estimate, ci_std.estimate; rtol = 1e-10)
@@ -182,14 +182,14 @@ end
     end
 
     @testset "loading_ci raw wald matches Λ point estimate; wald_asym requires standardized" begin
-        tbl_raw = GLLVM.loading_ci(fit2, y2; method = :wald)
+        tbl_raw = GLLVModels.loading_ci(fit2, y2; method = :wald)
         row = only(filter(r -> r.trait == 2 && r.axis == 1, tbl_raw))
         @test isapprox(row.estimate, fit2.pars.Λ[2, 1]; rtol = 1e-10)
         @test row.loading_scale === :raw
 
-        @test_throws ArgumentError GLLVM.loading_ci(fit2, y2; method = :wald_asym,
+        @test_throws ArgumentError GLLVModels.loading_ci(fit2, y2; method = :wald_asym,
                                                      loading_scale = :raw)
-        @test_throws ArgumentError GLLVM.loading_ci(fit2, y2; method = :profile,
+        @test_throws ArgumentError GLLVModels.loading_ci(fit2, y2; method = :profile,
                                                      loading_scale = :standardized)
     end
 
@@ -197,17 +197,17 @@ end
     # 3a. loading_profile_exploratory — profile-likelihood CI on a raw Λ entry
     # =======================================================================
     @testset "loading_profile_exploratory brackets the raw Λ estimate" begin
-        prof = GLLVM.loading_profile_exploratory(fit2, 1, 1; y = y2)
+        prof = GLLVModels.loading_profile_exploratory(fit2, 1, 1; y = y2)
         @test isapprox(prof.estimate, fit2.pars.Λ[1, 1]; rtol = 1e-10)
         if prof.method === :profile
             @test prof.lower <= prof.estimate <= prof.upper
         end
 
-        pinned = GLLVM.loading_profile_exploratory(fit2, 1, 2; y = y2)  # k > t: structurally 0
+        pinned = GLLVModels.loading_profile_exploratory(fit2, 1, 2; y = y2)  # k > t: structurally 0
         @test pinned.method === :pinned
         @test pinned.estimate == 0.0 == pinned.lower == pinned.upper
 
-        prof_old = @test_deprecated GLLVM.loading_profile(fit2, 1, 1; y = y2)
+        prof_old = @test_deprecated GLLVModels.loading_profile(fit2, 1, 1; y = y2)
         @test prof_old == prof
     end
 
@@ -215,8 +215,8 @@ end
     # 3b. profile_ci_total_variance / profile_ci_phylo_signal
     # =======================================================================
     @testset "profile_ci_total_variance brackets sigma_y_site diagonal" begin
-        Σ = GLLVM.sigma_y_site(fit2)
-        prof = GLLVM.profile_ci_total_variance(fit2, 1; y = y2)
+        Σ = GLLVModels.sigma_y_site(fit2)
+        prof = GLLVModels.profile_ci_total_variance(fit2, 1; y = y2)
         @test isapprox(prof.estimate, Σ[1, 1]; rtol = 1e-10)
         @test hasproperty(prof, :boundary)
         # Total variance is feasible on (0, Inf): a finite lower bound must
@@ -236,7 +236,7 @@ end
         # the feasible edge must be clamped to the edge with boundary=true,
         # not silently returned as a negative "total variance" bound.
         r_bad = (lower = -0.02, upper = 1.3, estimate = 0.5, method = :profile)
-        r_fixed = GLLVM._profile_ci_bounded(fit2, θ -> 0.5, r_bad;
+        r_fixed = GLLVModels._profile_ci_bounded(fit2, θ -> 0.5, r_bad;
                                             level = 0.95, y = y2, X = nothing,
                                             Σ_phy = nothing, lo_bound = 0.0, hi_bound = 1.0)
         @test r_fixed.lower == 0.0
@@ -247,7 +247,7 @@ end
         # A result already inside the feasible range is passed through
         # unchanged (boundary=false).
         r_ok = (lower = 0.1, upper = 0.9, estimate = 0.5, method = :profile)
-        r_same = GLLVM._profile_ci_bounded(fit2, θ -> 0.5, r_ok;
+        r_same = GLLVModels._profile_ci_bounded(fit2, θ -> 0.5, r_ok;
                                            level = 0.95, y = y2, X = nothing,
                                            Σ_phy = nothing, lo_bound = 0.0, hi_bound = 1.0)
         @test r_same.lower == 0.1
@@ -265,15 +265,15 @@ end
         z3 = randn(rng3, K3, n3)
         φ3 = randn(rng3, p3)
         y3 = Λtrue3 * z3 .+ σ_eps3 .* randn(rng3, p3, n3) .+ σ_phy_true .* φ3
-        fit_phy3 = GLLVM.fit_gaussian_gllvm(y3; K = K3, has_phy_unique = true, Σ_phy = Σ_phy3)
+        fit_phy3 = GLLVModels.fit_gaussian_gllvm(y3; K = K3, has_phy_unique = true, Σ_phy = Σ_phy3)
 
-        H2 = GLLVM.phylo_signal(fit_phy3; Σ_phy = Σ_phy3)
+        H2 = GLLVModels.phylo_signal(fit_phy3; Σ_phy = Σ_phy3)
         @test all(h -> isnan(h) || (0.0 <= h <= 1.0), H2)
 
         # Directly verify the σ²_phy/(σ²_phy+σ²_non) formula against the raw
         # pieces (not a tautological re-derivation of phylo_signal itself).
         σphy_hat = fit_phy3.pars.σ_phy
-        Σnon = GLLVM.sigma_y_site(fit_phy3)
+        Σnon = GLLVModels.sigma_y_site(fit_phy3)
         for t in 1:p3
             σ2phy_t = σphy_hat[t]^2
             expected = σ2phy_t / (σ2phy_t + Σnon[t, t])
@@ -282,10 +282,10 @@ end
 
         # The packed closure (used by the Wald/profile CI routes) must agree
         # with the public accessor at θ̂.
-        spec = GLLVM._derived_spec(fit_phy3)
+        spec = GLLVModels._derived_spec(fit_phy3)
         θ̂ = fit_phy3.pars.θ_packed
         for t in 1:p3
-            f = GLLVM._make_phylo_signal_closure(spec, t; diag_Σphy = diag(Σ_phy3))
+            f = GLLVModels._make_phylo_signal_closure(spec, t; diag_Σphy = diag(Σ_phy3))
             @test isapprox(f(θ̂), H2[t]; rtol = 1e-10)
         end
     end
@@ -300,9 +300,9 @@ end
         z4 = randn(rng4, K4, n4)
         φ4 = randn(rng4, p4)
         y4 = Λtrue4 * z4 .+ σ_eps4 .* randn(rng4, p4, n4) .+ σ_phy_true4 .* φ4
-        fit_phy4 = GLLVM.fit_gaussian_gllvm(y4; K = K4, has_phy_unique = true, Σ_phy = Σ_phy4)
+        fit_phy4 = GLLVModels.fit_gaussian_gllvm(y4; K = K4, has_phy_unique = true, Σ_phy = Σ_phy4)
 
-        prof = GLLVM.profile_ci_phylo_signal(fit_phy4, 1; y = y4, Σ_phy = Σ_phy4, max_expand = 12)
+        prof = GLLVModels.profile_ci_phylo_signal(fit_phy4, 1; y = y4, Σ_phy = Σ_phy4, max_expand = 12)
         @test hasproperty(prof, :boundary)
         @test 0.0 <= prof.estimate <= 1.0
         if isfinite(prof.lower)
@@ -318,8 +318,8 @@ end
         # contract (confint_derived.jl docstring), so the profiler should see
         # a non-finite point estimate and error cleanly rather than silently
         # returning a bogus interval.
-        @test all(isnan, GLLVM.phylo_signal(fit2))
-        @test_throws ArgumentError GLLVM.profile_ci_phylo_signal(fit2, 1; y = y2)
+        @test all(isnan, GLLVModels.phylo_signal(fit2))
+        @test_throws ArgumentError GLLVModels.profile_ci_phylo_signal(fit2, 1; y = y2)
     end
 
     # =======================================================================
@@ -345,11 +345,11 @@ end
         end
         y3 = reduce(hcat, cols)
 
-        fit3 = GLLVM.fit_gaussian_random_slope(y3, grouping, Z; K = K3)
+        fit3 = GLLVModels.fit_gaussian_random_slope(y3, grouping, Z; K = K3)
         @test fit3.converged
         @test fit3.q == 1
 
-        ci = GLLVM.slope_sd_ci(fit3, y3, grouping, Z)
+        ci = GLLVModels.slope_sd_ci(fit3, y3, grouping, Z)
         @test length(ci) == 1
         sd_hat = sqrt(fit3.Σ_b[1, 1])
         @test isapprox(ci[1].estimate, sd_hat; rtol = 1e-8)
@@ -363,8 +363,8 @@ end
     # 5. standard_errors — thin wrapper around confint(fit, y)
     # =======================================================================
     @testset "standard_errors matches confint's term/estimate/se columns" begin
-        se_tbl = GLLVM.standard_errors(fit2, y2)
-        full = GLLVM.confint(fit2; y = y2)
+        se_tbl = GLLVModels.standard_errors(fit2, y2)
+        full = GLLVModels.confint(fit2; y = y2)
         @test se_tbl.term == full.term
         @test se_tbl.estimate == full.estimate
         @test isequal(se_tbl.se, full.se)

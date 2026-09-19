@@ -37,11 +37,11 @@
 # build the one-step closure here. The parameter is packed as a flat vector
 # θ = [vec(Λ_B); σ_eps; σ_phy] so the SQUAREM vector algebra (r, v, norms) is
 # trivial. The log-lik is scored with the SAME dense closed form
-# (`GLLVM.gaussian_marginal_loglik`) the plain EM and the gradient fit use, so
+# (`GLLVModels.gaussian_marginal_loglik`) the plain EM and the gradient fit use, so
 # the trajectories are directly comparable.
 #
-# New file only — not wired into the GLLVM module (mirrors the em_phylo.jl
-# convention). `include` this file AFTER the GLLVM module is loaded; it pulls
+# New file only — not wired into the GLLVModels module (mirrors the em_phylo.jl
+# convention). `include` this file AFTER the GLLVModels module is loaded; it pulls
 # in `em_phylo.jl` itself (guarded so a double-include is harmless).
 
 if !isdefined(@__MODULE__, :_estep_dense)
@@ -92,7 +92,7 @@ end
 @inline function _loglik_phylo(θ::AbstractVector, y::AbstractMatrix,
                                Σ_phy::AbstractMatrix, p::Integer, K_B::Integer)
     Λ_B, σ_eps, σ_phy = _unpack_phylo(θ, p, K_B)
-    return GLLVM.gaussian_marginal_loglik(y, Λ_B, σ_eps; σ_phy = σ_phy,
+    return GLLVModels.gaussian_marginal_loglik(y, Λ_B, σ_eps; σ_phy = σ_phy,
                                           Σ_phy = Σ_phy)
 end
 
@@ -172,7 +172,7 @@ function em_fit_phylo_squarem(y::AbstractMatrix, K_B::Integer,
     # ----- Warm start: IDENTICAL to em_fit_phylo (PPCA Λ_B, σ_eps; phylo SD
     #       from the marginal scale) so the two fitters start from one point. --
     if λ_init === nothing || σ_eps_init === nothing
-        Λ0, σ0 = GLLVM.ppca_init(yf, K_B)
+        Λ0, σ0 = GLLVModels.ppca_init(yf, K_B)
         Λ_B   = λ_init === nothing ? Matrix{Float64}(Λ0) : Matrix{Float64}(λ_init)
         σ_eps = σ_eps_init === nothing ? float(σ0) : float(σ_eps_init)
     else
@@ -339,7 +339,7 @@ function em_fit_phylo_squarem(y::AbstractMatrix, K_B::Integer,
     blup_phy = copy(ss.μ_z)
     blup_phi = copy(ss.μ_φ)
 
-    ll_final = GLLVM.gaussian_marginal_loglik(yf, Λ_B, σ_eps;
+    ll_final = GLLVModels.gaussian_marginal_loglik(yf, Λ_B, σ_eps;
                                               σ_phy = σ_phy, Σ_phy = Σ_phy)
     if !isempty(loglik_trace) && ll_final > loglik_trace[end]
         push!(loglik_trace, ll_final)

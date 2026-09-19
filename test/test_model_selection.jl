@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "select_lv — latent-dimension selection" begin
     @testset "Poisson sweep K = 1:3" begin
@@ -26,7 +26,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         @test all(isfinite, sel.loglik)
 
         # `best` is a genuine fitted model with a finite log-likelihood.
-        @test isfinite(GLLVM._loglik(sel.best))
+        @test isfinite(GLLVModels._loglik(sel.best))
         @test sel.best isa PoissonFit
 
         # AIC default agrees with the BIC selection consistency: best row is the

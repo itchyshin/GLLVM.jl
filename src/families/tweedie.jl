@@ -306,10 +306,8 @@ marginal *and* from the warm start, so the fit depends only on the observed cell
 
 `hessian` selects the Laplace log-det curvature only (`:fisher` expected /
 `:observed` joint — TMB's choice); the inner mode search is always
-Fisher-scored. Default: Tweedie/log default `:observed` (changed 2026-08-28,
-maintainer decision — TMB/`gllvmTMB` parity, see
-`docs/dev-log/decisions/2026-08-28-arc-decision-batch.md`). Omitting it is
-exactly the default-path behaviour.
+Fisher-scored. Tweedie/log defaults to `:observed` so its Laplace curvature
+matches TMB/`gllvmTMB`. Omitting it is exactly the default-path behaviour.
 """
 function fit_tweedie_gllvm(Y::AbstractMatrix; K::Integer,
         link::Link = LogLink(), φ_init::Real = 1.0, p_init::Real = 1.5, mask = nothing,

@@ -20,7 +20,7 @@
 # and interaction terms across site-level variables.
 #
 # StatsModels is imported SELECTIVELY so it does not bring StatsAPI's
-# `predict`/`residuals`/`fit` into the module and clash with GLLVM's own post-fit generics.
+# `predict`/`residuals`/`fit` into the module and clash with GLLVModels's own post-fit generics.
 
 import StatsModels
 using StatsModels: @formula, FormulaTerm, Term, ConstantTerm, FunctionTerm, InteractionTerm, schema, apply_schema, modelmatrix, coefnames
@@ -128,7 +128,7 @@ matrix `Y` (`p × n`) and a `Tables`-compatible `data` of **site-level** covaria
 (one row per site = per column of `Y`).
 
 ```julia
-using GLLVM, Distributions, StatsModels
+using GLLVModels, Distributions, StatsModels
 gllvm(@formula(y ~ 1 + temp + depth), Y, site_data; family = Normal(),  K = 2)
 gllvm(@formula(y ~ 1 + temp + habitat), Y, site_data; family = Poisson(), K = 2,
       contrasts = Dict(:habitat => DummyCoding()))
@@ -391,14 +391,14 @@ const _STRUCTURED_TERM_KINDS = (:dep, :indep, :scalar,
     SourceTermSpec
 
 Parsed, not-yet-materialized structured source term recognized from a raw
-formula `Expr` by [`GLLVM._recognize_source_term`](@ref). `kind` is one of
+formula `Expr` by [`GLLVModels._recognize_source_term`](@ref). `kind` is one of
 `:dep, :indep, :scalar, :kernel_indep, :kernel_dep, :kernel_scalar,
 :kernel_latent, :kernel_unique`. `group` names the grouping column (the bar
 RHS). `common`/`unique` are literal booleans, `nothing` when not applicable
 to `kind`. `name` defaults to `:source` (non-kernel kinds) or `:kernel`
 (kernel kinds). `K` carries the *raw, unresolved* kernel-matrix expression
 for `kernel_*` kinds (`nothing` otherwise); `d` is the requested rank for
-`kernel_latent` (`nothing` otherwise). Lane-internal; not exported.
+`kernel_latent` (`nothing` otherwise). Internal and not exported.
 """
 struct SourceTermSpec
     kind::Symbol
@@ -479,8 +479,8 @@ argument (`dep(0 + trait | g)`, matching R signatures `dep(formula)` /
 `kernel_*(...)` siblings instead take a **bare grouping symbol** as their
 first argument (R signature `kernel_latent(unit, K, d=1, name="kernel",
 unique=FALSE)` — kernel-keywords.R:55-57 — no bar). Throws `ArgumentError` on
-an unrecognized shape, an augmented LHS, or a non-literal flag. Lane-internal
-(core070 formula-recognizer-spec §2 Step 0); not exported.
+an unrecognized shape, an augmented LHS, or a non-literal flag. This helper is
+internal and not exported.
 """
 function _recognize_source_term(expr::Expr)
     _is_structured_call(expr) || throw(ArgumentError("not a recognized structured source term: `$expr`"))
@@ -563,7 +563,7 @@ indep+latent :1682-1695), generalized over this recognizer's kind vocabulary
 counts as `latent`; a `kernel_latent(unique=true)` term is the Julia
 unique-folded analogue of R's separate `unique` term). Throws `ArgumentError`
 naming both terms and the shared group on any forbidden pairing within one
-grouping column. Lane-internal (core070 formula-recognizer-spec §2 Step 4)."""
+grouping column. This helper is internal."""
 function _check_source_term_exclusions(specs::Vector{SourceTermSpec})
     by_group = Dict{Symbol,Vector{Symbol}}()
     for s in specs
@@ -593,9 +593,9 @@ function _check_source_term_exclusions(specs::Vector{SourceTermSpec})
 end
 
 """Resolve a recognized `K=` reference (a bare `Symbol`/`QuoteNode` captured
-by [`GLLVM._recognize_source_term`](@ref)) against `kernel_env` — a
+by [`GLLVModels._recognize_source_term`](@ref)) against `kernel_env` — a
 `NamedTuple`/`Dict`-like environment supplied by the caller, mirroring R's
-calling-environment lookup for `K=A`. Lane-internal."""
+calling-environment lookup for `K=A`. Internal helper."""
 function _resolve_kernel(K, kernel_env)
     key = K isa Symbol ? K :
           (K isa QuoteNode && K.value isa Symbol) ? K.value :
@@ -617,9 +617,8 @@ Materialize a [`SourceCovariance`](@ref) (src/source_fit.jl) from a recognized
 one-based convention) define an identity/kernel covariance over the group
 nodes with a one-hot projection built by unit row. `kernel_env` resolves
 `K=` for `kernel_*` kinds. `:kernel_unique` has no standalone
-`SourceCovariance` mode; fold it as `kernel_latent(..., unique=true)` per
-formula-recognizer-spec.md §1.4 ("Julia folds the Ψ companion into the SAME
-source"). Lane-internal (core070 formula-recognizer-spec §2 Steps 1,3,5,6).
+`SourceCovariance` mode; use `kernel_latent(..., unique=true)` instead. This
+helper is internal.
 """
 function _source_term_covariance(spec::SourceTermSpec, data; kernel_env=NamedTuple())
     cols = Tables.columntable(data)
@@ -658,16 +657,14 @@ end
 """
     _fit_gaussian_structured_sources(Y, data, term_exprs; kernel_env=NamedTuple(), kwargs...)
 
-Lane-only recognizer entry point (core070 formula-recognizer-spec §2, Steps
-1-6): recognizes each raw structured-term `Expr` in `term_exprs` against
+Internal recognizer entry point: recognizes each raw structured-term `Expr` in `term_exprs` against
 `data`, runs the Step 4 mutual-exclusion gates over the full set, materializes
 their `SourceCovariance`s, and fits them via [`fit_gaussian_sources`](@ref).
 **Not wired into the public `gllvm(formula, ...)` front door** — StatsModels'
 `@formula` macro does not parse the `lhs | group` bar syntax these terms use
-(see module header note above); surface integration is a separate,
-maintainer-approval-gated grammar decision. `kwargs` forward to
-`fit_gaussian_sources` (e.g. `X`, `sigma_eps_fixed`, `start`). Lane-internal;
-not exported.
+(see module header note above); surface integration is a separate grammar
+extension. `kwargs` forward to `fit_gaussian_sources` (e.g. `X`,
+`sigma_eps_fixed`, `start`). Not exported.
 """
 function _fit_gaussian_structured_sources(Y::AbstractMatrix{<:Real}, data, term_exprs;
         kernel_env=NamedTuple(), kwargs...)
@@ -681,8 +678,7 @@ end
     fit_gaussian_structured(Y, data; structure::Vector{Expr}, family=Normal(),
                              kernel_env=NamedTuple(), kwargs...)
 
-Public entry point for the structured-term source grammar (maintainer decision
-round2-3 #6, `docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md`):
+Public entry point for the structured-term source grammar:
 exposes the recognizers driven by `_fit_gaussian_structured_sources` through an
 explicit `structure=` keyword, **not** a macro. This is a thin, documented
 wrapper — it runs exactly the same recognizer/gate/fit pipeline as the internal
@@ -699,10 +695,10 @@ unchanged through this wrapper.
 StatsModels' `@formula` macro parses its right-hand side into `Term`s at
 macro-expansion time and rejects the `lhs | group` bar syntax these structured
 terms use (`indep(0 + trait | g)`, `dep(1 | grp)`, `kernel_latent(g, K=K, d=2)`,
-...) before any GLLVM code ever runs — the macro has no hook to recognize a
+...) before any GLLVModels code ever runs — the macro has no hook to recognize a
 `|`-headed call as anything but a parse error. Passing raw, unevaluated `Expr`s
 via `structure=` sidesteps `@formula` entirely: each `Expr` is quoted by the
-caller with `:(...)` and walked by GLLVM's own recognizer, so the grammar can
+caller with `:(...)` and walked by GLLVModels's own recognizer, so the grammar can
 support the bar syntax without teaching StatsModels a new dialect. A macro
 front door that lets users write `structure(indep(0 + trait | g))` directly
 (instead of quoting) is a separate, later grammar decision — this wrapper does
@@ -722,8 +718,7 @@ takes no `family` argument at all). Any other `family` value throws a named
   grouping columns referenced inside `structure`.
 - `structure::Vector{Expr}`: one or more raw, quoted structured-term calls —
   `indep(...)`, `dep(...)`, `scalar(...)`, `kernel_indep(...)`,
-  `kernel_scalar(...)`, `kernel_dep(...)`, or `kernel_latent(...)` — see
-  `docs/dev-log/core070/formula-recognizer-spec.md` §1 for the full grammar.
+  `kernel_scalar(...)`, `kernel_dep(...)`, or `kernel_latent(...)`.
 - `family`: response family; only `Normal()` is accepted (default).
 - `kernel_env=NamedTuple()`: named kernel matrices referenced by
   `kernel_*(...)` terms' `K=` keyword (e.g. `(K = phylogenetic_kernel,)`).
@@ -733,7 +728,7 @@ takes no `family` argument at all). Any other `family` value throws a named
 # Example
 
 ```jldoctest
-julia> using GLLVM, Random, LinearAlgebra
+julia> using GLLVModels, Random, LinearAlgebra
 
 julia> rng = MersenneTwister(70100); p, n = 3, 24;
 
@@ -765,7 +760,6 @@ function fit_gaussian_structured(Y::AbstractMatrix{<:Real}, data;
         structure::Vector{Expr}, family::Distribution=Normal(),
         kernel_env=NamedTuple(), kwargs...)
     family isa Normal || throw(ArgumentError(
-        "fit_gaussian_structured supports family=Normal() only (Gaussian-only " *
-        "for now, per maintainer decision round2-3 #6); got $(family)"))
+        "fit_gaussian_structured supports family=Normal() only; got $(family)"))
     return _fit_gaussian_structured_sources(Y, data, structure; kernel_env=kernel_env, kwargs...)
 end

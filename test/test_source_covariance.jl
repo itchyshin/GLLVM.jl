@@ -1,10 +1,10 @@
-using Test, GLLVM, LinearAlgebra, ForwardDiff
+using Test, GLLVModels, LinearAlgebra, ForwardDiff
 using Distributions: Normal, logpdf
 @testset "Gaussian additive source covariance" begin
-    available = isdefined(GLLVM, :_gaussian_source_loglik)
+    available = isdefined(GLLVModels, :_gaussian_source_loglik)
     @test available
     if available
-        f = GLLVM._gaussian_source_loglik
+        f = GLLVModels._gaussian_source_loglik
         Y = [0.2 -0.4 0.8; 1.1 0.3 -0.2]
         beta = [0.1, -0.2]; lambda = [0.4; -0.3;;]
         C = [1.0 0.25; 0.25 1.4]; groups = reshape([1, 1, 2], 3, 1)

@@ -1,18 +1,18 @@
-using Test, GLLVM, StatsModels, LinearAlgebra
+using Test, GLLVModels, StatsModels, LinearAlgebra
 
 @testset "Destination B public Gaussian grouping routes" begin
     Y = [0.2 -0.3 0.7 0.6 -0.4 0.1; 0.8 0.2 -0.1 0.3 0.5 -0.2]
     data = (unit=[:a,:a,:b,:b,:c,:c], x=[-1.,0.,1.,-1.,0.,1.])
-    terms = [GLLVM.GroupingTerm(:unit; mode=:indep)]
+    terms = [GLLVModels.GroupingTerm(:unit; mode=:indep)]
     @test isdefined(Main, :GroupingTerm)
     @test_throws ArgumentError fit_gllvm(Y; grouping=terms, unit=data.unit, K=1)
     @test_throws ArgumentError fit_gllvm(Y; grouping=terms, unit=data.unit, pervar=true)
     @test_throws ArgumentError fit_gllvm(Y; unit=data.unit, K=1)
     direct = fit_gllvm(Y; grouping=terms, unit=data.unit, iterations=2)
-    @test direct isa GLLVM.GroupedGaussianFit
+    @test direct isa GLLVModels.GroupedGaussianFit
     formula_fit = gllvm(@formula(y ~ 1 + x), Y, data;
         grouping=terms, unit=:unit, iterations=2)
-    @test formula_fit isa GLLVM.GroupedGaussianFit
+    @test formula_fit isa GLLVModels.GroupedGaussianFit
     @test size(formula_fit.mean_design) == (length(Y), 3)
     @test_throws ArgumentError gllvm(@formula(y ~ 1), Y, data;
         grouping=terms, unit=:missing_column)
@@ -37,7 +37,7 @@ end
         GroupingTerm(:cluster; mode = :indep),
         GroupingTerm(:cluster2; mode = :indep),
     ]
-    direct = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    direct = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = data.unit, unit_obs = data.obs, cluster = data.cluster_id,
         cluster2 = data.cluster2_id, iterations = 0)
     routed = gllvm(@formula(y ~ 1), Y, data;
@@ -102,12 +102,12 @@ end
 
     dense_nll = dense_unit_nll(labels)
     wrong_dense_nll = dense_unit_nll(wrong_labels)
-    fit = fit_gllvm(Y; family=GLLVM.Normal(), grouping=terms, unit=labels,
+    fit = fit_gllvm(Y; family=GLLVModels.Normal(), grouping=terms, unit=labels,
         start=theta, iterations=0)
-    objective = GLLVM._grouped_gaussian_objective(Matrix{Float64}(Y), fit.mean_design,
+    objective = GLLVModels._grouped_gaussian_objective(Matrix{Float64}(Y), fit.mean_design,
         terms, fit.incidences)
-    wrong_incidence = [GLLVM._grouped_incidence(wrong_labels, n)]
-    wrong_objective = GLLVM._grouped_gaussian_objective(Matrix{Float64}(Y),
+    wrong_incidence = [GLLVModels._grouped_incidence(wrong_labels, n)]
+    wrong_objective = GLLVModels._grouped_gaussian_objective(Matrix{Float64}(Y),
         fit.mean_design, terms, wrong_incidence)
 
     @test fit isa GroupedGaussianFit

@@ -1,4 +1,4 @@
-# Two-part / mixture family substrate for GLLVM.jl (shared-z, Option A — one
+# Two-part / mixture family substrate for GLLVModels.jl (shared-z, Option A — one
 # latent z drives both parts via part-specific loadings Λ_z, Λ_c). Two-part
 # observations depend on TWO linear predictors η^z (occurrence/zero) and η^c
 # (positive/count), so they do not fit the scalar-μ generic core in
@@ -315,24 +315,21 @@ log-responses + `σ₀ = sd(log y_{>0})`.
 - `:separate` (default, previous/only behaviour before this kwarg existed):
   independent occurrence (`βz`, `Λz = 0`) and positive-part (`βc`, `Λc`)
   predictors; optimises over `[βz; βc; vec(Λc); log σ]`.
-- `:shared`: the gllvmTMB twin-identity mode (`gllvmTMB.cpp:2816-2830`,
-  `R/gllvmTMB.R:151-154`) — ONE linear predictor `η = β + Λz` drives both
+- `:shared`: the counterpart's tied-predictor mode — ONE linear predictor
+  `η = β + Λz` drives both
   parts (`βz ≡ βc ≡ β`, `Λz ≡ Λc ≡ Λ`), optimising over the smaller
   `[β; vec(Λ); log σ]`. This is a twin-parity-oriented, restrictive
   parameterisation (occurrence log-odds and log-abundance move together by
   construction), not a general-purpose recommendation over `:separate`. A
   supplied `offset` is threaded into BOTH `offsetz` and `offsetc` under
-  `:shared` so the tie `ηz ≡ ηc` is preserved (see
-  `docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`).
+  `:shared` so the tie `ηz ≡ ηc` is preserved.
 
 `disp_group` selects the dispersion parameterisation (`:shared` default, or
-`:species`), following the repo's `disp_group` convention for grouped /
-species-specific dispersion (`fit_gllvm.jl`, `grouped_dispersion.jl`):
+`:species`) for grouped or species-specific dispersion:
 - `:shared` (default, previous/only behaviour before this kwarg existed): one
   scalar sdlog `σ` for every species.
 - `:species`: one sdlog per species (`length(σ) == p`), matching gllvmTMB's
-  per-trait `log_sigma_lognormal_delta` (`gllvmTMB.cpp:1195-1196`,
-  `docs/dev-log/decisions/2026-08-28-per-trait-dispersion-synthesis.md`). Adds
+  per-trait `log_sigma_lognormal_delta`. Adds
   `p − 1` free parameters relative to `:shared`; the two nest (`:shared` is
   the `:species` model with all p sdlogs tied), so `:species` logLik ≥
   `:shared` logLik on the same data up to optimiser noise. Composes with
@@ -884,24 +881,21 @@ standardised positives.
 - `:separate` (default, previous/only behaviour before this kwarg existed):
   independent occurrence (`βz`, `Λz = 0`) and positive-part (`βc`, `Λc`)
   predictors; optimises over `[βz; βc; vec(Λc); log α]`.
-- `:shared`: the gllvmTMB twin-identity mode (`gllvmTMB.cpp:2831-2844`,
-  `R/gllvmTMB.R:151-154`) — ONE linear predictor `η = β + Λz` drives both
+- `:shared`: the counterpart's tied-predictor mode — ONE linear predictor
+  `η = β + Λz` drives both
   parts (`βz ≡ βc ≡ β`, `Λz ≡ Λc ≡ Λ`), optimising over the smaller
   `[β; vec(Λ); log α]`. This is a twin-parity-oriented, restrictive
   parameterisation (occurrence log-odds and log-abundance move together by
   construction), not a general-purpose recommendation over `:separate`. A
   supplied `offset` is threaded into BOTH `offsetz` and `offsetc` under
-  `:shared` so the tie `ηz ≡ ηc` is preserved (see
-  `docs/dev-log/decisions/2026-08-28-delta-shared-predictor-identity.md`).
+  `:shared` so the tie `ηz ≡ ηc` is preserved.
 
 `disp_group` selects the dispersion parameterisation (`:shared` default, or
-`:species`), following the repo's `disp_group` convention for grouped /
-species-specific dispersion (`fit_gllvm.jl`, `grouped_dispersion.jl`):
+`:species`) for grouped or species-specific dispersion:
 - `:shared` (default, previous/only behaviour before this kwarg existed): one
   scalar shape `α` for every species.
 - `:species`: one shape per species (`length(α) == p`), matching gllvmTMB's
-  per-trait `log_phi_gamma_delta` (`gllvmTMB.cpp:1195-1196`,
-  `docs/dev-log/decisions/2026-08-28-per-trait-dispersion-synthesis.md`). Adds
+  per-trait `log_phi_gamma_delta`. Adds
   `p − 1` free parameters relative to `:shared`; the two nest (`:shared` is
   the `:species` model with all p shapes tied), so `:species` logLik ≥
   `:shared` logLik on the same data up to optimiser noise. Composes with
@@ -1232,8 +1226,8 @@ end
 """
     fit_zip_gllvm_cov(Y; X, K, γ_fixed=nothing, …) -> ZIPCovFit
 
-Fit a zero-inflated Poisson GLLVM **with shared site covariates** under the
-ACCEPTED ZIP+X Identity (`docs/dev-log/decisions/2026-08-09-zip-x-identity.md`):
+Fit a zero-inflated Poisson GLLVM **with shared site covariates**. It uses
+separate occurrence and count coefficients:
 
 - structural-zero logit: `η^z_{ts} = β^z_t + Σ_k X[t,s,k]·γ^z_k` (`Λ_z = 0`)
 - count log-mean: `η^c_{ts} = β^c_t + Σ_k X[t,s,k]·γ^c_k + (Λ_c z_s)_t`
@@ -1457,8 +1451,8 @@ end
 """
     fit_zinb_gllvm_cov(Y; X, K, γ_fixed=nothing, …) -> ZINBCovFit
 
-Fit a zero-inflated NB2 GLLVM **with shared site covariates** under the
-ACCEPTED ZINB+X Identity (`docs/dev-log/decisions/2026-08-13-zinb-x-identity.md`):
+Fit a zero-inflated NB2 GLLVM **with shared site covariates**. It uses
+separate occurrence and count coefficients plus one shared NB2 size:
 
 - structural-zero logit: `η^z_{ts} = β^z_t + Σ_k X[t,s,k]·γ^z_k` (`Λ_z = 0`)
 - count log-mean: `η^c_{ts} = β^c_t + Σ_k X[t,s,k]·γ^c_k + (Λ_c z_s)_t`
@@ -1753,8 +1747,8 @@ end
 """
     fit_zib_gllvm_cov(Y; X, K, N, γ_fixed=nothing, …) -> ZIBCovFit
 
-Fit a zero-inflated binomial GLLVM **with shared site covariates** under the
-ACCEPTED ZIB+X Identity (`docs/dev-log/decisions/2026-08-15-zib-x-identity.md`):
+Fit a zero-inflated binomial GLLVM **with shared site covariates**. It uses
+separate occurrence and success coefficients:
 
 - structural-zero logit: `η^z_{ts} = β^z_t + Σ_k X[t,s,k]·γ^z_k` (`Λ_z = 0`)
 - count success logit: `η^c_{ts} = β^c_t + Σ_k X[t,s,k]·γ^c_k + (Λ_c z_s)_t`

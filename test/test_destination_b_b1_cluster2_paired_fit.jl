@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using JSON3
 
 @testset "Destination B B1 frozen-R paired Gaussian cluster2 fit" begin
@@ -45,9 +45,9 @@ using JSON3
     @test all(length(unique(unit[cluster2 .== group])) == 4 for group in unique(cluster2))
     @test all(length(unique(cluster2[unit .== group])) == 6 for group in unique(unit))
 
-    at_r_coordinates = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms, cluster2 = cluster2, start = r_theta_in_julia_order, iterations = 0)
-    refit = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms, cluster2 = cluster2, iterations = 100)
-    changed_membership = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms, cluster2 = changed_cluster2, start = r_theta_in_julia_order, iterations = 0)
+    at_r_coordinates = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms, cluster2 = cluster2, start = r_theta_in_julia_order, iterations = 0)
+    refit = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms, cluster2 = cluster2, iterations = 100)
+    changed_membership = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms, cluster2 = changed_cluster2, start = r_theta_in_julia_order, iterations = 0)
 
     @test at_r_coordinates.loglik ≈ r_loglik atol = 1e-8 rtol = 0
     @test refit.converged

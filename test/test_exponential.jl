@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Exponential family" begin
     @testset "Λ=0 reduces to independent Exponential loglik (exact)" begin
@@ -6,7 +6,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         p, K, n = 5, 2, 60
         β = 0.3 .* randn(p)
         Y = [rand(Exponential(exp(β[t]))) for t in 1:p, s in 1:n]
-        ll = GLLVM.exponential_marginal_loglik_laplace(Y, zeros(p, K), β)
+        ll = GLLVModels.exponential_marginal_loglik_laplace(Y, zeros(p, K), β)
         ref = 0.0
         for t in 1:p, s in 1:n
             ref += logpdf(Exponential(exp(β[t])), Y[t, s])
@@ -161,8 +161,8 @@ using GLLVM, Test, Random, Distributions, Statistics
         #    and `lf == old` would keep passing while the property it documents
         #    -- "reproduces the pre-2026-08-24 path" -- had become false. A test
         #    that silently stops testing is worse than one that fails.
-        old = GLLVM.marginal_loglik_laplace(GLLVM.Exponential(1.0), Y,
-                                            ones(Int, size(Y)), Lam, beta, GLLVM.LogLink();
+        old = GLLVModels.marginal_loglik_laplace(GLLVModels.Exponential(1.0), Y,
+                                            ones(Int, size(Y)), Lam, beta, GLLVModels.LogLink();
                                             hessian = :fisher)
         @test lf == old
 
@@ -184,8 +184,8 @@ using GLLVM, Test, Random, Distributions, Statistics
         #    separately); check the algebraic identity against the Gamma alpha=1 route,
         #    which is where the implementation actually comes from.
         for (mu, y) in ((0.5, 9.0), (2.0, 0.1), (7.0, 2.0))
-            @test GLLVM._gamma_grouped_laplace_weight(:observed, GLLVM.Gamma(1.0, 1.0),
-                                                      mu, mu, y, GLLVM.LogLink()) ≈ y / mu
+            @test GLLVModels._gamma_grouped_laplace_weight(:observed, GLLVModels.Gamma(1.0, 1.0),
+                                                      mu, mu, y, GLLVModels.LogLink()) ≈ y / mu
         end
 
         # 4. Fits: both converge, differ, and neither degenerates.

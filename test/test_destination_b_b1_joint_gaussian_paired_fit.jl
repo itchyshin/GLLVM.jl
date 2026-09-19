@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using JSON3
 using SHA
 
@@ -92,16 +92,16 @@ b1_stationary_regeneration_available(rscript, source_path, library_path) =
     @test all(length(unique(unit[cluster .== group])) == 6 for group in unique(cluster))
     @test all(length(unique(unit[cluster2 .== group])) == 6 for group in unique(cluster2))
 
-    at_r_coordinates = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    at_r_coordinates = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = unit, unit_obs = unit_obs, cluster = cluster, cluster2 = cluster2,
         start = r_theta_in_julia_order, iterations = 0)
-    refit = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    refit = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = unit, unit_obs = unit_obs, cluster = cluster, cluster2 = cluster2,
         iterations = 800, g_tol = 1e-8)
-    changed_cluster2_fit = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    changed_cluster2_fit = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = unit, unit_obs = unit_obs, cluster = cluster, cluster2 = changed_cluster2,
         start = r_theta_in_julia_order, iterations = 0)
-    changed_unit_obs_fit = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    changed_unit_obs_fit = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = unit, unit_obs = changed_unit_obs, cluster = cluster, cluster2 = cluster2,
         start = r_theta_in_julia_order, iterations = 0)
 

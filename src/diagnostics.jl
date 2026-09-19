@@ -7,11 +7,11 @@
 # Ground rules (see docs/dev-log/core070/diagnostics-slice-notes.md):
 #   - loadings comparisons use ΛΛᵀ (tcrossprod) invariants ONLY — never a
 #     signed entrywise Λ comparison (rotation/sign are not identified).
-#   - where the R diagnostic needs a quantity GLLVM.jl does not compute
+#   - where the R diagnostic needs a quantity GLLVModels.jl does not compute
 #     (TMB's joint/marginal Laplace random-effect split, a native
 #     mixed-family-per-trait surface, a "two-ψ" alternative
 #     parameterisation, sdreport SEs for non-Gaussian fits, …) this file
-#     implements the subset that exists on GLLVM.jl fit objects and
+#     implements the subset that exists on GLLVModels.jl fit objects and
 #     documents the gap in the docstring. No stub silently claims a
 #     result it did not compute.
 
@@ -33,7 +33,7 @@ whether the mean *score* (gradient of the negative log-likelihood) at
 those parameters is centred at zero — a Laplace/score-non-centring
 diagnostic, not an accuracy certificate.
 
-**Gap vs R**: GLLVM.jl has no TMB joint/marginal Laplace random-effect
+**Gap vs R**: GLLVModels.jl has no TMB joint/marginal Laplace random-effect
 split, so this port re-simulates the single-tier (`K_W == 0 &&
 !has_diag && K_phy == 0`, `β === nothing`) Gaussian generative model
 directly from `fit.pars.Λ` / `fit.pars.σ_eps`, and tests centring of
@@ -60,7 +60,7 @@ function gllvmTMB_check_consistency(fit::GllvmFit, y::AbstractMatrix;
     (m.K_W == 0 && !m.has_diag && m.K_phy == 0) || throw(ArgumentError(
         "gllvmTMB_check_consistency only supports the single-tier Gaussian model " *
         "(K_W == 0, has_diag == false, K_phy == 0); the fitted model has structure " *
-        "GLLVM.jl does not yet re-simulate for this check"))
+        "GLLVModels.jl does not yet re-simulate for this check"))
     isempty(fit.pars.β) || throw(ArgumentError(
         "gllvmTMB_check_consistency does not support fixed-effect design X yet"))
 
@@ -145,7 +145,7 @@ within-trait family mixing (error) and ordinal-probit traits (warning
 — the latent residual is already standardised at 1, so `"auto"` would
 over-count).
 
-**Gap vs R**: GLLVM.jl's fit types are one family per whole model (no
+**Gap vs R**: GLLVModels.jl's fit types are one family per whole model (no
 native per-trait mixed-family surface yet), so the family-mixing branch
 never fires on the current family surface — `mixed_family = false`
 always, documented rather than silently verified. The ordinal-probit
@@ -156,7 +156,7 @@ messages::Vector{String})`.
 """
 function check_auto_residual(fit)
     messages = String[]
-    mixed_family = false  # gap: no per-trait mixed-family GLLVM.jl surface yet
+    mixed_family = false  # gap: no per-trait mixed-family GLLVModels.jl surface yet
     ordinal_probit = false
     if hasfield(typeof(fit), :link) && hasfield(typeof(fit), :C)
         link = fit.link
@@ -181,7 +181,7 @@ end
 
 Structural / convergence sanity checks over a fitted GLLVM, in the
 spirit of R's `sanity()` adapted to the multi-response fit. Checks that
-compose from what GLLVM.jl already computes on the fit object:
+compose from what GLLVModels.jl already computes on the fit object:
 
   - `converged` — `fit.converged` when present.
   - `loadings_finite` — every entry of the loadings (`_loadings(fit)`)
@@ -196,7 +196,7 @@ compose from what GLLVM.jl already computes on the fit object:
 
 **Gap vs R**: R's `sanity()` also inspects TMB-specific boundary
 conditions (random-effect variance component reports, `sdreport`
-convergence codes) that have no GLLVM.jl equivalent; those are not
+convergence codes) that have no GLLVModels.jl equivalent; those are not
 checked here.
 
 Returns `(pass::Bool, converged, loadings_finite::Bool, pd_hessian,
@@ -272,7 +272,7 @@ type, `ΛΛᵀ + diag(σ_eps²)` (the only tier those fit types carry):
 also inspects TMB `sdreport` estimability flags, per-family boundary
 patterns (binomial-prevalence loading rows, multinomial degeneracy,
 ordinal cutpoint span, spatial-domain diameter — `diagnose.R:417-1548`)
-that have no GLLVM.jl equivalent surface yet; those checks are not
+that have no GLLVModels.jl equivalent surface yet; those checks are not
 ported.
 
 Returns `(pass::Bool, sanity::NamedTuple, boundary_flags::Vector{String},
@@ -335,7 +335,7 @@ boundary scan from [`gllvmTMB_diagnose`](@ref) into a single verdict.
 `check_auto_residual`, and `gllvmTMB_diagnose` — this umbrella
 inherits all of them (no TMB `sdreport` estimability scan, no
 per-family boundary rows beyond the generic variance/correlation
-scan, `mixed_family` always `false` on the current GLLVM.jl family
+scan, `mixed_family` always `false` on the current GLLVModels.jl family
 surface).
 
 Returns `(pass::Bool, sanity::NamedTuple, residual::NamedTuple,
@@ -360,8 +360,7 @@ end
 Port of R's `diagnostic_table()` (`diagnostic-tables.R:53-151`), a flat
 row-per-check table over [`check_gllvmTMB`](@ref)'s components — the
 Julia-idiomatic column-vectors-of-a-NamedTuple shape rather than a
-`data.frame`. Renamed from `diagnostic_table` (maintainer decision
-docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5):
+`data.frame`. Renamed from `diagnostic_table` because
 R's `diagnostic_table(x, table=)` requires `x` to already carry
 `gllvmTMB_diagnostic` metadata attached by a prior call to
 `predictive_check()`/`residuals()` — a different call shape from this
@@ -371,7 +370,7 @@ Returns `(check::Vector{String}, status::Vector{Symbol},
 message::Vector{String})` with one row per named check
 (`:converged`, `:loadings_finite`, `:pd_hessian`, `:gradient_ok`,
 `:variance_boundary`, `:correlation_boundary`, `:auto_residual`); each
-`status` is `:pass`, `:fail`, or `:unavailable` (the GLLVM.jl-gap
+`status` is `:pass`, `:fail`, or `:unavailable` (the GLLVModels.jl-gap
 cases documented as `missing` upstream).
 """
 function fit_diagnostic_table(fit; y = nothing, X = nothing, Σ_phy = nothing, kwargs...)
@@ -447,7 +446,7 @@ latent axes are not separable from the data.
 
 **Gap vs R**: R's kernel-keyword machinery covers a broader family of
 named structured-covariance kernels (spatial, phylogenetic,
-`ar1`, …); this port only checks the two loading-tier case GLLVM.jl
+`ar1`, …); this port only checks the two loading-tier case GLLVModels.jl
 currently fits (`Λ_B` vs `Λ_W`). Single-tier fits (`K_W == 0`) return
 `separable = missing` — there is nothing to separate.
 """
@@ -497,14 +496,13 @@ implied `Σ_y = ΛΛᵀ + diag(σ_eps²)` of two fits of the same number of
 traits `p`. Rotation/sign of Λ are not identified, so this compares
 `Σ_y` itself (a tcrossprod invariant), never signed loading entries.
 
-Renamed from `compare_Sigma_table` (maintainer decision
-docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5):
+Renamed from `compare_Sigma_table` because
 R's `compare_Sigma_table(x, truth, ...)` compares a fit's implied Σ_y
 against a supplied GROUND-TRUTH matrix, not two fits against each other —
 a different signature and purpose from this two-fit bridge.
 
 **Gap vs R**: R's `extract_sigma_table()` also reports per-entry
-bootstrap or profile SEs for the comparison; GLLVM.jl's derived-CI
+bootstrap or profile SEs for the comparison; GLLVModels.jl's derived-CI
 machinery (`confint_derived.jl`) covers single-fit Σ_y CIs but not a
 paired-fit comparison SE, so only the point-estimate comparison is
 returned here.
@@ -563,17 +561,16 @@ sites (BIC's sample size — passed explicitly because
 `StatsAPI.nobs(fit)` requires the response matrix, which this
 comparison does not otherwise need).
 
-Renamed from `compare_dep_vs_two_psi` (maintainer decision
-docs/dev-log/decisions/2026-09-01-maintainer-decisions-round2-3.md #5):
+Renamed from `compare_dep_vs_two_psi` because
 R's `compare_dep_vs_two_psi(fit_two_psi, ...)` takes a SINGLE fitted
 phylogenetic "two-ψ" model and internally refits an alternative "dep"
 model itself — a phylo-specific identifiability cross-check for a named
-reparameterisation GLLVM.jl does not implement, unlike this generic
+reparameterisation GLLVModels.jl does not implement, unlike this generic
 two-fit bridge.
 
 **Gap vs R**: R's "two-ψ" alternative is a specific named
 reparameterisation (two independent latent-variable blocks) that
-GLLVM.jl does not implement as a distinct family; this port is the
+GLLVModels.jl does not implement as a distinct family; this port is the
 generic bridge — Σ_y comparison via [`compare_fits_Sigma_table`](@ref) plus
 an information-criterion delta — applicable to any two fits of the
 same `p`, not specifically the R "two-ψ" family.

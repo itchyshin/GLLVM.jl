@@ -12,7 +12,7 @@ using Test
 using Random
 using LinearAlgebra
 using Distributions
-using GLLVM
+using GLLVModels
 
 function _rtruncpois(μ)
     while true
@@ -41,19 +41,19 @@ end
     Y = _btp_sim(3, 40, 1; seed = 419)
 
     @testset "family key and list membership" begin
-        @test GLLVM._bridge_family_key("truncated_poisson") == "truncated_poisson"
-        @test GLLVM._bridge_family_key("Truncated_Poisson") == "truncated_poisson"
-        @test GLLVM._bridge_family_key("TruncPois") == "truncated_poisson"
-        @test "truncated_poisson" in GLLVM._BRIDGE_ONEPART_FAMILIES
-        zib = findfirst(==("zib"), collect(GLLVM._BRIDGE_ONEPART_FAMILIES))
-        tp = findfirst(==("truncated_poisson"), collect(GLLVM._BRIDGE_ONEPART_FAMILIES))
+        @test GLLVModels._bridge_family_key("truncated_poisson") == "truncated_poisson"
+        @test GLLVModels._bridge_family_key("Truncated_Poisson") == "truncated_poisson"
+        @test GLLVModels._bridge_family_key("TruncPois") == "truncated_poisson"
+        @test "truncated_poisson" in GLLVModels._BRIDGE_ONEPART_FAMILIES
+        zib = findfirst(==("zib"), collect(GLLVModels._BRIDGE_ONEPART_FAMILIES))
+        tp = findfirst(==("truncated_poisson"), collect(GLLVModels._BRIDGE_ONEPART_FAMILIES))
         @test tp == zib + 1
-        @test tp == length(GLLVM._BRIDGE_ONEPART_FAMILIES)
-        @test !("truncated_poisson" in GLLVM._BRIDGE_X_FAMILIES)
-        @test !("truncated_poisson" in GLLVM._BRIDGE_XLV_FAMILIES)
-        @test !("truncated_poisson" in GLLVM._BRIDGE_MASK_FAMILIES)
-        @test "truncated_poisson" in GLLVM._BRIDGE_NO_CI_FAMILIES
-        @test "truncated_poisson" in GLLVM._BRIDGE_NO_SCALAR_POSTFIT_FAMILIES
+        @test tp == length(GLLVModels._BRIDGE_ONEPART_FAMILIES)
+        @test !("truncated_poisson" in GLLVModels._BRIDGE_X_FAMILIES)
+        @test !("truncated_poisson" in GLLVModels._BRIDGE_XLV_FAMILIES)
+        @test !("truncated_poisson" in GLLVModels._BRIDGE_MASK_FAMILIES)
+        @test "truncated_poisson" in GLLVModels._BRIDGE_NO_CI_FAMILIES
+        @test "truncated_poisson" in GLLVModels._BRIDGE_NO_SCALAR_POSTFIT_FAMILIES
     end
 
     @testset "no-X point route matches fit_truncated_poisson_gllvm" begin
@@ -67,10 +67,10 @@ end
         @test br.n_traits == 3
         @test br.n_units == 40
         @test br.alpha ≈ oracle.β atol = 1e-8
-        L = oracle.Λ * GLLVM._svd_rotation(oracle.Λ)
+        L = oracle.Λ * GLLVModels._svd_rotation(oracle.Λ)
         @test br.loadings ≈ L atol = 1e-8
         @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
-        @test br.df == 3 + GLLVM._bridge_rr_df(3, 1)
+        @test br.df == 3 + GLLVModels._bridge_rr_df(3, 1)
         @test all(isnan, br.dispersion)
         @test isnan(br.sigma_eps)
         @test br.link == fill("LogLink", 3)

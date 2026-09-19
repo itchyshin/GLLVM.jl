@@ -13,17 +13,17 @@
 # (`src/families/tweedie.jl:186-198`) names this exact mechanism and forces `-Inf` — but
 # it is called at only two sites.
 
-# NOTE ON QUALIFICATION: every GLLVM call below is written `GLLVM.f(...)` deliberately.
+# NOTE ON QUALIFICATION: every GLLVModels call below is written `GLLVModels.f(...)` deliberately.
 # Two test files (`test_confint_bootstrap.jl:19`, `test_confint_derived.jl:7,10,130`)
 # `include` package sources DIRECTLY into the test module, which defines duplicate types
 # alongside the package's own. An unqualified call in a later file can then bind to the
 # duplicate, and `fit_phylo_gaussian(::AugmentedPhy{Float64}, ...)` fails with a
-# MethodError whose candidate list shows `!Matched::GLLVM.AugmentedPhy` — two types, one
+# MethodError whose candidate list shows `!Matched::GLLVModels.AugmentedPhy` — two types, one
 # name. This file hit exactly that: green standalone, MethodError under `Pkg.test()`.
 # `test_edge_incidence.jl:157` and `test_em_louis.jl:32` already qualify for the same
 # reason. See the check-log entry for 2026-08-26.
 
-using GLLVM, Test, Random, LinearAlgebra, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Distributions
 
 @testset "Sentinel defects: fixed at the class level, one still open" begin
 
@@ -42,10 +42,10 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
         Random.seed!(7)
         Yg = abs.(randn(6, 40)) .+ 0.5
         Yg[2, 3] = 0.0
-        fg = GLLVM.fit_gamma_gllvm(Yg; K = 1)
+        fg = GLLVModels.fit_gamma_gllvm(Yg; K = 1)
         @test !fg.converged                 # was true
         @test fg.loglik == -Inf             # was -1.0e12
-        @test !isfinite(GLLVM.aic(fg))      # was a clean-looking 2.0e12
+        @test !isfinite(GLLVModels.aic(fg))      # was a clean-looking 2.0e12
 
         # (2) NB grouped_cov with a non-LogLink. This failed 100% of calls under the
         # DOCUMENTED DEFAULT `hessian = :observed`, and the package's own informative
@@ -54,14 +54,14 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
         Random.seed!(104)
         X = randn(4, 80, 1)
         Yi = rand(Distributions.NegativeBinomial(3.0, 0.4), 4, 80)
-        fb = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4),
-                                            link = GLLVM.IdentityLink())
+        fb = GLLVModels.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4),
+                                            link = GLLVModels.IdentityLink())
         @test !fb.converged                 # was true
         @test fb.loglik == -Inf             # was -1.0e12
 
         # A healthy fit on the same route is untouched — the screen must not fire on
         # real answers.
-        fh = GLLVM.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4))
+        fh = GLLVModels.fit_nb_gllvm_grouped_cov(Yi; X = X, K = 1, group = collect(1:4))
         # T14 F1 (2026-09-02): this fixture happens to drive one group's dispersion to
         # the Poisson limit (r ≈ 3e9 — the free latent factor absorbs that trait's
         # overdispersion), which the grouped fits now report honestly as
@@ -73,9 +73,9 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
         @test fh.converged == !any(fh.dispersion_boundary)
 
         # The helper itself, at its boundaries.
-        @test GLLVM._fit_verdict(1.0e12, true, 0) == (-Inf, false, 0)
-        @test GLLVM._fit_verdict(NaN, true, 5) == (-Inf, false, 5)
-        @test GLLVM._fit_verdict(780.13, true, 42)[2]
+        @test GLLVModels._fit_verdict(1.0e12, true, 0) == (-Inf, false, 0)
+        @test GLLVModels._fit_verdict(NaN, true, 5) == (-Inf, false, 5)
+        @test GLLVModels._fit_verdict(780.13, true, 42)[2]
     end
 
     @testset "GP-1 fit_bL: a 4th sentinel escape the sweep's grep missed" begin
@@ -104,12 +104,12 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
         Random.seed!(1)
         Yc = rand(1:500, p, 20)
         N1 = ones(Int, p, 20)
-        link = GLLVM.LogLink()
+        link = GLLVModels.LogLink()
         β0 = fill(5.0, p); Λ0 = zeros(p, K)
         function negll(θ)
             β = θ[1:p]
             v = try
-                -GLLVM.marginal_loglik_laplace(GLLVM.GeneralizedPoisson1(-0.2), Yc, N1,
+                -GLLVModels.marginal_loglik_laplace(GLLVModels.GeneralizedPoisson1(-0.2), Yc, N1,
                     reshape(θ[(p + 1):(p + p * K)], p, K), β, link;
                     mask = nothing, offset = nothing, maxiter = 100, tol = 1e-9)
             catch
@@ -117,13 +117,13 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
             end
             return isfinite(v) ? v : 1e12
         end
-        ls = GLLVM.Optim.LBFGS(linesearch = GLLVM.Optim.LineSearches.BackTracking(order = 3))
-        res = GLLVM.Optim.optimize(negll, vcat(β0, vec(Λ0)), ls,
-                                   GLLVM.Optim.Options(iterations = 10); autodiff = :finite)
-        @test GLLVM.Optim.minimum(res) == 1.0e12
-        @test GLLVM.Optim.converged(res)             # the raw Optim result IS the fake success
+        ls = GLLVModels.Optim.LBFGS(linesearch = GLLVModels.Optim.LineSearches.BackTracking(order = 3))
+        res = GLLVModels.Optim.optimize(negll, vcat(β0, vec(Λ0)), ls,
+                                   GLLVModels.Optim.Options(iterations = 10); autodiff = :finite)
+        @test GLLVModels.Optim.minimum(res) == 1.0e12
+        @test GLLVModels.Optim.converged(res)             # the raw Optim result IS the fake success
 
-        ll, conv, _ = GLLVM._fit_verdict(res)
+        ll, conv, _ = GLLVModels._fit_verdict(res)
         @test !conv                                   # screened: no longer fake-converged
         @test ll == -Inf                               # screened: cannot masquerade as a loglik
     end
@@ -144,18 +144,18 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
         # wired into runtests.jl and never has been.
         function _sim(tree, Λ_B, σ_phy, σ_eps, n; seed)
             Random.seed!(seed)
-            Σ_phy = GLLVM.sigma_phy_dense(tree; σ²_phy = 1.0)
+            Σ_phy = GLLVModels.sigma_phy_dense(tree; σ²_phy = 1.0)
             p, K_B = size(Λ_B)
             η_B = randn(K_B, n)
             φ = cholesky(Symmetric(Σ_phy)).L * randn(p)
             y = Λ_B * η_B .+ reshape(σ_phy .* φ, p, 1) .+ σ_eps .* randn(p, n)
             return y, Σ_phy
         end
-        tree = GLLVM.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
+        tree = GLLVModels.augmented_phy("(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2,(E:0.4,F:0.4):0.2);")
         pp = tree.n_leaves
         Λ_B = reshape([0.8, 0.6, 0.4, -0.3, 0.5, -0.2], pp, 1)
         y, Σ = _sim(tree, Λ_B, fill(0.9, pp), 0.5, 400; seed = 30)
-        fit = GLLVM.fit_gaussian_gllvm(y; K = 1, has_phy_unique = true, Σ_phy = Σ)
+        fit = GLLVModels.fit_gaussian_gllvm(y; K = 1, has_phy_unique = true, Σ_phy = Σ)
 
         # Current behaviour, verified:
         @test fit.converged
@@ -172,8 +172,8 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
         # `all(isfinite, θ)` guard at src/fit_phylo.jl:121. The objective then returns
         # the flat `_PHYLO_PENALTY = 1e12` plateau, the finite-difference gradient over a
         # constant is exactly 0, and Optim declares `g_converged` at iteration 0.
-        phy = GLLVM.augmented_phy("(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,(E:0.2,F:0.2):0.1);")
-        f = GLLVM.fit_phylo_gaussian(phy, fill(3.0, 6))
+        phy = GLLVModels.augmented_phy("(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,(E:0.2,F:0.2):0.1);")
+        f = GLLVModels.fit_phylo_gaussian(phy, fill(3.0, 6))
 
         # FIXED 2026-08-26 by `_phylo_verdict` (src/fit_phylo.jl:92), which mirrors
         # `_tweedie_verdict`: a run that ends on the penalty plateau did not converge, and
@@ -190,8 +190,8 @@ using GLLVM, Test, Random, LinearAlgebra, Distributions
         # outside the domain and return the sentinel. Enormous apparent curvature ⇒
         # vanishing SE. The failure direction is toward FALSE CERTAINTY.
         Y = fill(600, 40, 5)
-        f = GLLVM.fit_gp1_gllvm(Y; K = 1)
-        ci = GLLVM.confint(f, Y; method = :wald)
+        f = GLLVModels.fit_gp1_gllvm(Y; K = 1)
+        ci = GLLVModels.confint(f, Y; method = :wald)
         i = findfirst(t -> lowercase(string(t)) == "alpha", string.(ci.term))
         @test i !== nothing
 

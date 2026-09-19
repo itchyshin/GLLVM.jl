@@ -10,7 +10,7 @@ DOCS=ROOT/'.unlazy/core070-aghq/aghq-gaussian-docs-01'
 
 def kernel():
     _,_,initial=process(ROOT/'.unlazy/core070-aghq/aghq-gaussian-red-01',False,1)
-    assert 'isdefined(GLLVM, :aghq_gaussian_problem)' in initial
+    assert 'isdefined(GLLVModels, :aghq_gaussian_problem)' in initial
     old,_,red=process(ROOT/'.unlazy/core070-aghq/aghq-gaussian-alias-red-01',False,1)
     plan,p,log=process(STATE,False,0);current(plan)
     assert old['pins']['test/test_aghq_gaussian.jl']==plan['pins']['test/test_aghq_gaussian.jl']

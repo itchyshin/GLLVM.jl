@@ -24,19 +24,19 @@
 # curvature question that bit NB1 cannot arise here (there is no latent integral).
 #
 # NAME CLASH (see 2026-08-18-multinomial-name-clash.md): `Distributions.Multinomial`
-# collides with GLLVM's marker. This file imports no Distributions symbol unqualified.
+# collides with GLLVModels's marker. This file imports no Distributions symbol unqualified.
 #
 # Twin Δ rule: no number is quoted unless this cell runs live under
 # GLLVM_PARITY_TESTS=1 against a real gllvmTMB. Never invent, never carry over.
 
-using GLLVM, RCall, Test, Random
+using GLLVModels, RCall, Test, Random
 
 # parity_helpers.jl is included once by runparity.jl
 
 # Seed pre-registered BEFORE any run. 42–49, 420–431 and 52–56 are already taken.
 const _MN_SEED = 57
 
-@testset "multinomial GLLVM parity: GLLVM.jl vs gllvmTMB (twin fid 16, FE-only)" begin
+@testset "multinomial GLLVModels parity: GLLVModels.jl vs gllvmTMB (twin fid 16, FE-only)" begin
 
     Random.seed!(_MN_SEED)
     ncat, n = 4, 400                 # ncat ≥ 3 (2 categories would be binomial)

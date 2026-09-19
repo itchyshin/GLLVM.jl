@@ -1,6 +1,6 @@
-using GLLVM, Test, TOML, SHA
+using GLLVModels, Test, TOML, SHA
 module Core070LinkBoundaries
-using GLLVM, Test, TOML, SHA
+using GLLVModels, Test, TOML, SHA
 struct ResponseRead <: Exception end
 struct NoRead <: AbstractMatrix{Int} end
 Base.size(::NoRead)=(3,5)
@@ -14,13 +14,13 @@ function check(id,f,expected)
  @test actual==expected
 end
 @testset "Native nonreference link admission" begin
-check("FAMILY-01-REJECT-LINK",()->fit_gllvm(Y;family=GLLVM.Binomial(),K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
+check("FAMILY-01-REJECT-LINK",()->fit_gllvm(Y;family=GLLVModels.Binomial(),K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
 check("FAMILY-02-REJECT-LINK",()->fit_poisson_gllvm(Y;K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
 check("FAMILY-03-REJECT-LINK",()->fit_lognormal_gllvm(Y;K=1,link=IdentityLink()),"ArgumentError")
 check("FAMILY-04-REJECT-LINK",()->fit_gamma_gllvm(Y;K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
-check("FAMILY-05-REJECT-LINK",()->fit_gllvm(Y;family=GLLVM.NegativeBinomial(),K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
+check("FAMILY-05-REJECT-LINK",()->fit_gllvm(Y;family=GLLVModels.NegativeBinomial(),K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
 check("FAMILY-06-REJECT-LINK",()->fit_tweedie_gllvm_grouped(Y;K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
-check("FAMILY-07-REJECT-LINK",()->fit_gllvm(Y;family=GLLVM.Beta(),K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
+check("FAMILY-07-REJECT-LINK",()->fit_gllvm(Y;family=GLLVModels.Beta(),K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
 check("FAMILY-08-REJECT-LINK",()->fit_gllvm(Y;family=BetaBinom(),N=N,K=1,link=IdentityLink()),"RESPONSE_READ_SENTINEL")
 check("FAMILY-09-REJECT-LINK",()->fit_gllvm(Y;family=StudentTFamily(),K=1,link=LogLink()),"RESPONSE_READ_SENTINEL")
 check("FAMILY-10-REJECT-LINK",()->fit_truncated_poisson_gllvm(Y;K=1,link=IdentityLink()),"ArgumentError")
@@ -39,7 +39,7 @@ end
 if haskey(ENV,"CORE070_LINK_OUTPUT")
  file=ENV["CORE070_LINK_OUTPUT"]
  open(io->TOML.print(io,Dict("results"=>results,"scope"=>"ADMISSION_ONLY_NOT_FIT_PARITY",
-  "package_root"=>realpath(Base.pkgdir(GLLVM)),"julia_version"=>string(VERSION))),file,"w")
+  "package_root"=>realpath(Base.pkgdir(GLLVModels)),"julia_version"=>string(VERSION))),file,"w")
  println("LINK_BOUNDARY_SHA256 ",bytes2hex(sha256(read(file))))
 end
 end

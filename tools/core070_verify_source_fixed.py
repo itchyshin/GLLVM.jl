@@ -62,7 +62,7 @@ def verify():
     receipt,plan=receipt_check(STATE,ids,[0,0,1,0,0,0,0,0,1],historical=['docs/src/low-level-reference.md','docs/src/structured-dependence.md','docs/make.jl'])
     process=STATE/'attempt1/process'
     assert 'parity_trial_inputs.jl' in (process/'02.log').read_text()
-    assert 'GLLVM._source_fixed_sigma' in (process/'08.log').read_text()
+    assert 'GLLVModels._source_fixed_sigma' in (process/'08.log').read_text()
     assert 'Package Distributions not found' in (process/'08.log').read_text()
     pair_receipt,_=receipt_check(PAIR,['oracle-before','fixed-pair','oracle-after'],[0,0,0],historical=['tools/core070_verify_source_fixed.py'])
     doc_receipt,_=receipt_check(DOCS,['strict-local-docs'],[0])

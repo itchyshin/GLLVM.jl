@@ -14,7 +14,7 @@
 # (documented behaviour -- R/gllvmTMB.R:167-168, "The student() family fits
 # one log-sigma and one log(df-1) per trait"; confirmed in
 # R/fit-multi.R:5317-5349's per-trait `dispersion_trait_map`/pin machinery),
-# while GLLVM.jl's default `disp_group = :shared` fits ONE shared
+# while GLLVModels.jl's default `disp_group = :shared` fits ONE shared
 # degrees-of-freedom across all traits. Same dispersion-structure class as
 # the NB2 benchmark's shared-r-vs-per-trait-phi lesson: comparing two
 # genuinely different models numerically was never going to converge, and
@@ -78,7 +78,7 @@
 #   mutation is rejected. Runs with `julia --project=.` alone; never
 #   substitutes for the real two-stage run.
 
-using GLLVM
+using GLLVModels
 using Random, Distributions, LinearAlgebra, DelimitedFiles, Statistics
 
 const ROOT = normpath(joinpath(@__DIR__, ".."))
@@ -102,7 +102,7 @@ const FIXTURE_NU_TRUE = 6.0   # moderate, genuinely INTERIOR -- both engines exp
 """
     generate_fixture(rng) -> Matrix{Float64}
 
-Simulate the p x n Student-t GLLVM response matrix at the frozen fixture
+Simulate the p x n Student-t GLLVModels response matrix at the frozen fixture
 design constants above: `y_tj = beta_t + Lambda_t * z_j + sigma * eps_tj`,
 `z_j ~ N(0,1)` iid across sites, `eps_tj ~ t_(nu_true)` (standard, scale 1).
 Deliberately genuinely heavy-tailed (nu_true = 6, not the pure-Gaussian

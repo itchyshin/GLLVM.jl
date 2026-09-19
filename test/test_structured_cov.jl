@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Distributions
 
 @testset "structured_cov" begin
 

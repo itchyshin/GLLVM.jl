@@ -26,7 +26,7 @@
 #
 # DEPENDENCIES (MUST be loaded before this file)
 # -----------------------------------------------
-# This file is `include`d by `src/GLLVM.jl` AFTER `sparse_phy_grad.jl` (which
+# This file is `include`d by `src/GLLVModels.jl` AFTER `sparse_phy_grad.jl` (which
 # itself `include`s `takahashi_selinv.jl`) and `sparse_phy.jl`. It relies on
 # those already being in module scope:
 #   * `SparsePhyState`, `build_sparse_phy_state`, `sparse_phy_value`,
@@ -364,8 +364,7 @@ Returns `(û, ẑ_tip)` with `û` indexed in the root-dropped node ordering.
 CAVEAT. Node-frame posterior-mean BLUPs `û` are exact (≤8e-16 vs the dense
 reference). Edge-frame branch increments derived by differencing
 (`û_child − û_parent`) differ from the edge-frame (P2) representation by a
-`√σ²_phy`-scale convention; do not treat them as P2-equivalent branch BLUPs.
-See `docs/dev-log/decisions/2026-05-30-node-gradient-5.4e-2-convention.md`.
+`√σ²_phy`-scale convention; do not treat them as equivalent branch BLUPs.
 """
 function node_blups(st::NodePerSpecies, y::AbstractVector, μ::Real)
     p = st.phy.n_leaves; inve = 1.0 / st.σ²_eps; sp = st.σ_phy

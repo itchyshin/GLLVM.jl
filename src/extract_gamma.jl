@@ -6,13 +6,13 @@
 # rotation, but Λ_phy Q (Λ_phy Q)ᵀ = Λ_phy Λ_phyᵀ), so the cross block is a
 # well-defined coevolution summary.
 #
-# Orientation note: GLLVM.jl stores phylo loadings on the *stacked entity*
+# Orientation note: GLLVModels.jl stores phylo loadings on the *stacked entity*
 # index p (the rows of Y), correlation-structured by Σ_phy = K*. So
 # `row_traits`/`col_traits` are POSITIONAL integer indices into the stacked
 # two-lineage response — host block 1:n_H, partner block n_H+1:p, matching the
 # host-first/partner-second ordering that `make_cross_kernel` enforces. This
 # differs from the name-based trait subsetting in the R twin (Julia is
-# positional), and it is the species-level-loading orientation of the GLLVM.jl
+# positional), and it is the species-level-loading orientation of the GLLVModels.jl
 # Hadamard marginal `B = (Λ_phy Λ_phyᵀ) .* Σ_phy`, not R's trait⊗species
 # Kronecker form.
 

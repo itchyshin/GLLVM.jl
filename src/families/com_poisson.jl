@@ -1,4 +1,4 @@
-# Conway–Maxwell–Poisson (CMP / COM-Poisson) family for the GLLVM Laplace path.
+# Conway–Maxwell–Poisson (CMP / COM-Poisson) family for the GLLVModels Laplace path.
 #
 # A two-parameter count distribution that handles BOTH under- and over-dispersion
 # — a capability gllvmTMB does NOT offer. In the *rate* parameterisation,

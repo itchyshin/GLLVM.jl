@@ -1,4 +1,4 @@
-using JSON3, SHA, GLLVM
+using JSON3, SHA, GLLVModels
 using Distributions: Normal
 include(joinpath(@__DIR__,"fit_phylo_gaussian_reference.jl"))
 include(joinpath(@__DIR__,"compare_tree_gaussian_reference.jl"))
@@ -32,7 +32,7 @@ function fit_tree_gaussian_reference(path,precision_path,dll_path,receipt_path)
         receipt["data_sha256"] = _db_y_hash(checked.Y)
         receipt["r_convergence"] = checked.r_convergence
         receipt["r_gradient_norm"] = checked.r_gradient_norm
-        receipt["route"] = Dict("entrypoint"=>"GLLVM.fit_gllvm","family"=>"Normal",
+        receipt["route"] = Dict("entrypoint"=>"GLLVModels.fit_gllvm","family"=>"Normal",
             "rank"=>1,"mode"=>"barelowrank","residual_mode"=>"shared",
             "n_aug"=>14,"n_observed"=>8,"retained_unobserved_internal_nodes"=>6)
         receipt["initialization"] = Dict("kind"=>"Julia_default_from_Y",

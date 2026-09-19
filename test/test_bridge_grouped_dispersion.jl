@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 
 @testset "bridge grouped dispersion default" begin
     K = 1
@@ -50,7 +50,7 @@ using GLLVM
 
             @test size(br.scores) == (size(Y, 2), K)
             @test all(isfinite, br.scores)
-            @test br.df == p + GLLVM.rr_theta_len(p, K) + expected_n_group
+            @test br.df == p + GLLVModels.rr_theta_len(p, K) + expected_n_group
             @test br.dispersion_group_id == expected_group_id
             @test length(br.dispersion_group) == expected_n_group
             @test br.dispersion == br.dispersion_group[br.dispersion_group_id]

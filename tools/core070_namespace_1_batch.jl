@@ -4,9 +4,9 @@
 # triage and the deferred Tier 1 numeric-parity follow-up).
 #
 # This process carries NO RCall dependency and reads NO R state: it loads
-# GLLVM.jl itself and answers, for every symbol named in the contract's
+# GLLVModels.jl itself and answers, for every symbol named in the contract's
 # `cases` + `needs_new_julia_surface` lists, "does this symbol exist at
-# GLLVM module scope?" via `isdefined`. That is the entirety of what this
+# GLLVModels module scope?" via `isdefined`. That is the entirety of what this
 # tier checks -- the outer R runner (tools/core070_namespace_1_batch.R)
 # answers the matching R-side question by scanning the pinned readback R
 # source text, with no installed gllvmTMB package required either.
@@ -23,7 +23,7 @@
 # reuses the hand-rolled minimal JSON reader/writer already established as
 # repo convention in tools/core070_postfit_policy_batch.jl / core070_postfit_1_batch.jl.
 
-using GLLVM
+using GLLVModels
 
 # ---------------------------------------------------------------------------
 # Minimal JSON reader/writer (no external dependency; mirrors the existing
@@ -171,7 +171,7 @@ function collect_facts(contract)
 
     facts = Dict{String, Any}()
     for sym in symbols
-        facts[sym] = Dict{String, Any}("exists" => symbol_exists(GLLVM, sym))
+        facts[sym] = Dict{String, Any}("exists" => symbol_exists(GLLVModels, sym))
     end
     return facts
 end
@@ -202,9 +202,9 @@ function main()
 end
 
 # --self-test exercises collect_facts() against the real contract and the
-# real GLLVM module (no file I/O to a destination), and FAILS LOUDLY (throws,
+# real GLLVModels module (no file I/O to a destination), and FAILS LOUDLY (throws,
 # nonzero exit) rather than silently reporting a partial/empty result if
-# GLLVM does not load or the contract is missing -- matching the hardened
+# GLLVModels does not load or the contract is missing -- matching the hardened
 # template's "verifier FAILS LOUDLY on missing state even under --self-test"
 # rule, applied here to the runner side of that same discipline.
 function self_test()

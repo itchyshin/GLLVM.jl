@@ -1,4 +1,4 @@
-using GLLVM, Test
+using GLLVModels, Test
 
 # Contract tests for the future callback-only grouped variance profile route.
 # They intentionally do not construct a Gaussian model or call an optimiser.
@@ -14,7 +14,7 @@ const _GPI_TOL_D = 1e-4
     callback = (v, stage) -> (accepted=true, objective_nll=10.5, status=:accepted,
         provenance=(stage=stage,), attempts=[(minimizer=attempt,)],
         selected_coordinate=missing, evaluator_vector=[0.0, 2.0])
-    point = GLLVM._profile_lr_refit(10.0, 0.0, callback)
+    point = GLLVModels._profile_lr_refit(10.0, 0.0, callback)
     @test point.refit_receipt.attempts[1].minimizer == [2.0, 3.0]
     @test ismissing(point.refit_receipt.selected_coordinate)
     attempt .= 99.0
@@ -37,7 +37,7 @@ function _gpi_accepted_lr(f; tag = :accepted)
         tag = tag)
 end
 
-_gpi_observed(callback, v) = GLLVM._profile_lr_refit(
+_gpi_observed(callback, v) = GLLVModels._profile_lr_refit(
     _GPI_BASELINE_NLL, v, callback; tol_D = _GPI_TOL_D, stage = :historical)
 
 function _gpi_without_provenance(receipt)
@@ -48,7 +48,7 @@ end
 @testset "Grouped profile LR callback contract" begin
     @testset "material negative LR refuses the local baseline" begin
         callback = _gpi_accepted_lr(_ -> -2e-4; tag = :material_negative)
-        point = GLLVM._profile_lr_refit(_GPI_BASELINE_NLL, 0.3, callback;
+        point = GLLVModels._profile_lr_refit(_GPI_BASELINE_NLL, 0.3, callback;
             tol_D = _GPI_TOL_D)
 
         @test point.status === :baseline_not_maximized
@@ -60,7 +60,7 @@ end
 
     @testset "tiny negative LR retains raw value and records roundoff" begin
         callback = _gpi_accepted_lr(_ -> -1e-14; tag = :roundoff)
-        point = GLLVM._profile_lr_refit(_GPI_BASELINE_NLL, 0.3, callback;
+        point = GLLVModels._profile_lr_refit(_GPI_BASELINE_NLL, 0.3, callback;
             tol_D = _GPI_TOL_D)
 
         @test point.status === :roundoff_adjusted
@@ -73,7 +73,7 @@ end
         # supplying a permissive override: the approved per-refit bound still
         # caps it below tol_D.
         material = _gpi_accepted_lr(_ -> -2e-4; tag = :override_capped)
-        capped = GLLVM._profile_lr_refit(_GPI_BASELINE_NLL, 0.3, material;
+        capped = GLLVModels._profile_lr_refit(_GPI_BASELINE_NLL, 0.3, material;
             tol_D = _GPI_TOL_D, tol_neg = 1.0)
         @test capped.status === :baseline_not_maximized
         @test isnan(capped.lr)
@@ -81,7 +81,7 @@ end
 
     @testset "zero has explicit inside, equality, and outside outcomes" begin
         inside = _gpi_accepted_lr(v -> iszero(v) ? 0.7 : 0.0; tag = :zero_inside)
-        result_inside = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, inside;
+        result_inside = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, inside;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 8)
         @test result_inside.status === :boundary_inside
@@ -90,7 +90,7 @@ end
         @test result_inside.points[end].provenance.tag === :zero_inside
 
         equality = _gpi_accepted_lr(v -> iszero(v) ? _GPI_CUTOFF : 0.0; tag = :zero_equal)
-        result_equality = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, equality;
+        result_equality = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, equality;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 8)
         @test result_equality.status === :boundary_crossing
@@ -98,7 +98,7 @@ end
         @test result_equality.at_boundary
 
         outside = _gpi_accepted_lr(v -> 2.0 * (1.0 - v); tag = :zero_outside)
-        result_outside = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, outside;
+        result_outside = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, outside;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 20)
         @test result_outside.status === :root_verified
@@ -110,7 +110,7 @@ end
 
     @testset "finite accepted bracket and final LR verification are required" begin
         callback = _gpi_accepted_lr(v -> 4.0 * (v - 1.0); tag = :finite_root)
-        result = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, callback;
+        result = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, callback;
             side = :upper, inside_v = 1.0, outside_v = 2.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 24)
         @test result.status === :root_verified
@@ -123,7 +123,7 @@ end
             (accepted = false, objective_nll = Inf, status = :all_starts_failed) :
             (accepted = true, objective_nll = _gpi_nll(0.0), status = :accepted);
             tag = :failed_outer)
-        failed = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, bad_outer;
+        failed = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, bad_outer;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 8)
         @test failed.status === :invalid_refit
@@ -132,7 +132,7 @@ end
         @test failed.bracket.outside.status === :all_starts_failed
 
         not_inside = _gpi_accepted_lr(v -> isone(v) ? 2.0 : 3.0; tag = :not_inside)
-        invalid_inside = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, not_inside;
+        invalid_inside = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, not_inside;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 8)
         @test invalid_inside.status === :invalid_bracket
@@ -141,7 +141,7 @@ end
 
     @testset "iteration midpoint and all-start failure are not evidence" begin
         callback = _gpi_accepted_lr(v -> 2.0 * (1.0 - v); tag = :iteration_limit)
-        limited = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, callback;
+        limited = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, callback;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 0)
         @test limited.status === :root_not_verified
@@ -152,7 +152,7 @@ end
             (accepted = false, objective_nll = Inf, status = :all_starts_failed) :
             (accepted = true, objective_nll = _gpi_nll(2.0 * (1.0 - v)), status = :accepted);
             tag = :final_refit_fails)
-        failed_final = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, final_refit_fails;
+        failed_final = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, final_refit_fails;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 20)
         @test failed_final.status === :invalid_refit
@@ -162,7 +162,7 @@ end
         all_failed = _gpi_callback((v, stage) ->
             (accepted = false, objective_nll = NaN, status = :all_starts_failed);
             tag = :all_starts_failed)
-        point = GLLVM._profile_lr_refit(_GPI_BASELINE_NLL, 0.4, all_failed;
+        point = GLLVModels._profile_lr_refit(_GPI_BASELINE_NLL, 0.4, all_failed;
             tol_D = _GPI_TOL_D)
         @test point.status === :all_starts_failed
         @test !point.refit_accepted
@@ -176,7 +176,7 @@ end
             isapprox(v, 0.50) || isapprox(v, 1.50) ? 0.5 : 0.0;
             tag = :reentry)
         lower_outward = [_gpi_observed(callback, v) for v in (1.0, 0.75, 0.50)]
-        lower = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, callback;
+        lower = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, callback;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 12,
             observed = lower_outward)
@@ -185,7 +185,7 @@ end
         @test !isempty(lower.points)
 
         upper_outward = [_gpi_observed(callback, v) for v in (1.0, 1.25, 1.50)]
-        upper = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, callback;
+        upper = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, callback;
             side = :upper, inside_v = 1.0, outside_v = 2.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 12,
             observed = upper_outward)
@@ -200,7 +200,7 @@ end
         @test hasproperty(complete, :objective_nll)
         @test hasproperty(complete, :raw_lr)
         @test hasproperty(complete, :provenance)
-        @test_throws ArgumentError GLLVM._profile_invert_callback(
+        @test_throws ArgumentError GLLVModels._profile_invert_callback(
             _GPI_BASELINE_NLL, ordinary;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 8,
@@ -210,7 +210,7 @@ end
             2.0 * (1.0 - v); tag = :historical_negative)
         negative = _gpi_observed(negative_callback, 0.8)
         @test negative.status === :baseline_not_maximized
-        negative_result = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, negative_callback;
+        negative_result = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, negative_callback;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 20, observed = [negative])
         @test negative_result.status === :baseline_not_maximized
@@ -222,7 +222,7 @@ end
             tag = :historical_invalid)
         invalid = _gpi_observed(failed_callback, 0.8)
         @test invalid.status === :all_starts_failed
-        invalid_result = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, failed_callback;
+        invalid_result = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, failed_callback;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 20, observed = [invalid])
         @test invalid_result.status === :invalid_refit
@@ -234,7 +234,7 @@ end
             isapprox(v, 0.8) ? 0.5 : isapprox(v, 0.7) ? 0.2 :
             iszero(v) ? 2.0 : 0.0; tag = :lower_center)
         lower_history = [_gpi_observed(lower_callback, v) for v in (1.0, 0.9, 0.8)]
-        lower = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, lower_callback;
+        lower = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, lower_callback;
             side = :lower, center_v = 1.0, inside_v = 0.7, outside_v = 0.0,
             cutoff = _GPI_CUTOFF, tol_D = _GPI_TOL_D, maxiter = 12,
             observed = lower_history)
@@ -245,7 +245,7 @@ end
             isapprox(v, 1.2) ? 0.5 : isapprox(v, 1.3) ? 0.2 :
             isapprox(v, 2.0) ? 2.0 : 0.0; tag = :upper_center)
         upper_history = [_gpi_observed(upper_callback, v) for v in (1.0, 1.1, 1.2)]
-        upper = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, upper_callback;
+        upper = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, upper_callback;
             side = :upper, center_v = 1.0, inside_v = 1.3, outside_v = 2.0,
             cutoff = _GPI_CUTOFF, tol_D = _GPI_TOL_D, maxiter = 12,
             observed = upper_history)
@@ -255,7 +255,7 @@ end
 
     @testset "LR tolerance must be smaller than the cutoff" begin
         callback = _gpi_accepted_lr(v -> 2.0 * (1.0 - v); tag = :bad_tolerance)
-        @test_throws ArgumentError GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, callback;
+        @test_throws ArgumentError GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, callback;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_CUTOFF, maxiter = 8)
     end
@@ -264,13 +264,13 @@ end
         failed_status = _gpi_callback((v, stage) ->
             (accepted = true, objective_nll = _gpi_nll(-1e-14),
              status = :gradient_not_converged); tag = :failed_status)
-        direct = GLLVM._profile_lr_refit(_GPI_BASELINE_NLL, 0.8, failed_status;
+        direct = GLLVModels._profile_lr_refit(_GPI_BASELINE_NLL, 0.8, failed_status;
             tol_D = _GPI_TOL_D)
         @test direct.status === :gradient_not_converged
-        @test !GLLVM._profile_point_usable(direct)
+        @test !GLLVModels._profile_point_usable(direct)
         @test isnan(direct.lr)
 
-        bracket = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, failed_status;
+        bracket = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, failed_status;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 8)
         @test bracket.status === :invalid_refit
@@ -283,7 +283,7 @@ end
              status = :accepted); tag = :historical_failed_status)
         historical = _gpi_observed(historical_callback, 0.8)
         @test historical.status === :gradient_not_converged
-        rejected = GLLVM._profile_invert_callback(_GPI_BASELINE_NLL, historical_callback;
+        rejected = GLLVModels._profile_invert_callback(_GPI_BASELINE_NLL, historical_callback;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 8, observed = [historical])
         @test rejected.status === :invalid_refit
@@ -294,14 +294,14 @@ end
         active = _gpi_accepted_lr(v -> 2.0 * (1.0 - v); tag = :active_profile)
         receipt = _gpi_observed(active, 0.8)
         retagged_variance = merge(receipt, (fixed_variance = 0.7,))
-        @test_throws ArgumentError GLLVM._profile_invert_callback(
+        @test_throws ArgumentError GLLVModels._profile_invert_callback(
             _GPI_BASELINE_NLL, active;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 8, observed = [retagged_variance])
 
         foreign = _gpi_accepted_lr(v -> 2.0 * (1.0 - v); tag = :foreign_profile)
         foreign_receipt = _gpi_observed(foreign, 0.8)
-        @test_throws ArgumentError GLLVM._profile_invert_callback(
+        @test_throws ArgumentError GLLVModels._profile_invert_callback(
             _GPI_BASELINE_NLL, active;
             side = :lower, inside_v = 1.0, outside_v = 0.0, cutoff = _GPI_CUTOFF,
             tol_D = _GPI_TOL_D, maxiter = 8, observed = [foreign_receipt])

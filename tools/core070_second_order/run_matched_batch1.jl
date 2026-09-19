@@ -6,7 +6,7 @@
 # Usage (from repo root):
 #   julia --project=. tools/core070_second_order/run_matched_batch1.jl [out_dir]
 
-using GLLVM
+using GLLVModels
 using RCall
 using LinearAlgebra
 using Random
@@ -69,20 +69,20 @@ end
 
 function _family_nll(cell_id::AbstractString, Y, fit)
     if cell_id == "gaussian"
-        nll = GLLVM._confint_reconstruct_nll(fit, Y, nothing, nothing)
-        terms, _ = GLLVM._confint_all_term_names(fit)
+        nll = GLLVModels._confint_reconstruct_nll(fit, Y, nothing, nothing)
+        terms, _ = GLLVModels._confint_all_term_names(fit)
         compare = :sigma_only
         sig_idx = findfirst(==("sigma_eps"), terms)
         return nll, terms, compare, sig_idx, 0
     else
         ad = if cell_id == "poisson"
-            GLLVM._family_ci(fit, Float64.(Y); objective = :laplace)
+            GLLVModels._family_ci(fit, Float64.(Y); objective = :laplace)
         elseif cell_id == "binomial_logit"
-            GLLVM._family_ci(fit, Float64.(Y); objective = :laplace)
+            GLLVModels._family_ci(fit, Float64.(Y); objective = :laplace)
         elseif cell_id == "beta_logit"
-            GLLVM._family_ci(fit, Y; objective = :laplace)
+            GLLVModels._family_ci(fit, Y; objective = :laplace)
         elseif cell_id == "nb2_log"
-            GLLVM._family_ci(fit, Float64.(Y); objective = :laplace)
+            GLLVModels._family_ci(fit, Float64.(Y); objective = :laplace)
         else
             error("unknown cell $cell_id")
         end
@@ -99,9 +99,9 @@ function _fit_julia(cell_id::AbstractString, Y)
     elseif cell_id == "binomial_logit"
         return fit_binomial_gllvm(Y; K = 2, link = LogitLink(), hessian = :observed)
     elseif cell_id == "beta_logit"
-        return fit_gllvm(Y; family = GLLVM.Beta(), K = 1, g_tol = 1e-7, iterations = 800)
+        return fit_gllvm(Y; family = GLLVModels.Beta(), K = 1, g_tol = 1e-7, iterations = 800)
     elseif cell_id == "nb2_log"
-        return fit_gllvm(Y; family = GLLVM.NegativeBinomial(), K = 2, g_tol = 1e-7, iterations = 800)
+        return fit_gllvm(Y; family = GLLVModels.NegativeBinomial(), K = 2, g_tol = 1e-7, iterations = 800)
     else
         error("unknown cell $cell_id")
     end
@@ -166,13 +166,13 @@ function run_matched_cell(cell_id::AbstractString)
         length(fit.pars.θ_packed)
     else
         ad = if cell_id == "poisson"
-            GLLVM._family_ci(fit, Float64.(Ymat); objective = :laplace)
+            GLLVModels._family_ci(fit, Float64.(Ymat); objective = :laplace)
         elseif cell_id == "binomial_logit"
-            GLLVM._family_ci(fit, Float64.(Ymat); objective = :laplace)
+            GLLVModels._family_ci(fit, Float64.(Ymat); objective = :laplace)
         elseif cell_id == "beta_logit"
-            GLLVM._family_ci(fit, Ymat; objective = :laplace)
+            GLLVModels._family_ci(fit, Ymat; objective = :laplace)
         else
-            GLLVM._family_ci(fit, Float64.(Ymat); objective = :laplace)
+            GLLVModels._family_ci(fit, Float64.(Ymat); objective = :laplace)
         end
         length(ad.θ)
     end

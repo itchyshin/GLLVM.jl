@@ -1,10 +1,10 @@
-using GLLVM, Test, LinearAlgebra, Random
+using GLLVModels, Test, LinearAlgebra, Random
 
 # Dense Σ from the SAME node machinery (small tree) — the reference the O(p)
 # negll and fitter must match. Σ_phy_unit = (Q_cond⁻¹)[leaves, leaves].
 function _dense_phylo_sigma(phy, σ²phy, σ²eps)
     p = phy.n_leaves
-    st = GLLVM.build_node_perspecies(phy, fill(sqrt(σ²phy), p), σ²eps)  # qualified: other test files in the shared runtests scope shadow the export
+    st = GLLVModels.build_node_perspecies(phy, fill(sqrt(σ²phy), p), σ²eps)  # qualified: other test files in the shared runtests scope shadow the export
     Qci = st.chol_Qcond \ Matrix(1.0I, st.nb, st.nb)
     Σu = Qci[st.leaf_pos, st.leaf_pos]
     Σu = (Σu .+ Σu') ./ 2
@@ -22,7 +22,7 @@ _balanced(p; bl = 0.1) = _bnw(["t$i" for i in 1:p], bl) * ";"
 
 @testset "fit_phylo_gaussian — O(p) single-variance phylo" begin
     newick = "(((t1:0.2,t2:0.3):0.4,(t3:0.1,t4:0.2):0.3):0.2,((t5:0.25,t6:0.15):0.2,(t7:0.3,t8:0.5):0.25):0.15);"
-    phy = GLLVM.augmented_phy(newick)   # qualified: an earlier test file shadows `augmented_phy`
+    phy = GLLVModels.augmented_phy(newick)   # qualified: an earlier test file shadows `augmented_phy`
     p = phy.n_leaves
     @test p == 8
 
@@ -32,7 +32,7 @@ _balanced(p; bl = 0.1) = _bnw(["t$i" for i in 1:p], bl) * ";"
     @testset "O(p) negll == dense negll" begin
         for (σ²phy, σ²eps, μ) in ((1.0, 0.5, 0.3), (2.0, 0.7, -0.4), (0.5, 1.5, 1.0))
             Σ, st = _dense_phylo_sigma(phy, σ²phy, σ²eps)
-            @test GLLVM._phylo_negll(st, y, μ) ≈ _dense_phylo_negll(Σ, y, μ) rtol = 1e-8
+            @test GLLVModels._phylo_negll(st, y, μ) ≈ _dense_phylo_negll(Σ, y, μ) rtol = 1e-8
         end
     end
 
@@ -40,7 +40,7 @@ _balanced(p; bl = 0.1) = _bnw(["t$i" for i in 1:p], bl) * ";"
         Σ, st = _dense_phylo_sigma(phy, 1.3, 0.6)
         o = ones(p)
         μ_gls = dot(o, Σ \ y) / dot(o, Σ \ o)
-        @test GLLVM._phylo_profile_mu(st, y) ≈ μ_gls rtol = 1e-8
+        @test GLLVModels._phylo_profile_mu(st, y) ≈ μ_gls rtol = 1e-8
     end
 
     @testset "fit minimises the dense-equivalent likelihood" begin
@@ -83,10 +83,10 @@ end
 const _S3FIT_NEWICK = "(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,((E:0.1,F:0.1):0.1,(G:0.1,H:0.1):0.1):0.1);"
 
 @testset "fit_phylo_gaussian — PrecisionPhy vs tree path (S3a)" begin
-    phy = GLLVM.augmented_phy(_S3FIT_NEWICK)
+    phy = GLLVModels.augmented_phy(_S3FIT_NEWICK)
     pp_native = PrecisionPhy(phy; correlation = false)
-    payload = GLLVM.phylo_precision_payload(pp_native)
-    admitted = GLLVM.admit_phylo_precision_payload(payload)
+    payload = GLLVModels.phylo_precision_payload(pp_native)
+    admitted = GLLVModels.admit_phylo_precision_payload(payload)
     p = phy.n_leaves
     @test p == 8
     @test admitted.n_leaves == p
@@ -107,10 +107,10 @@ const _S3FIT_NEWICK = "(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,((E:0.1,F:0.1)
     @test isfinite(fit_pp.negll) && fit_pp.negll != 0.0
 
     # Interior matched-parameter nll (not the small-p collapsed MLE).
-    st_tree = GLLVM.build_node_perspecies(phy, fill(sqrt(1.2), p), 0.45)
-    st_pp = GLLVM._build_precision_phy_fit_state(admitted, fill(sqrt(1.2), p), 0.45)
-    nll_tree = GLLVM._phylo_negll(st_tree, ysim, 0.35)
-    nll_pp = GLLVM._phylo_negll(st_pp, ysim, 0.35)
+    st_tree = GLLVModels.build_node_perspecies(phy, fill(sqrt(1.2), p), 0.45)
+    st_pp = GLLVModels._build_precision_phy_fit_state(admitted, fill(sqrt(1.2), p), 0.45)
+    nll_tree = GLLVModels._phylo_negll(st_tree, ysim, 0.35)
+    nll_pp = GLLVModels._phylo_negll(st_pp, ysim, 0.35)
     @test isfinite(nll_tree) && isfinite(nll_pp)
     @test isapprox(nll_pp, nll_tree; atol = 1e-8, rtol = 1e-8)
 
@@ -118,7 +118,7 @@ const _S3FIT_NEWICK = "(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,((E:0.1,F:0.1)
     fit_pp3 = fit_phylo_gaussian(admitted, ysim; profile_mu = false)
     @test isapprox(fit_pp3.negll, fit_tree.negll; rtol = 1e-3)
 
-    br = GLLVM.bridge_fit(; y = ysim, family = "gaussian", phylo = payload)
+    br = GLLVModels.bridge_fit(; y = ysim, family = "gaussian", phylo = payload)
     @test br.converged === true
     @test isapprox(br.sigma2_phy, fit_tree.σ²_phy; atol = 1e-8, rtol = 1e-8)
     @test isapprox(br.sigma2_eps, fit_tree.σ²_eps; atol = 1e-8, rtol = 1e-8)

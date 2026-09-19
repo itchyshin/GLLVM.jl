@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 # Wald inference tables for the structural models that route through the unified
 # confint(fit, Y) dispatch (no external design matrix needed): quadratic-response
@@ -9,7 +9,7 @@ using GLLVM, Test, Random, Distributions
     Random.seed!(2025)
     p, K, n = 3, 1, 18
     Y = rand(0:4, p, n)
-    rr = GLLVM.rr_theta_len(p, K)
+    rr = GLLVModels.rr_theta_len(p, K)
 
     @testset "quadratic Wald CIs + coef_table" begin
         fit = fit_quadratic_gllvm(Y; family = Poisson(), K = K, iterations = 60)

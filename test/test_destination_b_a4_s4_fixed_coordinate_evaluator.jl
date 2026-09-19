@@ -2,7 +2,7 @@ using Test
 using LinearAlgebra
 using SparseArrays
 using SHA
-using GLLVM
+using GLLVModels
 
 include(joinpath(@__DIR__, "..", "tools", "destination_b",
     "a4_s4_fixed_coordinate_evaluator.jl"))
@@ -136,7 +136,7 @@ end
         4 .* findnz(tree.phy.Q)[3], tree.phy.n_aug, tree.phy.n_leaves,
         tree.phy.node_labels, tree.phy.log_det + tree.phy.n_aug * log(4), 4.0,
         tree.phy.species_aug_id)
-    doubled_nll = GLLVM._precision_multivariate_nll(tree.Y, doubled,
+    doubled_nll = GLLVModels._precision_multivariate_nll(tree.Y, doubled,
         [_TEST_A4S4_THETA_R[1:3]; _TEST_A4S4_THETA_R[5:7]; _TEST_A4S4_THETA_R[4]];
         rank = 1, mode = :barelowrank, residual_mode = :shared,
         species_id = tree.species_id)
@@ -150,10 +150,10 @@ end
         dense.phy.node_labels, logdet(cholesky(Symmetric(Q_twice))), 1.0,
         dense.phy.species_aug_id)
     dense_theta = [_TEST_A4S4_THETA_R[1:3]; _TEST_A4S4_THETA_R[5:7]; _TEST_A4S4_THETA_R[4]]
-    once_nll = GLLVM._precision_multivariate_nll(dense.Y, dense.phy, dense_theta;
+    once_nll = GLLVModels._precision_multivariate_nll(dense.Y, dense.phy, dense_theta;
         rank = 1, mode = :barelowrank, residual_mode = :shared,
         species_id = dense.species_id)
-    twice_nll = GLLVM._precision_multivariate_nll(dense.Y, twice, dense_theta;
+    twice_nll = GLLVModels._precision_multivariate_nll(dense.Y, twice, dense_theta;
         rank = 1, mode = :barelowrank, residual_mode = :shared,
         species_id = dense.species_id)
     @test abs(twice_nll - once_nll) > 1e-10
@@ -185,7 +185,7 @@ end
     @test_throws ArgumentError evaluate_a4_s4_fixed_coordinate(Dict(
         "schema_version" => "destination-b-a4-s4-fixed-coordinate-summary-1"))
     @test_throws ArgumentError evaluate_a4_s4_fixed_coordinate(_a4s4_summary(
-        "tree_height4_nonunit_ultrametric"; r_nll = GLLVM._NLL_SENTINEL))
+        "tree_height4_nonunit_ultrametric"; r_nll = GLLVModels._NLL_SENTINEL))
 
     mktempdir() do directory
         input = joinpath(directory, "bad.json")

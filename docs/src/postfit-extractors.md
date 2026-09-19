@@ -10,7 +10,7 @@ proportions, Ω, ICC, repeatability).
 
 ## Tiers, and what "level" means
 
-GLLVM.jl composes the implied trait covariance from covariance **tiers** —
+GLLVModels.jl composes the implied trait covariance from covariance **tiers** —
 `:unit` (between-unit, `Λ_B`), `:unit_obs` (within-unit, `Λ_W` plus any
 diagonal `Ψ`), and (on phylogenetic fits) a `:phy` block. `extract_Sigma` and
 its dependents take a `level` keyword to select which tier to read, matching
@@ -18,7 +18,7 @@ R's `extract_Sigma(fit, level = ...)` argument.
 
 As of this release, `extract_communality`, `extract_correlations`,
 `extract_proportions`, and `extract_Omega` default to R's **tier-scoped**
-composition (`level = :unit`) rather than GLLVM.jl's own total-variance
+composition (`level = :unit`) rather than GLLVModels.jl's own total-variance
 composition (`sigma_y_site`, which folds the residual variance `σ_eps²` into
 every quantity unconditionally). The total-variance behaviour is still
 reachable — pass `level = :total` — but it is now the escape hatch, not the
@@ -60,7 +60,7 @@ see [Post-fit tables and prediction](postfit-tables.md) for
 [Diagnostics and model comparison](diagnostics.md) for `getREsd`'s replacement
 (`latent_score_sd`, on the [SE and profile machinery](se-profile-machinery.md)
 page), which needed a rename rather than a straight port — R's `getREsd`
-reads TMB random-effect blocks that GLLVM.jl does not expose the same way.
+reads TMB random-effect blocks that GLLVModels.jl does not expose the same way.
 
 See also: [Covariance & correlation](covariance-correlation.md) ·
 [Confidence intervals](confidence-intervals.md) ·

@@ -14,7 +14,7 @@ using Test
 using Random
 using LinearAlgebra
 using Distributions
-using GLLVM
+using GLLVModels
 
 # Zero-inflated Poisson draw: structural zeros at logit(βz), counts at log(βc + Λc z).
 function _bzip_sim(p, n, K; seed = 1)
@@ -61,9 +61,9 @@ end
         @test br.n_units == 40
         @test br.alpha ≈ oracle.βc atol = 1e-8
         @test br.beta_zero ≈ oracle.βz atol = 1e-8
-        @test br.loadings ≈ GLLVM.getLoadings(oracle; rotate = true) atol = 1e-8
+        @test br.loadings ≈ GLLVModels.getLoadings(oracle; rotate = true) atol = 1e-8
         @test isapprox(br.loglik, oracle.loglik; atol = 1e-8)
-        @test br.df == GLLVM._nparams(oracle)
+        @test br.df == GLLVModels._nparams(oracle)
         @test all(isnan, br.dispersion)      # ZIP carries no dispersion parameter
         @test isnan(br.sigma_eps)
         # Same link naming as the ZIP+X arm (`_bridge_assemble_zip_cov`).
@@ -85,7 +85,7 @@ end
 
         # Aliases reach the same route.
         for alias in ("zipoisson", "zero_inflated_poisson", "zi_poisson", "ZIP")
-            @test GLLVM._bridge_family_key(alias) == "zip"
+            @test GLLVModels._bridge_family_key(alias) == "zip"
         end
         br_alias = bridge_fit(; y = Yf, family = "zero_inflated_poisson", d = 1)
         @test br_alias.family == "zip"
@@ -95,7 +95,7 @@ end
     @testset "no-X Wald CI matches native confint" begin
         Ys, _, _, _ = _bzip_sim(3, 35, 1; seed = 7302)
         oracle = fit_zip_gllvm(Ys; K = 1)
-        nat = GLLVM.confint(oracle, Float64.(Ys); method = :wald)
+        nat = GLLVModels.confint(oracle, Float64.(Ys); method = :wald)
         br = bridge_fit(; y = Float64.(Ys), family = "zip", d = 1,
                         options = Dict("ci_method" => "wald"))
         @test br.ci_method == "wald"

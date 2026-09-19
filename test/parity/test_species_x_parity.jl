@@ -6,7 +6,7 @@
 # multi-family XB cohort; X_lv; ADEMP; full family parity; Gaussian
 # species-XB (optional under-run; no Laplace speciescov path).
 
-using GLLVM, RCall, Test, Random, LinearAlgebra, Statistics
+using GLLVModels, RCall, Test, Random, LinearAlgebra, Statistics
 
 # Knuth sampler — matches test_x_covariate_parity.jl (no Distributions dep).
 function _rand_poisson_species_x(λ::Float64)
@@ -37,7 +37,7 @@ end
         η = β .+ B[:, 1] .* x' .+ Λ * Z
         Y = [_rand_poisson_species_x(exp(clamp(η[t, s], -8.0, 8.0))) for t in 1:p, s in 1:n]
 
-        jl_fit = fit_gllvm_speciescov(Y; family = GLLVM.Poisson(), X = X, K = K)
+        jl_fit = fit_gllvm_speciescov(Y; family = GLLVModels.Poisson(), X = X, K = K)
         @test jl_fit isa GllvmSpeciesCovFit
         @test jl_fit.converged
         @test isfinite(jl_fit.loglik)
@@ -74,7 +74,7 @@ end
         η = β .+ B[:, 1] .* x' .+ Λ * Z
         Y = [rand() < 1 / (1 + exp(-η[t, s])) ? 1 : 0 for t in 1:p, s in 1:n]
 
-        jl_fit = fit_gllvm_speciescov(Y; family = GLLVM.Binomial(), X = X, K = K)
+        jl_fit = fit_gllvm_speciescov(Y; family = GLLVModels.Binomial(), X = X, K = K)
         @test jl_fit isa GllvmSpeciesCovFit
         @test jl_fit.converged
         @test isfinite(jl_fit.loglik)

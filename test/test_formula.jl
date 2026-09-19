@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions, Statistics, StatsModels
+using GLLVModels, Test, Random, Distributions, Statistics, StatsModels
 
 @testset "@formula front-end (v1)" begin
     @testset "Gaussian: formula == hand-built X (exact parity)" begin

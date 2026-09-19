@@ -1,7 +1,7 @@
 # No optimizer run: evaluate the same model at the retained frozen-R point.
-using GLLVM, Test, Random, Distributions, SHA, TOML
+using GLLVModels, Test, Random, Distributions, SHA, TOML
 root, params_path, output = ARGS
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(root)
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(root)
 isdir(output) && error("output must be fresh")
 mkpath(output)
 rows = split.(readlines(params_path)[2:end],',')
@@ -16,10 +16,10 @@ p,K,n=5,1,130
 Y=zeros(p,n)
 for t in 1:p,s in 1:n;Y[t,s]=η[t,s]+0.7*rand(TDist(4.0));end
 θ=vcat(λ,β,log.(σ),log.(ν.-1))
-objective(x) = -GLLVM.studentt_marginal_loglik_laplace(Y,reshape(x[1:5],5,1),x[6:10],exp.(x[11:15]);ν=1 .+exp.(x[16:20]))
+objective(x) = -GLLVModels.studentt_marginal_loglik_laplace(Y,reshape(x[1:5],5,1),x[6:10],exp.(x[11:15]);ν=1 .+exp.(x[16:20]))
 value=objective(θ)
-gradient=GLLVM.ForwardDiff.gradient(objective,θ)
-hessian=GLLVM.ForwardDiff.hessian(objective,θ)
+gradient=GLLVModels.ForwardDiff.gradient(objective,θ)
+hessian=GLLVModels.ForwardDiff.hessian(objective,θ)
 @test isfinite(value)
 @test all(isfinite,gradient)
 @test all(isfinite,hessian)

@@ -5,7 +5,7 @@
 # native dense source fit from its deterministic default start.  R coordinates
 # are translated only to re-evaluate the native objective diagnostically; they
 # are never used as a native optimizer start.
-using GLLVM, RCall, LinearAlgebra, Statistics, TOML, SHA, Test
+using GLLVModels, RCall, LinearAlgebra, Statistics, TOML, SHA, Test
 
 include(joinpath(@__DIR__, "..", "test", "parity", "parity_helpers.jl"))
 
@@ -258,7 +258,7 @@ for index in eachindex(_CORE070_COVARIANCE_FITS_IDS)
         # Deliberately no `start=`: this tests the public default native start.
         native = fit_gaussian_sources(Y; sources=[source], g_tol=1e-7, iterations=2000)
         native_point = _native_r_coordinate(rbeta, rU, rsigma, source_name, mode)
-        native_r_nll = GLLVM._gaussian_sources_nll(Y, [source], native_point)
+        native_r_nll = GLLVModels._gaussian_sources_nll(Y, [source], native_point)
     catch e
         native_error = sprint(showerror, e)
     end
@@ -293,8 +293,8 @@ for index in eachindex(_CORE070_COVARIANCE_FITS_IDS)
             "native_health" => native.converged && isfinite(native.gradient_norm) && native.gradient_norm <= 1e-7,
             "likelihood" => isfinite(native.loglik) && abs(native.loglik - rloglik) <= 1e-6,
             "beta" => isapprox(native.beta, rbeta; atol=1e-5, rtol=1e-5),
-            "native_free_parameters" => GLLVM.dof(native) == length(router) &&
-                GLLVM.dof(native) == (mode == "DEP" ? 10 : mode == "COMMON" ? 5 : 7),
+            "native_free_parameters" => GLLVModels.dof(native) == length(router) &&
+                GLLVModels.dof(native) == (mode == "DEP" ? 10 : mode == "COMMON" ? 5 : 7),
             "native_objective_at_r_coordinates" => isfinite(native_r_nll) &&
                 abs(native_r_nll - robjective) <= 1e-6,
         ))
@@ -323,7 +323,7 @@ for index in eachindex(_CORE070_COVARIANCE_FITS_IDS)
         "loglik" => native.loglik, "gradient_max" => native.gradient_norm,
         "converged" => native.converged, "stopping_reason" => String(native.stopping_reason),
         "iterations" => native.iterations, "hessian_min" => native.hessian_min_eigenvalue,
-        "hessian_positive_definite" => native.hessian_positive_definite, "dof" => GLLVM.dof(native),
+        "hessian_positive_definite" => native.hessian_positive_definite, "dof" => GLLVModels.dof(native),
     )
     r_record = Dict{String, Any}(
         "warnings" => warnings, "error" => r_error, "outer" => router,

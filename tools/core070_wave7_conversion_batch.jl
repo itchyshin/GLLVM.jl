@@ -12,7 +12,7 @@
 #
 # Usage: julia --project=. tools/core070_wave7_conversion_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 using LinearAlgebra: norm
 
 # ---------------------------------------------------------------------------
@@ -188,11 +188,11 @@ for cs in cases
         ok = false
         try
             if case_id == "CORE070-WAVE7-FITTED-MULTI"
-                jl_vec = vec(GLLVM.fitted(fit_g, Y_g))
+                jl_vec = vec(GLLVModels.fitted(fit_g, Y_g))
             elseif case_id == "CORE070-WAVE7-PREDICT-MULTI"
-                jl_vec = vec(GLLVM.predict(fit_g, Y_g; type = :response))
+                jl_vec = vec(GLLVModels.predict(fit_g, Y_g; type = :response))
             elseif case_id == "CORE070-WAVE7-RESIDUALS-MULTI"
-                jl_vec = vec(GLLVM.residuals(fit_g, Y_g; type = :dunnsmyth))
+                jl_vec = vec(GLLVModels.residuals(fit_g, Y_g; type = :dunnsmyth))
             else
                 error("BOGUS_CASE_ID: no dispatcher entry for '$case_id'")
             end
@@ -220,11 +220,11 @@ for cs in cases
         jl_verdict = Dict{String, Any}()
         try
             if case_id == "CORE070-WAVE7-CHECK-AUTO-RESIDUAL"
-                r = GLLVM.check_auto_residual(fit_g)
+                r = GLLVModels.check_auto_residual(fit_g)
                 jl_verdict["status_ok"] = r.coherent
                 ok = (r_verdict["status_ok"] == true) == r.coherent
             elseif case_id == "CORE070-WAVE7-SANITY-MULTI"
-                r = GLLVM.sanity_multi(fit_g; y = Y_g)
+                r = GLLVModels.sanity_multi(fit_g; y = Y_g)
                 jl_verdict["converged"] = r.converged === missing ? nothing : r.converged
                 jl_verdict["pd_hessian"] = r.pd_hessian === missing ? nothing : r.pd_hessian
                 r_converged = r_verdict["converged"]
@@ -266,7 +266,7 @@ for cs in cases
         try
             case_id == "CORE070-WAVE7-COMPARE-LOADINGS-SELF-CONSISTENCY" ||
                 error("BOGUS_CASE_ID: no own_consistency dispatcher entry for '$case_id'")
-            r = GLLVM.compare_loadings(fit_g, fit_g)
+            r = GLLVModels.compare_loadings(fit_g, fit_g)
             jl_frob = r.frobenius_norm_LLt
             r_frob_val = Float64(r_frob)
             ok = abs(r_frob_val) <= tol && abs(jl_frob) <= tol
@@ -297,7 +297,7 @@ for rc in contract["rejection_cases"]
     jl_raised = false
     jl_message = ""
     try
-        GLLVM.check_auto_residual(42)
+        GLLVModels.check_auto_residual(42)
     catch e
         jl_raised = true
         jl_message = sprint(showerror, e)
@@ -333,7 +333,7 @@ neg_ok = neg_unknown_case_id && neg_bogus_kind &&
 report = Dict{String, Any}(
     "status" => (all_ok && rejection_ok && neg_ok) ? "PASS" : "FAIL",
     "julia_version" => string(VERSION),
-    "package_root" => Base.pkgdir(GLLVM),
+    "package_root" => Base.pkgdir(GLLVModels),
     "case_count" => length(cases),
     "all_checks" => all_ok,
     "rejection_checks_ok" => rejection_ok,

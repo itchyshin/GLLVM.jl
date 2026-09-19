@@ -6,13 +6,13 @@
 # This file is the independent contract test for that mask:
 #   (1) masked marginal == hand-computed marginal that DROPS the masked entries,
 #       built by an INDEPENDENT route (row-subsetting Λ/β/y per site, no mask);
-#   (2) a non-Gaussian GLLVM (Poisson AND Binomial) fits on data with a handful
+#   (2) a non-Gaussian GLLVModels (Poisson AND Binomial) fits on data with a handful
 #       of Y entries missing and recovers parameters close to the complete-data
 #       fit / true values;
 #   (3) the masked Laplace objective's gradient matches a central finite
 #       difference to ≤ 1e-6 (the CLAUDE.md Planned-next gradient bar).
 
-using GLLVM, Test, Random, LinearAlgebra, Statistics, Distributions
+using GLLVModels, Test, Random, LinearAlgebra, Statistics, Distributions
 
 # Build the marginal that physically DROPS the masked rows per site, by passing
 # only the OBSERVED sub-rows of (Λ, β, y, n) to the unmasked per-site Laplace.
@@ -25,7 +25,7 @@ function _marginal_dropmissing(family, Y, N, Λ, β, link, mask)
     for s in 1:n
         obs = findall(view(mask, :, s))
         isempty(obs) && continue                     # fully-masked site ⇒ 0
-        acc += GLLVM.laplace_loglik_site(family, Y[obs, s], N[obs, s],
+        acc += GLLVModels.laplace_loglik_site(family, Y[obs, s], N[obs, s],
                                          Λ[obs, :], β[obs], link)
     end
     return acc
@@ -49,7 +49,7 @@ end
         for (t, s) in [(1, 2), (3, 5), (4, 8), (2, 1), (5, 3), (6, 11), (1, 12)]
             mask[t, s] = false
         end
-        ℓ_mask = GLLVM.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink();
+        ℓ_mask = GLLVModels.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink();
                                                mask = mask)
         ℓ_drop = _marginal_dropmissing(Poisson(), Yp, Np, Λ, β, LogLink(), mask)
         @test isapprox(ℓ_mask, ℓ_drop; atol = 1e-9, rtol = 0)
@@ -57,18 +57,18 @@ end
         # --- Binomial ---
         Yb = rand(0:5, p, n)
         Nb = fill(5, p, n)
-        ℓ_mask_b = GLLVM.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, LogitLink();
+        ℓ_mask_b = GLLVModels.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, LogitLink();
                                                  mask = mask)
         ℓ_drop_b = _marginal_dropmissing(Binomial(), Yb, Nb, Λ, β, LogitLink(), mask)
         @test isapprox(ℓ_mask_b, ℓ_drop_b; atol = 1e-9, rtol = 0)
 
         # backward-compat: all-observed mask == no mask, byte-for-byte path
-        @test GLLVM.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink();
+        @test GLLVModels.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink();
                                             mask = trues(p, n)) ==
-              GLLVM.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink())
-        @test GLLVM.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, LogitLink();
+              GLLVModels.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink())
+        @test GLLVModels.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, LogitLink();
                                             mask = trues(p, n)) ==
-              GLLVM.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, LogitLink())
+              GLLVModels.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, LogitLink())
     end
 
     # ----------------------------------------------------------------------
@@ -159,7 +159,7 @@ end
     @testset "masked-objective gradient: analytic vs central FD ≤ 1e-6" begin
         Random.seed!(123)
         p, n, K = 5, 14, 2
-        rr = GLLVM.rr_theta_len(p, K)
+        rr = GLLVModels.rr_theta_len(p, K)
         β0 = randn(p) .* 0.3
         Λ0 = randn(p, K) .* 0.4
 
@@ -168,7 +168,7 @@ end
             mask[t, s] = false
         end
 
-        θ = vcat(β0, GLLVM.pack_lambda(Λ0))
+        θ = vcat(β0, GLLVModels.pack_lambda(Λ0))
 
         # central finite difference of the (negative-of-irrelevant: use +marginal)
         # masked marginal — the verification oracle.
@@ -187,11 +187,11 @@ end
         Np = ones(Int, p, n)
         fpois = θ -> begin
             β = θ[1:p]
-            Λ = GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-            GLLVM.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink();
+            Λ = GLLVModels.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+            GLLVModels.marginal_loglik_laplace(Poisson(), Yp, Np, Λ, β, LogLink();
                                           mask = mask, maxiter = 200, tol = 1e-12)
         end
-        g_an_p = GLLVM.poisson_laplace_grad(Yp, Λ0, β0; mask = mask)
+        g_an_p = GLLVModels.poisson_laplace_grad(Yp, Λ0, β0; mask = mask)
         g_fd_p = central_fd(fpois, θ)
         maxdiff_p = maximum(abs.(g_an_p .- g_fd_p))
         @test maxdiff_p ≤ 1e-6
@@ -201,21 +201,21 @@ end
         Nb = fill(5, p, n)
         fbin = θ -> begin
             β = θ[1:p]
-            Λ = GLLVM.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
-            GLLVM.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, LogitLink();
+            Λ = GLLVModels.unpack_lambda(θ[(p + 1):(p + rr)], p, K)
+            GLLVModels.marginal_loglik_laplace(Binomial(), Yb, Nb, Λ, β, LogitLink();
                                           mask = mask, maxiter = 200, tol = 1e-12)
         end
-        g_an_b = GLLVM.binomial_laplace_grad(Yb, Nb, Λ0, β0; mask = mask)
+        g_an_b = GLLVModels.binomial_laplace_grad(Yb, Nb, Λ0, β0; mask = mask)
         g_fd_b = central_fd(fbin, θ)
         maxdiff_b = maximum(abs.(g_an_b .- g_fd_b))
         @test maxdiff_b ≤ 1e-6
 
         # backward-compat: an all-true mask == no-mask analytic gradient (the
         # masked code path reduces exactly to the legacy gradient).
-        @test isapprox(GLLVM.poisson_laplace_grad(Yp, Λ0, β0; mask = trues(p, n)),
-                       GLLVM.poisson_laplace_grad(Yp, Λ0, β0); atol = 0, rtol = 0)
-        @test isapprox(GLLVM.binomial_laplace_grad(Yb, Nb, Λ0, β0; mask = trues(p, n)),
-                       GLLVM.binomial_laplace_grad(Yb, Nb, Λ0, β0); atol = 0, rtol = 0)
+        @test isapprox(GLLVModels.poisson_laplace_grad(Yp, Λ0, β0; mask = trues(p, n)),
+                       GLLVModels.poisson_laplace_grad(Yp, Λ0, β0); atol = 0, rtol = 0)
+        @test isapprox(GLLVModels.binomial_laplace_grad(Yb, Nb, Λ0, β0; mask = trues(p, n)),
+                       GLLVModels.binomial_laplace_grad(Yb, Nb, Λ0, β0); atol = 0, rtol = 0)
 
         @info "masked-objective analytic vs FD" maxdiff_poisson=maxdiff_p maxdiff_binomial=maxdiff_b
     end

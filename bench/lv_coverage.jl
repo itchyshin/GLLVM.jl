@@ -8,7 +8,7 @@
 #
 #   LV_COV_N=200 LV_COV_S=80 julia --project=. bench/lv_coverage.jl
 
-using GLLVM
+using GLLVModels
 using Random, Statistics, LinearAlgebra, Distributions, Printf
 
 const P      = 5
@@ -39,7 +39,7 @@ end
 
 function gen_binomial(rng, n, X_lv, link)
     eta = eta_matrix([-0.6, -0.25, 0.05, 0.35, 0.65], n, X_lv, rng)
-    mu  = clamp.(GLLVM.linkinv.(Ref(link), eta), 1e-4, 1 - 1e-4)
+    mu  = clamp.(GLLVModels.linkinv.(Ref(link), eta), 1e-4, 1 - 1e-4)
     N   = fill(40, P, n)
     Y   = [rand(rng, Binomial(N[t, s], mu[t, s])) for t in 1:P, s in 1:n]
     return (Float64.(Y), N)

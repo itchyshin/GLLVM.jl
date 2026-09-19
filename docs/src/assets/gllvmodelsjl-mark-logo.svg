@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">GLLVM.jl response structure mark</title>
+  <title id="title">GLLVModels.jl response structure mark</title>
   <desc id="desc">A rounded hexagonal badge with five response columns crossed by solid and dashed latent-structure paths.</desc>
   <defs>
     <linearGradient id="ring" x1="62" y1="124" x2="454" y2="390" gradientUnits="userSpaceOnUse"><stop stop-color="#CB3C33"/><stop offset=".48" stop-color="#9558B2"/><stop offset="1" stop-color="#4063D8"/></linearGradient>

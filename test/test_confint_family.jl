@@ -1,6 +1,6 @@
-using GLLVM, Test, Random, Distributions, Statistics, LinearAlgebra
+using GLLVModels, Test, Random, Distributions, Statistics, LinearAlgebra
 
-# Helper: simulate a Poisson GLLVM dataset (p×n integer counts).
+# Helper: simulate a Poisson GLLVModels dataset (p×n integer counts).
 function _sim_poisson(p, K, n; seed = 11)
     Random.seed!(seed)
     β = 0.5 .* randn(p) .+ 1.0
@@ -217,7 +217,7 @@ end
         fit = fit_zib_gllvm(Y; K = K, N = Ntr, iterations = 120)
 
         ci = confint(fit, Y; method = :wald)
-        @test length(ci.term) == 2p + GLLVM.rr_theta_len(p, K)   # βz + βc + Λc (no dispersion)
+        @test length(ci.term) == 2p + GLLVModels.rr_theta_len(p, K)   # βz + βc + Λc (no dispersion)
         @test ci.method == :wald
         for i in eachindex(ci.term)
             if isfinite(ci.lower[i]) && isfinite(ci.upper[i])
@@ -294,7 +294,7 @@ end
 
         ci = confint(fit, Y; method = :wald)
         # β + Λ + a single dispersion term (φ); the power p is held fixed.
-        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 1
+        @test length(ci.term) == p + GLLVModels.rr_theta_len(p, K) + 1
         @test ci.method === :wald
         @test "phi" in ci.term
         let pidx = findfirst(==("phi"), ci.term)
@@ -395,7 +395,7 @@ end
         # N is taken as data through the `N` kwarg (it is not stored in the fit).
         ci = confint(fit, Y; method = :wald, N = N)
         # β + Λ + a single dispersion term (φ).
-        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 1
+        @test length(ci.term) == p + GLLVModels.rr_theta_len(p, K) + 1
         @test ci.method === :wald
         @test "phi" in ci.term
         let pidx = findfirst(==("phi"), ci.term)
@@ -438,7 +438,7 @@ end
         @test fit isa BetaBinomialGroupedFit
         ci = confint(fit, Y; method = :wald, N = N)
         @test ci.method === :wald
-        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + p
+        @test length(ci.term) == p + GLLVModels.rr_theta_len(p, K) + p
         @test all(("phi[$g]" in ci.term) for g in 1:p)
         for g in 1:p
             pidx = findfirst(==("phi[$g]"), ci.term)
@@ -460,7 +460,7 @@ end
         γ = [0.35]
         Λ = 0.3 .* randn(p, K)
         X = randn(p, n, q)
-        O = GLLVM._build_offset(X, γ)
+        O = GLLVModels._build_offset(X, γ)
         Y = Matrix{Int}(undef, p, n)
         for s in 1:n
             η = β .+ view(O, :, s) .+ Λ * randn(K)
@@ -499,7 +499,7 @@ end
         γz = [0.3]; βc = 0.2 .* randn(p) .+ 0.5; γc = [0.4]
         Λc = 0.3 .* randn(p, K)
         X = randn(p, n, q)
-        Oz = GLLVM._build_offset(X, γz); Oc = GLLVM._build_offset(X, γc)
+        Oz = GLLVModels._build_offset(X, γz); Oc = GLLVModels._build_offset(X, γc)
         Y = Matrix{Int}(undef, p, n)
         for s in 1:n
             z = randn(K)
@@ -549,7 +549,7 @@ end
         γz = [0.3]; βc = 0.2 .* randn(p) .+ 0.5; γc = [0.4]
         Λc = 0.3 .* randn(p, K)
         X = randn(p, n, q)
-        Oz = GLLVM._build_offset(X, γz); Oc = GLLVM._build_offset(X, γc)
+        Oz = GLLVModels._build_offset(X, γz); Oc = GLLVModels._build_offset(X, γc)
         Y = Matrix{Int}(undef, p, n)
         for s in 1:n
             z = randn(K)
@@ -612,7 +612,7 @@ end
 
         # Working vector [β; pack_lambda(Λ); log σ_row; log r] ⇒ β + Λ + sigma_row + r.
         ci = confint(fit, Y; method = :wald)
-        @test length(ci.term) == p + GLLVM.rr_theta_len(p, K) + 2
+        @test length(ci.term) == p + GLLVModels.rr_theta_len(p, K) + 2
         @test ci.method === :wald
         @test "sigma_row" in ci.term && "r" in ci.term
         let sidx = findfirst(==("sigma_row"), ci.term)
@@ -654,7 +654,7 @@ end
             for t in 1:p, s in 1:n
                 X[t, s, 1] = x1[s]
             end
-            O = GLLVM._build_offset(X, γ)
+            O = GLLVModels._build_offset(X, γ)
             Z = randn(rng, K, n)
             η = β .+ O .+ Λ * Z
             Y = Matrix{Float64}(undef, p, n)
@@ -676,7 +676,7 @@ end
 
             # beta / gamma / Lambda / the non-boundary trait's r get FINITE bounds.
             finite_expected = vcat(["beta[$t]" for t in 1:p], ["gamma[1]"],
-                                    GLLVM._confint_lambda_term_names("Lambda", p, K),
+                                    GLLVModels._confint_lambda_term_names("Lambda", p, K),
                                     ["r[$g]" for g in nonboundary_groups])
             for name in finite_expected
                 i = findfirst(==(name), ci.term)
@@ -712,7 +712,7 @@ end
             f0 = fit_nb_gllvm_grouped_cov(Yi; X = X, K = K, group = ones(Int, p))
             @test length(f0.r_group) == 1
             r2 = [1.0e12]
-            f1 = GLLVM.NBGroupedCovFit(f0.β, f0.γ, f0.γ_fixed, f0.Λ, r2, f0.group, f0.link,
+            f1 = GLLVModels.NBGroupedCovFit(f0.β, f0.γ, f0.γ_fixed, f0.Λ, r2, f0.group, f0.link,
                                        f0.loglik, f0.converged, f0.iterations)
             @test f1.dispersion_boundary == [true]
             ci = confint(f1, Yi; method = :wald, X = X)
@@ -744,7 +744,7 @@ end
             γ = [0.4]
             Λ = 0.35 .* randn(p, K)
             X = randn(p, n, q)
-            O = GLLVM._build_offset(X, γ)
+            O = GLLVModels._build_offset(X, γ)
             Y = Matrix{Int}(undef, p, n)
             for s in 1:n
                 η = β .+ view(O, :, s) .+ Λ * randn(K)

@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra
+using GLLVModels, Test, Random, LinearAlgebra
 
 @testset "SPDE grid mesh" begin
     Random.seed!(20260603)
@@ -37,7 +37,7 @@ using GLLVM, Test, Random, LinearAlgebra
     @test nymax ≈ padded_ymax
 
     # FEM consistency (the gate)
-    Cdiag, G = GLLVM.spde_fem(nodes, tris)
+    Cdiag, G = GLLVModels.spde_fem(nodes, tris)
 
     padded_area = (padded_xmax - padded_xmin) * (padded_ymax - padded_ymin)
     @test sum(Cdiag) ≈ padded_area atol = 1e-6

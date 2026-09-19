@@ -15,7 +15,7 @@
 #
 # This module is deliberately self-contained linear algebra — it depends only on
 # LinearAlgebra, SparseArrays, and `besselk`/`gamma` (SpecialFunctions, already in
-# scope in the GLLVM module). It has no dependence on the family/fit code and is
+# scope in the GLLVModels module). It has no dependence on the family/fit code and is
 # designed to be shared with DRM.jl.
 #
 # Pipeline:

@@ -5,7 +5,7 @@
 # sdreport conditions on estimated logit_p_tweedie. Record SE/vcov/CI Δ for audit; do NOT
 # assert contract §4 D1 / assess_eoo pass on this cell.
 
-using GLLVM
+using GLLVModels
 using RCall
 using Random
 using LinearAlgebra

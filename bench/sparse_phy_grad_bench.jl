@@ -4,9 +4,9 @@
 #
 #     julia --project=. bench/sparse_phy_grad_bench.jl
 #
-# This benchmark times the public `GLLVM.sparse_phy_grad` wrapper on the
+# This benchmark times the public `GLLVModels.sparse_phy_grad` wrapper on the
 # verified phylo-unique node shortcut and compares it with the preserved exact
-# leaf-block reference (`GLLVM._sparse_phy_grad_leafblock`). For small sizes it
+# leaf-block reference (`GLLVModels._sparse_phy_grad_leafblock`). For small sizes it
 # also times dense ForwardDiff over the same natural parameters.
 #
 # Boundary:
@@ -16,11 +16,11 @@
 
 using Random
 using LinearAlgebra
-using GLLVM
+using GLLVModels
 
-const ForwardDiff = GLLVM.ForwardDiff
-const _gml = GLLVM.gaussian_marginal_loglik
-const _rbt = GLLVM.random_balanced_tree
+const ForwardDiff = GLLVModels.ForwardDiff
+const _gml = GLLVModels.gaussian_marginal_loglik
+const _rbt = GLLVModels.random_balanced_tree
 
 const PS = [100, 300, 600]
 const DENSE_CUTOFF = 100
@@ -41,15 +41,15 @@ function gphy_dense(phy)
 end
 
 function shortcut_grad_once(y, Λ_B, σ_eps, σ_phy, phy, σ²_phy)
-    st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps;
+    st = GLLVModels.build_sparse_phy_state(y, Λ_B, σ_eps;
                                       σ_phy = σ_phy, phy = phy, σ²_phy = σ²_phy)
-    GLLVM.sparse_phy_grad(st; want_σ²_eps = true)
+    GLLVModels.sparse_phy_grad(st; want_σ²_eps = true)
 end
 
 function leafblock_grad_once(y, Λ_B, σ_eps, σ_phy, phy, σ²_phy)
-    st = GLLVM.build_sparse_phy_state(y, Λ_B, σ_eps;
+    st = GLLVModels.build_sparse_phy_state(y, Λ_B, σ_eps;
                                       σ_phy = σ_phy, phy = phy, σ²_phy = σ²_phy)
-    GLLVM._sparse_phy_grad_leafblock(st; want_σ²_eps = true)
+    GLLVModels._sparse_phy_grad_leafblock(st; want_σ²_eps = true)
 end
 
 function dense_grad_once(y, Gphy, p, K_B, par0)

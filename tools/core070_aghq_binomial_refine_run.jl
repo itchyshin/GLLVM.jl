@@ -1,12 +1,12 @@
-using GLLVM,TOML,LinearAlgebra,SHA,Test
+using GLLVModels,TOML,LinearAlgebra,SHA,Test
 r=TOML.parsefile(ENV["CORE070_BINOMIAL_PAIR_INPUT"])
 d=TOML.parsefile(ENV["CORE070_BINOMIAL_FIXTURE_INPUT"])
 p,n,K=d["p"],d["n"],d["K"];Y=reshape(d["responses"],p,n);theta=r["native_parameters"]
 rows=Dict[]
 for k in (5,9,15,21)
- q=GLLVM.aghq_binomial_problem(Y,K;k=k);cache=q.adapt(theta)
+ q=GLLVModels.aghq_binomial_problem(Y,K;k=k);cache=q.adapt(theta)
  frozen=t->q.objective(t,cache);fresh=t->q.objective(t,q.adapt(t))
- g=GLLVM.ForwardDiff.gradient(frozen,theta)
+ g=GLLVModels.ForwardDiff.gradient(frozen,theta)
  h=1e-5;basis=Matrix{Float64}(I,length(theta),length(theta))
  total=[(fresh(theta+h*basis[:,j])-fresh(theta-h*basis[:,j]))/(2h) for j in eachindex(theta)]
  row=Dict("k"=>k,"objective"=>frozen(theta),"frozen_gradient"=>g,"total_gradient_fd"=>total,

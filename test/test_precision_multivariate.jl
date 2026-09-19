@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays
+using GLLVModels, Test, LinearAlgebra, SparseArrays
 
 # Destination B multivariate precision consumer: a deliberately tiny dense
 # oracle only.  Production must never materialise this p*d covariance.
@@ -61,7 +61,7 @@ end
             K = kron(B,C)
             R = kron(Diagonal(psi),Matrix{Float64}(I,3,3))
             oracle = reshape(K*((K+R)\vec(yr)),3,3)
-            got = GLLVM._multivariate_phylo_precision_evaluate(yr,pp,loading,psi;
+            got = GLLVModels._multivariate_phylo_precision_evaluate(yr,pp,loading,psi;
                 sigma2_phy=sigma2_phy,phylo_unique_variance=unique_variance,
                 species_id=ids,return_fitted=true)
             @test got.fitted ≈ oracle atol=1e-10 rtol=1e-10
@@ -72,7 +72,7 @@ end
     end
 
     @testset "sparse augmented marginal equals independent dense oracle" begin
-        got = GLLVM.multivariate_phylo_precision_loglik(y, pp, loading, psi;
+        got = GLLVModels.multivariate_phylo_precision_loglik(y, pp, loading, psi;
             sigma2_phy = sigma2_phy, phylo_unique_variance = phylo_unique_variance)
         @test isapprox(got, expected; atol = 1e-10, rtol = 1e-10)
     end
@@ -84,17 +84,17 @@ end
         # internally coherent.
         double_scaled = _mv_rewrap(pp; q = double_q,
             log_det = logdet(cholesky(Symmetric(Matrix(double_q)))))
-        wrong = GLLVM.multivariate_phylo_precision_loglik(y, double_scaled, loading, psi;
+        wrong = GLLVModels.multivariate_phylo_precision_loglik(y, double_scaled, loading, psi;
             sigma2_phy = sigma2_phy, phylo_unique_variance = phylo_unique_variance)
         @test !isapprox(wrong, expected; atol = 1e-6, rtol = 1e-6)
-        @test_throws ArgumentError GLLVM.multivariate_phylo_precision_loglik(
+        @test_throws ArgumentError GLLVModels.multivariate_phylo_precision_loglik(
             y, _mv_rewrap(pp; scale = 0.0), loading, psi;
             sigma2_phy = sigma2_phy, phylo_unique_variance = phylo_unique_variance)
     end
 
     @testset "adapter converts R covariance log determinant to log|Q|" begin
         covariance_signed_logdet = _mv_rewrap(pp; log_det = -pp.log_det)
-        wrong = GLLVM.multivariate_phylo_precision_loglik(
+        wrong = GLLVModels.multivariate_phylo_precision_loglik(
             y, covariance_signed_logdet, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = phylo_unique_variance)
         @test !isapprox(wrong, expected; atol = 1e-6, rtol = 1e-6)
@@ -103,7 +103,7 @@ end
     @testset "stored precision log determinant has the exact marginal shift" begin
         delta = 0.37
         shifted = _mv_rewrap(pp; log_det = pp.log_det + delta)
-        got_shifted = GLLVM.multivariate_phylo_precision_loglik(
+        got_shifted = GLLVModels.multivariate_phylo_precision_loglik(
             y, shifted, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = phylo_unique_variance)
         active_fields = size(loading, 2) + count(>(0), phylo_unique_variance)
@@ -113,7 +113,7 @@ end
         zero_unique = zeros(3)
         expected_zero = _mv_dense_reference(y, pp, loading, psi, sigma2_phy;
             phylo_unique_variance = zero_unique)
-        got_shifted_zero = GLLVM.multivariate_phylo_precision_loglik(
+        got_shifted_zero = GLLVModels.multivariate_phylo_precision_loglik(
             y, shifted, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = zero_unique)
         @test isapprox(got_shifted_zero - expected_zero, size(loading, 2) * delta / 2;
@@ -122,7 +122,7 @@ end
         partial_unique = [0.2, 0.0, 0.3]
         expected_partial = _mv_dense_reference(y, pp, loading, psi, sigma2_phy;
             phylo_unique_variance = partial_unique)
-        got_shifted_partial = GLLVM.multivariate_phylo_precision_loglik(
+        got_shifted_partial = GLLVModels.multivariate_phylo_precision_loglik(
             y, shifted, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = partial_unique)
         partial_fields = size(loading, 2) + count(>(0), partial_unique)
@@ -132,10 +132,10 @@ end
 
     @testset "node map controls which retained augmented nodes are observed" begin
         swapped = _mv_rewrap(pp; map = [4, 3])
-        wrong = GLLVM.multivariate_phylo_precision_loglik(y, swapped, loading, psi;
+        wrong = GLLVModels.multivariate_phylo_precision_loglik(y, swapped, loading, psi;
             sigma2_phy = sigma2_phy, phylo_unique_variance = phylo_unique_variance)
         @test !isapprox(wrong, expected; atol = 1e-6, rtol = 1e-6)
-        @test_throws ArgumentError GLLVM.multivariate_phylo_precision_loglik(
+        @test_throws ArgumentError GLLVModels.multivariate_phylo_precision_loglik(
             y, _mv_rewrap(pp; map = [3, 3]), loading, psi;
             sigma2_phy = sigma2_phy, phylo_unique_variance = phylo_unique_variance)
     end
@@ -145,14 +145,14 @@ end
         species_id = [1, 2, 1]
         repeated_expected = _mv_dense_reference(repeated_y, pp, loading, psi, sigma2_phy;
             species_id = species_id, phylo_unique_variance = phylo_unique_variance)
-        repeated_got = GLLVM.multivariate_phylo_precision_loglik(
+        repeated_got = GLLVModels.multivariate_phylo_precision_loglik(
             repeated_y, pp, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = phylo_unique_variance, species_id = species_id)
         @test isapprox(repeated_got, repeated_expected; atol = 1e-10, rtol = 1e-10)
     end
 
     @testset "residual preserves a nonsingular observed covariance" begin
-        @test_throws ArgumentError GLLVM.multivariate_phylo_precision_loglik(
+        @test_throws ArgumentError GLLVModels.multivariate_phylo_precision_loglik(
             y, pp, loading, [0.6, 0.0, 0.5]; sigma2_phy = sigma2_phy,
             phylo_unique_variance = phylo_unique_variance)
     end
@@ -161,7 +161,7 @@ end
         zero_unique = zeros(3)
         expected_zero = _mv_dense_reference(y, pp, loading, psi, sigma2_phy;
             phylo_unique_variance = zero_unique)
-        got_zero = GLLVM.multivariate_phylo_precision_loglik(
+        got_zero = GLLVModels.multivariate_phylo_precision_loglik(
             y, pp, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = zero_unique)
         @test isapprox(got_zero, expected_zero; atol = 1e-10, rtol = 1e-10)
@@ -171,7 +171,7 @@ end
         unique_only_loading = zeros(size(loading))
         expected_unique = _mv_dense_reference(y, pp, unique_only_loading, psi, sigma2_phy;
             phylo_unique_variance = phylo_unique_variance)
-        got_unique = GLLVM.multivariate_phylo_precision_loglik(
+        got_unique = GLLVModels.multivariate_phylo_precision_loglik(
             y, pp, unique_only_loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = phylo_unique_variance)
         @test isapprox(got_unique, expected_unique; atol = 1e-10, rtol = 1e-10)
@@ -179,7 +179,7 @@ end
         partial_unique = [0.2, 0.0, 0.3]
         expected_partial = _mv_dense_reference(y, pp, loading, psi, sigma2_phy;
             phylo_unique_variance = partial_unique)
-        got_partial = GLLVM.multivariate_phylo_precision_loglik(
+        got_partial = GLLVModels.multivariate_phylo_precision_loglik(
             y, pp, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = partial_unique)
         @test isapprox(got_partial, expected_partial; atol = 1e-10, rtol = 1e-10)
@@ -187,18 +187,18 @@ end
 
     @testset "trait and observation permutations preserve the density" begin
         trait_order = [3, 1, 2]
-        trait_permuted = GLLVM.multivariate_phylo_precision_loglik(
+        trait_permuted = GLLVModels.multivariate_phylo_precision_loglik(
             y[:, trait_order], pp, loading[trait_order, :], psi[trait_order];
             sigma2_phy = sigma2_phy, phylo_unique_variance = phylo_unique_variance[trait_order])
         @test isapprox(trait_permuted, expected; atol = 1e-10, rtol = 1e-10)
 
         repeated_y = vcat(y, y[1:1, :] .+ [0.1 -0.2 0.05])
         species_id = [1, 2, 1]
-        repeated = GLLVM.multivariate_phylo_precision_loglik(
+        repeated = GLLVModels.multivariate_phylo_precision_loglik(
             repeated_y, pp, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = phylo_unique_variance, species_id = species_id)
         observation_order = [3, 1, 2]
-        observation_permuted = GLLVM.multivariate_phylo_precision_loglik(
+        observation_permuted = GLLVModels.multivariate_phylo_precision_loglik(
             repeated_y[observation_order, :], pp, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = phylo_unique_variance,
             species_id = species_id[observation_order])
@@ -209,7 +209,7 @@ end
         trait_mean = [1.2, -0.4, 0.7]
         raw_y = y .+ reshape(trait_mean, 1, :)
         residualized = raw_y .- reshape(trait_mean, 1, :)
-        got = GLLVM.multivariate_phylo_precision_loglik(
+        got = GLLVModels.multivariate_phylo_precision_loglik(
             residualized, pp, loading, psi; sigma2_phy = sigma2_phy,
             phylo_unique_variance = phylo_unique_variance)
         @test isapprox(got, expected; atol = 1e-10, rtol = 1e-10)
@@ -222,7 +222,7 @@ end
         expected_extreme = _mv_dense_reference(high_signal_y, pp,
             high_signal_loading, high_signal_residual, sigma2_phy;
             phylo_unique_variance = [0.0])
-        got_extreme = GLLVM.multivariate_phylo_precision_loglik(
+        got_extreme = GLLVModels.multivariate_phylo_precision_loglik(
             high_signal_y, pp, high_signal_loading, high_signal_residual;
             sigma2_phy = sigma2_phy, phylo_unique_variance = [0.0])
         @test isfinite(got_extreme)

@@ -1,10 +1,16 @@
-module GLLVM
+module GLLVModels
+
+# Soft source-level migration aid: users who have already loaded GLLVModels
+# can qualify the former module name while moving calls to GLLVModels. A
+# renamed Julia package cannot keep `using GLLVM` alive because package
+# resolution happens before this module is loaded.
+const GLLVM = GLLVModels
 
 using LinearAlgebra, Optim, ForwardDiff, Random, SparseArrays, Statistics, SHA
 using SpecialFunctions: digamma, trigamma, besselk, gamma, loggamma
 import StatsModels: coef, vcov, nobs, dof, loglikelihood, aic, bic, coeftable, stderror, confint, predict, residuals, fitted, StatsAPI, deviance
 # Import Distributions without `Multinomial` so the Identity marker
-# `GLLVM.Multinomial` (unordered categorical, twin fid 16) can bind.
+# `GLLVModels.Multinomial` (unordered categorical, twin fid 16) can bind.
 # `Distributions.Multinomial` is the count-vector law — still available qualified.
 import Distributions
 using Distributions: Distribution, Univariate, Discrete, Continuous,
@@ -360,4 +366,4 @@ export make_cross_kernel, extract_Gamma, fit_coevolution_gaussian, fit_coevoluti
        extract_rotated_loadings_table, extract_coevolution_modules, imputed,
        tidy, GllvmSummary
 
-end # module GLLVM
+end # module GLLVModels

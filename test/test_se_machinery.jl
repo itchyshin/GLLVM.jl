@@ -11,7 +11,7 @@
 using Test
 using Random
 using LinearAlgebra
-using GLLVM
+using GLLVModels
 using Distributions: Poisson
 
 @testset "core070 E-cluster: SE machinery" begin
@@ -89,7 +89,7 @@ using Distributions: Poisson
         M_direct = I - Λ' * (Symmetric((Σy + Σy') / 2) \ Λ)
         sd_unrotated = sqrt.(max.(diag(M_direct), 0.0))
 
-        R = GLLVM._svd_rotation(Λ)
+        R = GLLVModels._svd_rotation(Λ)
         M_rotated = Symmetric(R' * M_direct * R)
         sd_rotated = sqrt.(max.(diag(M_rotated), 0.0))
         @test !isapprox(sd_rotated, sd_unrotated; atol = 1e-8)  # sanity: rotation matters here
@@ -151,7 +151,7 @@ using Distributions: Poisson
         Y = [rand(rng) < μ[t, s] ? 1 : 0 for t in 1:p, s in 1:n]
 
         fit_lv = fit_binomial_gllvm(Y; K = K, X_lv = X_lv, iterations = 20)
-        @test GLLVM._has_lv_predictor(fit_lv)
+        @test GLLVModels._has_lv_predictor(fit_lv)
         @test_throws ArgumentError latent_score_sd(fit_lv, Y)
     end
 
@@ -202,7 +202,7 @@ using Distributions: Poisson
         mask = trues(p, n)
         mask[1, 1] = false
         fit_masked = fit_gaussian_gllvm(y_plain; K = K, aghq = 3, mask = mask)
-        @test GLLVM._has_gaussian_record(fit_masked)
+        @test GLLVModels._has_gaussian_record(fit_masked)
         @test_throws ArgumentError latent_score_sd(fit_masked, y_plain)
     end
 
@@ -223,7 +223,7 @@ using Distributions: Poisson
         tab = bootstrap_Sigma(fit; n_boot = 40, seed = 7, y = y)
         @test length(tab.i) == div(p * (p + 1), 2)
 
-        ref = GLLVM.bootstrap_ci_derived(fit, fb -> sigma_y_site(fb)[1, 1];
+        ref = GLLVModels.bootstrap_ci_derived(fit, fb -> sigma_y_site(fb)[1, 1];
                                          n_boot = 40, seed = 7, y = y)
         k = findfirst(t -> tab.i[t] == 1 && tab.j[t] == 1, eachindex(tab.i))
         @test tab.estimate[k] ≈ ref.estimate
@@ -289,7 +289,7 @@ using Distributions: Poisson
         y = Λtrue * z .+ σ_eps .* randn(rng, p, n)
         mask = trues(p, n); mask[1, 1] = false
         fit_masked = fit_gaussian_gllvm(y; K = K, aghq = 3, mask = mask)
-        @test GLLVM._has_gaussian_record(fit_masked)
+        @test GLLVModels._has_gaussian_record(fit_masked)
         @test_throws ArgumentError tmbprofile_wrapper(fit_masked, "sigma_eps"; y = y)
         @test_throws ArgumentError tmbprofile_wrapper(fit_masked, 1; y = y)
     end
@@ -303,7 +303,7 @@ using Distributions: Poisson
         y = Λtrue * z' .+ σ_eps .* randn(rng, p, n)
         fit = fit_gaussian_gllvm(y; K = K)
 
-        @test_deprecated GLLVM.profile_targets(fit, ["sigma_eps"]; y = y, max_expand = 10)
+        @test_deprecated GLLVModels.profile_targets(fit, ["sigma_eps"]; y = y, max_expand = 10)
         out = profile_curve_targets(fit, ["sigma_eps"]; y = y, max_expand = 10)
         @test haskey(out, "sigma_eps")
         direct = tmbprofile_wrapper(fit, "sigma_eps"; y = y, max_expand = 10)

@@ -11,7 +11,7 @@
 # test_twopart_substrate.jl (130-131), and the parity-ladder brief's
 # reserved 42-49/52/53/58.
 
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "delta family: predictor mode (:separate / :shared)" begin
 
@@ -125,7 +125,7 @@ using GLLVM, Test, Random, Distributions, Statistics
 
         f = fit_delta_lognormal_gllvm(Y; K = K, predictor = :shared, iterations = 300)
         @test f.βz === f.βc || f.βz == f.βc   # identical vectors (materialised as the same object)
-        ll_direct = GLLVM.delta_lognormal_marginal_loglik_laplace(Y, f.Λc, f.βz, f.βc, f.σ;
+        ll_direct = GLLVModels.delta_lognormal_marginal_loglik_laplace(Y, f.Λc, f.βz, f.βc, f.σ;
                                                                    Λz = f.Λc)
         @test ll_direct ≈ f.loglik atol = 1e-8
     end
@@ -210,7 +210,7 @@ using GLLVM, Test, Random, Distributions, Statistics
         # the fitted loglik; since :shared applies it symmetrically, recompute with
         # Λz = Λc, offsetz = offset, offsetc = offset and confirm it reproduces
         # f_shift.loglik (the wiring this test is pinned against).
-        ll_symmetric = GLLVM.delta_lognormal_marginal_loglik_laplace(
+        ll_symmetric = GLLVModels.delta_lognormal_marginal_loglik_laplace(
             Y, f_shift.Λc, f_shift.βz, f_shift.βc, f_shift.σ;
             Λz = f_shift.Λc, offsetz = offset, offsetc = offset)
         @test ll_symmetric ≈ f_shift.loglik atol = 1e-8

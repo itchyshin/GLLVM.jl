@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 
 @testset "bridge mixed-family payload metadata" begin
     Y = [

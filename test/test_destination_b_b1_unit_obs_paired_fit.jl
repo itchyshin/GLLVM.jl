@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using JSON3
 
 @testset "Destination B B1 frozen-R paired Gaussian unit_obs fit" begin
@@ -42,11 +42,11 @@ using JSON3
     @test unit_obs[alternate_within_unit] != unit_obs[1]
     @test unit[alternate_within_unit] == unit[1]
 
-    at_r_coordinates = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    at_r_coordinates = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = unit, unit_obs = unit_obs, start = r_theta_in_julia_order, iterations = 0)
-    refit = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    refit = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = unit, unit_obs = unit_obs, iterations = 100)
-    changed_membership = fit_gllvm(Y; family = GLLVM.Normal(), grouping = terms,
+    changed_membership = fit_gllvm(Y; family = GLLVModels.Normal(), grouping = terms,
         unit = unit, unit_obs = changed_unit_obs, start = r_theta_in_julia_order,
         iterations = 0)
 

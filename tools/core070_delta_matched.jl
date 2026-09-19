@@ -1,7 +1,7 @@
 # Same original delta fixtures, now with the frozen R per-trait dispersion map.
-using GLLVM, RCall, Test, Random, SHA, TOML, LinearAlgebra
+using GLLVModels, RCall, Test, Random, SHA, TOML, LinearAlgebra
 import Distributions
-@assert realpath(Base.pkgdir(GLLVM))==realpath(pwd())
+@assert realpath(Base.pkgdir(GLLVModels))==realpath(pwd())
 isdefined(@__MODULE__, :fit_gllvmtmb_parity_delta) || include(joinpath(pwd(),"test/parity/parity_helpers.jl"))
 function core070_delta_matched(family::Symbol; tight_r::Bool=false)
 family in (:delta_lognormal,:delta_gamma) || error("unknown delta family")
@@ -39,10 +39,10 @@ r=(logLik=rcopy(Float64,R"as.numeric(logLik(fit_r))"),objective=rcopy(Float64,R"
  converged=rcopy(Bool,R"identical(as.integer(fit_r$opt$convergence),0L)"),
  disp_vec=rcopy(Vector{Float64},R"if (fam=='delta_gamma') as.numeric(fit_r$report$phi_gamma_delta) else as.numeric(fit_r$report$sigma_lognormal_delta)"))
 scale=gamma ? native.α : native.σ
-θ=vcat(native.βc,GLLVM.pack_lambda(native.Λc),log.(scale))
+θ=vcat(native.βc,GLLVModels.pack_lambda(native.Λc),log.(scale))
 function objective(v)
- β=v[1:p];Λ=GLLVM.unpack_lambda(v[p+1:2p],p,K);d=exp.(v[2p+1:3p])
- f=gamma ? GLLVM.delta_gamma_marginal_loglik_laplace : GLLVM.delta_lognormal_marginal_loglik_laplace
+ β=v[1:p];Λ=GLLVModels.unpack_lambda(v[p+1:2p],p,K);d=exp.(v[2p+1:3p])
+ f=gamma ? GLLVModels.delta_gamma_marginal_loglik_laplace : GLLVModels.delta_lognormal_marginal_loglik_laplace
  -f(Y,Λ,β,β,d;Λz=Λ,hessian=:observed,maxiter=100,tol=1e-9)
 end
 function fd(v,multiplier)

@@ -3,7 +3,7 @@
 
 using Test
 using Random
-using GLLVM
+using GLLVModels
 
 @testset "LognormalFit second-order Wald CI" begin
     Random.seed!(71)

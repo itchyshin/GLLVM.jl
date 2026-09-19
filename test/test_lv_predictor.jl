@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, ForwardDiff
+using GLLVModels, Test, Random, LinearAlgebra, ForwardDiff
 
 @testset "predictor-informed latent-score mean" begin
     @testset "Gaussian C1 fit reports score components and trait effects" begin
@@ -32,7 +32,7 @@ using GLLVM, Test, Random, LinearAlgebra, ForwardDiff
         @test η ≈ fit.pars.Λ * Zt' atol = 1e-10
         @test fitted(fit, y; X_lv = X_lv) ≈ η
         @test size(residuals(fit, y; X_lv = X_lv), 1) == p
-        @test GLLVM._nparams(fit) == 1 + GLLVM.rr_theta_len(p, K) + q_lv * K
+        @test GLLVModels._nparams(fit) == 1 + GLLVModels.rr_theta_len(p, K) + q_lv * K
 
         @test_throws ArgumentError getLV(fit, y)
         @test_throws ArgumentError getLV(fit, y; X_lv = X_lv, component = :bad)
@@ -47,8 +47,8 @@ using GLLVM, Test, Random, LinearAlgebra, ForwardDiff
         p, K, n, q_lv = 4, 1, 30, 2
         y = randn(p, n)
         X_lv = randn(n, q_lv)
-        θ0 = [zeros(q_lv * K); 0.0; GLLVM.init_theta_rr(p, K)]
-        nll = θ -> GLLVM.gaussian_lv_nll_packed(θ, y, p, K;
+        θ0 = [zeros(q_lv * K); 0.0; GLLVModels.init_theta_rr(p, K)]
+        nll = θ -> GLLVModels.gaussian_lv_nll_packed(θ, y, p, K;
                                                 X_lv = X_lv, q_lv = q_lv)
         g = ForwardDiff.gradient(nll, θ0)
         @test length(g) == length(θ0)

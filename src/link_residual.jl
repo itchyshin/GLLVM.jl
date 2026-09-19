@@ -10,7 +10,7 @@
 # relative to a Gaussian latent of comparable variance and the implied cross-
 # trait correlations are inflated.
 #
-# This is the GLLVM.jl twin of gllvmTMB's `link_residual_per_trait()`
+# This is the GLLVModels.jl twin of gllvmTMB's `link_residual_per_trait()`
 # (gllvmTMB/R/extract-sigma.R) — the `link_residual = "auto"` convention. Each
 # per-family formula below is confirmed against that R source.
 #
@@ -35,7 +35,7 @@
 #     model: a standard logistic latent residual has variance π²/3).
 #
 # NOTE ON ORDINAL: gllvmTMB ships an ordinal_*probit* family (latent residual = 1
-# by the standard-normal threshold construction). GLLVM.jl's `OrdinalFit` supports
+# by the standard-normal threshold construction). GLLVModels.jl's `OrdinalFit` supports
 # BOTH links: the cumulative-*logit* model (`LogitLink()`, the default), whose
 # latent residual is standard-logistic with variance π²/3, and the cumulative-
 # *probit* model (`ProbitLink()`, matching gllvmTMB), whose standard-normal latent
@@ -87,7 +87,7 @@ _link_residual_one(::NegativeBinomial, ::LogLink, μ̂::Real, dispersion::Real) 
     trigamma(max(dispersion, 1e-12))
 
 # Gamma-log: trigamma(shape). extract-sigma.R 182–183 (nu_hat = 1/σ², the shape).
-# GLLVM.jl carries the shape α directly (Var = μ²/α), so dispersion == α.
+# GLLVModels.jl carries the shape α directly (Var = μ²/α), so dispersion == α.
 _link_residual_one(::Gamma, ::LogLink, μ̂::Real, dispersion::Real) =
     trigamma(max(dispersion, 1e-12))
 
@@ -231,7 +231,7 @@ Per-trait link-implicit residual variance σ²_d on the latent (link) scale for 
 single trait, given the response `family` marker, the `link`, the trait's mean
 fitted mean `μ̂` (response scale), and the family's scalar `dispersion` (the NB2
 dispersion `r`, the Gamma shape `α`, or the Beta precision `φ`; pass `nothing`
-for families without one). This is the GLLVM.jl twin of gllvmTMB's
+for families without one). This is the GLLVModels.jl twin of gllvmTMB's
 `link_residual_per_trait` (`link_residual = "auto"`).
 
 Per-family forms (each confirmed against gllvmTMB/R/extract-sigma.R):

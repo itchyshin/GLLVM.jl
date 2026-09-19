@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 # Unified-API routing tests for `fit_gllvm`: the new gllvm-style keyword arguments
 # (row_eff, disp_group, pervar, num_lv) must each route to EXACTLY the specialised
@@ -27,7 +27,7 @@ end
         Random.seed!(99)
         b = fit_row_random_gllvm(Y; family = Poisson(), K = K, iterations = iters)
         @test typeof(a) === typeof(b)
-        @test a isa GLLVM.RowRandomFit
+        @test a isa GLLVModels.RowRandomFit
         @test isapprox(a.loglik, b.loglik; atol = 1e-6)
     end
 
@@ -41,7 +41,7 @@ end
         Random.seed!(7)
         b = fit_roweffect_gllvm(Y; family = Poisson(), K = K, iterations = iters)
         @test typeof(a) === typeof(b)
-        @test a isa GLLVM.RowEffectFit
+        @test a isa GLLVModels.RowEffectFit
         @test isapprox(a.loglik, b.loglik; atol = 1e-6)
     end
 
@@ -56,7 +56,7 @@ end
         Random.seed!(11)
         b = fit_nb_gllvm_grouped(Y; K = K, group = collect(1:p), iterations = iters)
         @test typeof(a) === typeof(b)
-        @test a isa GLLVM.NBGroupedFit
+        @test a isa GLLVModels.NBGroupedFit
         @test isapprox(a.loglik, b.loglik; atol = 1e-6)
 
         # an explicit length-p Int group vector routes the same way
@@ -76,7 +76,7 @@ end
         Random.seed!(5)
         b = fit_gaussian_pervar_gllvm(Y; K = K)
         @test typeof(a) === typeof(b)
-        @test a isa GLLVM.GaussianPerVarFit
+        @test a isa GLLVModels.GaussianPerVarFit
         @test isapprox(a.loglik, b.loglik; atol = 1e-6)
     end
 
@@ -99,7 +99,7 @@ end
         anb = fit_gllvm(Ynb; family = NegativeBinomial(1.0, 0.5), K = K, iterations = iters)
         Random.seed!(12)
         bnb = fit_nb_gllvm_grouped(Ynb; K = K, group = collect(1:p), iterations = iters)
-        @test anb isa GLLVM.NBGroupedFit
+        @test anb isa GLLVModels.NBGroupedFit
         @test isapprox(anb.loglik, bnb.loglik; atol = 1e-6)
     end
 

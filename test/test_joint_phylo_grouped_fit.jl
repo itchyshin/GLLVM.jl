@@ -1,5 +1,5 @@
 using Test
-using GLLVM
+using GLLVModels
 using LinearAlgebra
 using SparseArrays
 using StableRNGs
@@ -31,7 +31,7 @@ function _jpgf_fixture()
     covariance = Matrix(kron(selection * (Matrix(phy.Q) \ selection'), loading * loading') +
         kron(Matrix(incidence * incidence'), Diagonal(grouped_variance)) +
         kron(Matrix(I, n, n), Diagonal(psi)))
-    D = GLLVM._trait_mean_design(p, n)
+    D = GLLVModels._trait_mean_design(p, n)
     beta = [0.15, -0.20]
     response = reshape(D * beta + cholesky(Symmetric(covariance)).L * randn(rng, p * n), p, n)
     return (; phy, species_id, unit, incidence, loading, psi, grouped_variance,
@@ -41,7 +41,7 @@ end
 @testset "private joint phylo plus grouped Gaussian fit" begin
     fixture = _jpgf_fixture()
     terms = [GroupingTerm(:unit; mode = :indep, common = false)]
-    fit = GLLVM.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
+    fit = GLLVModels.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
         rank = 1, phylo_mode = :barelowrank, terms = terms, unit = fixture.unit,
         species_id = fixture.species_id, iterations = 120, g_tol = 2e-4)
     @test fit.converged
@@ -53,49 +53,49 @@ end
     @test all(isfinite, fit.residual_variance)
     @test all(isfinite, diag(only(fit.ordinary_covariances)))
 
-    objective = GLLVM._joint_phylo_grouped_nll(fit.response, fit.phy, fit.terms,
+    objective = GLLVModels._joint_phylo_grouped_nll(fit.response, fit.phy, fit.terms,
         fit.incidences; rank = fit.rank, phylo_mode = fit.phylo_mode,
         species_id = fit.species_id, mean_design = fit.mean_design)
     @test isapprox(-objective(fit.parameters), fit.loglik; atol = 1e-8, rtol = 1e-8)
     alternate_unit = reverse(fixture.unit)
-    alternate_incidence = GLLVM._grouped_incidence(alternate_unit, length(alternate_unit))
-    alternate_objective = GLLVM._joint_phylo_grouped_nll(fit.response, fit.phy, fit.terms,
+    alternate_incidence = GLLVModels._grouped_incidence(alternate_unit, length(alternate_unit))
+    alternate_objective = GLLVModels._joint_phylo_grouped_nll(fit.response, fit.phy, fit.terms,
         [alternate_incidence]; rank = fit.rank, phylo_mode = fit.phylo_mode,
         species_id = fit.species_id, mean_design = fit.mean_design)
     @test !isapprox(objective(fit.parameters), alternate_objective(fit.parameters);
         atol = 1e-8, rtol = 1e-8)
     invalid_stencil_theta = fill(1e6, length(fit.parameters))
-    @test GLLVM._fd_failed(objective(invalid_stencil_theta))
-    @test !all(isfinite, GLLVM._fd_hessian(objective, invalid_stencil_theta))
-    @test !GLLVM._pmv_hessian_diagnostics(objective, invalid_stencil_theta).positive_definite
+    @test GLLVModels._fd_failed(objective(invalid_stencil_theta))
+    @test !all(isfinite, GLLVModels._fd_hessian(objective, invalid_stencil_theta))
+    @test !GLLVModels._pmv_hessian_diagnostics(objective, invalid_stencil_theta).positive_definite
 
-    interval = GLLVM.joint_phylo_grouped_intervals(fit)
+    interval = GLLVModels.joint_phylo_grouped_intervals(fit)
     @test interval.status in (:available, :partial, :not_stationary, :invalid_curvature)
     interval_names = String[row.name for row in interval.intervals]
     @test "beta[1]" in interval_names
     @test "phylo_cov[1,1]" in interval_names
     @test "residual_var[1]" in interval_names
     @test "unit_var[1]" in interval_names
-    stalled = GLLVM.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
+    stalled = GLLVModels.fit_joint_phylo_grouped_gaussian(fixture.response, fixture.phy;
         rank = 1, phylo_mode = :barelowrank, terms = terms, unit = fixture.unit,
         species_id = fixture.species_id, iterations = 0, g_tol = 2e-4)
     @test !stalled.converged
-    @test GLLVM.joint_phylo_grouped_intervals(stalled).status === :not_converged
-    @test_throws ArgumentError GLLVM.fit_joint_phylo_grouped_gaussian(fixture.response,
+    @test GLLVModels.joint_phylo_grouped_intervals(stalled).status === :not_converged
+    @test_throws ArgumentError GLLVModels.fit_joint_phylo_grouped_gaussian(fixture.response,
         fixture.phy; rank = 1, phylo_mode = :barelowrank, terms = terms,
         unit = fixture.unit, species_id = fixture.species_id,
         X = zeros(size(fixture.response, 1) * size(fixture.response, 2), 1), iterations = 0)
-    @test_throws ArgumentError GLLVM.fit_joint_phylo_grouped_gaussian(fixture.response,
+    @test_throws ArgumentError GLLVModels.fit_joint_phylo_grouped_gaussian(fixture.response,
         fixture.phy; rank = 1, phylo_mode = :explicitunique, terms = terms,
         unit = fixture.unit, species_id = fixture.species_id, iterations = 0)
 
     source_fixture = _jpgf_fixture()
     source_terms = [GroupingTerm(:unit; mode = :indep, common = false)]
-    source_fit = GLLVM.fit_joint_phylo_grouped_gaussian(source_fixture.response,
+    source_fit = GLLVModels.fit_joint_phylo_grouped_gaussian(source_fixture.response,
         source_fixture.phy; rank = 1, phylo_mode = :barelowrank, terms = source_terms,
         unit = source_fixture.unit, species_id = source_fixture.species_id,
         iterations = 120, g_tol = 2e-4)
-    source_objective = GLLVM._joint_phylo_grouped_nll(source_fit.response, source_fit.phy,
+    source_objective = GLLVModels._joint_phylo_grouped_nll(source_fit.response, source_fit.phy,
         source_fit.terms, source_fit.incidences; rank = source_fit.rank,
         phylo_mode = source_fit.phylo_mode, species_id = source_fit.species_id,
         mean_design = source_fit.mean_design)

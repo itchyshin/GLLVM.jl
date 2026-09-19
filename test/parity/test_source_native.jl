@@ -1,6 +1,6 @@
 # Explicit opt-in fixed-point native evaluator check; not optimizer parity.
-using Test, GLLVM, LinearAlgebra, ForwardDiff
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd())
+using Test, GLLVModels, LinearAlgebra, ForwardDiff
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(pwd())
 rows(p) = split.(readlines(p)[2:end], '\t')
 matrix(p) = reduce(vcat, [permutedims(parse.(Float64,r)) for r in rows(p)])
 @testset "Native additive source vs frozen R" begin
@@ -20,7 +20,7 @@ matrix(p) = reduce(vcat, [permutedims(parse.(Float64,r)) for r in rows(p)])
         @test all(==(1),seen)
         gs = [only(unique(groups[s.==site])) for site in 1:18]
         incidence = repeat(reshape(gs,18,1),1,nr)
-        objective(v) = -GLLVM._gaussian_source_loglik(Y,v[bi],reshape(v[li],3,nr),Cs,incidence,exp(only(v[si])))
+        objective(v) = -GLLVModels._gaussian_source_loglik(Y,v[bi],reshape(v[li],3,nr),Cs,incidence,exp(only(v[si])))
         val = objective(theta); g = ForwardDiff.gradient(objective,theta)
         delta = abs(val-rnll); err = maximum(abs.(g-rg)./(1 .+abs.(rg)))
         @test delta <= 1e-6

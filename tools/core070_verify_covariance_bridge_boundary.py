@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 STATE = ROOT / ".unlazy/core070-aghq/covariance-bridge-boundary-05"
 EVIDENCE = ROOT / "docs/dev-log/core070/covariance-bridge-boundary-evidence.json"
 GENERIC = "cannot coerce type 'symbol' to vector of type 'integer'"
-POISON = "/CORE070/POISONED/NO-GLLVM-JL"
+POISON = "/CORE070/POISONED/NO-GLLVModels-JL"
 REQUIRED_PINS = {
     "tools/core070_covariance_bridge_boundary.R",
     "test/parity/fixtures/core070_covariance_modes.R",

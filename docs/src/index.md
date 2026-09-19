@@ -3,7 +3,7 @@
 layout: home
 
 hero:
-  name: "GLLVM.jl"
+  name: "GLLVModels.jl"
   text: "Which responses vary together?"
   tagline: "A matrix-first Julia companion for separating shared multivariate structure from response-specific variation."
   actions:
@@ -23,18 +23,18 @@ features:
   - title: "Read the covariance first"
     details: "Use model-implied Sigma, correlation, and the shared-variance fraction before attaching meaning to a rotated loading axis."
   - title: "A companion, not a replacement"
-    details: "GLLVM.jl is matrix-first and partial parity. Use gllvmTMB for the richer formula-first R workflow and its route-specific evidence boundary."
+    details: "GLLVModels.jl is matrix-first and partial parity. Use gllvmTMB for the richer formula-first R workflow and its route-specific evidence boundary."
 ---
 ```
 
 # Start with the response matrix
 
-This landing page introduces GLLVM.jl through a Gaussian multivariate
+This landing page introduces GLLVModels.jl through a Gaussian multivariate
 response-matrix route: fit a response matrix, then interpret its model-implied
 covariance and correlation.
 
 !!! warning "Matrix Orientation: $p \times n$ in Julia vs $n \times p$ in R"
-    **GLLVM.jl expects species/traits in rows and sites/observations in columns ($p \times n$).**
+    **GLLVModels.jl expects species/traits in rows and sites/observations in columns ($p \times n$).**
 
     If you are importing data formatted for R packages such as `gllvm` or `gllvmTMB` (which use the $n \times p$ convention with sites in rows and species in columns), transpose your matrix (`Y'`) before passing it to the Gaussian fitters used here.
 
@@ -42,10 +42,10 @@ covariance and correlation.
 
 ```julia
 using Pkg
-Pkg.add(url = "https://github.com/itchyshin/GLLVM.jl")
+Pkg.add(url = "https://github.com/itchyshin/GLLVModels.jl")
 ```
 
-GLLVM.jl is not yet in the General registry, so `Pkg.add("GLLVM")` will not
+GLLVModels.jl is not yet in the General registry, so `Pkg.add("GLLVModels")` will not
 resolve. Use Julia 1.10 or later.
 
 ## Fit your first model
@@ -59,7 +59,7 @@ For continuous multivariate data, start with the Gaussian route that gives
 each response its own residual variance:
 
 ```julia
-using GLLVM, Random, LinearAlgebra
+using GLLVModels, Random, LinearAlgebra
 
 Random.seed!(1)
 n, p, K = 80, 5, 2                         # sites, responses, latent axes
@@ -87,7 +87,7 @@ This is the matrix-first companion to the ordinary R
 variance per response. R's wide formula is `traits(...) + latent(...)`, while
 Julia's matrix has responses in rows and units in columns. The simpler
 `fit_gaussian_gllvm` route has one shared residual SD, so it is a restricted
-model, not an identical R comparison. GLLVM.jl has partial parity and a
+model, not an identical R comparison. GLLVModels.jl has partial parity and a
 smaller applied documentation set; use gllvmTMB for the richer formula-first
 workflow and its current evidence boundary.
 
@@ -136,7 +136,7 @@ route-specific documentation before relying on a workflow beyond this page.
 ## Relation To gllvmTMB
 
 R `gllvmTMB` remains the richer formula-first model surface and applied article
-set. GLLVM.jl is the Julia companion: matrix-first today, with a partial
+set. GLLVModels.jl is the Julia companion: matrix-first today, with a partial
 `engine = "julia"` bridge — **ledger closure ≠ true parity** (see
 [Capability parity](gllvmtmb-parity.md)). Interval coverage campaigns on the
 Julia side are diagnostic evidence, not calibrated inference certificates.
@@ -147,8 +147,13 @@ per-response-residual teaching route above.
 
 ## Citing
 
-GLLVM.jl does not yet have its own software citation. For now, cite the methods
-it builds on: Hadfield & Nakagawa (2010, *J. Evol. Biol.*) for the sparse
+If you use `GLLVModels.jl` in published work, please cite:
+
+> Nakagawa, S. (2026). GLLVModels.jl: Generalised Linear Latent Variable Models in
+> Julia. <https://github.com/itchyshin/GLLVModels.jl>
+
+When relevant, also cite the methods it builds on: Hadfield & Nakagawa
+(2010, *J. Evol. Biol.*) for the sparse
 phylogenetic precision; Tipping & Bishop (1999, *JRSS-B*) for the
 probabilistic-PCA initialiser; and Bates et al. (2015, *J. Stat. Soft.*) for
 the profile-out and sparse mixed-model machinery. The edge-incidence
@@ -156,6 +161,6 @@ phylogenetic representation follows Bolker's `phylog.rmd`.
 
 ## Getting Help
 
-- Questions and bugs: open an issue on [GitHub](https://github.com/itchyshin/GLLVM.jl/issues).
+- Questions and bugs: open an issue on [GitHub](https://github.com/itchyshin/GLLVModels.jl/issues).
 - Function help: in the Julia REPL, type `?` then a name, for example `?fit_gaussian_gllvm`.
 - Planned work: see the [Roadmap](roadmap.md).

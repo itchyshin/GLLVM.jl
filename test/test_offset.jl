@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, Distributions
+using GLLVModels, Test, Random, Distributions
 
 @testset "Offsets in the linear predictor" begin
     Random.seed!(4242)
@@ -8,8 +8,8 @@ using GLLVM, Test, Random, Distributions
     Y = rand(0:6, p, n)
 
     # ---- Anchor 1: offset = 0 ≡ no offset (machine precision) --------------
-    ℓ0 = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β, LogLink())
-    ℓz = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β, LogLink();
+    ℓ0 = GLLVModels.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β, LogLink())
+    ℓz = GLLVModels.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β, LogLink();
                                        offset = zeros(p, n))
     @test isapprox(ℓ0, ℓz; atol = 1e-10)
 
@@ -18,13 +18,13 @@ using GLLVM, Test, Random, Distributions
     #   η = β + offset + Λz  with offset[t,s] = c_t  ==  η = (β + c) + Λz.
     c = randn(p) .* 0.5
     O = repeat(c, 1, n)                       # p×n, constant within each species row
-    ℓ_off  = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β,     LogLink(); offset = O)
-    ℓ_shift = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β .+ c, LogLink())
+    ℓ_off  = GLLVModels.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β,     LogLink(); offset = O)
+    ℓ_shift = GLLVModels.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β .+ c, LogLink())
     @test isapprox(ℓ_off, ℓ_shift; atol = 1e-9)
 
     # ---- Anchor 3: a general (non-constant) offset changes the marginal ----
     Ovar = randn(p, n) .* 0.3
-    ℓ_var = GLLVM.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β, LogLink(); offset = Ovar)
+    ℓ_var = GLLVModels.marginal_loglik_laplace(Poisson(), Y, ones(Int, p, n), Λ, β, LogLink(); offset = Ovar)
     @test isfinite(ℓ_var)
     @test ℓ_var != ℓ0
 
@@ -92,17 +92,17 @@ using GLLVM, Test, Random, Distributions
             end
         end
 
-        ℓ0 = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α)
-        ℓz = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = zeros(pp, nn))
+        ℓ0 = GLLVModels.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α)
+        ℓz = GLLVModels.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = zeros(pp, nn))
         @test isapprox(ℓ0, ℓz; atol = 1e-9)
 
         cc = 0.5 .* randn(pp); O = repeat(cc, 1, nn)
-        ℓ_off = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = O)
-        ℓ_sh  = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc .+ cc, α)
+        ℓ_off = GLLVModels.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = O)
+        ℓ_sh  = GLLVModels.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc .+ cc, α)
         @test isapprox(ℓ_off, ℓ_sh; atol = 1e-8)
 
         # A non-constant offsetc changes the marginal.
-        ℓ_v = GLLVM.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = 0.3 .* randn(pp, nn))
+        ℓ_v = GLLVModels.delta_gamma_marginal_loglik_laplace(Y, Λc, βz, βc, α; offsetc = 0.3 .* randn(pp, nn))
         @test isfinite(ℓ_v) && ℓ_v != ℓ0
     end
 
@@ -142,8 +142,8 @@ using GLLVM, Test, Random, Distributions
         cc = 0.4 .* randn(pp); O = repeat(cc, 1, nn)
 
         # Constant offsetc ≡ shifting β^c (hurdle-Poisson marginal), machine precision.
-        ℓ_off = GLLVM.hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc; offsetc = O)
-        ℓ_sh  = GLLVM.hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc .+ cc)
+        ℓ_off = GLLVModels.hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc; offsetc = O)
+        ℓ_sh  = GLLVModels.hurdle_poisson_marginal_loglik_laplace(Y, Λc, βz, βc .+ cc)
         @test isapprox(ℓ_off, ℓ_sh; atol = 1e-8)
 
         # Each remaining two-part fitter accepts `offset` and runs.

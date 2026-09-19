@@ -1,4 +1,4 @@
-using Test, LinearAlgebra, SparseArrays, JSON3, SHA, GLLVM
+using Test, LinearAlgebra, SparseArrays, JSON3, SHA, GLLVModels
 include(joinpath(@__DIR__, "fixtures", "destination_b_pedigree.jl"))
 
 @testset "Destination B frozen pedigree ancestor precision" begin
@@ -39,13 +39,13 @@ include(joinpath(@__DIR__, "fixtures", "destination_b_pedigree.jl"))
     ii, jj, vv = findnz(sparse(Q))
     raw = PrecisionPhy(ii, jj, vv, 12, 8, String.(reference.pedigree.node_labels),
         Float64(reference.log_det_Q), Float64(reference.scale), f.observed)
-    phy = GLLVM._validate_precision_fit_input(raw)
+    phy = GLLVModels._validate_precision_fit_input(raw)
     species_id = repeat(collect(1:8); inner=2)
     # The evaluation-only kernel is observations x traits; the public fitter
     # is traits x observations and makes this same transpose internally.
-    @test_throws ArgumentError GLLVM.multivariate_phylo_precision_loglik(Y, phy,
+    @test_throws ArgumentError GLLVModels.multivariate_phylo_precision_loglik(Y, phy,
         loading, fill(residual, 3); species_id=species_id)
-    got = -GLLVM.multivariate_phylo_precision_loglik(permutedims(Y), phy, loading,
+    got = -GLLVModels.multivariate_phylo_precision_loglik(permutedims(Y), phy, loading,
         fill(residual, 3); species_id=species_id)
     @test got ≈ exact atol=1e-10 rtol=1e-10
 
@@ -57,7 +57,7 @@ include(joinpath(@__DIR__, "fixtures", "destination_b_pedigree.jl"))
     wrongmap[1], wrongmap[2] = wrongmap[2], wrongmap[1]
     wrong = PrecisionPhy(ii, jj, vv, 12, 8, String.(reference.pedigree.node_labels),
         Float64(reference.log_det_Q), 1.0, wrongmap)
-    wrongnll = -GLLVM.multivariate_phylo_precision_loglik(permutedims(Y), wrong, loading,
+    wrongnll = -GLLVModels.multivariate_phylo_precision_loglik(permutedims(Y), wrong, loading,
         fill(residual, 3); species_id=species_id)
     @test abs(wrongnll - exact) > 1e-5
 end

@@ -30,12 +30,12 @@
     Yc = Float64.(Yc)
 
     # ----- ZIP (mixture) -----
-    z1 = GLLVM.zip_marginal_loglik_laplace(Yc, Λc, βz, βc)
-    z2 = GLLVM.zip_marginal_loglik_laplace(Yc, Λc, βz, βc)
+    z1 = GLLVModels.zip_marginal_loglik_laplace(Yc, Λc, βz, βc)
+    z2 = GLLVModels.zip_marginal_loglik_laplace(Yc, Λc, βz, βc)
     @test z1 == z2                    # idempotence: exact equality (== not ≈)
     @test isfinite(z1)
     zip_site_sum = sum(
-        GLLVM.twopart_loglik_site(GLLVM.ZIPoisson(), view(Yc, :, s),
+        GLLVModels.twopart_loglik_site(GLLVModels.ZIPoisson(), view(Yc, :, s),
                                   Λz, Λc, βz, βc)
         for s in axes(Yc, 2)
     )
@@ -43,12 +43,12 @@
 
     # ----- Hurdle-NB (different family path through the shared buffers) -----
     r = 3.0
-    h1 = GLLVM.hurdle_nb_marginal_loglik_laplace(Yc, Λc, βz, βc, r)
-    h2 = GLLVM.hurdle_nb_marginal_loglik_laplace(Yc, Λc, βz, βc, r)
+    h1 = GLLVModels.hurdle_nb_marginal_loglik_laplace(Yc, Λc, βz, βc, r)
+    h2 = GLLVModels.hurdle_nb_marginal_loglik_laplace(Yc, Λc, βz, βc, r)
     @test h1 == h2
     @test isfinite(h1)
     hnb_site_sum = sum(
-        GLLVM.twopart_loglik_site(GLLVM.HurdleNB(float(r)), view(Yc, :, s),
+        GLLVModels.twopart_loglik_site(GLLVModels.HurdleNB(float(r)), view(Yc, :, s),
                                   Λz, Λc, βz, βc)
         for s in axes(Yc, 2)
     )

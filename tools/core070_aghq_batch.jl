@@ -6,10 +6,10 @@
 # JSON oracle file the paired R runner (tools/core070_aghq_batch.R) writes
 # BEFORE invoking this script (that R process already has the frozen
 # gllvmTMB library loaded and evaluates every frozen r_call/r_assertion pair
-# itself), then evaluates the identical GLLVM._aghq_request(...) calls
-# natively via direct `using GLLVM` module calls only. No RCall, no parity-
+# itself), then evaluates the identical GLLVModels._aghq_request(...) calls
+# natively via direct `using GLLVModels` module calls only. No RCall, no parity-
 # runner include, no R of any kind runs in this process. No model fit
-# anywhere: GLLVM._aghq_request is a pure scalar-argument normalizer.
+# anywhere: GLLVModels._aghq_request is a pure scalar-argument normalizer.
 #
 # argv:
 #   ARGS[1]  destination path for the JSON results file (parent dir need not
@@ -23,7 +23,7 @@
 # Invocation:
 #   julia --project=. tools/core070_aghq_batch.jl <out.json>
 
-using GLLVM
+using GLLVModels
 
 # ---------------------------------------------------------------------------
 # Minimal JSON reader/writer (no external dependency; mirrors the existing
@@ -150,7 +150,7 @@ out_path = ARGS[1]
 isfile(out_path) && error("destination already exists: $out_path")
 mkpath(dirname(out_path))
 
-@assert realpath(Base.pkgdir(GLLVM)) == realpath(pwd()) "must run from the GLLVM.jl package root"
+@assert realpath(Base.pkgdir(GLLVModels)) == realpath(pwd()) "must run from the GLLVModels.jl package root"
 
 oracle_path = get(ENV, "CORE070_AGHQ_R_ORACLE", "")
 isempty(oracle_path) &&
@@ -186,22 +186,22 @@ end
 # in docs/dev-log/core070/aghq-batch-contract.json.
 # ---------------------------------------------------------------------------
 case_specs = [
-    ("CORE070-AGHQ-CTRL-FALSE-PAIRED-CONTROL",    () -> GLLVM._aghq_request(false),   "off"),
-    ("CORE070-AGHQ-CTRL-NULL-PAIRED-CONTROL",     () -> GLLVM._aghq_request(nothing), "off"),
-    ("CORE070-AGHQ-CTRL-TRUE-PAIRED-CONTROL",     () -> GLLVM._aghq_request(true),    "auto"),
-    ("CORE070-AGHQ-CTRL-AUTO-PAIRED-CONTROL",     () -> GLLVM._aghq_request(:auto),   "auto"),
-    ("CORE070-AGHQ-CTRL-ONE-PAIRED-CONTROL",      () -> GLLVM._aghq_request(1),       "1"),
-    ("CORE070-AGHQ-CTRL-TWO-PAIRED-CONTROL",      () -> GLLVM._aghq_request(2),       "2"),
-    ("CORE070-AGHQ-CTRL-NINE-PAIRED-CONTROL",     () -> GLLVM._aghq_request(9),       "9"),
-    ("CORE070-AGHQ-INVALID-ZERO-PAIRED-CONTROL",     () -> GLLVM._aghq_request(0),      "ArgumentError"),
-    ("CORE070-AGHQ-INVALID-NEGATIVE-PAIRED-CONTROL", () -> GLLVM._aghq_request(-1),     "ArgumentError"),
-    ("CORE070-AGHQ-INVALID-FRACTION-PAIRED-CONTROL", () -> GLLVM._aghq_request(1.5),    "ArgumentError"),
-    ("CORE070-AGHQ-INVALID-INF-PAIRED-CONTROL",       () -> GLLVM._aghq_request(Inf),    "ArgumentError"),
-    ("CORE070-AGHQ-INVALID-NAN-PAIRED-CONTROL",       () -> GLLVM._aghq_request(NaN),    "ArgumentError"),
-    ("CORE070-AGHQ-INVALID-NA-PAIRED-CONTROL",        () -> GLLVM._aghq_request(missing),"ArgumentError"),
-    ("CORE070-AGHQ-INVALID-VECTOR-PAIRED-CONTROL",    () -> GLLVM._aghq_request([3, 5]), "ArgumentError"),
-    ("CORE070-AGHQ-INVALID-EMPTY-PAIRED-CONTROL",     () -> GLLVM._aghq_request(Int[]),  "ArgumentError"),
-    ("CORE070-AGHQ-INVALID-STRING-PAIRED-CONTROL",    () -> GLLVM._aghq_request("9"),    "ArgumentError"),
+    ("CORE070-AGHQ-CTRL-FALSE-PAIRED-CONTROL",    () -> GLLVModels._aghq_request(false),   "off"),
+    ("CORE070-AGHQ-CTRL-NULL-PAIRED-CONTROL",     () -> GLLVModels._aghq_request(nothing), "off"),
+    ("CORE070-AGHQ-CTRL-TRUE-PAIRED-CONTROL",     () -> GLLVModels._aghq_request(true),    "auto"),
+    ("CORE070-AGHQ-CTRL-AUTO-PAIRED-CONTROL",     () -> GLLVModels._aghq_request(:auto),   "auto"),
+    ("CORE070-AGHQ-CTRL-ONE-PAIRED-CONTROL",      () -> GLLVModels._aghq_request(1),       "1"),
+    ("CORE070-AGHQ-CTRL-TWO-PAIRED-CONTROL",      () -> GLLVModels._aghq_request(2),       "2"),
+    ("CORE070-AGHQ-CTRL-NINE-PAIRED-CONTROL",     () -> GLLVModels._aghq_request(9),       "9"),
+    ("CORE070-AGHQ-INVALID-ZERO-PAIRED-CONTROL",     () -> GLLVModels._aghq_request(0),      "ArgumentError"),
+    ("CORE070-AGHQ-INVALID-NEGATIVE-PAIRED-CONTROL", () -> GLLVModels._aghq_request(-1),     "ArgumentError"),
+    ("CORE070-AGHQ-INVALID-FRACTION-PAIRED-CONTROL", () -> GLLVModels._aghq_request(1.5),    "ArgumentError"),
+    ("CORE070-AGHQ-INVALID-INF-PAIRED-CONTROL",       () -> GLLVModels._aghq_request(Inf),    "ArgumentError"),
+    ("CORE070-AGHQ-INVALID-NAN-PAIRED-CONTROL",       () -> GLLVModels._aghq_request(NaN),    "ArgumentError"),
+    ("CORE070-AGHQ-INVALID-NA-PAIRED-CONTROL",        () -> GLLVModels._aghq_request(missing),"ArgumentError"),
+    ("CORE070-AGHQ-INVALID-VECTOR-PAIRED-CONTROL",    () -> GLLVModels._aghq_request([3, 5]), "ArgumentError"),
+    ("CORE070-AGHQ-INVALID-EMPTY-PAIRED-CONTROL",     () -> GLLVModels._aghq_request(Int[]),  "ArgumentError"),
+    ("CORE070-AGHQ-INVALID-STRING-PAIRED-CONTROL",    () -> GLLVModels._aghq_request("9"),    "ArgumentError"),
 ]
 
 cases = Dict{String, Any}()

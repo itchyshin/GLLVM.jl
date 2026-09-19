@@ -1,6 +1,6 @@
-using GLLVM, Test, Random, LinearAlgebra, Distributions, SparseArrays, ForwardDiff
+using GLLVModels, Test, Random, LinearAlgebra, Distributions, SparseArrays, ForwardDiff
 
-# Edge incidence sparse phylo representation: included in GLLVM.jl.
+# Edge incidence sparse phylo representation: included in GLLVModels.jl.
 
 """
     _build_balanced_edge_phy(p; branch_length=0.1) :: EdgePhy
@@ -129,7 +129,7 @@ end
         Σ_y_full = kron(I(n), A) + kron(ones(n, n), Bmat)
         y_vec    = rand(MvNormal(zeros(p * n), Symmetric(Σ_y_full)))
         y        = reshape(y_vec, p, n)
-        ll_dense = GLLVM.gaussian_marginal_loglik(y, Λ_B, σ_eps;
+        ll_dense = GLLVModels.gaussian_marginal_loglik(y, Λ_B, σ_eps;
                                                   Λ_phy = Λ_phy, Σ_phy = Σ_phy)
         ll_edge  = gaussian_marginal_loglik_edge_phy(y, Λ_B, σ_eps;
                                                       Λ_phy = Λ_phy, phy = tree,
@@ -141,11 +141,11 @@ end
         Random.seed!(2)
         newick    = "(((A:0.1,B:0.1):0.1,(C:0.1,D:0.1):0.1):0.1,((E:0.1,F:0.1):0.1,(G:0.1,H:0.1):0.1):0.1);"
         tree_edge = edge_phy(newick)
-        # GLLVM.augmented_phy returns a `GLLVM.AugmentedPhy`, the type the
-        # GLLVM-exported `gaussian_marginal_loglik_sparse_phy` expects (the
+        # GLLVModels.augmented_phy returns a `GLLVModels.AugmentedPhy`, the type the
+        # GLLVModels-exported `gaussian_marginal_loglik_sparse_phy` expects (the
         # `AugmentedPhy` we re-`include`d above lives in `Main` and would
         # be rejected by the keyword signature check).
-        tree_aug  = GLLVM.augmented_phy(newick)
+        tree_aug  = GLLVModels.augmented_phy(newick)
         p = tree_edge.n_leaves
         K_B, K_phy, n = 2, 1, 10
         σ²_phy = 0.6
@@ -158,7 +158,7 @@ end
                                                        Λ_phy = Λ_phy, σ_phy = σ_phy,
                                                        phy = tree_edge,
                                                        σ²_phy = σ²_phy)
-        ll_sparse = GLLVM.gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
+        ll_sparse = GLLVModels.gaussian_marginal_loglik_sparse_phy(y, Λ_B, σ_eps;
                                                         Λ_phy = Λ_phy, σ_phy = σ_phy,
                                                         phy = tree_aug,
                                                         σ²_phy = σ²_phy)

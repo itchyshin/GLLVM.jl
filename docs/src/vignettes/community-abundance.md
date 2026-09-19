@@ -10,7 +10,7 @@
 ```
 
 This vignette demonstrates how to analyze multivariate ecological abundance data
-using **Joint Species Distribution Models (JSDMs)** in `GLLVM.jl`.
+using **Joint Species Distribution Models (JSDMs)** in `GLLVModels.jl`.
 
 We cover:
 1. Handling overdispersed count data with Poisson and Negative Binomial (NB2) GLLVMs.
@@ -21,7 +21,7 @@ We cover:
 ---
 
 !!! warning "Matrix Orientation: $p \times n$ in Julia vs $n \times p$ in R"
-    **GLLVM.jl expects species in rows and sites in columns ($p \times n$).**
+    **GLLVModels.jl expects species in rows and sites in columns ($p \times n$).**
 
     If your abundance matrix is in R's $n \times p$ format (sites in rows, species in columns), pass the transpose `Y'` to the fitting functions. Site covariate matrices $X$ have dimension $n \times q$ ($n$ sites, $q$ predictors).
 
@@ -56,7 +56,7 @@ For count data:
 Let us simulate an ecological community of $p = 12$ species sampled across $n = 100$ sites with $q = 2$ environmental predictors (e.g. elevation and moisture) and $K = 2$ latent axes:
 
 ```julia
-using GLLVM, Random, LinearAlgebra, Distributions
+using GLLVModels, Random, LinearAlgebra, Distributions
 
 Random.seed!(42)
 

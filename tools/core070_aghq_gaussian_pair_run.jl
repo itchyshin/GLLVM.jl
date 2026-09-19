@@ -1,4 +1,4 @@
-using GLLVM,RCall,Test,LinearAlgebra,SHA,TOML,Statistics
+using GLLVModels,RCall,Test,LinearAlgebra,SHA,TOML,Statistics
 root=normpath(joinpath(@__DIR__,".."))
 include(joinpath(root,"test/parity/parity_helpers.jl"));_parity_require_gllvmtmb!()
 @testset "AG numerical prerequisites" begin
@@ -18,10 +18,10 @@ open(io->TOML.print(io,Dict("responses"=>vec(Y),"p"=>p,"K"=>K,"n"=>n,
  "fixture_sha256"=>bytes2hex(sha256(source)),"dgp_sha256"=>bytes2hex(sha256(dgp)))),out*".fixture.toml","w")
 println("AG_INPUT_SHA256 ",bytes2hex(sha256(read(out*".fixture.toml"))))
 base=fit_gaussian_gllvm(Y;K=K)
-start=vcat(vec(mean(Y;dims=2)),log(base.pars.σ_eps),GLLVM.pack_lambda(base.pars.Λ))
+start=vcat(vec(mean(Y;dims=2)),log(base.pars.σ_eps),GLLVModels.pack_lambda(base.pars.Λ))
 alt=copy(start);alt[p+2:end].=.3
-problem=GLLVM.aghq_gaussian_problem(Y,K;k=5)
-multistart=GLLVM.aghq_multistart_optimize([start,alt],problem.adapt,problem.objective;n_adapt=400)
+problem=GLLVModels.aghq_gaussian_problem(Y,K;k=5)
+multistart=GLLVModels.aghq_multistart_optimize([start,alt],problem.adapt,problem.objective;n_adapt=400)
 multistart.usable || error("no usable Gaussian AGHQ start")
 fit=multistart.selected
 serialize_run(r)=Dict("parameters"=>r.parameters,"objective"=>r.objective,"usable"=>r.usable,
@@ -52,24 +52,24 @@ println("AG_R_SHA256 ",bytes2hex(sha256(read(out*".rds"))))
 r_beta=rcopy(Vector{Float64},R"as.numeric(ag_params$b_fix)")
 r_loading=rcopy(Matrix{Float64},R"as.matrix(ag_report$Lambda_B)")
 r_logsigma=rcopy(Float64,R"as.numeric(ag_params$log_sigma_eps)")
-r_theta=vcat(r_beta,r_logsigma,GLLVM.pack_lambda(r_loading))
+r_theta=vcat(r_beta,r_logsigma,GLLVModels.pack_lambda(r_loading))
 r_mode=rcopy(Matrix{Float64},R"as.matrix(ag_obj$env$data$aghq_mode)")
 r_B=rcopy(Matrix{Float64},R"as.matrix(ag_obj$env$data$aghq_Lt)")
 r_logjac=rcopy(Vector{Float64},R"as.numeric(ag_obj$env$data$aghq_logdet)")
-r_caches=[GLLVM.AGHQAdaptation(vec(r_mode[s,:]),Matrix(reshape(r_B[s,:],K,K)'),r_logjac[s],false,NaN) for s in 1:n]
+r_caches=[GLLVModels.AGHQAdaptation(vec(r_mode[s,:]),Matrix(reshape(r_B[s,:],K,K)'),r_logjac[s],false,NaN) for s in 1:n]
 r_objective=rcopy(Float64,R"ag_value");r_gradient=rcopy(Vector{Float64},R"ag_grad")
 theta=fit.parameters
 exact=function(t)
- L=GLLVM.unpack_lambda(t[p+2:end],p,K);M=L*L'+exp(2t[p+1])*I
+ L=GLLVModels.unpack_lambda(t[p+2:end],p,K);M=L*L'+exp(2t[p+1])*I
  F=cholesky(Symmetric(M));e=Y.-t[1:p]
  return (n*p*log(2pi)+n*logdet(F)+sum(e.*(F\e)))/2
 end
 frozen=t->problem.objective(t,fit.adaptation)
-g=GLLVM.ForwardDiff.gradient(frozen,theta);ge=GLLVM.ForwardDiff.gradient(exact,theta)
-H=GLLVM.ForwardDiff.hessian(frozen,theta);He=GLLVM.ForwardDiff.hessian(exact,theta)
-L=GLLVM.unpack_lambda(theta[p+2:end],p,K);sigma=exp(theta[p+1]);rsigma=exp(r_logsigma)
+g=GLLVModels.ForwardDiff.gradient(frozen,theta);ge=GLLVModels.ForwardDiff.gradient(exact,theta)
+H=GLLVModels.ForwardDiff.hessian(frozen,theta);He=GLLVModels.ForwardDiff.hessian(exact,theta)
+L=GLLVModels.unpack_lambda(theta[p+2:end],p,K);sigma=exp(theta[p+1]);rsigma=exp(r_logsigma)
 record=Dict("case_id"=>"AG-GAUSSIAN-SEED42-K5","scope"=>"internal shared-SD Gaussian AGHQ; public GllvmFit integration remains required",
- "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVM),"winner"=>multistart.winner,
+ "julia_version"=>string(VERSION),"package_root"=>pkgdir(GLLVModels),"winner"=>multistart.winner,
  "native_objective"=>fit.objective,"r_objective"=>r_objective,"delta_loglik"=>abs(fit.objective-r_objective),
  "native_converged"=>fit.converged,"r_converged"=>rcopy(Bool,R"isTRUE(ag_fit$aghq$converged)"),
  "r_used"=>rcopy(Bool,R"isTRUE(ag_fit$aghq$used)"),"r_k"=>rcopy(Int,R"ag_fit$aghq$k"),

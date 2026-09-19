@@ -1,11 +1,11 @@
-using GLLVM, Test, Random, Distributions, Statistics
+using GLLVModels, Test, Random, Distributions, Statistics
 
 @testset "Community row effects" begin
     # ------------------------------------------------------------------
     # (a) EXACT anchor 1 — offset build: every row equals ρ'.
     # ------------------------------------------------------------------
     @testset "offset build" begin
-        O = GLLVM._build_offset_row([0.0, 0.5, -0.3], 4)
+        O = GLLVModels._build_offset_row([0.0, 0.5, -0.3], 4)
         @test size(O) == (4, 3)
         # every row equals [0.0 0.5 -0.3]
         for t in 1:4
@@ -29,10 +29,10 @@ using GLLVM, Test, Random, Distributions, Statistics
         β = randn(p)
         Λ = 0.4 .* randn(p, K)          # nonzero loadings
         Y = rand(0:5, p, n)
-        O0 = GLLVM._build_offset_row(zeros(n), p)
-        ll_off = GLLVM._marginal_loglik_offset(Poisson(), Y, ones(Int, p, n),
-                                               Λ, β, O0, GLLVM.LogLink())
-        ll_base = GLLVM.poisson_marginal_loglik_laplace(Y, Λ, β)
+        O0 = GLLVModels._build_offset_row(zeros(n), p)
+        ll_off = GLLVModels._marginal_loglik_offset(Poisson(), Y, ones(Int, p, n),
+                                               Λ, β, O0, GLLVModels.LogLink())
+        ll_base = GLLVModels.poisson_marginal_loglik_laplace(Y, Λ, β)
         @test ll_off ≈ ll_base atol = 1e-8
     end
 

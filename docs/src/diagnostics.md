@@ -11,7 +11,7 @@ species set. None of them fits a new model.
 health checks (positive-definiteness, gradient norm) and a boundary scan on
 the implied `Σ_y` (near-zero variances, near-±1 correlations). The
 Hessian-based fields are only populated for `GllvmFit` (Gaussian) fits with
-`y` supplied — GLLVM.jl has no generic Hessian path across its ~50
+`y` supplied — GLLVModels.jl has no generic Hessian path across its ~50
 non-Gaussian fit types, so those fields come back `missing` on other families
 rather than a guess. R's per-family boundary rows (binomial-prevalence
 loading, multinomial degeneracy, ordinal cutpoint span, spatial-domain
@@ -26,12 +26,12 @@ simulating the wrong generative process. `estimate = TRUE` (R's re-fit
 `joint_p_value` route) is not implemented; that field is always `missing`.
 
 `check_auto_residual` checks a fit's declared link against its family; the
-family-mixing branch of R's check is vacuously `false` here, since GLLVM.jl
+family-mixing branch of R's check is vacuously `false` here, since GLLVModels.jl
 fit types are one family per whole model (no native per-trait mixed-family
 surface).
 
 `diagnose_kernel_separability` checks only the two-tier `Λ_B` vs `Λ_W` case
-GLLVM.jl currently fits; single-tier fits report `separable = missing`.
+GLLVModels.jl currently fits; single-tier fits report `separable = missing`.
 
 `fit_diagnostic_table` computes its summary rows directly from the raw fit
 (unlike R's `diagnostic_table`, which reads metadata already attached by a
@@ -55,7 +55,7 @@ principal angles between column spaces, never a signed entrywise `Λ` diff.
 `compare_fits_dep_vs_two_psi` and `compare_fits_indep_vs_two_psi` bridge any
 two same-`p` fits via their implied `Σ_y` and an information-criterion
 comparison (`nobs`/BIC). This is a generic two-fit bridge, not R's specific
-named "two-ψ" phylogenetic reparameterisation — GLLVM.jl does not implement a
+named "two-ψ" phylogenetic reparameterisation — GLLVModels.jl does not implement a
 distinct "two-ψ" model family — so `n` (sample size for BIC) must be passed
 explicitly.
 
@@ -80,7 +80,7 @@ compare_fits_indep_vs_two_psi
 Five functions in `src/diagnostics.jl` and `src/re_sd.jl` were renamed away
 from names that shadowed an R function with **different semantics** — the R
 function reads a different quantity or has a different call shape — freeing
-those names for a future true R-mirror (maintainer decision round2-3 #5):
+those names for a future true R-mirror:
 
 | Old name | New name | Why it moved |
 | --- | --- | --- |

@@ -1,5 +1,5 @@
 #!/usr/bin/env julia
-# runparity.jl — developer-opt-in / CI-required runner for GLLVM.jl ↔ R gllvmTMB parity.
+# runparity.jl — developer-opt-in / CI-required runner for GLLVModels.jl ↔ R gllvmTMB parity.
 #
 # Usage:
 #   GLLVM_PARITY_TESTS=1 julia --project=test/parity test/parity/runparity.jl
@@ -9,7 +9,7 @@
 # is intentionally harmless and cannot satisfy the required evidence gate.
 
 println("=" ^ 72)
-println("GLLVM.jl ↔ R gllvmTMB parity suite (Phase 1.0 scaffold)")
+println("GLLVModels.jl ↔ R gllvmTMB parity suite (Phase 1.0 scaffold)")
 println("=" ^ 72)
 
 # ── Gate: optional developer mode vs fail-closed required evidence ──────────
@@ -31,10 +31,10 @@ if !requested
     exit(0)
 end
 
-# ── Wire the local GLLVM package ─────────────────────────────────────────────
-# In CI or isolated runner, develop GLLVM if not already pointing to root
+# ── Wire the local GLLVModels package ─────────────────────────────────────────────
+# In CI or isolated runner, develop GLLVModels if not already pointing to root
 using Pkg
-using GLLVM
+using GLLVModels
 using Test
 
 # ── Try to load RCall — optional skip only; required mode fails ──────────────

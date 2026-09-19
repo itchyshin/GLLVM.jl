@@ -12,10 +12,10 @@
 using BenchmarkTools
 using Random
 using LinearAlgebra
-using GLLVM
+using GLLVModels
 
-# The sparse phy path is intentionally not exported by the GLLVM module on
-# this branch (see PERF++ hard constraint: do NOT modify src/GLLVM.jl).
+# The sparse phy path is intentionally not exported by the GLLVModels module on
+# this branch (see PERF++ hard constraint: do NOT modify src/GLLVModels.jl).
 # Pull in the source files directly so the benchmark stays self-contained.
 include(joinpath(@__DIR__, "..", "src", "sparse_phy.jl"))
 include(joinpath(@__DIR__, "..", "src", "likelihood_sparse_phy.jl"))

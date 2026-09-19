@@ -1,4 +1,4 @@
-using GLLVM,Random,LinearAlgebra
+using GLLVModels,Random,LinearAlgebra
 rng=MersenneTwister(714);p=3;n=36;K=1
 Y=reshape([.8,.4,-.3],3,1)*randn(rng,K,n)+.7randn(rng,p,n)
 f=fit_gaussian_gllvm(Y;K=K,aghq=3);i=f.integration

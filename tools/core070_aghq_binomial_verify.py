@@ -13,7 +13,7 @@ def current(plan):
 
 def kernel_verify():
     _,_,red=process(ROOT/'.unlazy/core070-aghq/aghq-binomial-red-01',False,1)
-    assert 'isdefined(GLLVM, :aghq_binomial_problem)' in red
+    assert 'isdefined(GLLVModels, :aghq_binomial_problem)' in red
     plan,p,log=process(KERNEL,False,0);current(plan)
     assert re.search(r'AB normalized binomial AGHQ\s*\|\s*78\s+78',log)
     assert p['results'][1]['elapsed_seconds']<300

@@ -1,4 +1,4 @@
-using GLLVM, Test, LinearAlgebra, SparseArrays, Random
+using GLLVModels, Test, LinearAlgebra, SparseArrays, Random
 using Distributions: Poisson
 
 # Build a regular triangulated grid over [0, L]² (identical to test_spde_latent.jl).
@@ -46,19 +46,19 @@ end
     # ---- Shape checks -------------------------------------------------------
 
     @testset "getLV returns M×K" begin
-        Z = GLLVM.getLV(fit, Y, locs)
+        Z = GLLVModels.getLV(fit, Y, locs)
         @test size(Z) == (M, K)
         @test all(isfinite, Z)
     end
 
     @testset "predict returns p×M (link)" begin
-        η = GLLVM.predict(fit, Y, locs; type = :link)
+        η = GLLVModels.predict(fit, Y, locs; type = :link)
         @test size(η) == (p, M)
         @test all(isfinite, η)
     end
 
     @testset "predict returns p×M (response)" begin
-        μ = GLLVM.predict(fit, Y, locs; type = :response)
+        μ = GLLVModels.predict(fit, Y, locs; type = :response)
         @test size(μ) == (p, M)
         @test all(isfinite, μ)
         @test all(μ .> 0)                   # Poisson means are positive
@@ -71,11 +71,11 @@ end
                         [y for x in xs_new, y in xs_new][:])
         M_new = size(new_locs, 1)
 
-        η_new = GLLVM.predict_spatial(fit, Y, locs, new_locs; type = :link)
+        η_new = GLLVModels.predict_spatial(fit, Y, locs, new_locs; type = :link)
         @test size(η_new) == (p, M_new)
         @test all(isfinite, η_new)
 
-        μ_new = GLLVM.predict_spatial(fit, Y, locs, new_locs; type = :response)
+        μ_new = GLLVModels.predict_spatial(fit, Y, locs, new_locs; type = :response)
         @test size(μ_new) == (p, M_new)
         @test all(isfinite, μ_new)
         @test all(μ_new .> 0)
@@ -86,8 +86,8 @@ end
     # to machine precision: same projector rows → identical η.
 
     @testset "Consistency: predict_spatial(new_locs=locs) == predict(locs)" begin
-        η_train   = GLLVM.predict(fit, Y, locs; type = :link)
-        η_spatial = GLLVM.predict_spatial(fit, Y, locs, locs; type = :link)
+        η_train   = GLLVModels.predict(fit, Y, locs; type = :link)
+        η_spatial = GLLVModels.predict_spatial(fit, Y, locs, locs; type = :link)
         @test η_train ≈ η_spatial          # should be bitwise equal (same computation)
     end
 
@@ -105,18 +105,18 @@ end
         A  = spde_projector(nodes, tris, locs)
 
         # Retrieve Û and Z = A·Û from getLV.
-        Z, U = GLLVM.getLV(fit, Y, locs; return_nodes = true)
+        Z, U = GLLVModels.getLV(fit, Y, locs; return_nodes = true)
 
         # Compute score S (p×M) at the mode.
         link = fit.link
         Λ    = fit.Λ
         β    = fit.β
-        η    = GLLVM._clamp_eta.(β .+ Λ * Z')
-        μ    = GLLVM._clamp_mu.(Ref(fit.family),
-                                 GLLVM.linkinv.(Ref(link), η))
-        me   = GLLVM.mu_eta.(Ref(link), η)
+        η    = GLLVModels._clamp_eta.(β .+ Λ * Z')
+        μ    = GLLVModels._clamp_mu.(Ref(fit.family),
+                                 GLLVModels.linkinv.(Ref(link), η))
+        me   = GLLVModels.mu_eta.(Ref(link), η)
         Ntr  = ones(p, M)
-        S    = GLLVM._glm_score.(Ref(fit.family), μ, Ntr, me, Y)
+        S    = GLLVModels._glm_score.(Ref(fit.family), μ, Ntr, me, Y)
 
         # Gradient: N×K matrix.
         Grad = A' * (S' * Λ) - Qs * U
@@ -127,7 +127,7 @@ end
     # ---- getLV return_nodes flag -------------------------------------------
 
     @testset "getLV return_nodes=true exposes Û (N×K)" begin
-        Z, U = GLLVM.getLV(fit, Y, locs; return_nodes = true)
+        Z, U = GLLVModels.getLV(fit, Y, locs; return_nodes = true)
         @test size(Z) == (M, K)
         @test size(U) == (Nn, K)
         @test all(isfinite, U)
@@ -137,15 +137,15 @@ end
     end
 
     @testset "aic / bic wired for SPDELatentFit" begin
-        k = p + GLLVM.rr_theta_len(p, K) + 2     # Poisson ⇒ no dispersion param
-        @test GLLVM._nparams(fit) == k
+        k = p + GLLVModels.rr_theta_len(p, K) + 2     # Poisson ⇒ no dispersion param
+        @test GLLVModels._nparams(fit) == k
         @test aic(fit) ≈ 2k - 2 * fit.loglik
         @test bic(fit, M) ≈ k * log(M) - 2 * fit.loglik
     end
 
     @testset "confint_spde_latent (Wald)" begin
         ci = confint_spde_latent(fit, Y, locs)
-        nterm = p + GLLVM.rr_theta_len(p, K) + 2     # β + Λ + κ + τ (Poisson: no dispersion)
+        nterm = p + GLLVModels.rr_theta_len(p, K) + 2     # β + Λ + κ + τ (Poisson: no dispersion)
         @test length(ci.term) == nterm
         @test ci.method == :wald
         @test "kappa" in ci.term
@@ -166,7 +166,7 @@ end
     @testset "coef_table for SPDELatentFit" begin
         ct = coef_table(fit, Y, locs)
         @test ct isa GllvmCoefTable
-        @test length(ct.term) == p + GLLVM.rr_theta_len(p, K) + 2
+        @test length(ct.term) == p + GLLVModels.rr_theta_len(p, K) + 2
     end
 
 end

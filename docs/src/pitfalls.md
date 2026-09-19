@@ -46,18 +46,18 @@ sign to inspect that response.
 
 See also: [Get started](quickstart.md) · [Response families](response-families.md) · [Reference](api.md).
 
-## Loading StatsBase or MixedModels alongside GLLVM breaks six verbs
+## Loading StatsBase or MixedModels alongside GLLVModels breaks six verbs
 
-GLLVM.jl defines its own `confint`, `aic`, `bic`, `predict`, `fitted` and
+GLLVModels.jl defines its own `confint`, `aic`, `bic`, `predict`, `fitted` and
 `residuals`. It does not extend the StatsAPI generics of the same name, so if
 you load another modelling package in the same session, Julia sees two
 unrelated functions sharing one name and refuses to pick:
 
 ```julia
-using GLLVM, StatsBase
+using GLLVModels, StatsBase
 
 confint(fit, Y; method = :wald)
-# WARNING: both StatsBase and GLLVM export "confint";
+# WARNING: both StatsBase and GLLVModels export "confint";
 #          uses of it in module Main must be qualified
 # ERROR: UndefVarError: `confint` not defined
 ```
@@ -69,11 +69,11 @@ suggests runs into it too. `DataFrames` and `Distributions` do not.
 **The fix is to qualify the call:**
 
 ```julia
-using GLLVM, StatsBase
+using GLLVModels, StatsBase
 
-GLLVM.confint(fit, Y; method = :wald)     # GLLVM's interval machinery
-GLLVM.predict(fit, Y; type = :link)
-GLLVM.aic(fit)
+GLLVModels.confint(fit, Y; method = :wald)     # GLLVModels's interval machinery
+GLLVModels.predict(fit, Y; type = :link)
+GLLVModels.aic(fit)
 ```
 
 Or import only what you need from the other package
@@ -81,15 +81,14 @@ Or import only what you need from the other package
 
 Nothing is broken about the fit itself — this is a name-resolution problem, and
 both functions remain reachable when qualified. The examples elsewhere in these
-docs are written unqualified because they assume `using GLLVM` alone.
+docs are written unqualified because they assume `using GLLVModels` alone.
 
 !!! note "This is a known wart, not a design choice"
     Re-rooting these six onto the StatsAPI generics would remove the clash
     entirely and let generic ecosystem code work with a `GllvmFit`. That is an
-    API change and is queued as such — see
-    `docs/dev-log/pending/2026-08-25-statsapi-shadowing-defect.md`.
+    API change, so the present behaviour remains explicit and predictable.
 
 The one genuinely deliberate name clash is `Multinomial`, which is documented
 separately under [Response families](response-families.md) — always write
-`GLLVM.Multinomial()` for the family marker and `Distributions.Multinomial(...)`
+`GLLVModels.Multinomial()` for the family marker and `Distributions.Multinomial(...)`
 for the count-vector law.

@@ -20,7 +20,7 @@ included in the target likelihood. Structured masked/offset routes remain separa
 The fit's `integration` records requested/actual method, node count, starting
 vectors, controls, convergence, observed caches and input identity. AGHQ convergence
 and inference refer to the **frozen-node surrogate**, not its moving-node derivative.
-This local candidate does not establish full Core070/Stage1a parity.
+This route does not establish full R↔Julia parity.
 """
 function fit_gaussian_gllvm(Y::AbstractMatrix;K::Integer,aghq=false,aghq_control=(;),
         mask=nothing,offset=nothing,hessian=:observed,kwargs...)

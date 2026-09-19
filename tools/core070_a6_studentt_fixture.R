@@ -13,7 +13,7 @@
 # freedom PER TRAIT (documented behaviour, R/gllvmTMB.R:167-168: "The
 # student() family fits one log-sigma and one log(df-1) per trait";
 # confirmed in the per-trait `dispersion_trait_map`/pin machinery,
-# R/fit-multi.R:5317-5349), while GLLVM.jl's default `disp_group = :shared`
+# R/fit-multi.R:5317-5349), while GLLVModels.jl's default `disp_group = :shared`
 # fits ONE shared degrees of freedom across all traits. Two genuinely
 # different models were being compared numerically -- the same
 # dispersion-structure class as the NB2 benchmark's

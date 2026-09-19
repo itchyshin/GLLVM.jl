@@ -1,6 +1,6 @@
 using Documenter
 using DocumenterVitepress
-using GLLVM
+using GLLVModels
 
 # Documenter validates local image links before DocumenterVitepress moves the
 # generated source tree into `build/.documenter`. Seed its normal build asset
@@ -16,9 +16,9 @@ end
 makedocs(;
     root = @__DIR__,
     remotes = "--local" in ARGS ? nothing : Dict(),
-    sitename = "GLLVM.jl",
+    sitename = "GLLVModels.jl",
     authors  = "Shinichi Nakagawa",
-    modules  = [GLLVM],
+    modules  = [GLLVModels],
     format   = MarkdownVitepress(
         repo      = "github.com/itchyshin/GLLVModels.jl",
         devbranch = "main",
@@ -34,7 +34,7 @@ makedocs(;
         ],
         "Vignettes" => [
             "Community Abundance (JSDM)" => "vignettes/community-abundance.md",
-            "Phylogenetic GLLVM"         => "vignettes/phylogenetic-gllvm.md",
+            "Phylogenetic GLLVM"               => "vignettes/phylogenetic-gllvm.md",
             "Morphometrics"              => "morphometrics.md",
         ],
         "Guides & Methods" => [

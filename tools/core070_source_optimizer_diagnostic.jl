@@ -1,5 +1,5 @@
-using GLLVM, LinearAlgebra, Random, Statistics
-using GLLVM: Optim, ForwardDiff
+using GLLVModels, LinearAlgebra, Random, Statistics
+using GLLVModels: Optim, ForwardDiff
     rng=MersenneTwister(8103201);p,n=3,72;groups=repeat(1:24;inner=3)
     x=randn(rng,n);truth=[.2,-.4,.5,.8]
     X=zeros(p,n,4)
@@ -12,7 +12,7 @@ using GLLVM: Optim, ForwardDiff
 
 println("BASELINE ", f)
 D=reshape(X,p*n,4)
-objective(t)=GLLVM._gaussian_sources_nll(Y,[block],t;X=D)
+objective(t)=GLLVModels._gaussian_sources_nll(Y,[block],t;X=D)
 g=ForwardDiff.gradient(objective,f.parameters)
 H=ForwardDiff.hessian(objective,f.parameters)
 t=f.parameters-H\g

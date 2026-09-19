@@ -13,10 +13,10 @@ using BenchmarkTools
 using Random
 using LinearAlgebra
 using SparseArrays
-using GLLVM
+using GLLVModels
 
-# The new files are intentionally not exported by the GLLVM module on
-# this branch (PERF+++ hard constraint: do NOT modify src/GLLVM.jl).
+# The new files are intentionally not exported by the GLLVModels module on
+# this branch (PERF+++ hard constraint: do NOT modify src/GLLVModels.jl).
 # Pull them in directly so the benchmark stays self-contained.
 # sparse_phy.jl is included here too so that `random_balanced_tree` (used
 # to spin up test trees) and `sigma_phy_dense` are available at Main.

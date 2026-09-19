@@ -1,4 +1,4 @@
-using Test, GLLVM, LinearAlgebra, Statistics
+using Test, GLLVModels, LinearAlgebra, Statistics
 
 @testset "Gaussian source fixed residual model" begin
     Y=[-1.8 -.8 .2 .2 1.2 2.2; .7 -.3 1.7 -1.3 2.7 -2.3]
@@ -9,7 +9,7 @@ using Test, GLLVM, LinearAlgebra, Statistics
     @test noise.sigma_eps===sigma
     @test noise.beta≈beta atol=1e-7
     @test length(noise.parameters)==p
-    @test GLLVM.dof(noise)==p
+    @test GLLVModels.dof(noise)==p
     @test noise.converged && noise.gradient_norm<=1e-7
     @test noise.hessian_positive_definite
     expected=-length(Y)*log(sigma*sqrt(2pi))-sum(abs2,Y.-beta)/(2sigma^2)
@@ -30,9 +30,9 @@ using Test, GLLVM, LinearAlgebra, Statistics
         @test fit.beta≈beta atol=1e-6
         @test only(fit.trait_covariances)≈Diagonal(source_variance) atol=1e-6
         @test fit.loglik≈independent_ll atol=1e-8
-        @test GLLVM.dof(fit)==p+(common ? 1 : p)
+        @test GLLVModels.dof(fit)==p+(common ? 1 : p)
         @test fit.hessian_positive_definite
-        @test length(fit.parameters)==GLLVM.dof(fit)
+        @test length(fit.parameters)==GLLVModels.dof(fit)
     end
     start=copy(beta)
     fit_gaussian_sources(Y;sources=[],sigma_eps_fixed=sigma,start=start)
@@ -44,11 +44,11 @@ using Test, GLLVM, LinearAlgebra, Statistics
     @test_throws ArgumentError fit_gaussian_sources(Y;sources=[],sigma_eps_fixed=big"1e1000")
     @test_throws ArgumentError fit_gaussian_sources(Y;sources=[],sigma_eps_fixed=big"1e-1000")
     free=fit_gaussian_sources(Y;sources=[])
-    @test !free.residual_fixed && GLLVM.dof(free)==p+1
+    @test !free.residual_fixed && GLLVModels.dof(free)==p+1
     # Preserve construction of existing stored unconstrained fits.
     old=GaussianSourcesFit(free.beta,free.sigma_eps,free.trait_covariances,free.sources,
         free.parameters,free.loglik,free.converged,free.gradient_norm,
         free.hessian_min_eigenvalue,free.hessian_positive_definite,
         free.iterations,free.stopping_reason,free.observations)
-    @test !old.residual_fixed && GLLVM.dof(old)==p+1
+    @test !old.residual_fixed && GLLVModels.dof(old)==p+1
 end

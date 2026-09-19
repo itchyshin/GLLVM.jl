@@ -365,7 +365,7 @@ end
 
 # ---------------------------------------------------------------------------
 # Bootstrap simulation helpers — duplicated from src/confint_bootstrap.jl
-# because that file injects definitions into Main, not into GLLVM, so the
+# because that file injects definitions into Main, not into GLLVModels, so the
 # names are not visible from inside this Core.eval block. The R-side
 # equivalents (simulate.gllvmTMB_multi) play the same role.
 # ---------------------------------------------------------------------------
@@ -876,9 +876,9 @@ on each side.
 helpers:
 
 ```julia
-spec = GLLVM._derived_spec(fit)
-f_c1 = θ -> GLLVM._communality_packed(θ, spec, 1)
-ci   = GLLVM.profile_ci_derived(fit, f_c1; y = y)
+spec = GLLVModels._derived_spec(fit)
+f_c1 = θ -> GLLVModels._communality_packed(θ, spec, 1)
+ci   = GLLVModels.profile_ci_derived(fit, f_c1; y = y)
 ```
 
 Or, for σ²_eps (sanity check vs the parameter profile CI on σ_eps):
@@ -1101,7 +1101,7 @@ end
 
 Profile-likelihood CI for the per-trait phylogenetic signal `H²[t]` (see
 [`phylo_signal`](@ref)). Thin wrapper around [`profile_ci_derived`](@ref)
-using the packed-θ closure `GLLVM._make_phylo_signal_closure`
+using the packed-θ closure `GLLVModels._make_phylo_signal_closure`
 (`src/confint_derived_wald.jl`) — the same closure the transformed-Wald
 route `phylo_signal_wald_ci` uses, so the point estimate matches to the
 bit. `Σ_phy` enters only through its diagonal (standardised convention →
@@ -1138,7 +1138,7 @@ end
 
 Profile-likelihood CI for the RAW reduced-rank loading entry `Λ[t, k]` on an
 **exploratory (unpinned)** fit (`component = :B`, default — the shared/between
-tier; `component = :W` for the within tier). GLLVM.jl has no separate
+tier; `component = :W` for the within tier). GLLVModels.jl has no separate
 confirmatory fit mode with `lambda_constraint` pins; the lower-triangular
 packing convention (`src/packing.jl`) is this package's built-in identifiability
 device, so this function runs on any fit.

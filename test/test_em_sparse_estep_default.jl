@@ -1,4 +1,4 @@
-using GLLVM, Test, Random, LinearAlgebra, Statistics
+using GLLVModels, Test, Random, LinearAlgebra, Statistics
 
 # Sparse Takahashi E-step is now the DEFAULT in `em_fit_phylo` whenever the
 # tree (`phy::AugmentedPhy`) is supplied; `force_dense_estep = true` is the
@@ -9,13 +9,13 @@ using GLLVM, Test, Random, LinearAlgebra, Statistics
 # is p-independent, so p = 8 keeps the test fast).
 #
 # Standalone include convention (mirrors test_em_phylo.jl): em_phylo.jl is not
-# wired into the GLLVM module, so pull it in directly (guarded).
+# wired into the GLLVModels module, so pull it in directly (guarded).
 isdefined(Main, :em_fit_phylo) ||
     include(joinpath(@__DIR__, "..", "src", "em_phylo.jl"))
 
 function _sim_estep(tree, Λ_B, σ_phy, σ_eps, n; seed = 0)
     Random.seed!(seed)
-    Σ_phy = GLLVM.sigma_phy_dense(tree; σ²_phy = 1.0)
+    Σ_phy = GLLVModels.sigma_phy_dense(tree; σ²_phy = 1.0)
     p, K_B = size(Λ_B)
     η_B = randn(K_B, n)
     φ   = cholesky(Symmetric(Σ_phy)).L * randn(p)
@@ -32,7 +32,7 @@ end
     # UNVERIFIED 2026-08-26: the identical claim on the seed-30 p = 6 fixture was
     # measured FALSE (see test_em_louis.jl). This p = 8 fixture has NOT been checked
     # either way — do not rely on the claim without measuring it.
-    tree   = GLLVM.augmented_phy(
+    tree   = GLLVModels.augmented_phy(
         "(((A:0.3,B:0.3):0.2,(C:0.3,D:0.3):0.2):0.2," *
         "((E:0.3,F:0.3):0.2,(G:0.3,H:0.3):0.2):0.2);")
     p      = tree.n_leaves

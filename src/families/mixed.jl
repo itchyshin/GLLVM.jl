@@ -128,7 +128,7 @@ _mixed_has_dispersion(::Binomial)         = false
 _mixed_has_dispersion(fam) = throw(ArgumentError(
     "fit_mixed_gllvm v1 supports Normal, Poisson, Binomial, NegativeBinomial, " *
     "Gamma, Beta per trait; got an unsupported family marker $(typeof(fam)). " *
-    "Ordinal and other families are a documented future lane."))
+    "Ordinal and other families are not yet available."))
 
 # Default log-dispersion init per family (mirrors the single-family fitters:
 # NB log r₀=log 10, Beta log φ₀=log 10, Gamma log α₀=log 2; Normal log σ₀=0).
@@ -407,14 +407,14 @@ Arguments:
   its trait's family.
 - `families::Vector` — length-`p` `Distributions` markers; supported in v1:
   `Normal()`, `Poisson()`, `Binomial()`, `NegativeBinomial()`, `Gamma()`,
-  `Beta()` (Ordinal is a documented future lane).
+  `Beta()` (Ordinal is not yet available for mixed-family fits).
 - `links` — length-`p` links; defaults to each family's canonical link.
 - `K::Integer` — latent dimension.
 - `N` — Binomial trial counts (`p×n`); defaults to all-ones.
 
 The L-BFGS gradient is a DIRECT ForwardDiff gradient of the pure-value mixed
-marginal (correctness-first v1; analytic per-trait kernels are a later perf
-lane). FD-verified ≤ 1e-6. Warm start: family-aware link-scale pseudodata rows +
+marginal (correctness-first v1; analytic per-trait kernels are future performance
+work). FD-verified ≤ 1e-6. Warm start: family-aware link-scale pseudodata rows +
 one shared SVD (PPCA-style) + per-family default dispersions.
 """
 function fit_mixed_gllvm(Y::AbstractMatrix; families::AbstractVector, K::Integer,

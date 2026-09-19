@@ -1,4 +1,4 @@
-using GLLVM, Test
+using GLLVModels, Test
 
 # Unit tests for the profile-CI root-finder (false position on √D with a bisection
 # safeguard). Each D call models one constrained refit — the dominant cost — so the
@@ -20,12 +20,12 @@ using GLLVM, Test
     step = 1.3 * sqrt(cutoff) * se        # overshooting first step (generic case)
 
     n[] = 0
-    up = GLLVM._profile_bisect_side(D, θ̂,  step, cutoff; max_expand = 20, max_bisect = 40)
+    up = GLLVModels._profile_bisect_side(D, θ̂,  step, cutoff; max_expand = 20, max_bisect = 40)
     @test isapprox(up, root_up; atol = 1e-3)
     @test n[] ≤ 8                         # vs ~15+ for pure bisection
 
     n[] = 0
-    lo = GLLVM._profile_bisect_side(D, θ̂, -step, cutoff; max_expand = 20, max_bisect = 40)
+    lo = GLLVModels._profile_bisect_side(D, θ̂, -step, cutoff; max_expand = 20, max_bisect = 40)
     @test isapprox(lo, root_lo; atol = 1e-3)
     @test n[] ≤ 8
 
@@ -34,14 +34,14 @@ using GLLVM, Test
     # exp(3Δ) − 1 = √cutoff.
     Dexp = c -> (exp(3 * (c - θ̂)) - 1)^2
     target = θ̂ + log(1 + sqrt(cutoff)) / 3
-    up2 = GLLVM._profile_bisect_side(Dexp, θ̂, 0.1, cutoff; max_expand = 30, max_bisect = 60)
+    up2 = GLLVModels._profile_bisect_side(Dexp, θ̂, 0.1, cutoff; max_expand = 30, max_bisect = 60)
     @test isapprox(up2, target; atol = 1e-3)
 
     # ---- Singular outer region: a feasibility wall beyond which refits fail -
     # This wall occurs BEFORE the likelihood crossing: no bound is identified.
     wall = θ̂ + 0.9
     Dwall = c -> c ≥ wall ? Inf : ((c - θ̂) / se)^2
-    b = GLLVM._profile_bisect_side(Dwall, θ̂, 0.3, cutoff; max_expand = 20, max_bisect = 40)
+    b = GLLVModels._profile_bisect_side(Dwall, θ̂, 0.3, cutoff; max_expand = 20, max_bisect = 40)
     @test isnan(b)
     @test Dquad(prevfloat(wall)) < cutoff
 
