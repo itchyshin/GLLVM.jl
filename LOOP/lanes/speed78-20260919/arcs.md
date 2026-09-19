@@ -9,3 +9,7 @@
 | verify | Haiku mechanical re-verify; Opus judgment (refute one passed gate); draft PR by the orchestrator; Rose sign-off per repo AGENTS.md | orchestrator | after S6/S7 |
 
 Order re-set 2026-09-19 08:05 by the orchestrator on S4's numbers (adaptive deviation from the plan's S6-first; recorded for the plan-vs-actual): S7b -> S7 -> S6.
+
+| S7c | grouped route, warm-started inner Laplace fits across the finite-difference outer evaluations (each inner fit starts from the previous evaluation's mode); identity rtol 1e-8; count inner Newton iterations before/after (621 baseline); then Shinichi decides on the analytic outer gradient with that number | leaf-S7c (write before dispatch) | Shinichi's choice 2026-09-19 09:36; runs AFTER S7 |
+
+S7b outcome 2026-09-19: identity landed (1,540 -> 236 fresh analyses, 0 fallbacks), wall unchanged 0.192 -> 0.195 s; the 12x is the 118 inner fits the FD outer gradient demands. Order now: S7 -> S7c -> S6.
