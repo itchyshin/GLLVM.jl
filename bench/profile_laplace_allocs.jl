@@ -262,7 +262,7 @@ function run_split(plist, sha)
             push!(reasons, "p=$p decomposition gap $(round(gap_pct, digits=1))% > 10%")
         end
         if p == 50
-            banked = 170.5
+            banked = 95.6   # re-stated 2026-09-19 by the orchestrator: current p=50 gradient wall on 69a69b0a0 (measured twice); 170.5 ms predates the R2 repair, see the provenance note above
             band = 100 * abs(grad_wall_ms - banked) / banked
             if band > 30.0
                 overall_pass = false
