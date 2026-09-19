@@ -24,7 +24,7 @@
 #   - `julia --project=. test/test_grouped_laplace_identity.jl --gate identity`
 #     (prints "GATE G7b.1 PASS" / "GATE G7b.1 FAIL <reason>", exit 0/1)
 
-using Test, GLLVModels, DelimitedFiles, SparseArrays, LinearAlgebra
+using Test, GLLVModels, SparseArrays, LinearAlgebra
 using Distributions: Poisson
 
 const _RESULTS = Bool[]
@@ -74,10 +74,20 @@ const BASELINE_B_MODE = [0.5103459578769107, -0.0535798048824418]
 const BASELINE_B_LOGDET = 3.56577252913429
 
 function fixture_a()
+    # No header, two comma-separated integer columns (count, group id).
+    # Read with Base only (no DelimitedFiles): that package is not a declared
+    # test/Project.toml dependency, and Pkg.test()'s sandboxed test
+    # environment (unlike an interactive --project=. run) does not fall back
+    # to the implicit stdlib load path for it.
     path = joinpath(@__DIR__, "..", "bench", "fixtures", "glmm_200x5.csv")
     isfile(path) || error("fixture missing: $path")
-    M = readdlm(path, ',', Int)
-    y = M[:, 1]; group = M[:, 2]
+    y = Int[]; group = Int[]
+    for line in eachline(path)
+        isempty(line) && continue
+        cols = split(line, ',')
+        push!(y, parse(Int, cols[1]))
+        push!(group, parse(Int, cols[2]))
+    end
     Y1 = reshape(Float64.(y), 1, :)
     terms = [GLLVModels.GroupingTerm(:unit; mode = :indep)]
     return Y1, terms, group
