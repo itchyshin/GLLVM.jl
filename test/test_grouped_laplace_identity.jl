@@ -50,9 +50,18 @@ const BASELINE_A_CONVERGED = true
 const BASELINE_A_ITERATIONS = 3               # outer Optim iterations
 const BASELINE_A_LOGLIK = -2025.469254255527403
 const BASELINE_A_PARAMETERS = [0.9211786339273272, -0.3668330777412767]
-const BASELINE_A_OBJ_CALLS = 103              # S4 shadow-counted inner Laplace-fit calls
-const BASELINE_A_INNER_ITERS_SUM = 621        # S4 shadow-counted summed inner Newton iterations
-const BASELINE_A_FRESH_CHOLESKY = 1345        # S4: 2*621 + 103 fresh cholesky() calls, pre-fix
+# calls/fresh below are measured DIRECTLY on the real joint_grouped_laplace_
+# loglik call path (via the _GROUPED_CHOL_STATS counter added by this arc,
+# with the reuse branch temporarily forced off to reproduce pre-fix
+# behaviour) -- NOT the S4 shadow-replica's counts (103 calls / 1345 fresh),
+# which turned out to under-count slightly: the shadow driver in
+# bench/profile_grouped_glmm.jl reaches the identical converged loglik but is
+# not a bit-for-bit reimplementation of fit_grouped_nongaussian's optimiser
+# calls, so its call count is a good order-of-magnitude estimate, not a
+# pinnable identity. 118/1540 are the true, verified pre-fix numbers.
+const BASELINE_A_OBJ_CALLS = 118              # true inner Laplace-fit call count
+const BASELINE_A_INNER_ITERS_SUM = 711        # = (1540 - 118) / 2
+const BASELINE_A_FRESH_CHOLESKY = 1540        # true pre-fix fresh cholesky() call count
 
 # --- fixture B: "crossed incidence" (test/test_grouped_laplace.jl), a direct
 # joint_grouped_laplace_loglik call with m=2 unknowns (Newton actually

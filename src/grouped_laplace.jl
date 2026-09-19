@@ -29,6 +29,76 @@ function _joint_grouped_failure(status::Symbol, m::Integer; iterations::Integer 
         spdiagm(0 => ones(Float64, m)), NaN, false, status, iterations, Inf)
 end
 
+# ---------------------------------------------------------------------------
+# CHOLMOD symbolic-reuse (S7b, leaf-S7b G7b.1/G7b.2). `joint_grouped_laplace_
+# loglik`'s inner Newton loop previously called plain `cholesky(Symmetric(...))`
+# on `Hf` (Fisher precision) and `Ho` (observed precision) fresh EVERY
+# iteration; each such call re-runs CHOLMOD's symbolic analysis (AMD ordering
+# + supernodal tree) even though `Hf`/`Ho` share the SAME sparsity pattern for
+# the entire lifetime of one `joint_grouped_laplace_loglik` call (`W` is fixed
+# for that call; only the diagonal weight VALUES change between Newton
+# iterations, never which entries of `W' * diag * W + I` are structurally
+# nonzero). `cholesky!(F, A)` reuses `F`'s symbolic factorization and performs
+# only the numeric refactorization for `A`'s new values — internally this is
+# EXACTLY what `cholesky(A)` already does after its own (redundant, repeated)
+# symbolic step, so the numeric result is bit-identical; only the repeated
+# AMD/tree work is eliminated. `_grouped_cached_cholesky!` asserts the
+# sparsity pattern on every call and falls back to a fresh `cholesky` (with a
+# counted fallback) if it ever differs, so a genuine pattern change is never
+# silently misfactorized.
+#
+# Scope is ONE `joint_grouped_laplace_loglik` call (`cache` is a fresh
+# `Ref{Any}(nothing)` local to that call, per `_grouped_cached_cholesky!`'s
+# call sites below) — not across the ~100 inner-Laplace-fit calls a full
+# outer optimisation makes, since each of those calls gets a freshly built
+# `W` (the caller's business, not this file's) and this file makes no claim
+# about whether that W's PATTERN also stays fixed across outer evaluations.
+# `_GROUPED_CHOL_STATS` counts calls/fresh/reused/fallback so
+# `test/test_grouped_laplace_identity.jl` can assert the "2 fresh per call,
+# 0 thereafter" behaviour without external instrumentation.
+mutable struct _GroupedCholStats
+    calls::Int      # joint_grouped_laplace_loglik invocations counted
+    fresh::Int      # fresh cholesky(...) symbolic+numeric factorizations
+    reused::Int     # cholesky!(...) numeric-only refactorizations (cache hit)
+    fallback::Int   # a cached factor existed but its sparsity pattern changed
+end
+
+const _GROUPED_CHOL_STATS = _GroupedCholStats(0, 0, 0, 0)
+
+_grouped_chol_stats_reset!() = begin
+    _GROUPED_CHOL_STATS.calls = 0
+    _GROUPED_CHOL_STATS.fresh = 0
+    _GROUPED_CHOL_STATS.reused = 0
+    _GROUPED_CHOL_STATS.fallback = 0
+    nothing
+end
+
+_grouped_chol_stats() = (calls = _GROUPED_CHOL_STATS.calls, fresh = _GROUPED_CHOL_STATS.fresh,
+    reused = _GROUPED_CHOL_STATS.reused, fallback = _GROUPED_CHOL_STATS.fallback)
+
+# `cache[]` holds `nothing` (no factor cached yet for this call) or
+# `(factor, rowval, colptr)` — the exact CSC pattern the factor was built
+# for. Returns the (possibly freshly built) CHOLMOD factor for `A`; `check`
+# is forwarded so callers keep inspecting `issuccess` for a non-PD matrix
+# exactly as before (never throws for that reason).
+function _grouped_cached_cholesky!(cache::Base.RefValue,
+        A::Symmetric{Float64, <:SparseMatrixCSC{Float64, Int}}; check::Bool = false)
+    S = parent(A)
+    cached = cache[]
+    if cached !== nothing
+        factor, rowval, colptr = cached
+        if size(factor) == size(S) && rowval == S.rowval && colptr == S.colptr
+            _GROUPED_CHOL_STATS.reused += 1
+            return cholesky!(factor, A; check = check)
+        end
+        _GROUPED_CHOL_STATS.fallback += 1
+    end
+    factor = cholesky(A; check = check)
+    _GROUPED_CHOL_STATS.fresh += 1
+    cache[] = (factor, copy(S.rowval), copy(S.colptr))
+    return factor
+end
+
 """
     grouped_trait_design(incidence, trait_factors) -> SparseMatrixCSC
 
@@ -204,6 +274,11 @@ function joint_grouped_laplace_loglik(family, y::AbstractVector, n::AbstractVect
     all(isfinite, Xf) && all(isfinite, betaf) && all(isfinite, nonzeros(Wf)) ||
         return _joint_grouped_failure(:invalid_design, m)
 
+    _GROUPED_CHOL_STATS.calls += 1
+    ff_cache = Ref{Any}(nothing)   # Fisher-precision (Hf) factor, reused across iterations
+    ho_cache = Ref{Any}(nothing)   # observed-precision (Ho) factor, reused across iterations
+                                   # (shared by Fn mid-loop and Fo at convergence — same formula)
+
     b = zeros(Float64, m)
     for iter in 1:maxiter
         state = _joint_grouped_state(family, Xf, betaf, Wf, link, b)
@@ -216,7 +291,7 @@ function joint_grouped_laplace_loglik(family, y::AbstractVector, n::AbstractVect
         g = Wf' * score - b
         maximum(abs, g; init = 0.0) <= tol * (1 + norm(b)) && begin
             Fo = try
-                cholesky(Symmetric(Ho); check = false)
+                _grouped_cached_cholesky!(ho_cache, Symmetric(Ho); check = false)
             catch
                 return _joint_grouped_failure(:observed_precision_factorization_failed, m;
                     iterations = iter - 1)
@@ -228,7 +303,7 @@ function joint_grouped_laplace_loglik(family, y::AbstractVector, n::AbstractVect
                 iter - 1, maximum(abs, g; init=0.0))
         end
         Ff = try
-            cholesky(Symmetric(Hf); check = false)
+            _grouped_cached_cholesky!(ff_cache, Symmetric(Hf); check = false)
         catch
             return _joint_grouped_failure(:fisher_precision_factorization_failed, m;
                 iterations = iter - 1)
@@ -239,7 +314,7 @@ function joint_grouped_laplace_loglik(family, y::AbstractVector, n::AbstractVect
         # a neighbouring outer-parameter value has a perfectly regular mode.
         # Keep Fisher scoring as the positive-definite fallback away from it.
         Fn = try
-            cholesky(Symmetric(Ho); check = false)
+            _grouped_cached_cholesky!(ho_cache, Symmetric(Ho); check = false)
         catch
             nothing
         end
