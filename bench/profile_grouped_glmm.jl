@@ -109,8 +109,14 @@ end
 # ---------------------------------------------------------------------------
 function parse_args(argv)
     gate = "run"
-    for a in argv
-        a == "--gate" && (gate = "run")
+    i = 1
+    while i <= length(argv)
+        if argv[i] == "--gate"
+            gate = (i + 1 <= length(argv) && !startswith(argv[i + 1], "--")) ? argv[i + 1] : "run"
+            i += (gate == "run" ? 1 : 2)
+        else
+            i += 1
+        end
     end
     return gate
 end
@@ -243,8 +249,88 @@ function shadow_fit_counts(Y1::Matrix{Float64}, group::Vector{Int})
              final_inner_status = final_inner_status[])
 end
 
+# ---------------------------------------------------------------------------
+# --gate after (leaf-S7b G7b.2): before/after the CHOLMOD symbolic-reuse
+# change in src/grouped_laplace.jl (S7b). "Before" numbers are the pinned,
+# independently-verified pre-fix baseline from
+# test/test_grouped_laplace_identity.jl (118 inner Laplace-fit calls, 1540
+# fresh CHOLMOD symbolic analyses, 0.192s banked warm wall — see that file's
+# header for how 118/1540 were measured: the real fit_gllvm call path with
+# the reuse branch temporarily forced off, NOT the shadow-driver's 103/1345
+# estimate this same script's `--gate` mode still reports for obj_calls /
+# outer_gradient_evals, which the S7b fix does not change). "After" numbers
+# for inner-call/CHOLMOD counts come from the real GLLVModels._grouped_chol_
+# stats() counter (exact, no shadow needed); outer_gradient_evals still needs
+# the shadow driver (the reuse fix does not touch the outer FD gradient).
+# ---------------------------------------------------------------------------
+function main_after()
+    println("Julia ", VERSION, "  threads=", Threads.nthreads())
+    sha = _git_sha()
+
+    y, group, G, N = load_fixture()
+    Y1 = reshape(Float64.(y), 1, :)
+    terms = [GLLVModels.GroupingTerm(:unit; mode = :indep)]
+
+    before_wall_s = 0.192
+    before_calls = 118
+    before_fresh = 1540
+    before_outer_grad_evals = 8
+
+    warm_s_after = median_s(() -> GLLVModels.fit_gllvm(Y1; family = Poisson(), grouping = terms, unit = group))
+    after_fit = GLLVModels.fit_gllvm(Y1; family = Poisson(), grouping = terms, unit = group)
+
+    has_stats = isdefined(GLLVModels, :_grouped_chol_stats_reset!) && isdefined(GLLVModels, :_grouped_chol_stats)
+    stats = if has_stats
+        GLLVModels._grouped_chol_stats_reset!()
+        GLLVModels.fit_gllvm(Y1; family = Poisson(), grouping = terms, unit = group)
+        GLLVModels._grouped_chol_stats()
+    else
+        (calls = -1, fresh = -1, reused = -1, fallback = -1)
+    end
+
+    counts = shadow_fit_counts(Matrix{Float64}(Y1), group)  # for outer_gradient_evals only, post-fix
+
+    println("--- BEFORE (pinned, test/test_grouped_laplace_identity.jl baseline) ---")
+    @printf("warm_wall=%.3fs  inner_calls=%d  fresh_cholmod=%d  outer_gradient_evals=%d\n",
+            before_wall_s, before_calls, before_fresh, before_outer_grad_evals)
+    println("--- AFTER (measured now, this commit) ---")
+    @printf("warm_wall=%.4fs  inner_calls=%d  fresh_cholmod=%d  reused_cholmod=%d  fallback=%d  outer_gradient_evals=%d\n",
+            warm_s_after, stats.calls, stats.fresh, stats.reused, stats.fallback, counts.grad_calls)
+    println("--- reference ---")
+    @printf("ours banked=0.192s  Latte.jl=0.015s  after/Latte=%.1fx\n", warm_s_after / 0.015)
+
+    ok = has_stats && after_fit.converged && stats.calls > 0 && warm_s_after > 0
+    reasons = String[]
+    ok || push!(reasons, "measurement incomplete (has_stats=$has_stats converged=$(after_fit.converged) calls=$(stats.calls))")
+
+    mkpath(joinpath(@__DIR__, "results"))
+    out = joinpath(@__DIR__, "results", "grouped_after_$(sha).tsv")
+    open(out, "w") do io
+        for l in header_lines()
+            println(io, l)
+        end
+        println(io, "N\tG\treps\tbefore_warm_wall_s\tbefore_inner_calls\tbefore_fresh_cholmod\t",
+                     "before_outer_gradient_evals\tafter_warm_wall_s\tafter_inner_calls\t",
+                     "after_fresh_cholmod\tafter_reused_cholmod\tafter_fallback\tafter_outer_gradient_evals\t",
+                     "latte_wall_s\tafter_over_latte")
+        println(io, N, "\t", G, "\t", REPS, "\t", before_wall_s, "\t", before_calls, "\t", before_fresh, "\t",
+                     before_outer_grad_evals, "\t", warm_s_after, "\t", stats.calls, "\t", stats.fresh, "\t",
+                     stats.reused, "\t", stats.fallback, "\t", counts.grad_calls, "\t", 0.015, "\t",
+                     warm_s_after / 0.015)
+    end
+    println("TSV written: ", out)
+
+    if ok
+        println("GATE G7b.2 PASS")
+    else
+        println("GATE G7b.2 FAIL ", join(reasons, "; "))
+    end
+    exit(ok ? 0 : 1)
+end
+
 function main()
-    parse_args(ARGS)
+    gate = parse_args(ARGS)
+    gate == "after" && return main_after()
     println("Julia ", VERSION, "  threads=", Threads.nthreads())
     sha = _git_sha()
 
